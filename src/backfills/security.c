@@ -2,8 +2,9 @@
  * Security.framework polyfills -- custom polyfill (not from
  * macports-legacy-support).
  *
- * Covers the trust-evaluation, SecKey, SSL and constant entry points that
- * modern binaries import but 10.9's Security.framework lacks.  The
+ * Covers the trust-evaluation, SecKey and SSL entry points that modern
+ * binaries import but 10.9's Security.framework lacks.  Each constant has its
+ * own file, security_k*.c, so a consumer that defines one links alone.  The
  * SecTrustEvaluate and SecPolicyCreateRevocation overrides live in
  * overrides/sectrust_evaluate.c.
  */
@@ -163,32 +164,6 @@ OSStatus SSLSetALPNProtocols(void *context, CFArrayRef protocols) {
 }
 
 /*
- * Security framework constants (added 10.12+)
- */
-
-const CFStringRef kSecAttrKeyTypeECSECPrimeRandom = CFSTR("73");
-const CFStringRef kSecUseDataProtectionKeychain = CFSTR("u-DataProtectionKeychain");
-
-/* SecKeyAlgorithm constants (added 10.12) */
-const CFStringRef kSecKeyAlgorithmECDHKeyExchangeStandard = CFSTR("algid:ecdh:standard");
-const CFStringRef kSecKeyAlgorithmECDSASignatureDigestX962 = CFSTR("algid:ecdsa:digest-x962");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA1 = CFSTR("algid:encrypt:RSA:OAEP-SHA1");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA256 = CFSTR("algid:encrypt:RSA:OAEP-SHA256");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA384 = CFSTR("algid:encrypt:RSA:OAEP-SHA384");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA512 = CFSTR("algid:encrypt:RSA:OAEP-SHA512");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionPKCS1 = CFSTR("algid:encrypt:RSA:PKCS1");
-const CFStringRef kSecKeyAlgorithmRSAEncryptionRaw = CFSTR("algid:encrypt:RSA:raw");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1 = CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA1");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256 = CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384 = CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA384");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512 = CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA512");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPSSSHA1 = CFSTR("algid:sign:RSA:digest-PSS:SHA1");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPSSSHA256 = CFSTR("algid:sign:RSA:digest-PSS:SHA256");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPSSSHA384 = CFSTR("algid:sign:RSA:digest-PSS:SHA384");
-const CFStringRef kSecKeyAlgorithmRSASignatureDigestPSSSHA512 = CFSTR("algid:sign:RSA:digest-PSS:SHA512");
-const CFStringRef kSecKeyAlgorithmRSASignatureRaw = CFSTR("algid:sign:RSA:raw");
-
-/*
  * ── Later Security.framework entry points ──
  *
  * These name facilities 10.9 has no implementation of at all: Certificate
@@ -198,9 +173,6 @@ const CFStringRef kSecKeyAlgorithmRSASignatureRaw = CFSTR("algid:sign:RSA:raw");
  * result takes its unsupported path. None of them fabricates a success, which
  * for a trust-evaluation API would be the one truly dangerous outcome.
  */
-
-/* Code Signing guest attribute key; the value is the documented one. */
-const CFStringRef kSecGuestAttributeAudit = CFSTR("audit");
 
 OSStatus CMSDecoderCopySignerTimestampWithPolicy(void *cmsDecoder, void *timeStampPolicy,
                                                  size_t signerIndex, CFAbsoluteTime *timestamp) {
