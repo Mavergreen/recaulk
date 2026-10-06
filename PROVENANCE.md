@@ -20,7 +20,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/kevent64_shim.c` | `src/overrides/kevent64_shim.c` | ISC, Wowfunhappy; EV_RECEIPT fix by Amitai Schleier, e8b35b9 |
 | `mavericks-legacy-support/src/objc_read_class_pair.c` | `src/backfills/objc_read_class_pair.c`, `src/backfills/objc_realize_class_from_swift.c` (moved, split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/posix_spawn_chdir.c` | `src/overrides/posix_spawn_chdir.c` | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/security.c` | `src/backfills/security.c`, `src/overrides/sectrust_evaluate.c` (split) | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/security.c` | `src/backfills/security.c`, `src/backfills/security_k*.c` (one per constant), `src/overrides/sectrust_evaluate.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/write_underline.c` | `src/overrides/write_underline.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/aligned_alloc.c` | `src/backfills/aligned_alloc.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/ccrandom.c` | `src/backfills/ccrandom.c` | ISC, Wowfunhappy |
@@ -28,7 +28,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/chkstk_darwin.c` | `src/backfills/chkstk_darwin.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/dispatch.c` | `src/backfills/dispatch.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/dispatch_modern.c` | `src/backfills/dispatch_modern.c` | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/dnssd_getaddrinfo_ex.c` | `src/backfills/dnssd_getaddrinfo_ex.c` | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/dnssd_getaddrinfo_ex.c` | `src/backfills/dnssd_getaddrinfo_ex.c`, `src/backfills/dnssd_attr_allow_failover.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/dyld_shim.c` | `src/backfills/dyld_shim.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/fd_set_overflow.c` | `src/backfills/fd_set_overflow.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/half_float.c` | `src/backfills/half_float.c` | ISC, Wowfunhappy |
@@ -38,7 +38,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/msg_x.c` | `src/backfills/msg_x.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/notify.c` | `src/backfills/notify.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/objc_runtime.c` | `src/backfills/objc_runtime.c`, `src/overrides/objc_alloc.c` (split) | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/os_log.c` | `src/backfills/os_log.c`, `src/backfills/os_log_type_enabled.c`, `src/backfills/os_log_error_impl.c`, `src/backfills/os_log_impl.c` (split) | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/os_log.c` | `src/backfills/os_log.c`, `src/backfills/os_log_default.c`, `src/backfills/os_log_type_enabled.c`, `src/backfills/os_log_error_impl.c`, `src/backfills/os_log_impl.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_unfair_lock_assert.c` | `src/backfills/os_unfair_lock_assert.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_unfair_lock_ext.c` | `src/backfills/os_unfair_lock_ext.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_version.c` | `src/backfills/os_version.c` | ISC, Wowfunhappy |
@@ -95,6 +95,18 @@ trampoline (see Forwarding layer):
   not declare `objc_readClassPair`, so the new file declares it. Its header's first sentence names the
   new file's function, and the function's comment no longer says "above".
 
+Split so that every back-filled name stands alone in its archive member, and a consumer defining one
+of them links without colliding with its neighbours:
+
+- `security.c`: each of its 20 `kSec*` constants goes to its own `backfills/security_<constant>.c`.
+  The functions stay; their names are owned by trampolines. The header comment's list of what the file
+  covers no longer names constants.
+- `os_log.c`: `_os_log_default` and its backing struct go to `backfills/os_log_default.c`. `os_log.c`
+  declares `_os_log_default` `extern`.
+- `dnssd_getaddrinfo_ex.c`: `kDNSServiceAttrAllowFailover` goes to
+  `backfills/dnssd_attr_allow_failover.c`. The header comment's "Export a token" sentence points at
+  the new file.
+
 Split so that each function that takes a data symbol of ours, and so is never forwarded (see Forwarding
 layer), stands alone under its own name in its archive member:
 
@@ -140,8 +152,9 @@ the cached path reads its slot from memory, and the first call saves and restore
 carries `al` for variadic calls), `r10`, `r11` and `xmm0`-`xmm15` around the resolver.
 
 `build/forward-exclude.txt` lists the functions never forwarded, which `build/forward-set.sh` and
-`tests/forward-derivation.sh` both read. Each line ends in why: `private` (MacPorts-private), `abi`, or
-`data`. A function on the list stays defined under its own name.
+`tests/forward-derivation.sh` both read. Each line ends in why: `private` (MacPorts-private, which
+`tests/one-backfill-per-member.sh` also skips, since no consumer defines them), `abi`, or `data`. A
+function on the list stays defined under its own name.
 
 | Entry | Why it is never forwarded |
 |---|---|

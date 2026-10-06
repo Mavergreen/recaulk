@@ -6,9 +6,7 @@
  * and run.
  */
 
-struct os_log_s { int dummy; };
-static struct os_log_s _os_log_default_val = { 0 };
-void *_os_log_default = &_os_log_default_val;
+extern void *_os_log_default;  /* os_log_default.c */
 
 /* os_log_create (added 10.12): returns a logger handle. Logging is disabled, so
  * hand back the shared disabled handle rather than allocating. Must never be
