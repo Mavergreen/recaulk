@@ -38,6 +38,14 @@ cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
 
 /usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$src/lib/libMacportsLegacySupport.a" "$W/librecaulk-backfills.a"
 
+. "$SELF/duplicates.sh"
+dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
+[ -z "$dups" ] || {
+  printf '%s\n' "$dups" >&2
+  echo "build-lib: rule 2 (README): a symbol is defined twice, so libRecaulkSystem.dylib would not link" >&2
+  exit 1
+}
+
 /usr/bin/clang -dynamiclib $flags -arch x86_64 -o "$T/lib/libRecaulkSystem.dylib" \
   -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
   -Wl,-force_load,"$T/lib/librecaulk.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
