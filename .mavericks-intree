@@ -1,1 +1,2 @@
-VERSION    # release.yml stamps the resolved version here; CMakeLists.txt reads it back via file(STRINGS ...)
+VERSION    # release.yml stamps the resolved version here; the updater build takes it as -DRECAULK_VERSION
+dist/      # release.yml copies the pkg here and writes RELEASE_NOTES.md and recaulk.xml beside it, inside the checkout
