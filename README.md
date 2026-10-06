@@ -16,6 +16,15 @@ pinned commit, plus Wowfunhappy's 10.9 shims.
   This is what drydock points adapted binaries at.
 - `include/recaulk/`: MacPorts' headers plus ours.
 
+## Back-fills and overrides
+
+1. Our back-fills in `librecaulk.a` define no symbol the pinned 10.9 SDK's libraries already export.
+   Such code (an override) belongs in `src/overrides/`, which only `libRecaulkSystem.dylib` uses.
+   MacPorts' objects keep their fixes to functions 10.9 exports, such as `sysconf` and
+   `pthread_get_stacksize_np`.
+2. MacPorts and our code never define the same symbol: the link fails. When MacPorts gains a symbol we
+   carry, ours is deleted.
+
 ## Credits
 
 Recaulk is MacPorts' work and Wowfunhappy's, packaged and extended here; `PROVENANCE.md` records what
