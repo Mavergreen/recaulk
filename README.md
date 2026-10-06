@@ -1,17 +1,13 @@
-# mavericks-legacysupport
+# Recaulk
 
-[macports-legacy-support](https://github.com/macports/macports-legacy-support)
-as a double-clickable Sparkle-updatable .pkg for Mac OS X 10.9 Mavericks.
+Drydock gives a binary a recaulk. Mac OS X 10.9's libSystem lacks functions that binaries built against a
+modern SDK expect. Recaulk fills those gaps: MacPorts'
+[macports-legacy-support](https://github.com/macports/macports-legacy-support), fetched unmodified at a
+pinned commit.
 
-## Linking
+## Credits
 
-The installed pkg puts the library and headers under
-`/usr/local/mavergreen/legacysupport`. Build against it with:
-
-```sh
-cc -I/usr/local/mavergreen/legacysupport/include/LegacySupport \
-   -L/usr/local/mavergreen/legacysupport/lib -lMacportsLegacySupport ...
-```
+Recaulk builds on MacPorts' work. This is an unofficial community build, not affiliated with MacPorts.
 
 ## Install (once)
 
@@ -37,9 +33,9 @@ To build the updater .app by hand:
 
 ```sh
 . build/msc.sh   # exports SHIPYARD_SCRIPTS, for MavericksToolchain.cmake below
-shipyard-cmake -S . -B build/updater -DCMAKE_OBJC_COMPILER=/usr/bin/clang \
+shipyard-cmake -S . -B "${MAVERICKS_BUILD_ROOT:-${TMPDIR:-/tmp}/mm-build}/recaulk-updater" -DCMAKE_OBJC_COMPILER=/usr/bin/clang \
   -DCMAKE_TOOLCHAIN_FILE="$SHIPYARD_SCRIPTS/../MavericksToolchain.cmake"
-shipyard-cmake --build build/updater --target legacysupport-updater
+shipyard-cmake --build "${MAVERICKS_BUILD_ROOT:-${TMPDIR:-/tmp}/mm-build}/recaulk-updater" --target recaulk-updater
 ```
 
 `tests/updater-build.sh` and `tests/package-pkg.sh` skip (exit 77) when
@@ -52,5 +48,5 @@ your own and point one configure at it — shipyard's own README has the details
 ```sh
 export CMAKE_PREFIX_PATH="$HOME/.local/opt/shipyard-dev"
 . build/msc.sh   # exports SHIPYARD_SCRIPTS, from the same dev prefix
-shipyard-cmake -S . -B build/updater -DCMAKE_TOOLCHAIN_FILE="$SHIPYARD_SCRIPTS/../MavericksToolchain.cmake"
+shipyard-cmake -S . -B "${MAVERICKS_BUILD_ROOT:-${TMPDIR:-/tmp}/mm-build}/recaulk-updater" -DCMAKE_TOOLCHAIN_FILE="$SHIPYARD_SCRIPTS/../MavericksToolchain.cmake"
 ```

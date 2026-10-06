@@ -5,7 +5,7 @@ R="$(cd "$(dirname "$0")/.." && pwd)"
 t="$(mktemp -d "${TMPDIR:-/tmp}/postinstall-hook.XXXXXX")"; trap 'rm -rf "$t"' EXIT
 fail() { echo "FAIL: $*"; exit 1; }
 V="$t/vol"
-ICON="$V/Library/Application Support/Mavergreen/legacysupport-updater.app/Contents/Resources/macports-legacy-support-updater.icns"
+ICON="$V/Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns"
 CT="$V/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources"
 mkdir -p "$(dirname "$ICON")" "$CT"
 printf 'placeholder\n' > "$ICON"

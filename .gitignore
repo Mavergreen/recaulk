@@ -1,8 +1,6 @@
 /VERSION
-build/
-dist/
+/dist/
+/.superpowers/
+/.idea/
 ._*
 .DS_Store
-.superpowers/
-docs/
-.idea/

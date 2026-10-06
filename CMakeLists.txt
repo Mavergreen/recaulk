@@ -1,31 +1,28 @@
 cmake_minimum_required(VERSION 3.16)
-# Builds the Cocoa/Sparkle updater .app that keeps the installed macports-legacy-support
-# .pkg current. ObjC/Cocoa ONLY -- it must never link the library it updates. Built
-# x86_64 / min-10.9 so it runs on the target Mavericks machine.
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9 CACHE STRING "runs on 10.9")
 set(CMAKE_OSX_ARCHITECTURES x86_64 CACHE STRING "Intel-only (10.9)")
 
-project(LegacySupportUpdater LANGUAGES OBJC)
+project(RecaulkUpdater LANGUAGES OBJC)
 
-# CORRECT shipyard usage: resolved from shipyard-cmake's own prefix -- configure this
-# project with shipyard-cmake and there is nothing to register and no search path to
-# set (the README's "Install (once)" says where shipyard-cmake comes from). Never
-# vendored/submoduled.
 find_package(MavericksShipyard REQUIRED)
-include(Mavericks)          # universal umbrella: AppleClang gate + build conventions
-include(MavericksSparkle)   # the Sparkle updater .app builder
+include(Mavericks)
+include(MavericksSparkle)
 
-# Full version written by the release workflow (or a local test) into ./VERSION (gitignored).
-file(STRINGS "${CMAKE_SOURCE_DIR}/VERSION" MLS_VERSION LIMIT_COUNT 1)
+if(NOT DEFINED RECAULK_VERSION)
+  if(EXISTS "${CMAKE_SOURCE_DIR}/VERSION")
+    file(STRINGS "${CMAKE_SOURCE_DIR}/VERSION" RECAULK_VERSION LIMIT_COUNT 1)
+  else()
+    file(STRINGS "${CMAKE_SOURCE_DIR}/UPSTREAM_VERSION" RECAULK_VERSION LIMIT_COUNT 1)
+  endif()
+endif()
 
 mavericks_add_updater_app(
-  PRODUCT legacysupport
-  PRODUCT_NAME "MacPorts legacy-support (Mavericks)"
-  ICON "${CMAKE_SOURCE_DIR}/updater/macports-legacy-support-updater.icns"
-  VERSION "${MLS_VERSION}"
-  LOG_PREFIX "MLSUpdater"
-  CONFIRM_TITLE "macports-legacy-support updated"
-  CONFIRM_BODY "The MacPorts legacy-support libraries in /usr/local/mavergreen/legacysupport were updated."
-  RELAUNCH_MARKER "/tmp/.mavericks-legacysupport-updater-relaunched"
-  # no PANE_HINT_KEY -> background-found updates post an NSUserNotification (a library, no pane)
+  PRODUCT recaulk
+  PRODUCT_NAME "Recaulk for Mavericks"
+  ICON "${CMAKE_SOURCE_DIR}/updater/recaulk-updater.icns"
+  VERSION "${RECAULK_VERSION}"
+  LOG_PREFIX "RecaulkUpdater"
+  CONFIRM_TITLE "Recaulk for Mavericks updated"
+  CONFIRM_BODY "The libraries in /usr/local/mavergreen/recaulk were updated."
+  RELAUNCH_MARKER "/tmp/.mavergreen-recaulk-updater-relaunched"
 )

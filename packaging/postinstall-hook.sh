@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-_icon="$ROOT/Library/Application Support/Mavergreen/legacysupport-updater.app/Contents/Resources/macports-legacy-support-updater.icns"
+_icon="$ROOT/Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns"
 _coretypes="$ROOT/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources"
 if [ -f "$_icon" ]; then
   for _c in GenericFrameworkIcon.icns LibraryFolderIcon.icns KEXT.icns; do

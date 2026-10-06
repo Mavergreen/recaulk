@@ -4,12 +4,12 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^UPSTREAM_VERSION$/"],
-      "matchStrings": ["^(?<currentValue>.+?)\\s*$"],
+      "description": "Track the MacPorts macports-legacy-support pin (REF + commit DIGEST). Renovate moves REF and DIGEST together; the pins bot writes TARBALL_SHA256 on the Renovate branch.",
+      "managerFilePatterns": ["/^components/macports-legacy-support/version$/"],
+      "matchStrings": ["REPO=(?<packageName>\\S+?)\\.git\\s+REF=(?<currentValue>\\S+)\\s+DIGEST=(?<currentDigest>[0-9a-f]{40})"],
       "depNameTemplate": "macports/macports-legacy-support",
-      "packageNameTemplate": "macports/macports-legacy-support",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^v(?<version>.+)$"
+      "datasourceTemplate": "git-refs",
+      "versioningTemplate": "semver"
     }
   ]
 }

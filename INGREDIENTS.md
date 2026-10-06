@@ -1,19 +1,15 @@
 # Build ingredients
 
-Everything baked into the shipped `.pkg`, and how a change to it reaches a release.
+Everything baked into what Recaulk ships, and how a change to it reaches a release.
+
+Recaulk is **its own upstream**: it is versioned `YYYYMMDD.N` and nothing external releases it.
 
 | Ingredient | Pinned in | Renovate | On a bump |
 |---|---|---|---|
-| macports-legacy-support source (own upstream) | `UPSTREAM_VERSION` | ✅ `github-tags` on `macports/macports-legacy-support` | `release.yml` cuts `<upstream>-mavericks.1` |
-| Sparkle framework, MacOSX10.9 SDK | `Mavergreen/shipyard@v1` | ✅ github-actions manager tracks the tag | `@v1` is a *moving* tag: shipyard content changes without the pin changing, so nothing auto-repackages |
+| Recaulk's own source (own upstream) | `UPSTREAM_VERSION`: the date of the newest source a release carries, bumped by hand | ❌ untrackable: nothing external releases it | bumping it on `main` is the decision to release |
+| MacPorts macports-legacy-support | `components/macports-legacy-support/version` | ✅ `git-refs` (REF+DIGEST; the pins bot writes TARBALL_SHA256) | publishes a `.N+1` repackage |
+| MacOSX10.9 SDK, CMake modules, packaging and signing scripts | `Mavergreen/shipyard@v1` | ✅ github-actions manager tracks the tag | `@v1` moves without the pin changing, so nothing repackages by itself |
+| Sparkle, via shipyard | shipyard's `fetch_sparkle_framework.sh`, pinned by hash there | ❌ untrackable here: shipyard owns that pin | follows shipyard |
+| `tests/fixtures/libSystemWrapper-exports.txt` | committed | ❌ untrackable: a frozen record of what Wowfunhappy shipped | never bumped by a bot |
 
-## No repackage-on-ingredient-bump caller here — deliberately
-
-The family pattern (`repackage-on-ingredient-bump.yml` calling shipyard's reusable workflow)
-turns an *ingredient* pin bump into a `-mavericks.(N+1)` repackage. This repo has no such pin: its
-only versioned input is its own upstream, which is the `-mavericks.1` path `release.yml` already
-owns, and its only other input is `shipyard@v1`, whose moving tag no path filter can observe.
-
-A caller would therefore have nothing to watch. Add one the moment a real ingredient pin lands here
-(a prebuilt dependency, a vendored blob with a hash), pointing `own-upstream-paths` at
-`UPSTREAM_VERSION` so a new upstream still takes the `-mavericks.1` path.
+No upstream release notes: Recaulk is its own upstream; a MacPorts bump is an ingredient move, which the notes' Build ingredients section names.

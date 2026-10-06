@@ -1,0 +1,4 @@
+REPO=https://github.com/macports/macports-legacy-support.git
+REF=v1.5.2
+DIGEST=f89c155cbc2ca8714e4ada66c11b222353e8d87a
+TARBALL_SHA256=37c8483ac0594a009e1509f4ddd2eff42c4707cedba58a8ec34bcf779834e144

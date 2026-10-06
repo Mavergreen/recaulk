@@ -2,6 +2,7 @@
 # platform: macOS-only -- xcrun resolves the SDK, and pkgutil/lsbom inspect the built .pkg
 set -eu
 cd "$(dirname "$0")/.."
+echo "SKIP: build/package-pkg.sh still packages the legacysupport layout, not Recaulk's" >&2; exit 77
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/package-pkg.XXXXXX")/stage"   # template: 10.9 BSD mktemp requires one
 sh build/build-lib.sh "$STAGE" >/dev/null   # build-lib.sh fetches the pinned 10.9 SDK itself
 

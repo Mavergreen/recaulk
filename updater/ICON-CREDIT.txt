@@ -1,4 +1,4 @@
-macports-legacy-support-updater.icns is a neutral placeholder: a plain gradient tile, no third-party
+recaulk-updater.icns is a neutral placeholder: a plain gradient tile, no third-party
 artwork, no trademark, no claim.
 
 At install time the postinstall replaces it with Mac OS X's own framework icon, taken from the
@@ -9,5 +9,5 @@ missing every candidate simply keeps the placeholder.
 The MacPorts logo is NOT used here. It is a wordmark with no square symbol -- illegible as an icon at
 32px -- and while it is 3-clause BSD (Vincent Habchi and MacPorts, redistribution permitted with the
 copyright notice), that licence's no-endorsement clause makes a project's own mark a poor choice for
-the identity of a separately-distributed package. "MacPorts" appears in this product's name and
-description, which is accurate referential use; the artwork stays theirs.
+the identity of a separately-distributed package. "MacPorts" appears in this product's description,
+which is accurate referential use; the artwork stays theirs.

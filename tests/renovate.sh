@@ -2,6 +2,7 @@
 # platform: host-agnostic
 set -eu
 cd "$(dirname "$0")/.."
+command -v python3 >/dev/null 2>&1 || { echo "no python3 -- skipping" >&2; exit 77; }
 f=.github/renovate.json
 python3 -m json.tool "$f" >/dev/null || { echo "invalid JSON"; exit 1; }
 python3 - "$f" <<'PY'
@@ -9,13 +10,13 @@ import json, sys
 c = json.load(open(sys.argv[1]))
 assert "github>Mavergreen/shipyard" in c.get("extends", []), "must extend the shared preset"
 cm = c.get("customManagers", [])
-m = [x for x in cm if x.get("depNameTemplate") == "macports/macports-legacy-support"]
-assert m, "no customManager for upstream"
+for x in cm:
+    assert not any("UPSTREAM_VERSION" in p for p in x.get("managerFilePatterns", [])), "no manager may match UPSTREAM_VERSION"
+m = [x for x in cm if x.get("managerFilePatterns") == ["/^components/macports-legacy-support/version$/"]]
+assert m, "no customManager for the MacPorts pin file"
 m = m[0]
-assert m["datasourceTemplate"] == "github-tags", "wrong datasource"
-# Renovate renamed fileMatch -> managerFilePatterns, and the value is a regex literal (/.../).
-# This assertion still said fileMatch long after the config moved on: nothing ever ran it to notice.
-assert m["managerFilePatterns"] == ["/^UPSTREAM_VERSION$/"], "wrong managerFilePatterns"
-assert "extractVersionTemplate" in m, "must strip the leading v"
+assert m["matchStrings"] == ["REPO=(?<packageName>\\S+?)\\.git\\s+REF=(?<currentValue>\\S+)\\s+DIGEST=(?<currentDigest>[0-9a-f]{40})"], "wrong matchStrings"
+assert m["datasourceTemplate"] == "git-refs", "wrong datasource"
+assert m["versioningTemplate"] == "semver", "wrong versioning"
 print("renovate OK")
 PY

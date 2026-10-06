@@ -7,7 +7,7 @@ SELF="$(cd "$(dirname "$0")" && pwd)"
 MLS_ROOT="$(cd "$SELF/.." && pwd)"; export MLS_ROOT
 . "$SELF/lib.sh"
 
-U="$(upstream_version)"
+U="$(sed -n 's/^REF=v//p' "$MLS_ROOT/components/macports-legacy-support/version")"
 # spec: claude-plugins/mavergreen/skills/mavergreen-conventions/SKILL.md
 #       "Build OUT of the source tree, onto fast local storage" -- CI exports
 #       MAVERICKS_BUILD_ROOT itself; this default only covers a plain local run.
