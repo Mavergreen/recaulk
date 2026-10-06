@@ -7,7 +7,10 @@
 #include <stdlib.h>
 
 int CCRandomGenerateBytes(void *bytes, size_t count) {
-	if (bytes == NULL || count == 0) {
+	if (count == 0) {
+		return 0; /* kCCSuccess */
+	}
+	if (bytes == NULL) {
 		return -4300; /* kCCParamError */
 	}
 	arc4random_buf(bytes, count);

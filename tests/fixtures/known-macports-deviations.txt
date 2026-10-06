@@ -1,0 +1,1 @@
+<10.12	getentropy(big, 257) == -1 && errno == EIO

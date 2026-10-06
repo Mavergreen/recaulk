@@ -4,9 +4,10 @@
 
 Recaulk's own C comes from `schmonz/Mavericks-Porting-Resources`, path `mavericks-legacy-support/`,
 commit `e8b35b9641069977f4d5d2d0ea52a6909c4a1f02` (branch `kevent64-receipt-not-stash`, on top of
-Wowfunhappy's `6ead179fc7c155c9ce2ce92642e6585ae0d8abb5`). Function bodies are verbatim. Beyond the
-moves and splits recorded below, his files differ in one way: `src/include/os/log.h` and
-`src/backfills/dispatch_modern.c` include `MacportsLegacySupport.h` where he included `LegacySupport.h`.
+Wowfunhappy's `6ead179fc7c155c9ce2ce92642e6585ae0d8abb5`). Function bodies are verbatim but for
+the behaviour fixes recorded under Behaviour fixes. Beyond those fixes and the moves and splits recorded
+below, his files differ in one way: `src/include/os/log.h` and `src/backfills/dispatch_modern.c` include
+`MacportsLegacySupport.h` where he included `LegacySupport.h`.
 
 ## Imported files
 
@@ -118,6 +119,96 @@ layer), stands alone under its own name in its archive member:
 
 `posix_spawn_chdir.c` stays whole in overrides: its `addchdir_np` functions fill the table that its
 `posix_spawn` wrapper reads.
+
+## Behaviour fixes
+
+`src/backfills/ccrandom.c`: behaviour fix (spec: back-fills match the real API): zero-length request
+returns success, as Apple's does. A `NULL` buffer with a non-zero count still returns `kCCParamError`.
+
+`src/backfills/security_k*.c`: behaviour fix (spec: back-fills match the real API). Eleven constants
+carried strings that differ from Apple's. Data is never forwarded, so a program gets our constant on
+every macOS; on 10.12 and later it hands it to the system's forwarded `SecKey` functions, or to its
+`SecItem` functions, which then did not recognise it. Each now holds Apple's string, read from
+`apple-oss-distributions/Security` at commit `db15acbe6a7f257a859ad9a3bb86097bfe0679d9`
+(`https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/<path>`):
+
+| Constant | Was | Apple's, now ours | Apple source |
+|---|---|---|---|
+| `kSecKeyAlgorithmECDHKeyExchangeStandard` | `algid:ecdh:standard` | `algid:keyexchange:ECDH` | `OSX/sec/Security/SecKeyAdaptors.m` line 160 |
+| `kSecKeyAlgorithmECDSASignatureDigestX962` | `algid:ecdsa:digest-x962` | `algid:sign:ECDSA:digest-X962` | `OSX/sec/Security/SecKeyAdaptors.m` line 110 |
+| `kSecKeyAlgorithmRSAEncryptionOAEPSHA1` | `algid:encrypt:RSA:OAEP-SHA1` | `algid:encrypt:RSA:OAEP:SHA1` | `OSX/sec/Security/SecKeyAdaptors.m` line 126 |
+| `kSecKeyAlgorithmRSAEncryptionOAEPSHA256` | `algid:encrypt:RSA:OAEP-SHA256` | `algid:encrypt:RSA:OAEP:SHA256` | `OSX/sec/Security/SecKeyAdaptors.m` line 128 |
+| `kSecKeyAlgorithmRSAEncryptionOAEPSHA384` | `algid:encrypt:RSA:OAEP-SHA384` | `algid:encrypt:RSA:OAEP:SHA384` | `OSX/sec/Security/SecKeyAdaptors.m` line 129 |
+| `kSecKeyAlgorithmRSAEncryptionOAEPSHA512` | `algid:encrypt:RSA:OAEP-SHA512` | `algid:encrypt:RSA:OAEP:SHA512` | `OSX/sec/Security/SecKeyAdaptors.m` line 130 |
+| `kSecKeyAlgorithmRSASignatureDigestPSSSHA1` | `algid:sign:RSA:digest-PSS:SHA1` | `algid:sign:RSA:digest-PSS:SHA1:SHA1:20` | `OSX/sec/Security/SecKeyAdaptors.m` line 77 |
+| `kSecKeyAlgorithmRSASignatureDigestPSSSHA256` | `algid:sign:RSA:digest-PSS:SHA256` | `algid:sign:RSA:digest-PSS:SHA256:SHA256:32` | `OSX/sec/Security/SecKeyAdaptors.m` line 79 |
+| `kSecKeyAlgorithmRSASignatureDigestPSSSHA384` | `algid:sign:RSA:digest-PSS:SHA384` | `algid:sign:RSA:digest-PSS:SHA384:SHA384:48` | `OSX/sec/Security/SecKeyAdaptors.m` line 80 |
+| `kSecKeyAlgorithmRSASignatureDigestPSSSHA512` | `algid:sign:RSA:digest-PSS:SHA512` | `algid:sign:RSA:digest-PSS:SHA512:SHA512:64` | `OSX/sec/Security/SecKeyAdaptors.m` line 81 |
+| `kSecUseDataProtectionKeychain` | `u-DataProtectionKeychain` | `nleg` | `OSX/sec/Security/SecItemConstants.c` line 174 |
+
+The other nine already held Apple's strings:
+
+- `kSecAttrKeyTypeECSECPrimeRandom` (`OSX/sec/Security/SecItemConstants.c` line 246)
+- `kSecGuestAttributeAudit` (`OSX/libsecurity_codesigning/lib/SecCode.cpp` line 157)
+- `kSecKeyAlgorithmRSAEncryptionPKCS1` (`OSX/sec/Security/SecKeyAdaptors.m` line 125)
+- `kSecKeyAlgorithmRSAEncryptionRaw` (`OSX/sec/Security/SecKeyAdaptors.m` line 123)
+- `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1` (`OSX/sec/Security/SecKeyAdaptors.m` line 72)
+- `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256` (`OSX/sec/Security/SecKeyAdaptors.m` line 74)
+- `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384` (`OSX/sec/Security/SecKeyAdaptors.m` line 75)
+- `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512` (`OSX/sec/Security/SecKeyAdaptors.m` line 76)
+- `kSecKeyAlgorithmRSASignatureRaw` (`OSX/sec/Security/SecKeyAdaptors.m` line 67)
+
+`tests/ksec-values.sh` pins all 20 strings against `tests/fixtures/ksec-values.txt`, and fails when
+`librecaulk.a` defines a `kSec` constant the fixture does not pin.
+
+`tests/c/test_polyfills.c` is verbatim except one test fix: it called `getentropy` with 256 and 257 on
+the 64-byte `b1`, an overrun. It now declares `unsigned char big[257]` and uses it for those two calls.
+That overrun is why it only survived an optimised build; the test builds without `-Os` now.
+
+## Known MacPorts deviations and 10.9-fallback checks
+
+`test_polyfills` links `librecaulk.a`, so on 10.12 and later its calls to a forwarded function reach the
+system's implementation, not MacPorts'. Two fixtures say which of its checks depend on whose
+implementation runs. Each line is `<MAJOR.MINOR`, a tab, and the check's condition as
+`test_polyfills` prints it; the entry applies on a macOS below that version, where the system lacks the
+function and ours runs.
+
+`tests/fixtures/known-macports-deviations.txt` lists conditions that MacPorts' unmodified code fails.
+`getentropy(big, 257) == -1 && errno == EIO` (`<10.12`): MacPorts' `getentropy` has no 256-byte limit
+and returns 0. The system's refuses more than 256 bytes with -1. Impact: callers must chunk to 256
+bytes; on 10.12 and later the call forwards to the system's, which has the limit. It goes upstream to
+MacPorts. Where an entry applies, `shim-tests.sh` tolerates its failure and fails once it passes
+("MacPorts fixed it"); where it does not, the system's implementation runs and the check must pass,
+unless the next fixture lists it too.
+
+`tests/fixtures/fallback-only-checks.txt` lists conditions that assert a 10.9-era expectation the
+system's implementation does not meet. Where an entry applies it is an ordinary check; where it does
+not, its result is printed but not judged.
+- `clonefile(...) == -1 && errno == ENOTSUP` (`<10.12`): MacPorts' `clonefile` has no APFS to clone on,
+  while the system's clones the file.
+- `getentropy(big, 257) == -1 && errno == EIO` (`<10.12`): Apple's getentropy(2) manual page gives `EIO`
+  for too many bytes, but xnu's `getentropy` system call returns `EINVAL` above 256 bytes
+  (`bsd/dev/random/randomdev.c` in xnu-3789.1.32, macOS 10.12, and in every later release checked through `main`). macOS 26.6.2
+  returned -1 with `EINVAL`. The check asserts the manual page's errno, so the system fails it.
+
+Every other check is expected to pass in every era: header constants, calls 10.9 already makes, and
+forwarded functions whose documented result is the same from MacPorts' implementation as from the
+system's. Every entry in either fixture must appear in the output, as `ok` or `FAIL`.
+`tests/polyfills-verdict.sh` runs the judgment against `tests/fixtures/test-polyfills-10.9.5.out`, the
+output of a 10.9.5 run, with `sw_vers` stubbed to report 10.9.5, 10.11.6, 10.12, 14.0, 26.0 and
+26.6.2, the last with the getentropy and clonefile failures macOS 26.6.2 printed.
+
+## MacPorts' own tests under Rosetta 2
+
+`tests/macports-own.sh` runs MacPorts' unmodified `make test_static` with `-k`. On Apple silicon the x86_64
+test programs run under Rosetta 2, which reports mach time at 1 GHz while the kernel's
+`SO_TIMESTAMP_MONOTONIC` packet stamp stays in the hardware's mach units, so the stamp reads about 41.7
+times too small. MacPorts' `test/test_packet.c` describes this Rosetta 2 bug and ignores it, but only
+when built for macOS 11 or later (`TARGET_OSVER >= 110000`); our 10.9 build compiles that check out.
+`tests/fixtures/macports-own-rosetta.txt` names the four `test_packet` programs that check the stamp.
+Under Rosetta 2, and only there, each may fail, if its only complaint is an underreported
+`SO_TIMESTAMP_MONOTONIC` value; any other failure fails, and a listed program that passes under Rosetta 2
+fails too ("remove it"). `tests/macports-own-verdict.sh` replays a native and a Rosetta 2 log.
 
 ## Dropped: MacPorts-derived files
 
