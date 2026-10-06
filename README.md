@@ -5,6 +5,16 @@ modern SDK expect. Recaulk fills those gaps: MacPorts'
 [macports-legacy-support](https://github.com/macports/macports-legacy-support), fetched unmodified at a
 pinned commit.
 
+## Artifacts
+
+`build/build-lib.sh` builds them for `/usr/local/mavergreen/recaulk/`:
+
+- `lib/librecaulk.a`: MacPorts' objects. Link it with
+  `-isystem /usr/local/mavergreen/recaulk/include/recaulk -L/usr/local/mavergreen/recaulk/lib -lrecaulk`.
+- `lib/libRecaulkSystem.dylib`: re-exports 10.9's libSystem and carries MacPorts' objects.
+  This is what drydock points adapted binaries at.
+- `include/recaulk/`: MacPorts' headers.
+
 ## Credits
 
 Recaulk builds on MacPorts' work. This is an unofficial community build, not affiliated with MacPorts.

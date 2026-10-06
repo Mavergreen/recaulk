@@ -1,36 +1,36 @@
 #!/bin/sh
-# platform: macOS-only -- the upstream Makefile links Mach-O dylibs and sets their ids with install_name_tool
-# Cross-build macports-legacy-support to x86_64 / min-10.9 and DESTDIR-install into a
-# staging root. Uses the 10.9 SDK ($SDK if set, else mavericks-shipyard's fetch script).
+# platform: macOS-only -- links Mach-O archives and a dylib with Apple's libtool and clang
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
-MLS_ROOT="$(cd "$SELF/.." && pwd)"; export MLS_ROOT
 . "$SELF/lib.sh"
 
-U="$(sed -n 's/^REF=v//p' "$MLS_ROOT/components/macports-legacy-support/version")"
-P=/usr/local/mavergreen/legacysupport
-# spec: claude-plugins/mavergreen/skills/mavergreen-conventions/SKILL.md
-#       "Build OUT of the source tree, onto fast local storage" -- CI exports
-#       MAVERICKS_BUILD_ROOT itself; this default only covers a plain local run.
-: "${MAVERICKS_BUILD_ROOT:=${TMPDIR:-/tmp}/mm-build}"
-STAGE="${1:-$MAVERICKS_BUILD_ROOT/stage}"
-src="$(sh "$SELF/fetch-upstream.sh")"
+B="$(recaulk_build_dir)"
+T="$B/stage/usr/local/mavergreen/recaulk"
+W="$B/work"
 if [ -z "${SDK:-}" ]; then
-  SDK="$(sh "$(msc_scripts)/fetch_sdk.sh")"
+  SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
 fi
-
 flags="-isysroot $SDK -mmacosx-version-min=10.9"
-make -C "$src" clean >/dev/null 2>&1 || true
-make -C "$src" -j"$(sysctl -n hw.ncpu)" \
-  PREFIX="$P" ARCHS=x86_64 SOCURVERSION="$U" SOCOMPATVERSION=1.0.0 \
-  CFLAGS="$flags" LDFLAGS="$flags" all 1>&2
+MAKE=/usr/bin/make
 
-rm -rf "$STAGE"; mkdir -p "$STAGE"
-make -C "$src" \
-  PREFIX="$P" ARCHS=x86_64 SOCURVERSION="$U" SOCOMPATVERSION=1.0.0 \
-  DESTDIR="$STAGE" install 1>&2
+rm -rf "$B/stage"
+mkdir -p "$T/lib" "$T/include/recaulk" "$W"
+src="$(sh "$SELF/fetch-macports.sh" "$W")"
 
-for f in libMacportsLegacySupport.a libMacportsLegacySupport.dylib; do
-  [ -f "$STAGE$P/lib/$f" ] || { echo "build-lib: missing $STAGE$P/lib/$f" >&2; exit 1; }
-done
-printf '%s\n' "$STAGE"
+# platform: /usr/bin/clang and /usr/bin/libtool by absolute path -- pkgsrc's GNU libtool shadows Apple's on PATH
+"$MAKE" -C "$src" CC=/usr/bin/clang ARCHS=x86_64 CFLAGS="$flags" LDFLAGS="$flags" slib 1>&2
+
+rm -rf "$W/mp-headers"
+"$MAKE" -C "$src" PREFIX=/ DESTDIR="$W/mp-headers" install-headers 1>&2
+cp -R "$W/mp-headers/include/LegacySupport/." "$T/include/recaulk/"
+
+/usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$src/lib/libMacportsLegacySupport.a"
+
+/usr/bin/clang -dynamiclib $flags -arch x86_64 -o "$T/lib/libRecaulkSystem.dylib" \
+  -Wl,-reexport_library,/usr/lib/libSystem.B.dylib -Wl,-force_load,"$T/lib/librecaulk.a" \
+  -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
+  -compatibility_version 1.0.0 -current_version 1356.0.0 \
+  -framework CoreFoundation -framework Security -framework CoreVideo \
+  -framework CoreGraphics -framework CoreServices -lobjc
+
+printf '%s\n' "$B"
