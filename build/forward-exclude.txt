@@ -1,0 +1,10 @@
+prefix ___mpls_ private
+prefix _macports_legacy_ private
+name __error private
+name ____chkstk_darwin abi
+name _DNSServiceGetAddrInfoEx data
+name __os_log_impl data
+name __os_log_error_impl data
+name _os_log_type_enabled data
+name __os_signpost_emit_with_name_impl data
+name _os_signpost_enabled data

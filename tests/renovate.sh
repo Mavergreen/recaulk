@@ -24,5 +24,17 @@ assert r, "no packageRule for macports/macports-legacy-support"
 notes = " ".join(r[0].get("prBodyNotes", []))
 assert "pins-bot.yml" in notes and "sh build/pin-source-tarball.sh" in notes, "prBodyNotes must name pins-bot.yml and sh build/pin-source-tarball.sh"
 assert "automerge" not in r[0], "the rule must not override automerge"
+d = [x for x in cm if x.get("managerFilePatterns") == ["/^components/drydock/version$/"]]
+assert len(d) == 1, "no single customManager for components/drydock/version"
+d = d[0]
+assert d.get("customType") == "regex", "drydock manager: customType"
+assert d["matchStrings"] == ["^(?<currentValue>.+?)\\s*$"], "drydock manager: matchStrings"
+assert d["depNameTemplate"] == "Mavergreen/drydock", "drydock manager: depNameTemplate"
+assert d["datasourceTemplate"] == "github-releases", "drydock manager: datasourceTemplate"
+assert d["extractVersionTemplate"] == "^v(?<version>.+)$", "drydock manager: extractVersionTemplate"
 print("renovate OK")
 PY
+wf=.github/workflows/repackage-on-ingredient-bump.yml
+if [ -f "$wf" ]; then
+  grep -q 'components/drydock/version' "$wf" || { echo "FAIL: $wf does not repackage on a components/drydock/version bump"; exit 1; }
+fi

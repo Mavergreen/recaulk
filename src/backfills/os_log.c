@@ -18,18 +18,3 @@ void *os_log_create(const char *subsystem, const char *category) {
 	(void)subsystem; (void)category;
 	return _os_log_default;
 }
-
-int os_log_type_enabled(void *log, int type) {
-	(void)log; (void)type;
-	return 0; /* logging disabled */
-}
-
-void _os_log_error_impl(void *dso, void *log, int type,
-                        const char *format, void *buf, unsigned int size) {
-	(void)dso; (void)log; (void)type; (void)format; (void)buf; (void)size;
-}
-
-void _os_log_impl(void *dso, void *log, int type,
-                  const char *format, void *buf, unsigned int size) {
-	(void)dso; (void)log; (void)type; (void)format; (void)buf; (void)size;
-}

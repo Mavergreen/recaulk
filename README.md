@@ -12,6 +12,8 @@ pinned commit, plus Wowfunhappy's 10.9 shims.
 - `lib/librecaulk.a`: MacPorts' objects and our back-fills. Link it with
   `-isystem /usr/local/mavergreen/recaulk/include/recaulk -L/usr/local/mavergreen/recaulk/lib -lrecaulk
   -framework CoreFoundation -framework Security -framework CoreServices -framework IOKit -lobjc`.
+  A dylib that links it also passes `-Wl,-unexported_symbol,___recaulk_*`, so the forwarding layer's
+  internals are not exported.
 - `lib/libRecaulkSystem.dylib`: re-exports 10.9's libSystem and carries the back-fills and overrides.
   This is what drydock points adapted binaries at.
 - `include/recaulk/`: MacPorts' headers plus ours.
@@ -21,9 +23,15 @@ pinned commit, plus Wowfunhappy's 10.9 shims.
 1. Our back-fills in `librecaulk.a` define no symbol the pinned 10.9 SDK's libraries already export.
    Such code (an override) belongs in `src/overrides/`, which only `libRecaulkSystem.dylib` uses.
    MacPorts' objects keep their fixes to functions 10.9 exports, such as `sysconf` and
-   `pthread_get_stacksize_np`.
+   `pthread_get_stacksize_np`; those are never forwarded.
 2. MacPorts and our code never define the same symbol: the link fails. When MacPorts gains a symbol we
    carry, ours is deleted.
+
+A forwarding layer lets a back-fill defer to the system's implementation when the running macOS has one,
+so a binary built for 10.9 and run on a newer macOS gets Apple's real function. Limitation: header-inline
+functions and data symbols are not forwarded, and neither is a function that takes one of our data
+symbols, since the system's function would be handed our data: `DNSServiceGetAddrInfoEx` and the
+`os_log` and `os_signpost` entry points stay ours on every macOS.
 
 ## Credits
 
