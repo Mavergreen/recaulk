@@ -3,21 +3,23 @@
 Drydock gives a binary a recaulk. Mac OS X 10.9's libSystem lacks functions that binaries built against a
 modern SDK expect. Recaulk fills those gaps: MacPorts'
 [macports-legacy-support](https://github.com/macports/macports-legacy-support), fetched unmodified at a
-pinned commit.
+pinned commit, plus Wowfunhappy's 10.9 shims.
 
 ## Artifacts
 
 `build/build-lib.sh` builds them for `/usr/local/mavergreen/recaulk/`:
 
-- `lib/librecaulk.a`: MacPorts' objects. Link it with
-  `-isystem /usr/local/mavergreen/recaulk/include/recaulk -L/usr/local/mavergreen/recaulk/lib -lrecaulk`.
-- `lib/libRecaulkSystem.dylib`: re-exports 10.9's libSystem and carries MacPorts' objects.
+- `lib/librecaulk.a`: MacPorts' objects and our back-fills. Link it with
+  `-isystem /usr/local/mavergreen/recaulk/include/recaulk -L/usr/local/mavergreen/recaulk/lib -lrecaulk
+  -framework CoreFoundation -framework Security -framework CoreServices -framework IOKit -lobjc`.
+- `lib/libRecaulkSystem.dylib`: re-exports 10.9's libSystem and carries the back-fills and overrides.
   This is what drydock points adapted binaries at.
-- `include/recaulk/`: MacPorts' headers.
+- `include/recaulk/`: MacPorts' headers plus ours.
 
 ## Credits
 
-Recaulk builds on MacPorts' work. This is an unofficial community build, not affiliated with MacPorts.
+Recaulk is MacPorts' work and Wowfunhappy's, packaged and extended here; `PROVENANCE.md` records what
+came from where. This is an unofficial community build, not affiliated with MacPorts.
 
 ## Install (once)
 
