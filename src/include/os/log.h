@@ -18,7 +18,7 @@
 #define _MACPORTS_OS_LOG_H_
 
 /* MP support header */
-#include "LegacySupport.h"
+#include "MacportsLegacySupport.h"
 
 /* Do our SDK-related setup */
 

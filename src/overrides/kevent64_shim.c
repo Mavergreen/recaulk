@@ -26,11 +26,13 @@
  *       undici pool timer registers during the quiet window, hits this
  *       path with nothing to fire, and parks the loop.
  *
- * Fix: handle (a) by stashing non-error events for later delivery (see
- * kq_stash below). Handle (b) by forcing a zero timeout on the real call
- * whenever FLAG_ERROR_EVENTS or FLAG_IMMEDIATE is set — that's what modern
- * kqueue does natively when those flags are present, regardless of what
- * the caller passes in `timeout`. */
+ * Fix: handle (a) by setting EV_RECEIPT on every change, which 10.9 does
+ * support: the kernel answers each change with an EV_ERROR receipt (data 0 on
+ * success) and leaves ready events queued for the next wait, where they are
+ * reported as usual — or discarded by the kernel if the fd is closed first.
+ * Handle (b) by forcing a zero timeout on the real call whenever
+ * FLAG_ERROR_EVENTS is set — that's what modern kqueue does natively when
+ * the flag is present, regardless of what the caller passes in `timeout`. */
 #define KEVENT_FLAG_ERROR_EVENTS 0x2
 #define KEVENT_FLAG_IMMEDIATE    0x1
 
@@ -41,27 +43,8 @@ int kevent64_wrapper(int kq, const struct kevent64_s *changelist, int nchanges,
                      struct kevent64_s *eventlist, int nevents,
                      unsigned int flags, const struct timespec *timeout) __asm("_kevent64");
 
-/* Per-kqueue queue of events we intercepted during add-only calls (where the
- * caller asked for error-events only but the kernel fired a ready event).
- * Delivered on the next normal wait on that kqueue. Small tables since bun
- * uses only a handful of kqueues. */
-#define KQ_TABLE_SIZE      16
-#define MAX_PENDING_PER_KQ 32
-static struct {
-    int kq;                                      /* -1 if slot unused */
-    int count;
-    struct kevent64_s ev[MAX_PENDING_PER_KQ];
-} g_kq_pending[KQ_TABLE_SIZE];
-static pthread_mutex_t g_kq_mu = PTHREAD_MUTEX_INITIALIZER;
-static volatile int g_kq_stash_any = 0;   /* fast-path: non-zero iff any slot in use */
-
-__attribute__((constructor))
-static void kq_pending_init(void) {
-    for (int i = 0; i < KQ_TABLE_SIZE; i++) g_kq_pending[i].kq = -1;
-}
-
-/* DIAGNOSTIC: when CLAUDE_SHIM_TRACE=/path is set, log stash/drain/invalidate
- * operations to that file. Zero-cost when unset. */
+/* DIAGNOSTIC: when MAV_KQ_TRACE=/path is set, log registrations, mach-port
+ * translation and socket()/connect() to that file. Zero-cost when unset. */
 static FILE *g_trace = NULL;
 static int   g_trace_ready = 0;
 static pthread_mutex_t g_trace_mu = PTHREAD_MUTEX_INITIALIZER;
@@ -83,79 +66,6 @@ static void tlog(const char *fmt, ...) {
     va_end(ap);
     fputc('\n', g_trace);
     pthread_mutex_unlock(&g_trace_mu);
-}
-
-static void kq_stash(int kq, const struct kevent64_s *evs, int n) {
-    pthread_mutex_lock(&g_kq_mu);
-    int slot = -1;
-    for (int i = 0; i < KQ_TABLE_SIZE; i++) {
-        if (g_kq_pending[i].kq == kq) { slot = i; break; }
-        if (slot < 0 && g_kq_pending[i].kq == -1) slot = i;
-    }
-    if (slot >= 0) {
-        g_kq_pending[slot].kq = kq;
-        for (int i = 0; i < n; i++) {
-            /* Coalesce by (ident, filter), the way kqueue itself does: one
-             * kevent() call never reports the same filter twice. Appending a
-             * second copy makes the caller act on one readiness notification
-             * twice — for a socket that means a second read of an fd whose
-             * data the first read already consumed, which blocks. Overwrite
-             * so the delivered event carries the newest data/flags. */
-            int dup = -1;
-            for (int j = 0; j < g_kq_pending[slot].count; j++) {
-                if (g_kq_pending[slot].ev[j].ident  == evs[i].ident &&
-                    g_kq_pending[slot].ev[j].filter == evs[i].filter) { dup = j; break; }
-            }
-            if (dup >= 0) {
-                g_kq_pending[slot].ev[dup] = evs[i];
-                tlog("STASH-COALESCE kq=%d slot=%d ident=%llu filter=%d flags=0x%x fflags=0x%x data=%lld (count=%d)",
-                     kq, slot, (unsigned long long)evs[i].ident, evs[i].filter,
-                     evs[i].flags, evs[i].fflags, (long long)evs[i].data,
-                     g_kq_pending[slot].count);
-            } else if (g_kq_pending[slot].count < MAX_PENDING_PER_KQ) {
-                g_kq_pending[slot].ev[g_kq_pending[slot].count++] = evs[i];
-                tlog("STASH kq=%d slot=%d ident=%llu filter=%d flags=0x%x fflags=0x%x data=%lld (count=%d)",
-                     kq, slot, (unsigned long long)evs[i].ident, evs[i].filter,
-                     evs[i].flags, evs[i].fflags, (long long)evs[i].data,
-                     g_kq_pending[slot].count);
-            } else {
-                tlog("STASH-DROP(overflow) kq=%d slot=%d ident=%llu filter=%d flags=0x%x",
-                     kq, slot, (unsigned long long)evs[i].ident, evs[i].filter, evs[i].flags);
-            }
-        }
-        __atomic_store_n(&g_kq_stash_any, 1, __ATOMIC_RELEASE);
-    } else {
-        tlog("STASH-DROP(no-slot) kq=%d n=%d", kq, n);
-    }
-    pthread_mutex_unlock(&g_kq_mu);
-}
-
-/* Remove stashed events matching (ident, filter) on the given kq. Called
- * when the caller's changelist contains EV_DELETE/EV_DISABLE — without this,
- * a previously-stashed fire for an about-to-be-deleted filter would be
- * delivered after the filter's owning object (timer, poll) is freed. */
-static void kq_invalidate_filter(int kq, uint64_t ident, int16_t filter) {
-    if (!__atomic_load_n(&g_kq_stash_any, __ATOMIC_ACQUIRE)) return;
-    pthread_mutex_lock(&g_kq_mu);
-    for (int i = 0; i < KQ_TABLE_SIZE; i++) {
-        if (g_kq_pending[i].kq != kq) continue;
-        int out = 0, removed = 0;
-        for (int j = 0; j < g_kq_pending[i].count; j++) {
-            if (g_kq_pending[i].ev[j].ident == ident &&
-                g_kq_pending[i].ev[j].filter == filter) {
-                removed++;
-                tlog("INVALIDATE kq=%d ident=%llu filter=%d (removed from stash)",
-                     kq, (unsigned long long)ident, filter);
-                continue;
-            }
-            if (out != j) g_kq_pending[i].ev[out] = g_kq_pending[i].ev[j];
-            out++;
-        }
-        g_kq_pending[i].count = out;
-        (void)removed;
-        break;
-    }
-    pthread_mutex_unlock(&g_kq_mu);
 }
 
 /* Drain a mach port that kevent64 just reported EVFILT_MACHPORT on.
@@ -451,54 +361,6 @@ static void machport_drain_fired(struct kevent64_s *evs, int n) {
     }
 }
 
-static int kq_drain(int kq, struct kevent64_s *out, int max_out) {
-    pthread_mutex_lock(&g_kq_mu);
-    int n = 0;
-    for (int i = 0; i < KQ_TABLE_SIZE; i++) {
-        if (g_kq_pending[i].kq == kq && g_kq_pending[i].count > 0) {
-            int take = g_kq_pending[i].count;
-            if (take > max_out) take = max_out;
-            for (int j = 0; j < take; j++) {
-                struct kevent64_s *ev = &g_kq_pending[i].ev[j];
-                /* Drop fd-based stashed fires whose ident has been closed.
-                 * uSockets ties us_poll_t lifetime to the socket fd: when
-                 * Bun closes the socket, us_poll_free runs at end-of-tick
-                 * and the stashed event's udata becomes a dangling pointer.
-                 * fcntl(F_GETFD) returns -1/EBADF on a closed fd, which is
-                 * a strong signal that the owning poll is gone. Delivering
-                 * the event anyway crashes Bun's dispatcher in
-                 * us_internal_dispatch_ready_poll (segfault at offset 0x30
-                 * of the freed-and-reclaimed allocation). Silently dropping
-                 * is correct: the consumer is no longer interested in the fd. */
-                int16_t f = ev->filter;
-                if ((f == EVFILT_READ || f == EVFILT_WRITE ||
-                     f == EVFILT_VNODE) &&
-                    fcntl((int)ev->ident, F_GETFD) < 0) {
-                    tlog("DRAIN-DROP-STALE kq=%d ident=%llu filter=%d (fd closed)",
-                         kq, (unsigned long long)ev->ident, f);
-                    continue;
-                }
-                out[n++] = *ev;
-                tlog("DRAIN kq=%d ident=%llu filter=%d flags=0x%x",
-                     kq, (unsigned long long)ev->ident, f, ev->flags);
-            }
-            /* Shift the rest down */
-            int remaining = g_kq_pending[i].count - take;
-            for (int j = 0; j < remaining; j++) g_kq_pending[i].ev[j] = g_kq_pending[i].ev[j + take];
-            g_kq_pending[i].count = remaining;
-            break;
-        }
-    }
-    /* If no slot has pending events, clear the any-flag so close() can
-     * skip the mutex on its fast path. */
-    int any = 0;
-    for (int i = 0; i < KQ_TABLE_SIZE; i++)
-        if (g_kq_pending[i].count > 0) { any = 1; break; }
-    if (!any) __atomic_store_n(&g_kq_stash_any, 0, __ATOMIC_RELEASE);
-    pthread_mutex_unlock(&g_kq_mu);
-    return n;
-}
-
 int kevent64_wrapper(int kq, const struct kevent64_s *changelist, int nchanges,
                      struct kevent64_s *eventlist, int nevents,
                      unsigned int flags, const struct timespec *timeout) {
@@ -512,17 +374,6 @@ int kevent64_wrapper(int kq, const struct kevent64_s *changelist, int nchanges,
             tlog("CHG kq=%d ident=%llu filter=%d flags=0x%x fflags=0x%x data=%lld",
                  kq, (unsigned long long)changelist[_i].ident, changelist[_i].filter,
                  changelist[_i].flags, changelist[_i].fflags, (long long)changelist[_i].data);
-    }
-
-    /* Before handing the changes to the kernel, drop any stashed events
-     * that belong to filters being removed/disabled. Otherwise we could
-     * later deliver a fire for a filter whose owner (timer cb, poll_t) the
-     * caller is about to free, which causes a use-after-free in Bun's
-     * dispatcher (null-deref in us_internal_socket_after_open when the
-     * freed page has been reclaimed and zeroed). */
-    for (int i = 0; i < nchanges; i++) {
-        if (changelist[i].flags & (EV_DELETE | EV_DISABLE))
-            kq_invalidate_filter(kq, changelist[i].ident, changelist[i].filter);
     }
 
     /* Translate Bun's EVFILT_MACHPORT registrations to 10.9's vintage
@@ -627,126 +478,58 @@ int kevent64_wrapper(int kq, const struct kevent64_s *changelist, int nchanges,
 
     /* Case 1: add-only call with FLAG_ERROR_EVENTS semantics. The caller (e.g.
      * Bun's uSockets / FilePoll registration) wants to register filters and
-     * receive only real EV_ERROR events. On 10.9 kqueue doesn't know that
-     * flag and hands back any ready events — the caller discards non-errors,
-     * so they'd be lost.
+     * receive only real EV_ERROR events; any fires the new filters produce
+     * stay with the kernel for a later wait. 10.9 doesn't know the flag and
+     * hands ready events back on the register call — consuming EV_ONESHOT
+     * and EV_DISPATCH ones, which never re-fire (Bun's stdin is EV_DISPATCH).
      *
-     * Stash every non-error event for delivery on the next normal wait.
-     * Caveat for level-triggered filters: the event would re-fire on its
-     * own, so stashing means the caller may receive it twice — but Bun's
-     * Poll.onUpdateKQueue handlers are idempotent, so that's safe. What we
-     * MUST NOT do is drop EV_ONESHOT (filter is removed after fire) or
-     * EV_DISPATCH (filter is disabled after fire until re-enabled) events,
-     * because those never re-fire — and in particular Bun registers stdin
-     * with EV_DISPATCH, so dropping it here is exactly what breaks
-     * interactive input on 10.9. */
+     * EV_RECEIPT gives the modern semantics on 10.9: one EV_ERROR receipt per
+     * change, and with exactly nchanges slots the kernel has no room left to
+     * report, and so consume, any ready event. They are delivered on the next
+     * wait like any other.
+     *
+     * This replaces stashing those events here for replay. A stash outlives
+     * the fd it describes: uSockets frees the us_poll_t with the fd, the
+     * number is reused by the next socket()/open()/pipe(), and replaying the
+     * stale event hands the freed poll to us_internal_dispatch_ready_poll —
+     * Claude Code's intermittent launch crash, a call through NULL there.
+     * The kernel, by contrast, drops a filter's pending fire when its fd is
+     * closed. */
     if ((flags & KEVENT_FLAG_ERROR_EVENTS) && nchanges > 0) {
-        /* FLAG_ERROR_EVENTS semantics: only EV_ERROR events are returned
-         * to the caller; any non-error fires the filters produce are held
-         * by the kernel and delivered on a subsequent wait. 10.9 doesn't
-         * know this flag, so the old kernel returns non-errors on the
-         * register call directly. We must hide those from the caller —
-         * uSockets treats a non-zero return from this call as a
-         * registration failure and frees the poll. Stash the non-error
-         * fires; the next wait on this kq drains them. */
-        int rc = real_kevent64(kq, changelist, nchanges, eventlist, nevents, kflags, real_timeout);
-        if (rc > 0) {
-            int kept = 0;
-            struct kevent64_s to_stash[MAX_PENDING_PER_KQ];
-            int n_stash = 0;
-            for (int i = 0; i < rc; i++) {
-                if (eventlist[i].flags & EV_ERROR) {
-                    eventlist[kept++] = eventlist[i];
-                } else if (n_stash < MAX_PENDING_PER_KQ) {
-                    to_stash[n_stash++] = eventlist[i];
-                }
-            }
-            if (n_stash) kq_stash(kq, to_stash, n_stash);
-            rc = kept;
+        struct kevent64_s with_receipt[nchanges];
+        struct kevent64_s receipts[nchanges];
+        for (int i = 0; i < nchanges; i++) {
+            with_receipt[i] = changelist[i];
+            with_receipt[i].flags |= EV_RECEIPT;
         }
-        machport_drain_fired(eventlist, rc);
-        return rc;
+        int rc = real_kevent64(kq, with_receipt, nchanges, receipts, nchanges, kflags, real_timeout);
+        if (rc < 0) return rc;
+        /* Successful receipts are not errors: uSockets treats any returned
+         * event as a failed registration and frees the poll. */
+        int kept = 0;
+        for (int i = 0; i < rc && kept < nevents; i++) {
+            if ((receipts[i].flags & EV_ERROR) && receipts[i].data != 0)
+                eventlist[kept++] = receipts[i];
+        }
+        return kept;
     }
 
-    /* Case 2: pure wait — deliver stashed events first. Restricted to
-     * nchanges==0 because when caller bundles changes + wait in one call,
-     * the semantics of the wait are "see whatever the changes produce".
-     * Mixing stashed-from-earlier events into that breaks Bun's event
-     * dispatch logic (it expects fires in fresh temporal order). */
-    int n_kept = 0;
-    if (nchanges == 0 && nevents > 0) n_kept = kq_drain(kq, eventlist, nevents);
-
-    const struct timespec *use_timeout = real_timeout;
-    static const struct timespec zero_ts_wait = {0, 0};
-    if (n_kept > 0) use_timeout = &zero_ts_wait;
-
-    int rc2 = real_kevent64(kq, changelist, nchanges,
-                            eventlist + n_kept, nevents - n_kept,
-                            kflags, use_timeout);
+    /* Case 2: a wait (with or without changes), passed straight through. */
+    int rc2 = real_kevent64(kq, changelist, nchanges, eventlist, nevents,
+                            kflags, real_timeout);
     if (dbg_on() && nchanges == 0 && nevents > 0) {
-        DBG("kevent64_wait kq=%d nevs=%d fl=0x%x to=%p n_kept=%d rc=%d",
-            kq, nevents, kflags, (void*)real_timeout, n_kept, rc2);
-        for (int i = 0; i < rc2 + n_kept && i < 3; i++)
+        DBG("kevent64_wait kq=%d nevs=%d fl=0x%x to=%p rc=%d",
+            kq, nevents, kflags, (void*)real_timeout, rc2);
+        for (int i = 0; i < rc2 && i < 3; i++)
             DBG("  ev[%d] fd=%llu filter=%d flags=0x%x fflags=0x%x data=%lld udata=0x%llx",
                 i, eventlist[i].ident, eventlist[i].filter, eventlist[i].flags,
                 eventlist[i].fflags, (long long)eventlist[i].data,
                 (unsigned long long)eventlist[i].udata);
     }
-    if (rc2 < 0) return n_kept > 0 ? n_kept : rc2;
-    /* A stashed fire and a fresh kernel fire can describe the same readiness:
-     * kqueue is level-triggered, so an fd we stashed as readable is still
-     * readable and the kernel reports it again in this very call. Handing the
-     * caller both copies makes it consume the readiness twice. Keep the
-     * stashed one (it is first in temporal order) and compact the duplicate
-     * out of the kernel's portion. */
-    if (n_kept > 0 && rc2 > 0) {
-        int w = 0;
-        for (int i = 0; i < rc2; i++) {
-            struct kevent64_s *ev = &eventlist[n_kept + i];
-            int dup = 0;
-            for (int j = 0; j < n_kept; j++) {
-                if (eventlist[j].ident == ev->ident &&
-                    eventlist[j].filter == ev->filter) { dup = 1; break; }
-            }
-            if (dup) {
-                tlog("WAIT-DROP-DUP kq=%d ident=%llu filter=%d flags=0x%x",
-                     kq, (unsigned long long)ev->ident, ev->filter, ev->flags);
-                continue;
-            }
-            eventlist[n_kept + w++] = *ev;
-        }
-        rc2 = w;
-    }
-    int total = n_kept + rc2;
-    machport_drain_fired(eventlist, total);
-    return total;
+    if (rc2 < 0) return rc2;
+    machport_drain_fired(eventlist, rc2);
+    return rc2;
 }
-
-/* No close() wrapper.
- *
- * The "correct" modern-kernel emulation would drop stashed entries on
- * close(fd), since the real kernel auto-deregisters filters and
- * discards their queued fires. In practice that caused consistent
- * hangs of Bun's HTTP client thread after a 5-minute idle window,
- * because of an inter-thread race between Case 1 stash and a sibling
- * Case 2 drain that parks in real_kevent64 right as the stash entry
- * is being added. I tried three fixes for the race — a lock-release
- * barrier at kevent64 entry, a neutralize-on-close (udata→0) variant
- * that mirrors Bun's own us_internal_loop_update_pending_ready_polls
- * scrub, and an EVFILT_USER wakeup triggered from kq_stash — each
- * still reproduced the hang at least once. Keeping the stash intact
- * past close() makes the test pass reliably.
- *
- * UAF defense without close() interception: kq_drain validates each
- * fd-based stashed event's ident with fcntl(F_GETFD) before delivery
- * and drops it if the fd is closed. uSockets ties us_poll_t lifetime
- * to the socket fd (us_poll_free → close(fd)), so a closed fd is a
- * reliable signal that the udata is now a dangling pointer. Without
- * this, a fresh-machine first request would dequeue a stale fire and
- * crash Bun's dispatcher in us_internal_dispatch_ready_poll — segfault
- * at offset 0x30 of the freed-and-reclaimed allocation. */
-
-
 
 /* DIAGNOSTIC (MAV_KQ_TRACE): mark when the new-connection path touches sockets. */
 int mav_socket(int domain, int type, int protocol) __asm("_socket");

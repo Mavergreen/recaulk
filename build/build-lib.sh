@@ -24,10 +24,23 @@ rm -rf "$W/mp-headers"
 "$MAKE" -C "$src" PREFIX=/ DESTDIR="$W/mp-headers" install-headers 1>&2
 cp -R "$W/mp-headers/include/LegacySupport/." "$T/include/recaulk/"
 
-/usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$src/lib/libMacportsLegacySupport.a"
+for dir in backfills overrides; do
+  mkdir -p "$W/$dir"
+  rm -f "$W/$dir"/*.o "$W/librecaulk-$dir.a"
+  for c in "$MAVERICKS_ROOT/src/$dir"/*.c; do
+    /usr/bin/clang $flags -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations \
+      -I"$MAVERICKS_ROOT/src/include" -I"$MAVERICKS_ROOT/src" -I"$src/include" \
+      -c "$c" -o "$W/$dir/recaulk-$(basename "$c" .c).o"
+  done
+  /usr/bin/libtool -static -o "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
+done
+cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
+
+/usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$src/lib/libMacportsLegacySupport.a" "$W/librecaulk-backfills.a"
 
 /usr/bin/clang -dynamiclib $flags -arch x86_64 -o "$T/lib/libRecaulkSystem.dylib" \
-  -Wl,-reexport_library,/usr/lib/libSystem.B.dylib -Wl,-force_load,"$T/lib/librecaulk.a" \
+  -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
+  -Wl,-force_load,"$T/lib/librecaulk.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
   -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
   -framework CoreFoundation -framework Security -framework CoreVideo \

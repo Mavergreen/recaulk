@@ -13,7 +13,7 @@
 #include <objc/message.h>
 #include <stdlib.h>
 
-#include "LegacySupport.h"
+#include "MacportsLegacySupport.h"
 
 /* dispatch_block_create returns a block carrying cancellation state. The state
  * has to travel with the block itself, because dispatch_block_cancel is handed
