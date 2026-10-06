@@ -17,7 +17,7 @@ duplicate_report() {
     [ "$_dr_pub" = "$_dr_sym" ] || _dr_pub="_$_dr_pub"
     _dr_mp=0; _dr_ours=0
     for _dr_m in $_dr_members; do
-      case "$_dr_m" in recaulk-*) _dr_ours=1 ;; *) _dr_mp=1 ;; esac
+      case "$_dr_m" in mp-*) _dr_mp=1 ;; *) _dr_ours=1 ;; esac
     done
     if [ "$_dr_mp" = 1 ] && [ "$_dr_ours" = 1 ]; then
       _dr_why="MacPorts now carries $_dr_pub: delete ours"

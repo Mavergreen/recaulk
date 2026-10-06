@@ -10,6 +10,15 @@
       "depNameTemplate": "macports/macports-legacy-support",
       "datasourceTemplate": "git-refs",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the drydock release whose drydock-macho-rewrite renames the back-fills behind the forwarding layer.",
+      "managerFilePatterns": ["/^components/drydock/version$/"],
+      "matchStrings": ["^(?<currentValue>.+?)\\s*$"],
+      "depNameTemplate": "Mavergreen/drydock",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],

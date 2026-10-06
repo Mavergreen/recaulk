@@ -18,7 +18,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/ioctl_winsize.c` | `src/overrides/ioctl_winsize.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/jit.c` | `src/backfills/jit.c`, `src/overrides/mmap_jit.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/kevent64_shim.c` | `src/overrides/kevent64_shim.c` | ISC, Wowfunhappy; EV_RECEIPT fix by Amitai Schleier, e8b35b9 |
-| `mavericks-legacy-support/src/objc_read_class_pair.c` | `src/backfills/objc_read_class_pair.c` (moved) | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/objc_read_class_pair.c` | `src/backfills/objc_read_class_pair.c`, `src/backfills/objc_realize_class_from_swift.c` (moved, split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/posix_spawn_chdir.c` | `src/overrides/posix_spawn_chdir.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/security.c` | `src/backfills/security.c`, `src/overrides/sectrust_evaluate.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/write_underline.c` | `src/overrides/write_underline.c` | ISC, Wowfunhappy |
@@ -38,7 +38,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/msg_x.c` | `src/backfills/msg_x.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/notify.c` | `src/backfills/notify.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/objc_runtime.c` | `src/backfills/objc_runtime.c`, `src/overrides/objc_alloc.c` (split) | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/os_log.c` | `src/backfills/os_log.c` | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/os_log.c` | `src/backfills/os_log.c`, `src/backfills/os_log_type_enabled.c`, `src/backfills/os_log_error_impl.c`, `src/backfills/os_log_impl.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_unfair_lock_assert.c` | `src/backfills/os_unfair_lock_assert.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_unfair_lock_ext.c` | `src/backfills/os_unfair_lock_ext.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/os_version.c` | `src/backfills/os_version.c` | ISC, Wowfunhappy |
@@ -47,7 +47,7 @@ moves and splits recorded below, his files differ in one way: `src/include/os/lo
 | `mavericks-legacy-support/src/pthread_self_is_exiting.c` | `src/backfills/pthread_self_is_exiting.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/qos.c` | `src/backfills/qos.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/renameatx_np.c` | `src/backfills/renameatx_np.c` | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/signpost.c` | `src/backfills/signpost.c` | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/signpost.c` | `src/backfills/signpost.c`, `src/backfills/signpost_enabled.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/syslog_extsn.c` | `src/backfills/syslog_extsn.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/thread_register_values.c` | `src/backfills/thread_register_values.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/timingsafe_bcmp.c` | `src/backfills/timingsafe_bcmp.c` | ISC, Wowfunhappy |
@@ -84,6 +84,26 @@ that replaces a 10.9 symbol stays an override:
 - `jit.c`: `mmap` goes to `overrides/mmap_jit.c`; `pthread_jit_write_protect_np` stays as
   `backfills/jit.c`.
 
+Split so that a call between two back-fills crosses objects and so reaches the forwarding layer's
+trampoline (see Forwarding layer):
+
+- `objc_read_class_pair.c`: `_objc_realizeClassFromSwift` goes to
+  `backfills/objc_realize_class_from_swift.c`. It calls `objc_readClassPair`, which arrived in 10.10,
+  and is itself 10.14.4. In one object that call would always reach our `objc_readClassPair`, which is
+  written for 10.9's class layout, even on 10.10-10.14.3, where the system has its own. The static
+  helpers and layout structs are used only by `objc_readClassPair` and stay with it. The 10.9 SDK does
+  not declare `objc_readClassPair`, so the new file declares it. Its header's first sentence names the
+  new file's function, and the function's comment no longer says "above".
+
+Split so that each function that takes a data symbol of ours, and so is never forwarded (see Forwarding
+layer), stands alone under its own name in its archive member:
+
+- `os_log.c`: `os_log_type_enabled`, `_os_log_error_impl` and `_os_log_impl` each go to their own
+  `backfills/os_log_type_enabled.c`, `backfills/os_log_error_impl.c` and `backfills/os_log_impl.c`.
+  `os_log_create`, which is forwarded, stays. Each piece keeps the header comment.
+- `signpost.c`: `os_signpost_enabled` goes to `backfills/signpost_enabled.c`, whose header's first line
+  names the new file. `_os_signpost_emit_with_name_impl` stays.
+
 `posix_spawn_chdir.c` stays whole in overrides: its `addchdir_np` functions fill the table that its
 `posix_spawn` wrapper reads.
 
@@ -103,6 +123,75 @@ pthread_get_stacksize_np.c statxx.c sysconf.c time.c util.h utimensat.c`
 headers are MacPorts' own, de-gated, and are dropped too. Two of them carried additions of his:
 `os_unfair_lock_assert_owner` in `os/lock.h` and `aligned_alloc` in `stdlib.h`. They sit at
 MacPorts' paths, so those two declarations do not ship.
+
+## Forwarding layer
+
+The forwarding layer is generated at build time and changes none of his sources. `build/build-lib.sh`
+renames, in each built object, the forwarded functions that object defines (`___recaulk_impl_<name>`,
+with drydock-macho-rewrite), and generates one assembly trampoline per name that owns the original
+name. A reference from one object to a function another object defines keeps the original name, so the
+linker binds it to the trampoline and every caller in a process reaches the same implementation: the
+system's where it has one, ours where it does not. Members extracted with `ar -x` keep their archive padding after the string table; drydock 0.2.1 and
+later accept that padding in a standalone object, so the members are renamed as extracted.
+
+The trampoline preserves every integer and xmm register on its way to the implementation it jumps to
+(the upper halves of the ymm registers are not saved; no forwarded function takes a 256-bit vector):
+the cached path reads its slot from memory, and the first call saves and restores every argument register, `rax` (which
+carries `al` for variadic calls), `r10`, `r11` and `xmm0`-`xmm15` around the resolver.
+
+`build/forward-exclude.txt` lists the functions never forwarded, which `build/forward-set.sh` and
+`tests/forward-derivation.sh` both read. Each line ends in why: `private` (MacPorts-private), `abi`, or
+`data`. A function on the list stays defined under its own name.
+
+| Entry | Why it is never forwarded |
+|---|---|
+| `name ____chkstk_darwin abi` | a stack probe whose callers keep every register but `rax` live; ours behaves the same on every macOS, so no trampoline stands in front of it |
+| `prefix ___mpls_ private` | MacPorts' private helpers: no system exports them, and a trampoline would let `RTLD_NEXT` bind another image's private copy |
+| `prefix _macports_legacy_ private` | MacPorts' private entry points (`macports_legacy_sysconf`), for the same reason |
+| `name __error private` | MacPorts' private `_error` helper in `getentropy.c`, for the same reason |
+| `name _DNSServiceGetAddrInfoEx data` | consumes a data symbol of ours: callers pass `&kDNSServiceAttrAllowFailover`, our one-byte placeholder, which the system's would read as its own attribute |
+| `name __os_log_impl data` | consumes a data symbol of ours: Apple's headers make `OS_LOG_DEFAULT` the address of `_os_log_default`, which binds to ours, not to the system's log object |
+| `name __os_log_error_impl data` | consumes a data symbol of ours, as `__os_log_impl` |
+| `name _os_log_type_enabled data` | consumes a data symbol of ours, as `__os_log_impl` |
+| `name __os_signpost_emit_with_name_impl data` | consumes a data symbol of ours, as `__os_log_impl` |
+| `name _os_signpost_enabled data` | consumes a data symbol of ours, as `__os_log_impl` |
+
+Data symbols are never forwarded, so a program always gets ours. A function that takes one stays ours
+too, so the two always match: on 10.12 and later the `os_log` and `os_signpost` entry points stay our
+no-ops, where the system would log. `os_log_create` takes no data symbol and is forwarded; our no-ops
+ignore the system's log object it then returns.
+
+Private-extern functions are never forwarded either: no other image can reach them.
+
+A reference between two functions defined in the same object is renamed with them, so that call goes
+to our implementation even where the system has the callee. `tests/forward-derivation.sh` lists these
+against `tests/fixtures/forward-same-object.txt`. It sees only calls the object makes out of line,
+through a relocation: a call the compiler inlined leaves no trace and is not listed. The case to watch
+is a caller newer than its callee: our caller then runs on a system that has the callee, and calls ours
+instead. As far as availability can be judged:
+
+| Object | Caller -> callee | Judgment |
+|---|---|---|
+| `mp-time.o` | `clock_gettime` -> `mach_continuous_approximate_time` | acceptable: both arrived in 10.12 |
+| `mp-time.o` | `clock_gettime` -> `mach_continuous_time` | acceptable: both arrived in 10.12 |
+| `mp-time.o` | `clock_gettime_nsec_np` -> `mach_continuous_approximate_time` | acceptable: both arrived in 10.12 |
+| `mp-time.o` | `clock_gettime_nsec_np` -> `mach_continuous_time` | acceptable: both arrived in 10.12 |
+| `mp-time.o` | `timespec_get` -> `clock_gettime` | acceptable: on 10.12-10.14 (`timespec_get` is 10.15) MacPorts' `clock_gettime(CLOCK_REALTIME)` runs instead of the system's; it reads the same wall clock and shares no state with it |
+| `recaulk-dispatch_modern.o` | `dispatch_block_create_with_qos_class` -> `dispatch_block_create` | acceptable: both arrived in 10.10 |
+| `recaulk-ulock.o` | `__ulock_wait` -> `__ulock_wait2` | acceptable: the callee (11.0) is newer than the caller (10.12), so wherever our caller runs the system lacks the callee too |
+
+The trampoline's resolver, `src/forward/resolve.c`, asks `dlsym(RTLD_NEXT, name)` and falls back to the
+renamed implementation. On 10.9 neither `RTLD_NEXT` nor a `dlopen("/usr/lib/libSystem.B.dylib",
+RTLD_NOLOAD)` handle finds any forwarded name, from a program or a dylib, so the second lookup would
+add nothing there; it is not used. `tests/forward-runtime.sh` checks `clock_gettime` both ways, from a
+program linking `librecaulk.a` and from one linking `libRecaulkSystem.dylib`. On 10.9 it checks that our
+implementation ran; on 10.12 and later, which CI's runners provide, that the system's did. Nothing
+checks 10.10 or 10.11.
+
+The renamed `___recaulk_impl_` functions stay global in `librecaulk.a`, since drydock renames symbols
+but cannot make them private. `libRecaulkSystem.dylib` is linked with
+`-Wl,-unexported_symbol,___recaulk_*`, and a product that links `librecaulk.a` into a dylib of its own
+passes the same flag.
 
 ## Parity fixture
 

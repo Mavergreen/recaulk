@@ -36,7 +36,23 @@ for dir in backfills overrides; do
 done
 cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
 
-/usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$src/lib/libMacportsLegacySupport.a" "$W/librecaulk-backfills.a"
+mkdir -p "$B/drydock"
+DRYDOCK="$(sh "$SELF/fetch-drydock.sh" "$(cat "$MAVERICKS_ROOT/components/drydock/version")" "$B/drydock")"
+F="$W/forward"
+rm -rf "$F"
+mkdir -p "$F/mp" "$F/bf"
+sh "$SELF/forward-set.sh" "$SDK" "$src/lib/libMacportsLegacySupport.a" "$W/librecaulk-backfills.a" > "$F/symbols.txt"
+dups="$(/usr/bin/ar -t "$src/lib/libMacportsLegacySupport.a" | LC_ALL=C sort | uniq -d | tr '\n' ' ')"
+[ -z "$dups" ] || { echo "build-lib: libMacportsLegacySupport.a has members sharing a name, which ar -x would overwrite: $dups" >&2; exit 1; }
+(cd "$F/mp" && /usr/bin/ar -x "$src/lib/libMacportsLegacySupport.a")
+rm -f "$F/mp"/__.SYMDEF*
+for m in "$F/mp"/*.o; do
+  mv "$m" "$F/mp/mp-$(basename "$m")"
+done
+cp "$W/backfills"/recaulk-*.o "$F/bf/"
+sh "$SELF/rename-impls.sh" "$DRYDOCK" "$F/symbols.txt" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o
+SDK="$SDK" sh "$SELF/gen-trampolines.sh" "$F/symbols.txt" "$F"
+/usr/bin/libtool -static -o "$T/lib/librecaulk.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F"/fwd-*.o
 
 . "$SELF/duplicates.sh"
 dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
@@ -49,6 +65,7 @@ dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
 /usr/bin/clang -dynamiclib $flags -arch x86_64 -o "$T/lib/libRecaulkSystem.dylib" \
   -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
   -Wl,-force_load,"$T/lib/librecaulk.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
+  '-Wl,-unexported_symbol,___recaulk_*' \
   -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
   -framework CoreFoundation -framework Security -framework CoreVideo \

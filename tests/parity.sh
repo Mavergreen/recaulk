@@ -16,5 +16,7 @@ trap 'rm -f "$have"' EXIT
 nm -gU "$dylib" | awk '{print $3}' | LC_ALL=C sort -u > "$have"
 missing="$(LC_ALL=C comm -23 "$fixture" "$have")"
 [ -z "$missing" ] || bad "libRecaulkSystem must export everything Wowfunhappy's libSystemWrapper does (spec, Product 1, parity); missing $(printf '%s\n' "$missing" | wc -l | tr -d ' '): $(printf '%s\n' "$missing" | tr '\n' ' ')"
+leaked="$(grep '^___recaulk_' "$have" | tr '\n' ' ' || true)"
+[ -z "$leaked" ] || bad "libRecaulkSystem exports forwarding-layer internals (no ___recaulk_ name may be exported: the impls, slots and resolver are private to the layer): $leaked"
 [ "$fail" = 0 ] && echo "parity OK"
 exit $fail
