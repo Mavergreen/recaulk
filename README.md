@@ -58,6 +58,20 @@ half-working. Do not clone, vendor or submodule shipyard.
 
 CI does the same thing through `Mavergreen/shipyard/.github/actions/install@v1`.
 
+## Build it yourself
+
+With shipyard installed:
+
+```sh
+. build/msc.sh   # exports SHIPYARD_SCRIPTS
+sh build/build-lib.sh
+sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh"
+```
+
+`build/build-lib.sh` builds `librecaulk.a` and `libRecaulkSystem.dylib` out of tree, under
+`$MAVERICKS_BUILD_ROOT` (default `$TMPDIR/mm-build`), and prints the build directory. The first build
+needs the network: it fetches MacPorts' source at the pinned commit and the pinned drydock release.
+
 To build the updater .app by hand:
 
 ```sh
