@@ -1,4 +1,4 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 /* SecKeyAlgorithm constant (added 10.12) */
-const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA256 = CFSTR("algid:encrypt:RSA:OAEP-SHA256");
+const CFStringRef kSecKeyAlgorithmRSAEncryptionOAEPSHA256 = CFSTR("algid:encrypt:RSA:OAEP:SHA256");

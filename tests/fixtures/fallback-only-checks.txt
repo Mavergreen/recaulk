@@ -1,0 +1,2 @@
+<10.12	clonefile("/etc/hosts", "/tmp/mls_clone_xyz", 0) == -1 && errno == ENOTSUP
+<10.12	getentropy(big, 257) == -1 && errno == EIO
