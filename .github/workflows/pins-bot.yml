@@ -1,0 +1,62 @@
+name: pins-bot
+
+# platform: a push made with GITHUB_TOKEN starts no workflow
+# platform: workflow_dispatch can be triggered with GITHUB_TOKEN
+
+on:
+  push:
+    branches: ['renovate/**']
+
+permissions: {}
+
+concurrency:
+  group: pins-bot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      pins: ${{ steps.pin.outputs.pins }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install mavericks-shipyard
+        uses: Mavergreen/shipyard/.github/actions/install@v1
+
+      - name: The tarball pin, if the MacPorts commit moved and the pin is stale
+        id: pin
+        run: |
+          set -eu
+          pins="$(sh build/pins-bot.sh fill origin/main)"
+          echo "pins=$pins" >> "$GITHUB_OUTPUT"
+
+  push:
+    needs: pins
+    if: needs.pins.outputs.pins != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Commit the pin to the branch, then run release.yml on its new head
+        env:
+          PINS: ${{ needs.pins.outputs.pins }}
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          applied="$(sh build/pins-bot.sh apply $PINS)"
+          [ "$applied" = changed ] || { echo "the pin file already holds it"; exit 0; }
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "chore(pins): the MacPorts tarball's SHA-256" \
+            -m 'Written by .github/workflows/pins-bot.yml: its pins job checked, with git, that the tarball is the commit'"'"'s tree.' components/macports-legacy-support/version
+          git push origin "HEAD:refs/heads/$BRANCH"
+          gh workflow run release.yml --ref "$BRANCH"

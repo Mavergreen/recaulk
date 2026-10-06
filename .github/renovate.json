@@ -11,5 +11,13 @@
       "datasourceTemplate": "git-refs",
       "versioningTemplate": "semver"
     }
+  ],
+  "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],
+  "packageRules": [
+    {
+      "description": "Renovate moves REF and DIGEST of the MacPorts pin but cannot compute the SHA-256 of GitHub's tarball of that commit; the pins bot (.github/workflows/pins-bot.yml) writes TARBALL_SHA256 on the branch.",
+      "matchDepNames": ["macports/macports-legacy-support"],
+      "prBodyNotes": ["The MacPorts tarball's SHA-256 is written on this branch by .github/workflows/pins-bot.yml. If that bot failed, run `sh build/pin-source-tarball.sh` on this branch and commit components/macports-legacy-support/version."]
+    }
   ]
 }

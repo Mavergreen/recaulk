@@ -12,4 +12,6 @@ Recaulk is **its own upstream**: it is versioned `YYYYMMDD.N` and nothing extern
 | Sparkle, via shipyard | shipyard's `fetch_sparkle_framework.sh`, pinned by hash there | ❌ untrackable here: shipyard owns that pin | follows shipyard |
 | `tests/fixtures/libSystemWrapper-exports.txt` | committed | ❌ untrackable: a frozen record of what Wowfunhappy shipped | never bumped by a bot |
 
+The MacPorts build fetches GitHub's tarball of `DIGEST`, verified by `TARBALL_SHA256`, so a native 10.9 build needs no git. Renovate moves `REF`+`DIGEST`, and `.github/workflows/pins-bot.yml` writes the hash on Renovate's branch after checking that the tarball is the commit's tree.
+
 No upstream release notes: Recaulk is its own upstream; a MacPorts bump is an ingredient move, which the notes' Build ingredients section names.
