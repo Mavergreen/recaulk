@@ -23,7 +23,7 @@ if grep -Eq '^/?build/?$' .gitignore; then
 fi
 icns=updater/recaulk-updater.icns
 [ -f "$icns" ] && file "$icns" | grep -qi 'icon' || { echo "FAIL: $icns is missing or not an icon"; fail=1; }
-for f in LICENSE; do
+for f in LICENSE comment-reasons; do
   [ -f "$f" ] || { echo "FAIL: $f missing"; fail=1; }
 done
 [ "$fail" = 0 ] && echo "skeleton OK"

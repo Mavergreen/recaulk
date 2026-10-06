@@ -3,11 +3,11 @@
 Drydock gives a binary a recaulk. Mac OS X 10.9's libSystem lacks functions that binaries built against a
 modern SDK expect. Recaulk fills those gaps: MacPorts'
 [macports-legacy-support](https://github.com/macports/macports-legacy-support), fetched unmodified at a
-pinned commit, plus Wowfunhappy's 10.9 shims.
+pinned commit, plus Wowfunhappy's 10.9 shims, shipped as a double-clickable, Sparkle-updatable .pkg.
 
 ## Artifacts
 
-`build/build-lib.sh` builds them for `/usr/local/mavergreen/recaulk/`:
+Installed under `/usr/local/mavergreen/recaulk/`:
 
 - `lib/librecaulk.a`: MacPorts' objects and our back-fills. Link it with
   `-isystem /usr/local/mavergreen/recaulk/include/recaulk -L/usr/local/mavergreen/recaulk/lib -lrecaulk
