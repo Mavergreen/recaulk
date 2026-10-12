@@ -38,6 +38,17 @@ printf '%s\n' "$out"
 [ "$rc" = 0 ] || bad "kevent64_error_events exited $rc"
 case "$out" in *"kevent64_error_events: all passed"*) ;; *) bad "kevent64_error_events did not print 'all passed'" ;; esac
 
+# platform: 10.10 and later implement KEVENT_FLAG_ERROR_EVENTS in the kernel; 10.9's kernel ignores it and blocks
+case "$(sw_vers -productVersion)" in
+  10.9|10.9.*) ;;
+  *)
+    $CC -o "$D/kevent64_kernel" tests/c/kevent64_error_events.c \
+      || { echo "FAIL: kevent64_error_events does not link plainly"; exit 1; }
+    echo "kevent64_error_events, against this macOS's own kernel:"
+    "$D/kevent64_kernel" || bad "this macOS's kernel fails kevent64_error_events, so the test does not describe what Bun relies on"
+    ;;
+esac
+
 adapted dnssd_getaddrinfo_ex _DNSServiceGetAddrInfoEx
 DYLD_LIBRARY_PATH="$T/lib" "$D/dnssd_getaddrinfo_ex" || bad "dnssd_getaddrinfo_ex exited $?"
 
