@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sys/event.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define KEVENT_FLAG_ERROR_EVENTS 0x2
@@ -136,6 +137,25 @@ main(void)
     CHECK(rc == 0);
     CHECK(guarded[1].udata == 0xa5a5a5a5a5a5a5a5ULL);
     close(a); close(b);
+    close(kq);
+  }
+
+  /* ---- with no eventlist slots, a failed change is the call's errno ----
+   * Bun registers with nevents 0 so a failure comes back as -1 and errno. A
+   * child that has already exited fails EVFILT_PROC with ESRCH, and Bun reaps
+   * it on that. Report nothing and Bun waits forever for an exit event. */
+  {
+    int kq = kqueue();
+    pid_t pid = fork();
+    if (pid == 0) _exit(7);
+    siginfo_t si;
+    waitid(P_PID, pid, &si, WEXITED | WNOWAIT);   /* a zombie, not yet reaped */
+    EV_SET64(&ch[0], pid, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, 0x2b, 0, 0);
+    errno = 0;
+    rc = kevent64(kq, ch, 1, ch, 0, KEVENT_FLAG_ERROR_EVENTS, &zero);
+    CHECK(rc == -1 && errno == ESRCH);
+    int st;
+    CHECK(waitpid(pid, &st, 0) == pid && WIFEXITED(st) && WEXITSTATUS(st) == 7);
     close(kq);
   }
 
