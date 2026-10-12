@@ -505,11 +505,21 @@ int kevent64_wrapper(int kq, const struct kevent64_s *changelist, int nchanges,
         int rc = real_kevent64(kq, with_receipt, nchanges, receipts, nchanges, kflags, real_timeout);
         if (rc < 0) return rc;
         /* Successful receipts are not errors: uSockets treats any returned
-         * event as a failed registration and frees the poll. */
+         * event as a failed registration and frees the poll.
+         *
+         * An error with no eventlist slot left for it is the call's errno, as
+         * the kernel does. Bun registers with nevents 0 to get exactly that:
+         * EVFILT_PROC on a child that has already exited fails with ESRCH,
+         * and Bun reaps the child on it. Dropped, Bun waits forever for an
+         * exit event the kernel will never send. */
         int kept = 0;
-        for (int i = 0; i < rc && kept < nevents; i++) {
-            if ((receipts[i].flags & EV_ERROR) && receipts[i].data != 0)
-                eventlist[kept++] = receipts[i];
+        for (int i = 0; i < rc; i++) {
+            if (!(receipts[i].flags & EV_ERROR) || receipts[i].data == 0) continue;
+            if (kept == nevents) {
+                errno = (int)receipts[i].data;
+                return -1;
+            }
+            eventlist[kept++] = receipts[i];
         }
         return kept;
     }
