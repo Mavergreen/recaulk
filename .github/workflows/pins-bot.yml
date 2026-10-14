@@ -1,7 +1,9 @@
 name: pins-bot
 
-# platform: a push made with GITHUB_TOKEN starts no workflow
-# platform: workflow_dispatch can be triggered with GITHUB_TOKEN
+# platform: a push made with GITHUB_TOKEN starts no workflow, and a run it dispatches does not count for the
+#           PR's required check: the push job pushes with a token of the Mavergreen pins-bot GitHub App
+#           (org variable PINS_BOT_CLIENT_ID, org secret PINS_BOT_PRIVATE_KEY; contents: write alone), whose
+#           push starts release.yml like any push. Its own GITHUB_TOKEN reads only.
 
 on:
   push:
@@ -41,22 +43,29 @@ jobs:
     if: needs.pins.outputs.pins != ''
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      actions: write
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      - name: A pins-bot App token, contents write on this repository alone
+        id: app
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.PINS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.PINS_BOT_PRIVATE_KEY }}
+          permission-contents: write
 
-      - name: Commit the pin to the branch, then run release.yml on its new head
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app.outputs.token }}
+
+      - name: Commit the pin to the branch, as the App, which starts release.yml on its new head
         env:
           PINS: ${{ needs.pins.outputs.pins }}
           BRANCH: ${{ github.ref_name }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           applied="$(sh build/pins-bot.sh apply $PINS)"
           [ "$applied" = changed ] || { echo "the pin file already holds it"; exit 0; }
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+          git -c user.name='mavergreen-pins-bot[bot]' -c user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com' \
             commit -q -m "chore(pins): the MacPorts tarball's SHA-256" \
             -m 'Written by .github/workflows/pins-bot.yml: its pins job checked, with git, that the tarball is the commit'"'"'s tree.' components/macports-legacy-support/version
           git push origin "HEAD:refs/heads/$BRANCH"
-          gh workflow run release.yml --ref "$BRANCH"

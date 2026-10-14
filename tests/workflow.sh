@@ -73,4 +73,18 @@ on_block="$(sed -n '/^on:/,/^permissions:/p' "$pb" | sed '1d;$d' | grep -v '^[[:
 [ "$(printf '%s\n' "$on_block" | wc -l | tr -d ' ')" -eq 2 ] && printf '%s\n' "$on_block" | grep -Eq "^    branches: \['renovate/\*\*'\]$" \
   || { echo "pins-bot.yml must trigger on renovate/** only"; exit 1; }
 grep -q '^permissions: {}$' "$pb" || { echo "pins-bot.yml must have permissions: {} at the top"; exit 1; }
+push_job="$(sed -n '/^  push:$/,$p' "$pb")"
+[ "$(printf '%s\n' "$push_job" | grep -A1 '^    permissions:$' | tail -1)" = '      contents: read' ] \
+  && ! printf '%s\n' "$push_job" | grep -q 'contents: write$\|actions: write' \
+  || { echo "pins-bot.yml's push job: its GITHUB_TOKEN must read only"; exit 1; }
+printf '%s\n' "$push_job" | grep -qx '        uses: actions/create-github-app-token@v3' \
+  && printf '%s\n' "$push_job" | grep -qx '          client-id: ${{ vars.PINS_BOT_CLIENT_ID }}' \
+  && printf '%s\n' "$push_job" | grep -qx '          private-key: ${{ secrets.PINS_BOT_PRIVATE_KEY }}' \
+  && [ "$(printf '%s\n' "$push_job" | grep -c '^ *permission-')" -eq 1 ] \
+  && printf '%s\n' "$push_job" | grep -qx '          permission-contents: write' \
+  && printf '%s\n' "$push_job" | grep -qx '          token: ${{ steps.app.outputs.token }}' \
+  || { echo "pins-bot.yml's push job must push with the pins-bot App's token, contents: write alone"; exit 1; }
+! grep -q 'gh workflow run\|GH_TOKEN\|github.token' "$pb" || { echo "pins-bot.yml must dispatch nothing and write with no GITHUB_TOKEN"; exit 1; }
+grep -qF "user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com'" "$pb" \
+  || { echo "pins-bot.yml must commit as the pins-bot App's bot"; exit 1; }
 echo "workflow OK"

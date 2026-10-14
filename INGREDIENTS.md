@@ -42,8 +42,8 @@ the drydock pin on `main` names a declared state that no release carries yet, or
 
     gh workflow run release.yml -R Mavergreen/recaulk --ref main
 
-A dispatch on any other ref (the pins bot dispatches one on each Renovate branch) builds and tests and
-never publishes.
+A dispatch on any other ref, like a push (the pins bot pushes to Renovate's branch as the pins-bot GitHub
+App, so its push starts the run `main`'s required `build` check reads), builds and tests and never publishes.
 
 A packaging-only re-release of the same declared state (a new `.N`):
 

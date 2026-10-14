@@ -21,7 +21,7 @@
       "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
-  "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],
+  "gitIgnoredAuthors": ["342268518+mavergreen-pins-bot[bot]@users.noreply.github.com", "41898282+github-actions[bot]@users.noreply.github.com"],
   "packageRules": [
     {
       "description": "Renovate moves REF and DIGEST of the MacPorts pin but cannot compute the SHA-256 of GitHub's tarball of that commit; the pins bot (.github/workflows/pins-bot.yml) writes TARBALL_SHA256 on the branch.",

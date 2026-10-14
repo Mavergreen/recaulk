@@ -18,7 +18,7 @@ m = m[0]
 assert m["matchStrings"] == ["REPO=(?<packageName>\\S+?)\\.git\\s+REF=(?<currentValue>\\S+)\\s+DIGEST=(?<currentDigest>[0-9a-f]{40})"], "wrong matchStrings"
 assert m["datasourceTemplate"] == "git-refs", "wrong datasource"
 assert m["versioningTemplate"] == "semver", "wrong versioning"
-assert c.get("gitIgnoredAuthors") == ["41898282+github-actions[bot]@users.noreply.github.com"], "gitIgnoredAuthors"
+assert c.get("gitIgnoredAuthors") == ["342268518+mavergreen-pins-bot[bot]@users.noreply.github.com", "41898282+github-actions[bot]@users.noreply.github.com"], "gitIgnoredAuthors"
 r = [x for x in c.get("packageRules", []) if "macports/macports-legacy-support" in x.get("matchDepNames", [])]
 assert r, "no packageRule for macports/macports-legacy-support"
 notes = " ".join(r[0].get("prBodyNotes", []))
