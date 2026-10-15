@@ -87,4 +87,7 @@ printf '%s\n' "$push_job" | grep -qx '        uses: actions/create-github-app-to
 ! grep -q 'gh workflow run\|GH_TOKEN\|github.token' "$pb" || { echo "pins-bot.yml must dispatch nothing and write with no GITHUB_TOKEN"; exit 1; }
 grep -qF "user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com'" "$pb" \
   || { echo "pins-bot.yml must commit as the pins-bot App's bot"; exit 1; }
+grep -qxF "  group: pins-bot-\${{ github.ref }}\${{ github.actor == 'mavergreen-pins-bot[bot]' && format('-{0}', github.run_id) || '' }}" "$pb" \
+  && sed -n '/^  pins:$/,/^  push:$/p' "$pb" | grep -qxF "    if: github.actor != 'mavergreen-pins-bot[bot]'" \
+  || { echo "pins-bot.yml: the run the bot's own push starts must not cancel the run that pushed, nor check again"; exit 1; }
 echo "workflow OK"
