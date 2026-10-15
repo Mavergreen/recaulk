@@ -3,6 +3,8 @@
 set -eu
 [ $# -eq 2 ] || { echo "usage: sh build/fetch-drydock.sh VERSION OUTDIR -- prints OUTDIR/drydock-macho-rewrite, from that drydock release's pkg, verified against its SHA256SUMS" >&2; exit 2; }
 ver="$1"; out="$2"
+. "$(cd "$(dirname "$0")" && pwd)/msc.sh"
+. "$SHIPYARD_SCRIPTS/mavericks_fetch.sh"
 asset="drydock-$ver.pkg"
 want=usr/local/mavergreen/drydock/bin/drydock-macho-rewrite
 base="${DRYDOCK_RELEASES:-https://github.com/Mavergreen/drydock/releases/download}/v$ver"
@@ -21,8 +23,8 @@ if [ -f "$cache/SHA256SUMS" ] && [ -f "$cache/$asset" ]; then
 fi
 if [ -z "$pkg" ]; then
   rm -rf "$cache"
-  curl -fsSL "$base/SHA256SUMS" -o "$tmp/SHA256SUMS" || { echo "could not fetch $base/SHA256SUMS" >&2; exit 1; }
-  curl -fsSL "$base/$asset" -o "$tmp/$asset" || { echo "could not fetch $base/$asset" >&2; exit 1; }
+  shipyard_curl "$base/SHA256SUMS" "$tmp/SHA256SUMS" || { echo "could not fetch $base/SHA256SUMS" >&2; exit 1; }
+  shipyard_curl "$base/$asset" "$tmp/$asset" || { echo "could not fetch $base/$asset" >&2; exit 1; }
   sum="$(listed "$tmp/SHA256SUMS")"
   [ -n "$sum" ] || { echo "$asset is not listed in $base/SHA256SUMS" >&2; exit 1; }
   got="$(shasum -a 256 "$tmp/$asset" | cut -d' ' -f1)"

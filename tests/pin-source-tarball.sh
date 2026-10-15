@@ -16,6 +16,7 @@ R="$T/repo"; V="$R/components/macports-legacy-support/version"
 mkdir -p "$R/build" "$R/components/macports-legacy-support" "$T/shipyard" "$T/tarballs" "$T/tmp"
 cp "$ROOT/build/pin-source-tarball.sh" "$ROOT/build/lib.sh" "$ROOT/build/msc.sh" "$R/build/"
 cp "$SHIPYARD/lib.sh" "$T/shipyard/lib.sh"
+cp "$SHIPYARD/mavericks_fetch.sh" "$T/shipyard/mavericks_fetch.sh"
 g="$T/up/macports-legacy-support"; mkdir -p "$g/sub"
 git -C "$g" init -q; git -C "$g" config user.email t@t; git -C "$g" config user.name t
 echo fixture > "$g/sub/file.txt"; printf '#!/bin/sh\n' > "$g/run.sh"; chmod +x "$g/run.sh"; ln -s sub/file.txt "$g/link"
