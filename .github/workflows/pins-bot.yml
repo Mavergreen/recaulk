@@ -11,9 +11,10 @@ on:
 
 permissions: {}
 
-# A newer push to the branch cancels a run still working on an older one. The run the bot's own push
-# starts gets a group of its own, and its jobs are skipped: that push is the checked pins, so there is
-# nothing to check, and it must not cancel the run that made it (which would show as cancelled).
+# platform: cancel-in-progress cancels any run in the same group, so a newer push to the branch cancels
+#           a run still working on an older one. The run the bot's own push starts gets a group of its
+#           own, and its jobs are skipped: that push is the checked pins, so there is nothing to check,
+#           and it must not cancel the run that made it (which would show as cancelled).
 concurrency:
   group: pins-bot-${{ github.ref }}${{ github.actor == 'mavergreen-pins-bot[bot]' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
