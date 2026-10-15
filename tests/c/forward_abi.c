@@ -1,11 +1,25 @@
 #include <dlfcn.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 
 int mgfwd_varargs(const char *fmt, ...);
 double mgfwd_float(double a, float b, int c, double d, double e, double f, double g, double h,
                    double i, double j);
 int mgfwd_regs_probe(void);
 extern void *__recaulk_slot_mgfwd_varargs;
+
+/* platform: on 10.9 the resolver takes the back-fill without a lookup (src/forward/resolve.c);
+   reporting a newer kern.osrelease keeps the lookup, and the trampoline around it, under test on
+   every host */
+int mgfwd_modern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
+                        size_t newlen) {
+  (void)name; (void)namelen; (void)newp; (void)newlen;
+  if (oldp == 0 || *oldlenp < sizeof "25.0.0") return -1;
+  memcpy(oldp, "25.0.0", sizeof "25.0.0");
+  *oldlenp = sizeof "25.0.0";
+  return 0;
+}
 
 /* platform: the System V x86_64 ABI lets a callee overwrite every argument register; this stands
    in for a dlsym that does, so a trampoline that fails to restore one is caught */
