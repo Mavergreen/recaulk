@@ -1,8 +1,10 @@
 /*
  * Wrapper/replacement for <pthread/qos.h> (the pthread QoS API, macOS 10.10+),
- * which is absent from the 10.9 SDK. Companion header to src/qos.c, whose no-op
- * implementations back these declarations (10.9 has no QoS scheduling classes;
- * LLVM/Rust/etc. call these only as scheduling hints, safely ignored).
+ * which is absent from the 10.9 SDK. Companion header to src/backfills/qos.c and
+ * src/backfills/qos_class.c, whose implementations back these declarations (10.9
+ * has no QoS scheduling classes; LLVM/Rust/etc. call these only as scheduling
+ * hints, safely ignored). qos_class_self and qos_class_main live in Apple's
+ * <sys/qos.h>, which its <pthread/qos.h> includes, so they are declared here.
  *
  * QOS_CLASS_* values are Apple's standard constants. Custom (non-MacPorts)
  * polyfill, matching the existing src/qos.c.
@@ -26,6 +28,9 @@ typedef enum {
 } qos_class_t;
 
 typedef struct pthread_override_s *pthread_override_t;
+
+qos_class_t qos_class_self(void);
+qos_class_t qos_class_main(void);
 
 int  pthread_set_qos_class_self_np(qos_class_t __qos_class, int __relative_priority);
 int  pthread_get_qos_class_np(pthread_t __pthread, qos_class_t *__qos_class, int *__relative_priority);

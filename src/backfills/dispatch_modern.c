@@ -105,12 +105,6 @@ dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_t attr,
     return attr;
 }
 
-/* QOS_CLASS_DEFAULT. Every thread on 10.9 is scheduled the same way, so this
- * is not a placeholder -- it is the only true answer. */
-int qos_class_self(void) {
-    return 0x15;
-}
-
 /* Vouchers (activity tracing identities) do not exist on 10.9. The real API
  * returns NULL for "no voucher", and adopting NULL yields the previous
  * voucher, which is also NULL. */

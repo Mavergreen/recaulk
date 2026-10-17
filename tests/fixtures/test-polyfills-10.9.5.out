@@ -63,4 +63,8 @@
   ok   : notify_is_valid_token(tok) == true
   ok   : notify_cancel(tok) == NOTIFY_STATUS_OK
   ok   : notify_is_valid_token(tok) == false
+  ok   : _Generic(qos_class_self(), qos_class_t: 1, default: 0)
+  ok   : _Generic(qos_class_main(), qos_class_t: 1, default: 0)
+  ok   : qos_class_self() == QOS_CLASS_DEFAULT
+  ok   : qos_class_main() == QOS_CLASS_DEFAULT
 FAILED (1 checks)

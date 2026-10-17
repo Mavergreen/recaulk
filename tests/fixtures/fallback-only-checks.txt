@@ -1,2 +1,4 @@
 <10.12	clonefile("/etc/hosts", "/tmp/mls_clone_xyz", 0) == -1 && errno == ENOTSUP
 <10.12	getentropy(big, 257) == -1 && errno == EIO
+<10.10	qos_class_self() == QOS_CLASS_DEFAULT
+<10.10	qos_class_main() == QOS_CLASS_DEFAULT

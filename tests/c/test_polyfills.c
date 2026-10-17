@@ -23,6 +23,7 @@
 #include <mach/mach_time.h>  /* mach_approximate_time, mach_continuous_time */
 #include <notify.h>          /* notify_is_valid_token */
 #include <os/lock.h>         /* os_unfair_lock */
+#include <pthread/qos.h>     /* qos_class_self, qos_class_main */
 #include <sys/attr.h>        /* getattrlistat attrlist, VOL_CAP_INT_CLONE */
 #include <sys/clonefile.h>   /* clonefile */
 #include <sys/mman.h>        /* MAP_ANONYMOUS */
@@ -269,6 +270,14 @@ main(void)
     CHECK(notify_cancel(tok) == NOTIFY_STATUS_OK);
     CHECK(notify_is_valid_token(tok) == false);
   }
+
+  /* ---- qos_class_self / qos_class_main ----
+   * Declared as returning qos_class_t, as Apple's <sys/qos.h> does. 10.9 has no QoS classes, so
+   * every thread, the main one included, is QOS_CLASS_DEFAULT. */
+  CHECK(_Generic(qos_class_self(), qos_class_t: 1, default: 0));
+  CHECK(_Generic(qos_class_main(), qos_class_t: 1, default: 0));
+  CHECK(qos_class_self() == QOS_CLASS_DEFAULT);
+  CHECK(qos_class_main() == QOS_CLASS_DEFAULT);
 
   /* ---- final cleanup ---- */
   {
