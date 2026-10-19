@@ -30,6 +30,9 @@ drydock's binary is universal (x86_64 and arm64), so it runs natively on the 10.
 - scheme: Recaulk is its own upstream (no one else's release to repackage), so it versions itself by date as YYYYMMDD.N with no -mavericks.N axis
 - rosetta:.github/workflows/release.yml: the release job runs on an Apple Silicon (arm64) runner and primes Rosetta ("Ensure this runner can run x86_64 (Rosetta)") so `tests/load.sh`, `tests/shim-tests.sh`, `tests/macports-own.sh`, `tests/forward-runtime.sh` and `tests/forward-abi.sh`, and the `x86_64_runs` probe they gate on, can execute the shipped x86_64 code (librecaulk.a and libRecaulkSystem.dylib linked into test programs) before it ships. It cannot run natively there: the code under test is the shipped x86_64 build, and the release runner is arm64 with no Intel runner to use instead. CI runs these tests, it does not skip them; native 10.9 runs them natively. Reconsider when they can move to an x86_64 host (the 10.9 box or the Mavericks VM runner the family is bringing to GitHub Actions); at the latest before macOS 28 removes Rosetta.
 - on-target: a library; proven on 10.9 through its consumers' on-target jobs (python-315, rust, the Go lines, and clang-22's, which runs its C++ ABI back-fills there); exit: Recaulk ships an executable of its own
+- self-upstream-exclude:release-notes/**: release-note sources; not in the pkg
+- self-upstream-exclude:comment-reasons: the conventions gate's comment config; not in the pkg
+- self-upstream-exclude:.claude/**: an agent's settings for working in this repo; not in the pkg
 
 ## Upstream release notes
 

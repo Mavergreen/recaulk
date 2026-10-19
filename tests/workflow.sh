@@ -37,6 +37,7 @@ awk '
 mkdir "$tmp/stubs" "$tmp/repo"
 printf '#!/bin/sh\necho stub-digest\n' > "$tmp/stubs/release-state.sh"
 printf '#!/bin/sh\necho PUBLISH\n' > "$tmp/stubs/release-needed.sh"
+printf '#!/bin/sh\necho 20261005.7\n' > "$tmp/stubs/self-upstream-version.sh"
 printf '20261005\n' > "$tmp/repo/UPSTREAM_VERSION"
 ver_publish() {   # ref event repackage
   rm -f "$tmp/out"
@@ -56,6 +57,8 @@ expect no refs/pull/1/merge pull_request false
 expect no refs/heads/renovate/x workflow_dispatch true
 expect no refs/heads/renovate/x workflow_dispatch false
 expect no refs/heads/feature workflow_dispatch true
+ver_publish refs/heads/main push false >/dev/null
+[ "$(sed -n 's/^ver=//p' "$tmp/out")" = 20261005.7 ] || { echo "the ver step must take its version from self-upstream-version.sh"; exit 1; }
 [ "$(grep -c "github.ref == 'refs/heads/main'" "$w")" -eq 2 ] || { echo "scan and publish jobs must each require github.ref == 'refs/heads/main'"; exit 1; }
 if grep -q 'dist/' "$w"; then
   grep -Eq '^dist/' .mavericks-intree || { echo "release.yml writes dist/, so .mavericks-intree must list it"; exit 1; }

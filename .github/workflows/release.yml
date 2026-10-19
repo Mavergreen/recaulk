@@ -55,13 +55,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
-          base="$(tr -d '[:space:]' < UPSTREAM_VERSION)"
-          maxn=0
-          for t in $(git tag --list "$base.*"); do
-            n="${t##*.}"
-            case "$n" in ''|*[!0-9]*) : ;; *) [ "$n" -gt "$maxn" ] && maxn="$n" ;; esac
-          done
-          ver="$base.$((maxn + 1))"
+          ver="$(sh "$SHIPYARD_SCRIPTS/self-upstream-version.sh")"
           pub=no
           if [ "$GITHUB_REF" = refs/heads/main ]; then
             if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
