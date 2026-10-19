@@ -19,7 +19,8 @@ sdk_exports() {
   _se_sdk="$1"
   _se_fw="$_se_sdk/System/Library/Frameworks"
   {
-    sdk_stub_exports "$_se_sdk/usr/lib/libSystem.B" "$_se_sdk/usr/lib/libobjc.A"
+    sdk_stub_exports "$_se_sdk/usr/lib/libSystem.B" "$_se_sdk/usr/lib/libobjc.A" \
+      "$_se_sdk/usr/lib/libc++abi" "$_se_sdk/usr/lib/libc++.1"
     for _se_f in "$_se_sdk"/usr/lib/system/*.dylib "$_se_sdk"/usr/lib/system/*.tbd; do
       [ -f "$_se_f" ] && sdk_stub_exports "$_se_f"
     done

@@ -38,7 +38,7 @@ while read -r s; do
   /usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/stub.s" -o "$tmp/stub.o"
   if ! /usr/bin/clang $FLAGS -arch x86_64 -o "$tmp/a.out" "$tmp/refs.o" "$tmp/stub.o" "$lib" \
       -framework CoreFoundation -framework Security -framework CoreVideo -framework CoreGraphics \
-      -framework CoreServices -framework IOKit -lobjc > "$tmp/link.out" 2>&1; then
+      -framework CoreServices -framework IOKit -lobjc -lc++abi > "$tmp/link.out" 2>&1; then
     # platform: ld names the colliding archive member as lib.a(member.o) under "duplicate symbol"
     member="$(sed -n 's/^.*librecaulk\.a(\(.*\)).*$/\1/p' "$tmp/link.out" | head -1)"
     if grep -q 'duplicate symbol' "$tmp/link.out"; then

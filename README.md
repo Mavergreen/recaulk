@@ -22,6 +22,8 @@ cc -isystem /usr/local/mavergreen/recaulk/include/recaulk \
 
 (When you're building a dylib, also pass `-Wl,-unexported_symbol,___recaulk_*` to keep Recaulk's internals private.)
 
+(For C++ built against the system's libc++abi, as clang-22's libc++ is, also pass `-lc++abi`: Recaulk fills in the C++ runtime entry points 10.9's libc++abi lacks, and they call the rest of it.)
+
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
 
 ```

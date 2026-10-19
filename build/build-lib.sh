@@ -69,6 +69,6 @@ dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
   -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
   -framework CoreFoundation -framework Security -framework CoreVideo \
-  -framework CoreGraphics -framework CoreServices -lobjc
+  -framework CoreGraphics -framework CoreServices -lobjc -lc++abi
 
 printf '%s\n' "$B"

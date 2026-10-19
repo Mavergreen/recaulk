@@ -21,8 +21,9 @@ otool -L "$dylib" | sed -n 2p | grep -q 'compatibility version 1.0.0, current ve
   || bad "versions are not 1.0.0 / 1356.0.0: $(otool -L "$dylib" | sed -n 2p)"
 otool -l "$dylib" | grep -A2 LC_REEXPORT_DYLIB | grep -q 'name /usr/lib/libSystem.B.dylib' \
   || bad "no LC_REEXPORT_DYLIB of /usr/lib/libSystem.B.dylib"
-got="$(otool -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.*/||; s|\.framework.*||' | sort | tr '\n' ' ')"
-want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dylib libobjc.A.dylib "
+got="$(otool -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.*/||; s|\.framework.*||' | LC_ALL=C sort | tr '\n' ' ')"
+# libc++abi.dylib: the libc++abi back-fills (src/backfills/cxxabi_*.c) call the system's
+want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dylib libc++abi.dylib libobjc.A.dylib "
 [ "$got" = "$want" ] || bad "linked libraries are '$got', want '$want'"
 [ -f "$T/include/recaulk/MacportsLegacySupport.h" ] || bad "include/recaulk/MacportsLegacySupport.h missing"
 [ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
