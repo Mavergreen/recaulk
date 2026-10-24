@@ -29,3 +29,11 @@ Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Maverg
 ```
 dylib  replace  /usr/lib/libSystem.B.dylib  /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib
 ```
+
+The source headers also adapt two Mavericks API defects: numeric port-zero
+`getaddrinfo` requests no longer crash with `AI_NUMERICSERV`, and `fdopendir`
+accepts already-open readable directories without requiring search permission.
+MacPorts headers remain intact; Recaulk appends its wrappers when staging them.
+The directory repair uses libc-owned stream state for both inode ABIs and retains
+the original failure for union mounts, whose duplicate filtering needs a separate
+implementation. Modern systems still use the forwarded native `fdopendir` first.
