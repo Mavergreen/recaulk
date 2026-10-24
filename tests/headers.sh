@@ -13,6 +13,7 @@ trap 'rm -rf "$d"' EXIT
   echo '#include <os/lock.h>'
   echo '#include <time.h>'
   (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | sed 's|.*|#include <&>|'
+  (cd src/include-after && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | sed 's|.*|#include <&>|'
   echo 'int main(void){return 0;}'
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
