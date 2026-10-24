@@ -187,7 +187,8 @@ dataToSign, CFErrorRef *error)`, `typedef CFStringRef SecKeyAlgorithm`) and its 
 A key of the wrong type or a public key gets that same refusal, as Apple's adaptors give it. Input that
 is not the algorithm's digest length fails with `errSecParam`: Apple's ECDSA adaptor checks this,
 and `SecKey.h` says the RSA input "must be" that digest, so the back-fill does not guess at a
-DigestInfo for anything else. Every
+DigestInfo for anything else. On newer macOS, `tests/security-signatures.sh` requires
+Apple's own to refuse the RSA case too, with any error. Every
 error is in `kCFErrorDomainOSStatus` and owned by the caller; a failed `SecKeyRawSign` reports its own
 `OSStatus`, and a failed allocation `errSecAllocate`. Success leaves `*error` untouched, as Apple's
 does. A `NULL` key or data, which Apple's raises on, fails with `errSecParam`. `SecKeyVerifySignature`,
@@ -203,7 +204,9 @@ error whose domain was a description string and whose code was 0. As Apple's `Se
 (`OSX/sec/Security/SecTrust.c` line 1170), the error is now in `kCFErrorDomainOSStatus`, its code the
 evaluation's own `OSStatus` or, when the evaluation ran and did not trust, the trust's CSSM result
 mapped to the code later macOS reports (`errSecNotTrusted`, `errSecCertificateExpired`), and its
-localized description `SecCopyErrorMessageString`'s. With no result code it is `errSecInternalError`,
+localized description `SecCopyErrorMessageString`'s. `SecKeychainErrFromOSStatus` is private, so it and the
+undeclared `SecKeyRawSign` are weak imports (`tests/security-weak-imports.sh`): a macOS without them
+still launches a program linking these back-fills. Without the mapping the code is the raw CSSM one. With no result code it is `errSecInternalError`,
 Apple's default.
 
 `tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,

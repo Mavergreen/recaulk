@@ -2,9 +2,10 @@
 #include <Security/Security.h>
 #include <string.h>
 
-/* platform: 10.9's Security exports SecKeyRawSign, though its SDK declares it for iOS only */
-OSStatus SecKeyRawSign(SecKeyRef key, SecPadding padding, const uint8_t *dataToSign, size_t dataToSignLen,
-                       uint8_t *sig, size_t *sigLen);
+/* platform: 10.9's Security exports SecKeyRawSign, though its SDK declares it for iOS only; weak, as
+   it is an undeclared import */
+extern OSStatus SecKeyRawSign(SecKeyRef key, SecPadding padding, const uint8_t *dataToSign, size_t dataToSignLen,
+                              uint8_t *sig, size_t *sigLen) __attribute__((weak_import));
 
 enum recaulk_sig_family { RECAULK_SIG_RSA_PKCS1V15, RECAULK_SIG_ECDSA_X962 };
 
@@ -81,7 +82,7 @@ CFDataRef SecKeyCreateSignature(SecKeyRef key, SecKeyAlgorithm algorithm, CFData
 		return NULL;
 	}
 	alg = find_algorithm(algorithm);
-	if (!alg || !key_signs(key, alg->family)) {
+	if (!alg || !SecKeyRawSign || !key_signs(key, alg->family)) {
 		set_error(error, errSecParam, CFSTR("SecKeyCreateSignature: algorithm not supported by the key"));
 		return NULL;
 	}

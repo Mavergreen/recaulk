@@ -20,8 +20,9 @@
  */
 
 /* platform: 10.9's Security exports SecKeychainErrFromOSStatus, which maps a CSSM result code to
-   the errSec code (CSSMERR_TP_NOT_TRUSTED to errSecNotTrusted) that later macOS reports */
-OSStatus SecKeychainErrFromOSStatus(OSStatus osStatus);
+   the errSec code (CSSMERR_TP_NOT_TRUSTED to errSecNotTrusted) that later macOS reports. It is
+   private, so it is weak: a macOS that drops it must still launch every program linking this. */
+extern OSStatus SecKeychainErrFromOSStatus(OSStatus osStatus) __attribute__((weak_import));
 
 static CFErrorRef copy_trust_error(OSStatus code) {
 	CFStringRef message = SecCopyErrorMessageString(code, NULL);
@@ -55,7 +56,7 @@ bool SecTrustEvaluateWithError(SecTrustRef trust, CFErrorRef  *error) {
 	if (error) {
 		code = status;
 		if (code == errSecSuccess && SecTrustGetCssmResultCode(trust, &cssm) == errSecSuccess && cssm != 0)
-			code = SecKeychainErrFromOSStatus(cssm);
+			code = SecKeychainErrFromOSStatus ? SecKeychainErrFromOSStatus(cssm) : cssm;
 		if (code == errSecSuccess)
 			code = errSecInternalError;
 		*error = copy_trust_error(code);

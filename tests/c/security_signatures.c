@@ -233,13 +233,13 @@ int main(void) {
   fails_with("signing with an RSA public key", rsa_pub, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("signing with an EC public key", p256_pub, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("an algorithm Apple does not define", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA3"), d256, errSecParam);
+  fails_with("RSA SHA-256 given a 20-byte digest", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d20, backfill ? errSecParam : 0);
   fails_with("ECDSA SHA-256 given a 20-byte digest", p256_priv, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d20, errSecParam);
 
   if (backfill) {
     fails_with("RSA-PSS SHA-256, which the back-fill does not implement", rsa_priv, CFSTR("algid:sign:RSA:digest-PSS:SHA256:SHA256:32"), d256, errSecParam);
     fails_with("RSA-PSS SHA-384, which the back-fill does not implement", rsa_priv, CFSTR("algid:sign:RSA:digest-PSS:SHA384:SHA384:48"), d256, errSecParam);
     fails_with("RSA-PSS SHA-512, which the back-fill does not implement", rsa_priv, CFSTR("algid:sign:RSA:digest-PSS:SHA512:SHA512:64"), d256, errSecParam);
-    fails_with("RSA SHA-256 given a 20-byte digest", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d20, errSecParam);
     fails_with("a NULL key", NULL, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d256, errSecParam);
     fails_with("NULL data", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), NULL, errSecParam);
     fails_with("a NULL algorithm", rsa_priv, NULL, d256, errSecParam);
