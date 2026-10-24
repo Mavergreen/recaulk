@@ -48,3 +48,14 @@ notifications using `select`, without consuming packets or retaining descriptors
 Other filters remain native. Synthetic UDP events report readiness with `data=0`;
 receive the datagram to determine its length. The caller owns descriptor lifetime
 and must refresh the snapshot when registrations change.
+
+## Security
+
+`SecKeyCreateSignature` takes Apple's `SecKeyAlgorithm` constants and signs on 10.9 with RSA
+PKCS#1 v1.5 or X9.62 ECDSA over a SHA-1, SHA-224, SHA-256, SHA-384 or SHA-512 digest. It refuses
+RSA-PSS, for which 10.9's Security has no primitive, and every other algorithm, with `errSecParam`,
+as Apple's does for an algorithm a key does not support. `SecTrustEvaluateWithError` reports a
+failure as Apple's does, in `kCFErrorDomainOSStatus` with codes such as `errSecNotTrusted` and
+`errSecCertificateExpired`, and `SecTrustCopyCertificateChain` returns `NULL` for a chain without
+certificates. Through `include/recaulk`, `<Security/Security.h>` declares these and the signing
+constants where the SDK does not. Newer macOS uses its own implementations.

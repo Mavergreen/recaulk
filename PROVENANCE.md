@@ -80,8 +80,9 @@ Split so that products linking `librecaulk.a` get the back-fill (the part 10.9 l
 that replaces a 10.9 symbol stays an override:
 
 - `security.c`: `SecPolicyCreateRevocation` and `SecTrustEvaluate` go to
-  `overrides/sectrust_evaluate.c`. Everything else, including `SecTrustEvaluateWithError` and its
-  helper `getStringForResultType`, stays in `backfills/security.c`.
+  `overrides/sectrust_evaluate.c`. Everything else, including `SecTrustEvaluateWithError`, stays in
+  `backfills/security.c`. Its helper `getStringForResultType` and the `SecKeyCreateSignature` stub
+  are gone (see Behaviour fixes).
 - `jit.c`: `mmap` goes to `overrides/mmap_jit.c`; `pthread_jit_write_protect_np` stays as
   `backfills/jit.c`.
 
@@ -158,8 +159,56 @@ The other nine already held Apple's strings:
 - `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512` (`OSX/sec/Security/SecKeyAdaptors.m` line 76)
 - `kSecKeyAlgorithmRSASignatureRaw` (`OSX/sec/Security/SecKeyAdaptors.m` line 67)
 
-`tests/ksec-values.sh` pins all 20 strings against `tests/fixtures/ksec-values.txt`, and fails when
+Six constants are Recaulk's own, added beside `SecKeyCreateSignature` (below), each in its own
+`backfills/security_<constant>.c`:
+
+- `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA224` (`OSX/sec/Security/SecKeyAdaptors.m` line 73)
+- `kSecKeyAlgorithmECDSASignatureDigestX962SHA1` through `...SHA512` (`OSX/sec/Security/SecKeyAdaptors.m`
+  lines 111 to 115)
+
+`tests/ksec-values.sh` pins all 26 strings against `tests/fixtures/ksec-values.txt`, and fails when
 `librecaulk.a` defines a `kSec` constant the fixture does not pin.
+
+`SecKeyCreateSignature`: replaced (spec: back-fills match the real API). The stub took a `SecPadding`
+where Apple's takes a `SecKeyAlgorithm`, a `CFStringRef`, and returned `NULL` without an error.
+`src/backfills/security_signature.c`, Recaulk's own, takes Apple's declaration from the 11.3 SDK's
+`SecKey.h` (`CFDataRef SecKeyCreateSignature(SecKeyRef key, SecKeyAlgorithm algorithm, CFDataRef
+dataToSign, CFErrorRef *error)`, `typedef CFStringRef SecKeyAlgorithm`) and its behaviour from
+`OSX/sec/Security/SecKey.m` and `SecKeyAdaptors.m` at the commit above. It matches algorithms by
+`CFEqual`, so Apple's own constants, ours and literals all work. It signs with 10.9's `SecKeyRawSign`:
+
+| Algorithm | 10.9 back-fill |
+|---|---|
+| `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | PKCS#1 v1.5 over the RFC 8017 DigestInfo of the digest |
+| `kSecKeyAlgorithmECDSASignatureDigestX962SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | X9.62 DER ECDSA over the digest |
+| `kSecKeyAlgorithmRSASignatureDigestPSS*` | refused: `NULL` and `errSecParam`, "algorithm not supported by the key". 10.9 has no PSS primitive |
+| any other algorithm | refused the same way |
+
+A key of the wrong type or a public key gets that same refusal, as Apple's adaptors give it. Input that
+is not the algorithm's digest length fails with `errSecParam`: Apple's ECDSA adaptor checks this,
+and `SecKey.h` says the RSA input "must be" that digest, so the back-fill does not guess at a
+DigestInfo for anything else. Every
+error is in `kCFErrorDomainOSStatus` and owned by the caller; a failed `SecKeyRawSign` reports its own
+`OSStatus`, and a failed allocation `errSecAllocate`. Success leaves `*error` untouched, as Apple's
+does. A `NULL` key or data, which Apple's raises on, fails with `errSecParam`. `SecKeyVerifySignature`,
+`SecKeyCreateEncryptedData` and `SecKeyCreateDecryptedData` are still stubs with the old `SecPadding`
+parameter.
+
+Security Transforms, which Tailscale's certstore overlay signs with, are not used: given an input that
+is not exactly the digest's length, a 10.9 sign transform returned an RSA signature that does not verify
+as PKCS#1 v1.5 over that input's DigestInfo. The transforms are the test's independent verifier instead.
+
+`SecTrustEvaluateWithError`: behaviour fix (spec: back-fills match the real API). A failure set an
+error whose domain was a description string and whose code was 0. As Apple's `SecTrustCopyError` does
+(`OSX/sec/Security/SecTrust.c` line 1170), the error is now in `kCFErrorDomainOSStatus`, its code the
+evaluation's own `OSStatus` or, when the evaluation ran and did not trust, the trust's CSSM result
+mapped to the code later macOS reports (`errSecNotTrusted`, `errSecCertificateExpired`), and its
+localized description `SecCopyErrorMessageString`'s. With no result code it is `errSecInternalError`,
+Apple's default.
+
+`tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,
+made with OpenSSL 3.6.2: a self-signed RSA-2048 root, and two RSA-2048 leaves it signed with
+SHA-256, valid 2026 to 2126 and 2000 to 2001. Their keys were not kept.
 
 `tests/c/test_polyfills.c` is verbatim except one test fix: it called `getentropy` with 256 and 257 on
 the 64-byte `b1`, an overrun. It now declares `unsigned char big[257]` and uses it for those two calls.

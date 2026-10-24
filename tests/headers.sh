@@ -84,6 +84,29 @@ probe sdk113 c '#include <stdlib.h>'
 n="$(/usr/bin/clang -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sdk113.c" | grep -c '\baligned_alloc[[:space:]]*(' || true)"
 [ "$n" = 1 ] || bad "with the 11.3 SDK, which declares aligned_alloc itself, it is declared $n times, not once"
 
+sec_use='CFDataRef (*recaulk_sign)(SecKeyRef, SecKeyAlgorithm, CFDataRef, CFErrorRef *) = SecKeyCreateSignature;
+bool (*recaulk_eval)(SecTrustRef, CFErrorRef *) = SecTrustEvaluateWithError;
+CFArrayRef (*recaulk_chain)(SecTrustRef) = SecTrustCopyCertificateChain;
+const SecKeyAlgorithm *recaulk_alg = &kSecKeyAlgorithmECDSASignatureDigestX962SHA256;'
+probe sec c '#include <Security/Security.h>' '#include <Security/SecKey.h>' '#include <Security/SecTrust.h>' "$sec_use"
+probe seccpp cpp '#include <Security/Security.h>' "$sec_use"
+for std in "" -std=c99 -std=c11; do
+  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" $std -c "$d/sec.c" -o "$d/sec.o" \
+    || bad "<Security/Security.h> through include/recaulk does not declare the signing and trust back-fills as Apple's SDK does (sec.c ${std:-default})"
+done
+/usr/bin/clang++ $FLAGS -arch x86_64 -Wall -Werror $CXX_STD -isystem "$inc" -c "$d/seccpp.cpp" -o "$d/seccpp.o" \
+  || bad "C++ through include/recaulk does not see the signing and trust back-fills"
+for c in security.c security_signature.c; do
+  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -Wno-deprecated-declarations -isystem "$inc" -c "src/backfills/$c" -o "$d/$c.o" \
+    || bad "src/backfills/$c does not agree with the staged Security declarations"
+done
+/usr/bin/clang -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sec.c" > "$d/sec113.i" 2>"$d/sec113.err" \
+  || bad "with the 11.3 SDK, <Security/Security.h> through include/recaulk does not preprocess: $(head -3 "$d/sec113.err")"
+for decl in 'typedef CFStringRef SecKeyAlgorithm' 'SecKeyCreateSignature[[:space:]]*(' 'SecTrustEvaluateWithError[[:space:]]*(' 'SecTrustCopyCertificateChain[[:space:]]*('; do
+  n="$(grep -c "$decl" "$d/sec113.i" || true)"
+  [ "$n" = 1 ] || bad "with the 11.3 SDK, which declares the 10.12 and 10.14 Security API itself, '$decl' appears $n times, not once"
+done
+
 printf '#include <stdlib.h>\n.text\n' > "$d/asm.S"
 /usr/bin/clang $FLAGS -arch x86_64 -isystem "$inc" -E -x assembler-with-cpp "$d/asm.S" > "$d/asm.i" \
   || bad "assembly cannot preprocess <stdlib.h> through include/recaulk"

@@ -2,6 +2,11 @@ kSecAttrKeyTypeECSECPrimeRandom	73
 kSecGuestAttributeAudit	audit
 kSecKeyAlgorithmECDHKeyExchangeStandard	algid:keyexchange:ECDH
 kSecKeyAlgorithmECDSASignatureDigestX962	algid:sign:ECDSA:digest-X962
+kSecKeyAlgorithmECDSASignatureDigestX962SHA1	algid:sign:ECDSA:digest-X962:SHA1
+kSecKeyAlgorithmECDSASignatureDigestX962SHA224	algid:sign:ECDSA:digest-X962:SHA224
+kSecKeyAlgorithmECDSASignatureDigestX962SHA256	algid:sign:ECDSA:digest-X962:SHA256
+kSecKeyAlgorithmECDSASignatureDigestX962SHA384	algid:sign:ECDSA:digest-X962:SHA384
+kSecKeyAlgorithmECDSASignatureDigestX962SHA512	algid:sign:ECDSA:digest-X962:SHA512
 kSecKeyAlgorithmRSAEncryptionOAEPSHA1	algid:encrypt:RSA:OAEP:SHA1
 kSecKeyAlgorithmRSAEncryptionOAEPSHA256	algid:encrypt:RSA:OAEP:SHA256
 kSecKeyAlgorithmRSAEncryptionOAEPSHA384	algid:encrypt:RSA:OAEP:SHA384
@@ -9,6 +14,7 @@ kSecKeyAlgorithmRSAEncryptionOAEPSHA512	algid:encrypt:RSA:OAEP:SHA512
 kSecKeyAlgorithmRSAEncryptionPKCS1	algid:encrypt:RSA:PKCS1
 kSecKeyAlgorithmRSAEncryptionRaw	algid:encrypt:RSA:raw
 kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1	algid:sign:RSA:digest-PKCS1v15:SHA1
+kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA224	algid:sign:RSA:digest-PKCS1v15:SHA224
 kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256	algid:sign:RSA:digest-PKCS1v15:SHA256
 kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384	algid:sign:RSA:digest-PKCS1v15:SHA384
 kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512	algid:sign:RSA:digest-PKCS1v15:SHA512

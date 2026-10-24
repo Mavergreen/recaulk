@@ -19,22 +19,30 @@
  * https://trac.macports.org/ticket/66749#comment:2
  */
 
-static CFStringRef getStringForResultType(SecTrustResultType resultType) {
-	switch (resultType) {
-		case kSecTrustResultInvalid: return CFSTR("Error evaluating certificate");
-		case kSecTrustResultDeny: return CFSTR("User specified to deny trust");
-		case kSecTrustResultUnspecified: return CFSTR("Rejected Certificate");
-		case kSecTrustResultRecoverableTrustFailure : return CFSTR("Rejected Certificate");
-		case kSecTrustResultFatalTrustFailure :return CFSTR("Bad Certificate");
-		case kSecTrustResultOtherError: return CFSTR("Error evaluating certificate");
-		case kSecTrustResultProceed: return CFSTR("Proceed");
-		default: return CFSTR("Unknown");
+/* platform: 10.9's Security exports SecKeychainErrFromOSStatus, which maps a CSSM result code to
+   the errSec code (CSSMERR_TP_NOT_TRUSTED to errSecNotTrusted) that later macOS reports */
+OSStatus SecKeychainErrFromOSStatus(OSStatus osStatus);
+
+static CFErrorRef copy_trust_error(OSStatus code) {
+	CFStringRef message = SecCopyErrorMessageString(code, NULL);
+	CFDictionaryRef info = NULL;
+	CFErrorRef error;
+	if (message) {
+		const void *k[] = {kCFErrorLocalizedDescriptionKey};
+		const void *v[] = {message};
+		info = CFDictionaryCreate(kCFAllocatorDefault, k, v, 1,
+		                          &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFRelease(message);
 	}
+	error = CFErrorCreate(kCFAllocatorDefault, kCFErrorDomainOSStatus, code, info);
+	if (info) CFRelease(info);
+	return error;
 }
 
 bool SecTrustEvaluateWithError(SecTrustRef trust, CFErrorRef  *error) {
 	SecTrustResultType trustResult = kSecTrustResultInvalid;
 	OSStatus status = SecTrustEvaluate(trust, &trustResult);
+	OSStatus code, cssm = 0;
 	if (
 		status == errSecSuccess &&
 		(trustResult == kSecTrustResultProceed || trustResult == kSecTrustResultUnspecified)
@@ -45,17 +53,22 @@ bool SecTrustEvaluateWithError(SecTrustRef trust, CFErrorRef  *error) {
 		return true;
 	}
 	if (error) {
-		*error = CFErrorCreate(kCFAllocatorDefault, getStringForResultType(trustResult), 0, NULL);
+		code = status;
+		if (code == errSecSuccess && SecTrustGetCssmResultCode(trust, &cssm) == errSecSuccess && cssm != 0)
+			code = SecKeychainErrFromOSStatus(cssm);
+		if (code == errSecSuccess)
+			code = errSecInternalError;
+		*error = copy_trust_error(code);
 	}
 	return false;
 }
 
 /*
  * SecTrustCopyCertificateChain (added macOS 12.0)
- * Returns the evaluated certificate chain as a CFArray. On 10.9 we rebuild it
- * from the (deprecated) per-index accessors, which are populated once the
- * trust has been evaluated (callers always evaluate first). The caller owns
- * the returned array.
+ * Returns the evaluated certificate chain as a CFArray, or NULL when it holds
+ * no certificate, as Apple's does. On 10.9 we rebuild it from the
+ * (deprecated) per-index accessors; SecTrustGetCertificateCount evaluates an
+ * unevaluated trust first. The caller owns the returned array.
  */
 CFArrayRef SecTrustCopyCertificateChain(SecTrustRef trust) {
 	if (!trust) return NULL;
@@ -95,13 +108,6 @@ SecKeyRef SecKeyCreateWithData(CFDataRef keyData, CFDictionaryRef attributes, CF
 
 SecKeyRef SecKeyCreateRandomKey(CFDictionaryRef parameters, CFErrorRef *error) {
 	(void)parameters;
-	if (error) *error = NULL;
-	return NULL;
-}
-
-CFDataRef SecKeyCreateSignature(SecKeyRef key, SecPadding algorithm,
-                                CFDataRef dataToSign, CFErrorRef *error) {
-	(void)key; (void)algorithm; (void)dataToSign;
 	if (error) *error = NULL;
 	return NULL;
 }
