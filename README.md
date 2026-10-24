@@ -37,3 +37,12 @@ MacPorts headers remain intact; Recaulk appends its wrappers when staging them.
 The directory repair uses libc-owned stream state for both inode ABIs and retains
 the original failure for union mounts, whose duplicate filtering needs a separate
 implementation. Modern systems still use the forwarded native `fdopendir` first.
+
+Source event loops can include `<recaulk/udp_wait.h>` and use
+`__recaulk_kevent_wait_udp` after submitting their normal kqueue changes. Supply
+an immutable snapshot of enabled, level-triggered UDP readers and zero-initialized
+per-loop fairness state. This wait supplements Mavericks' missing empty-datagram
+notifications using `select`, without consuming packets or retaining descriptors.
+Other filters remain native. Synthetic UDP events report readiness with `data=0`;
+receive the datagram to determine its length. The caller owns descriptor lifetime
+and must refresh the snapshot when registrations change.
