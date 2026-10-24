@@ -75,9 +75,9 @@ done
 /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -c src/backfills/aligned_alloc.c -o "$d/aligned_alloc.o" \
   || bad "src/backfills/aligned_alloc.c does not agree with the staged declaration"
 
-probe strict c '#include <stdlib.h>' 'int aligned_alloc;'
-/usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -std=c99 -D_POSIX_C_SOURCE=200809L -c "$d/strict.c" -o "$d/strict.o" \
-  || bad "strict C99 POSIX must not see aligned_alloc, as the SDK that declares it hides it there"
+probe strict c '#include <stdlib.h>'
+n="$(decls "$d/strict.c" -std=c99 -D_POSIX_C_SOURCE=200809L)"
+[ "$n" = 0 ] || bad "strict C99 POSIX sees $n aligned_alloc declarations; the SDK that declares it hides it there"
 
 SDK113="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch arm64)"
 probe sdk113 c '#include <stdlib.h>'
