@@ -1,4 +1,10 @@
 <10.12	clonefile("/etc/hosts", "/tmp/mls_clone_xyz", 0) == -1 && errno == ENOTSUP
 <10.12	getentropy(big, 257) == -1 && errno == EIO
-<10.10	qos_class_self() == QOS_CLASS_DEFAULT
-<10.10	qos_class_main() == QOS_CLASS_DEFAULT
+<10.10	qos_class_self() == QOS_CLASS_UNSPECIFIED
+<10.10	qos_class_main() == QOS_CLASS_UNSPECIFIED
+<10.10	pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0) == ENOTSUP
+<10.10	pthread_get_qos_class_np(pthread_self(), &qos, &relpri) == ENOTSUP
+<10.10	qos == QOS_CLASS_BACKGROUND && relpri == -3
+<10.10	pthread_attr_set_qos_class_np(&attr, QOS_CLASS_UTILITY, 0) == ENOTSUP
+<10.10	pthread_attr_get_qos_class_np(&attr, &qos, &relpri) == ENOTSUP
+<10.10	override == NULL

@@ -271,13 +271,31 @@ main(void)
     CHECK(notify_is_valid_token(tok) == false);
   }
 
-  /* ---- qos_class_self / qos_class_main ----
-   * Declared as returning qos_class_t, as Apple's <sys/qos.h> does. 10.9 has no QoS classes, so
-   * every thread, the main one included, is QOS_CLASS_DEFAULT. */
+  /* ---- pthread QoS ----
+   * spec: libpthread-105.1.4 src/qos.c, Apple's first QoS implementation, is what a kernel without
+   *       QoS gets: ENOTSUP from every setter and getter, QOS_CLASS_UNSPECIFIED from qos_class_self
+   *       and qos_class_main, and no override object. */
   CHECK(_Generic(qos_class_self(), qos_class_t: 1, default: 0));
   CHECK(_Generic(qos_class_main(), qos_class_t: 1, default: 0));
-  CHECK(qos_class_self() == QOS_CLASS_DEFAULT);
-  CHECK(qos_class_main() == QOS_CLASS_DEFAULT);
+  CHECK(QOS_MIN_RELATIVE_PRIORITY == -15);
+  CHECK(qos_class_self() == QOS_CLASS_UNSPECIFIED);
+  CHECK(qos_class_main() == QOS_CLASS_UNSPECIFIED);
+  CHECK(pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0) == ENOTSUP);
+  {
+    qos_class_t qos = QOS_CLASS_BACKGROUND;
+    int relpri = -3;
+    pthread_attr_t attr;
+    pthread_override_t override;
+    CHECK(pthread_get_qos_class_np(pthread_self(), &qos, &relpri) == ENOTSUP);
+    CHECK(qos == QOS_CLASS_BACKGROUND && relpri == -3);
+    CHECK(pthread_attr_init(&attr) == 0);
+    CHECK(pthread_attr_set_qos_class_np(&attr, QOS_CLASS_UTILITY, 0) == ENOTSUP);
+    CHECK(pthread_attr_get_qos_class_np(&attr, &qos, &relpri) == ENOTSUP);
+    pthread_attr_destroy(&attr);
+    override = pthread_override_qos_class_start_np(pthread_self(), QOS_CLASS_USER_INITIATED, 0);
+    CHECK(override == NULL);
+    if (override) pthread_override_qos_class_end_np(override);
+  }
 
   /* ---- final cleanup ---- */
   {

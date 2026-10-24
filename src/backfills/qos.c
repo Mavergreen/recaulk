@@ -1,43 +1,37 @@
 /*
- * pthread QoS (Quality of Service) API (macOS 10.10+) --
- * custom polyfill (not from macports-legacy-support).
- *
- * 10.9 has no QoS scheduling classes; LLVM, Rust, and friends call these to
- * set worker-thread scheduling hints, which we can safely ignore (no-ops).
+ * pthread QoS (macOS 10.10+). A 10.9 kernel has no QoS classes, so these answer
+ * as Apple's libpthread-105.1.4 does on a kernel without QoS support.
  */
 
-#include <pthread.h>
+#include <errno.h>
+#include <pthread/qos.h>
 
-int pthread_set_qos_class_self_np(int qos_class, int relative_priority) {
+int pthread_set_qos_class_self_np(qos_class_t qos_class, int relative_priority) {
 	(void)qos_class; (void)relative_priority;
-	return 0;
+	return ENOTSUP;
 }
 
-int pthread_get_qos_class_np(pthread_t pthread, int *qos_class, int *relative_priority) {
-	(void)pthread;
-	if (qos_class) *qos_class = 0; /* QOS_CLASS_UNSPECIFIED */
-	if (relative_priority) *relative_priority = 0;
-	return 0;
-}
-
-int pthread_attr_set_qos_class_np(pthread_attr_t *attr, int qos_class, int relative_priority) {
-	(void)attr; (void)qos_class; (void)relative_priority;
-	return 0;
-}
-
-int pthread_attr_get_qos_class_np(pthread_attr_t *attr, int *qos_class, int *relative_priority) {
-	(void)attr;
-	if (qos_class) *qos_class = 0;
-	if (relative_priority) *relative_priority = 0;
-	return 0;
-}
-
-void *pthread_override_qos_class_start_np(pthread_t pthread, int qos_class, int relative_priority) {
+int pthread_get_qos_class_np(pthread_t pthread, qos_class_t *qos_class, int *relative_priority) {
 	(void)pthread; (void)qos_class; (void)relative_priority;
-	return (void*)1;
+	return ENOTSUP;
 }
 
-int pthread_override_qos_class_end_np(void *override) {
+int pthread_attr_set_qos_class_np(pthread_attr_t *attr, qos_class_t qos_class, int relative_priority) {
+	(void)attr; (void)qos_class; (void)relative_priority;
+	return ENOTSUP;
+}
+
+int pthread_attr_get_qos_class_np(pthread_attr_t *attr, qos_class_t *qos_class, int *relative_priority) {
+	(void)attr; (void)qos_class; (void)relative_priority;
+	return ENOTSUP;
+}
+
+pthread_override_t pthread_override_qos_class_start_np(pthread_t pthread, qos_class_t qos_class, int relative_priority) {
+	(void)pthread; (void)qos_class; (void)relative_priority;
+	return NULL;
+}
+
+int pthread_override_qos_class_end_np(pthread_override_t override) {
 	(void)override;
-	return 0;
+	return EINVAL;
 }

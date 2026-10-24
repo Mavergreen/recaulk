@@ -46,7 +46,7 @@ below, his files differ in one way: `src/include/os/log.h` and `src/backfills/di
 | `mavericks-legacy-support/src/osatomic.c` | `src/backfills/osatomic.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/preadv_pwritev_nocancel.c` | `src/backfills/preadv_pwritev_nocancel.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/pthread_self_is_exiting.c` | `src/backfills/pthread_self_is_exiting.c` | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/qos.c` | `src/backfills/qos.c` | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/qos.c` | `src/backfills/qos.c` (rewritten to answer as Apple's libpthread does without kernel QoS) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/renameatx_np.c` | `src/backfills/renameatx_np.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/signpost.c` | `src/backfills/signpost.c`, `src/backfills/signpost_enabled.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/syslog_extsn.c` | `src/backfills/syslog_extsn.c` | ISC, Wowfunhappy |

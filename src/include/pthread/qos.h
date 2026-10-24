@@ -1,13 +1,7 @@
 /*
- * Wrapper/replacement for <pthread/qos.h> (the pthread QoS API, macOS 10.10+),
- * which is absent from the 10.9 SDK. Companion header to src/backfills/qos.c and
- * src/backfills/qos_class.c, whose implementations back these declarations (10.9
- * has no QoS scheduling classes; LLVM/Rust/etc. call these only as scheduling
- * hints, safely ignored). qos_class_self and qos_class_main live in Apple's
- * <sys/qos.h>, which its <pthread/qos.h> includes, so they are declared here.
- *
- * QOS_CLASS_* values are Apple's standard constants. Custom (non-MacPorts)
- * polyfill, matching the existing src/qos.c.
+ * <pthread/qos.h> (the pthread QoS API, macOS 10.10+), absent from the 10.9 SDK.
+ * Backed by src/backfills/qos.c and src/backfills/qos_class.c. qos_class_self and
+ * qos_class_main live in Apple's <sys/qos.h>, which its <pthread/qos.h> includes.
  */
 #ifndef _MAVERICKS_PTHREAD_QOS_H_
 #define _MAVERICKS_PTHREAD_QOS_H_
@@ -26,6 +20,8 @@ typedef enum {
     QOS_CLASS_BACKGROUND       = 0x09,
     QOS_CLASS_UNSPECIFIED      = 0x00,
 } qos_class_t;
+
+#define QOS_MIN_RELATIVE_PRIORITY (-15)
 
 typedef struct pthread_override_s *pthread_override_t;
 

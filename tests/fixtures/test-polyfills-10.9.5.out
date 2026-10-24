@@ -65,6 +65,14 @@
   ok   : notify_is_valid_token(tok) == false
   ok   : _Generic(qos_class_self(), qos_class_t: 1, default: 0)
   ok   : _Generic(qos_class_main(), qos_class_t: 1, default: 0)
-  ok   : qos_class_self() == QOS_CLASS_DEFAULT
-  ok   : qos_class_main() == QOS_CLASS_DEFAULT
+  ok   : QOS_MIN_RELATIVE_PRIORITY == -15
+  ok   : qos_class_self() == QOS_CLASS_UNSPECIFIED
+  ok   : qos_class_main() == QOS_CLASS_UNSPECIFIED
+  ok   : pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0) == ENOTSUP
+  ok   : pthread_get_qos_class_np(pthread_self(), &qos, &relpri) == ENOTSUP
+  ok   : qos == QOS_CLASS_BACKGROUND && relpri == -3
+  ok   : pthread_attr_init(&attr) == 0
+  ok   : pthread_attr_set_qos_class_np(&attr, QOS_CLASS_UTILITY, 0) == ENOTSUP
+  ok   : pthread_attr_get_qos_class_np(&attr, &qos, &relpri) == ENOTSUP
+  ok   : override == NULL
 FAILED (1 checks)
