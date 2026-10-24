@@ -225,7 +225,8 @@ pthread_get_stacksize_np.c statxx.c sysconf.c time.c util.h utimensat.c`
 `include/LegacySupport.h` is dropped: it redefines MacPorts' `__MPLS_TARGET_OSVER`. His other 20
 headers are MacPorts' own, de-gated, and are dropped too. Two of them carried additions of his:
 `os_unfair_lock_assert_owner` in `os/lock.h` and `aligned_alloc` in `stdlib.h`. They sit at
-MacPorts' paths, so those two declarations do not ship.
+MacPorts' paths, so his copies do not ship. Recaulk's own `src/include/stdlib.h` declares
+`aligned_alloc` over MacPorts' unmodified `stdlib.h`; `os_unfair_lock_assert_owner` stays undeclared.
 
 ## Forwarding layer
 

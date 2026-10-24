@@ -1,4 +1,4 @@
-/* Appended after the unmodified MacPorts wrapper when staging headers. */
+#include <_recaulk_macports/dirent.h>
 #ifndef RECAULK_FDOPENDIR_H
 #define RECAULK_FDOPENDIR_H
 #if __DARWIN_C_LEVEL >= 200809L

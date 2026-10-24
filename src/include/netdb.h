@@ -1,4 +1,4 @@
-/* Appended after the unmodified MacPorts wrapper when staging headers. */
+#include <_recaulk_macports/netdb.h>
 #ifndef RECAULK_NETDB_H
 #define RECAULK_NETDB_H
 #include <string.h>

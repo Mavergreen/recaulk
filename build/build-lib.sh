@@ -22,25 +22,29 @@ src="$(sh "$SELF/fetch-macports.sh" "$W")"
 
 rm -rf "$W/mp-headers"
 "$MAKE" -C "$src" PREFIX=/ DESTDIR="$W/mp-headers" install-headers 1>&2
-cp -R "$W/mp-headers/include/LegacySupport/." "$T/include/recaulk/"
+# spec: README.md requires the pinned MacPorts source to remain unmodified.
+# platform: MacPorts headers adapt declarations to the target SDK; wrappers must follow them.
+mp="$W/mp-headers/include/LegacySupport"
+cp -R "$mp/." "$T/include/recaulk/"
+rm -rf "$W/own-include"
+cp -R "$MAVERICKS_ROOT/src/include" "$W/own-include"
+for h in $(cd "$MAVERICKS_ROOT/src/include" && find . -type f | sed 's|^\./||'); do
+  [ -f "$mp/$h" ] || continue
+  mkdir -p "$T/include/recaulk/_recaulk_macports/$(dirname "$h")"
+  mv "$T/include/recaulk/$h" "$T/include/recaulk/_recaulk_macports/$h"
+  rm "$W/own-include/$h"
+done
+cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
 
 for dir in backfills overrides; do
   mkdir -p "$W/$dir"
   rm -f "$W/$dir"/*.o "$W/librecaulk-$dir.a"
   for c in "$MAVERICKS_ROOT/src/$dir"/*.c; do
     /usr/bin/clang $flags -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations \
-      -I"$MAVERICKS_ROOT/src/include" -I"$MAVERICKS_ROOT/src" -I"$src/include" \
+      -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$src/include" \
       -c "$c" -o "$W/$dir/recaulk-$(basename "$c" .c).o"
   done
   /usr/bin/libtool -static -o "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
-done
-cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
-# platform: MacPorts headers adapt declarations to the target SDK; wrappers must follow them.
-# spec: README.md requires the pinned MacPorts source to remain unmodified.
-for h in "$MAVERICKS_ROOT/src/include-after/"*.h; do
-  dest="$T/include/recaulk/$(basename "$h")"
-  [ -f "$dest" ] || { echo "build-lib: no upstream header for $h" >&2; exit 1; }
-  cat "$h" >> "$dest"
 done
 
 mkdir -p "$B/drydock"
