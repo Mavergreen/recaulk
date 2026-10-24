@@ -35,6 +35,13 @@ for dir in backfills overrides; do
   /usr/bin/libtool -static -o "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
 done
 cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
+# Preserve MacPorts' declarations and SDK adaptations before our source wrappers.
+# The pinned upstream files remain untouched.
+for h in "$MAVERICKS_ROOT/src/include-after/"*.h; do
+  dest="$T/include/recaulk/$(basename "$h")"
+  [ -f "$dest" ] || { echo "build-lib: no upstream header for $h" >&2; exit 1; }
+  cat "$h" >> "$dest"
+done
 
 mkdir -p "$B/drydock"
 DRYDOCK="$(sh "$SELF/fetch-drydock.sh" "$(cat "$MAVERICKS_ROOT/components/drydock/version")" "$B/drydock")"
