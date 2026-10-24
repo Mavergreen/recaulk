@@ -1,8 +1,7 @@
 #!/bin/sh
 # platform: macOS-only -- executes x86_64 Mach-O
-# The libc++abi back-fills: what a libc++ built on the system's libc++abi (as clang-22's is) and clang 22's
-# code generation reference that 10.9's /usr/lib/libc++abi.dylib lacks. The same results are wanted on every
-# macOS: on 10.9 Recaulk's run, and where the system has a function the forwarding layer runs the system's.
+# spec: src/backfills/cxxabi_*.c -- what 10.9's libc++abi lacks for clang-22's libc++ and codegen; the same results
+#       on every macOS, from Recaulk on 10.9 and from the system where it has the function.
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
