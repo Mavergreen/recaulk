@@ -44,6 +44,12 @@ static uint32_t rw_flags(Class c) {
     return *(const uint32_t *)(((struct rc_class *)c)->data & ~(uintptr_t)3);
 }
 
+static uint32_t instance_size(Class c) {
+    const void *d = (const void *)(((struct rc_class *)c)->data & ~(uintptr_t)3);
+    const struct rc_ro *ro = (rw_flags(c) & RW_REALIZED) ? *(const struct rc_ro *const *)((const char *)d + 8) : d;
+    return ro->instanceSize;
+}
+
 static long rr_count;
 
 __attribute__((objc_root_class))
@@ -55,6 +61,14 @@ __attribute__((objc_root_class))
 - (id)retain { rr_count++; return self; }
 - (oneway void)release { rr_count--; }
 @end
+
+@interface RCLazyRR : RCRoot
+@end
+@implementation RCLazyRR
+@end
+
+extern struct rc_class rc_lazy_rr __asm__("_OBJC_CLASS_$_RCLazyRR");
+extern struct rc_class rc_lazy_cxx __asm__("_OBJC_CLASS_$_RCLazyCxx");
 
 static int answer(id self, SEL _cmd) { (void)self; (void)_cmd; return 42; }
 static int twice(id self, SEL _cmd) { (void)self; (void)_cmd; return 84; }
@@ -68,11 +82,11 @@ static void fill_pair(struct rc_pair *p, const char *name, Class super, uint32_t
     p->ml.count = nmethods;
     p->ml.m[0] = (struct rc_method){ "answer", "i16@0:8", (IMP)answer };
     p->ml.m[1] = (struct rc_method){ "twice", "i16@0:8", (IMP)twice };
-    p->ro.instanceStart = p->ro.instanceSize = (uint32_t)class_getInstanceSize(super);
+    p->ro.instanceStart = p->ro.instanceSize = instance_size(super);
     p->ro.name = name;
     p->ro.baseMethods = nmethods ? &p->ml : NULL;
     p->metaro.flags = RO_META;
-    p->metaro.instanceStart = p->metaro.instanceSize = (uint32_t)class_getInstanceSize(object_getClass((id)super));
+    p->metaro.instanceStart = p->metaro.instanceSize = instance_size((Class)sup->isa);
     p->metaro.name = name;
     p->cls.isa = &p->meta;
     p->cls.superclass = sup;
@@ -215,6 +229,39 @@ static int test_cxx(void) {
     return fail;
 }
 
+static int unrealized_parent(const char *what, Class parent, uint32_t want, Class *child, struct rc_pair *p, const char *name) {
+    if ((rw_flags(parent) & RW_REALIZED) || (rw_flags(object_getClass((id)parent)) & RW_REALIZED)) {
+        printf("FAIL: %s is already realized, so this test proves nothing\n", what);
+        return 1;
+    }
+    *child = make_pair(p, name, parent, 1);
+    if (!*child) return 1;
+    printf("%s child: rw flags 0x%08x\n", what, rw_flags(*child));
+    if ((rw_flags(*child) & want) != want) { printf("FAIL: the child of %s lacks 0x%08x\n", what, want); return 1; }
+    if (!(rw_flags(parent) & RW_REALIZED)) { printf("FAIL: objc_readClassPair left %s unrealized\n", what); return 1; }
+    return check_inherited(what, *child) | check_inherited(what, object_getClass((id)*child));
+}
+
+static int test_unrealized_parent(void) {
+    static struct rc_pair rr, cxx;
+    Class a, b;
+    int fail = unrealized_parent("unrealized RCLazyRR", (Class)&rc_lazy_rr, RW_HAS_CUSTOM_RR, &a, &rr, "RCLazyRRChild");
+    if (unrealized_parent("unrealized RCLazyCxx", (Class)&rc_lazy_cxx, RW_HAS_CXX_CTOR | RW_HAS_CXX_DTOR, &b, &cxx, "RCLazyCxxChild"))
+        return 1;
+    return fail | structors("unrealized RCLazyCxx child", b, RW_HAS_CXX_CTOR | RW_HAS_CXX_DTOR,
+                            &rc_cxx_ctor_count, &rc_cxx_dtor_count, 1);
+}
+
+static int test_meta_version(void) {
+    static struct rc_pair p;
+    Class cls = make_pair(&p, "RCVersioned", objc_getClass("NSObject"), 0);
+    if (!cls) return 1;
+    int cv = class_getVersion(cls), mv = class_getVersion(object_getClass((id)cls));
+    printf("meta-version: class %d, metaclass %d\n", cv, mv);
+    if (cv != 0 || mv != 7) { printf("FAIL: want class version 0 and metaclass version 7, as realizeClass sets\n"); return 1; }
+    return 0;
+}
+
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IONBF, 0);
     if (argc != 2) return 2;
@@ -222,5 +269,7 @@ int main(int argc, char **argv) {
     if (!strcmp(argv[1], "custom-rr")) return test_custom_rr();
     if (!strcmp(argv[1], "inherited-flags")) return test_inherited_flags();
     if (!strcmp(argv[1], "cxx-structors")) return test_cxx();
+    if (!strcmp(argv[1], "unrealized-parent")) return test_unrealized_parent();
+    if (!strcmp(argv[1], "meta-version")) return test_meta_version();
     return 2;
 }

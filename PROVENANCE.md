@@ -220,8 +220,9 @@ still launches a program linking these back-fills. Without the mapping the code 
 Apple's default.
 
 `src/backfills/objc_read_class_pair.c`: behaviour fix (spec: back-fills match the real API). A newly
-realized class inherited its superclass's bit 17 as `RW_HAS_CUSTOM_AWZ`, the value objc4-532.2 (10.8)
-gives that bit. 10.9's objc4-551.1 (`runtime/objc-runtime-new.h` at tag `objc4-551.1`,
+realized class inherited its superclass's bit 17 as `RW_HAS_CUSTOM_AWZ`. That is neither 10.8's objc4-532.2
+value, where AWZ is bit 16 too and bit 17 is `RW_HAS_CUSTOM_RR`, nor 10.9's.
+10.9's objc4-551.1 (`runtime/objc-runtime-new.h` at tag `objc4-551.1`,
 `https://github.com/apple-oss-distributions/objc4/blob/objc4-551.1/runtime/objc-runtime-new.h`, lines
 133 to 137) makes bit 17 `RW_METHOD_ARRAY` and `RW_HAS_CUSTOM_AWZ` bit 16. A class whose superclass had
 categories, `NSObject` among them, was marked as holding an array of method lists while holding none.
@@ -242,6 +243,11 @@ The realization also skipped the C++ structor flags. objc4-551.1's `realizeClass
 both from the superclass (lines 1388 to 1394). Without them `object_cxxConstructFromClass` and
 `object_cxxDestructFromClass` (`runtime/objc-class.mm` lines 436 and 389) stop at the class, so neither
 its `.cxx_construct` and `.cxx_destruct` nor any superclass's ran. The realization now does both.
+
+It also read the superclass's flags without realizing it, so the child of a superclass not yet realized
+inherited nothing. `realizeClass` realizes the superclass first (line 1819); the realization now asks
+`class_getInstanceMethod` for the superclass's `-retain`, which realizes it, and its metaclass, without
+`+initialize`. A metaclass's `rw->version` is 7, as `realizeClass` sets it (line 1810).
 
 `tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,
 made with OpenSSL 3.6.2: a self-signed RSA-2048 root, and two RSA-2048 leaves it signed with

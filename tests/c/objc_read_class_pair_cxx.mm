@@ -11,3 +11,8 @@ struct RCTracker {
 @end
 @implementation RCCxxParent
 @end
+
+@interface RCLazyCxx : NSObject { RCTracker tracker; }
+@end
+@implementation RCLazyCxx
+@end

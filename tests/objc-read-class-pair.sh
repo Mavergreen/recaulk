@@ -19,7 +19,7 @@ fail=0
   "$T/lib/librecaulk.a" -framework Foundation -framework CoreFoundation -framework Security \
   -framework CoreServices -lobjc \
   || { echo "FAIL: the objc_readClassPair test program does not link with librecaulk.a"; exit 1; }
-for t in nsobject-methods custom-rr inherited-flags cxx-structors; do
+for t in nsobject-methods custom-rr inherited-flags cxx-structors unrealized-parent meta-version; do
   rc=0
   "$D/rcp" "$t" || rc=$?
   [ "$rc" = 0 ] || { echo "FAIL: $t exited $rc"; fail=1; }

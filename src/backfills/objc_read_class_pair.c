@@ -11,6 +11,9 @@
  *
  * So: link it only where nothing else provides class realization.
  *
+ * It takes no runtimeLock (10.9's libobjc does not export it). That is safe for
+ * Swift, which initializes each class's metadata once, serially, and publishes
+ * the class only afterwards; class_addMethod takes the lock itself.
  */
 
 #include <stdlib.h>
@@ -41,6 +44,7 @@ struct mpls_objc_class {
 };
 
 #define MPLS_RW_REALIZED (1u << 31)
+#define MPLS_RO_META (1u << 0)
 
 /* objc4-551.1 addSubclass() propagates these from the superclass when it
  * realizes a class, and the minimal realization below has to do the same.
@@ -95,9 +99,24 @@ static uint32_t mpls_ro_cxx_flags(const void *ro) {
     return MPLS_RW_HAS_CXX_DTOR | MPLS_RW_HAS_CXX_CTOR;
 }
 
+/* Flags are inherited only from a realized superclass, and objc4-551.1's
+ * realizeClass() realizes it first (runtime/objc-runtime-new.mm line 1819).
+ * class_getInstanceMethod realizes through lookUpImpOrForward without running
+ * +initialize; asking for -retain, which RR roots and NSObject define, keeps
+ * it from reaching a +resolveInstanceMethod:, which would. Realizing a class
+ * realizes its metaclass too (line 1820). */
+static void mpls_realize_superclass(struct mpls_objc_class *cls) {
+    struct mpls_objc_class *super = cls->superclass;
+    if (!super) return;
+    const uint32_t *flags = (const uint32_t *)(super->data_NEVER_USE & ~(uintptr_t)3);
+    if (flags && !(*flags & MPLS_RW_REALIZED))
+        class_getInstanceMethod((Class)super, sel_registerName("retain"));
+}
+
 static void mpls_minimal_realize(void *clsPtr) {
     struct mpls_objc_class *cls = (struct mpls_objc_class *)clsPtr;
     if (!cls) return;
+    mpls_realize_superclass(cls);
 
     uintptr_t data = cls->data_NEVER_USE;
     struct mpls_objc_class_rw *maybeRW =
@@ -113,7 +132,7 @@ static void mpls_minimal_realize(void *clsPtr) {
     if (!rw) return;
     /* One method list, so no RW_METHOD_ARRAY. */
     rw->flags = MPLS_RW_REALIZED | mpls_inherited_flags(cls) | mpls_ro_cxx_flags(ro);
-    rw->version = 0;
+    rw->version = (*(const uint32_t *)ro & MPLS_RO_META) ? 7 : 0;  /* realizeClass(), line 1810 */
     rw->ro = ro;
 
     cls->cache_buckets = &_objc_empty_cache;
