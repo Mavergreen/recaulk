@@ -25,8 +25,8 @@ want="public __ZTVN10__cxxabiv119__pointer_type_infoE public __ZTVN10__cxxabiv12
 x86_64_runs || { echo "SKIP: this host cannot run x86_64 programs"; exit 77; }
 D="$(mktemp -d "${TMPDIR:-/tmp}/cxxabi-exports.XXXXXX")"
 trap 'rm -rf "$D"' EXIT
-# The consumer's shape: a dylib that re-exports the system's libc++abi and exports the two vtables
-# from this archive, linked ahead of the re-export so they are its own.
+# spec: README.md "C++ exceptions" -- the consumer's shape, a dylib that re-exports the system's
+#       libc++abi and exports the two vtables, linked ahead of the re-export so they are its own.
 set --
 for vt in $VTS; do set -- "$@" "-Wl,-u,$vt"; echo "$vt"; done > "$D/exp"
 /usr/bin/clang $FLAGS -arch x86_64 -dynamiclib -install_name @loader_path/libabi.dylib -o "$D/libabi.dylib" \
