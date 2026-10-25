@@ -49,6 +49,14 @@ Other filters remain native. Synthetic UDP events report readiness with `data=0`
 receive the datagram to determine its length. The caller owns descriptor lifetime
 and must refresh the snapshot when registrations change.
 
+## C++ exceptions
+
+C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on
+10.9 too: a thrown `nullptr` as a member pointer, an `int**` as a `const int* const*`, and a null
+derived pointer as a null base pointer, which 10.9's libc++abi gets wrong. The rules hold for the
+`catch` clauses of the program or dylib that links Recaulk; other libraries, the system's among
+them, keep their own.
+
 ## Security
 
 `SecKeyCreateSignature` takes Apple's `SecKeyAlgorithm` constants and signs on 10.9 with RSA

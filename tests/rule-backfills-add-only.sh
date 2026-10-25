@@ -19,19 +19,32 @@ done
 [ "$fail" = 0 ] || exit 1
 
 # platform: Apple clang 6 on 10.9 emits a <sym>.eh beside each function; it is not an API symbol
+# platform: nm -m names a hidden definition "private external", in 10.9's nm and in llvm-nm alike
 defined_in_archive() {
-  "${NM:-nm}" -gU -A "$1" | awk '
-    NF >= 3 && $(NF-1) ~ /^[A-Za-z]$/ && $NF !~ /\.eh$/ {
+  "${NM:-nm}" -gU -m -A "$1" | awk '
+    $NF !~ /\.eh$/ {
       member = $1; sub(/^.*\.a:/, "", member); sub(/:$/, "", member)
-      print member, $NF
+      print member, $NF, (/ private external / ? "hidden" : "visible")
     }'
 }
 
-defined_in_archive "$W/librecaulk-backfills.a" | while read -r member sym; do
-  if grep -qxF -- "$sym" "$tmp/sdk"; then
+# Rule 1's one exception, exact and declared: build/image-local-shadows.txt lists each hidden
+# definition allowed to shadow a 10.9 export inside the linking image, with its reason.
+grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $1, $2 }' > "$tmp/shadows"
+defined_in_archive "$W/librecaulk-backfills.a" > "$tmp/defined"
+while read -r member sym vis; do
+  grep -qxF -- "$sym" "$tmp/sdk" || continue
+  if [ "$vis" = hidden ] && grep -qxF -- "$member $sym" "$tmp/shadows"; then continue; fi
+  if [ "$vis" = hidden ]; then
+    echo "$member defines $sym hidden, which 10.9 already exports, and build/image-local-shadows.txt does not list it: list it with its reason, or move its source to src/overrides/ (spec rule 1)"
+  else
     echo "$member defines $sym, which 10.9 already exports: it is an override; move its source to src/overrides/ (spec rule 1)"
   fi
-done > "$tmp/bad1"
+done < "$tmp/defined" > "$tmp/bad1"
+while read -r member sym; do
+  grep -qxF -- "$member $sym hidden" "$tmp/defined" \
+    || echo "build/image-local-shadows.txt lists $sym in $member, which no hidden definition there matches: delete the entry, or make it hidden again"
+done < "$tmp/shadows" >> "$tmp/bad1"
 if [ -s "$tmp/bad1" ]; then
   cat "$tmp/bad1" | sed 's/^/FAIL: /'
   fail=1

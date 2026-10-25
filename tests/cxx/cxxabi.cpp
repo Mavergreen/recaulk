@@ -50,6 +50,76 @@ template <class T> static bool caught_as_const_pointer(T *p) {
   return false;
 }
 
+// Catch rules for pointer and member-pointer handlers, as the standard and a current libc++abi give
+// them. 10.9's catches a thrown nullptr as no data member pointer, an int** as no const int* const*,
+// and a null D* as a non-null B2*; src/backfills/cxxabi_pointer_catch.c gives these the rules.
+struct M { int d; void f() {} };
+struct B1 { int a; };
+struct B2 { int b; };
+struct D : B1, B2 { int c; };
+struct V : virtual B2 { int v; };
+struct VD : V { int w; };
+struct P : private B2 { int p; };
+struct A1 : B1 {};
+struct A2 : B1 {};
+struct Amb : A1, A2 {};
+
+static bool nullptr_as_pointer(void) {
+  try { throw nullptr; } catch (int *p) { return p == 0; } catch (...) {}
+  return false;
+}
+static bool nullptr_as_data_member_pointer(void) {
+  try { throw nullptr; } catch (int M::*p) { return p == 0; } catch (...) {}
+  return false;
+}
+static bool nullptr_as_function_member_pointer(void) {
+  try { throw nullptr; } catch (void (M::*p)()) { return p == 0; } catch (...) {}
+  return false;
+}
+static bool multi_level_qualified(int **p) {
+  try { throw p; } catch (const int *const *q) { return q == p; } catch (...) {}
+  return false;
+}
+static bool null_derived_as_base(void) {  // a null pointer converts to null, not to the base's offset
+  try { throw static_cast<D *>(0); } catch (B2 *q) { return q == 0; } catch (...) {}
+  return false;
+}
+static bool multi_level_unsafe_refused(int **p) {  // int** to const int** would open a hole in const
+  try { throw p; } catch (const int **) { return false; } catch (...) { return true; }
+}
+static bool three_level_unsafe_refused(int ***p) {  // const must be added at every level below the top
+  try { throw p; } catch (const int **const *) { return false; } catch (...) { return true; }
+}
+static bool derived_as_base(D *p) {
+  try { throw p; } catch (B2 *q) { return q == static_cast<B2 *>(p); } catch (...) {}
+  return false;
+}
+static bool derived_as_virtual_base(VD *p) {
+  try { throw p; } catch (B2 *q) { return q == static_cast<B2 *>(p); } catch (...) {}
+  return false;
+}
+static bool private_base_refused(P *p) {
+  try { throw p; } catch (B2 *) { return false; } catch (...) { return true; }
+}
+static bool ambiguous_base_refused(Amb *p) {
+  try { throw p; } catch (B1 *) { return false; } catch (...) { return true; }
+}
+static bool object_as_void_pointer(int *p) {
+  try { throw p; } catch (void *q) { return q == p; } catch (...) {}
+  return false;
+}
+static bool member_pointer_exact(int M::*p) {
+  try { throw p; } catch (int M::*q) { return q == p; } catch (...) {}
+  return false;
+}
+#ifdef __cpp_noexcept_function_type
+static void noexcept_fn() noexcept {}
+static bool noexcept_as_plain_function_pointer(void) {
+  try { throw &noexcept_fn; } catch (void (*q)()) { return q == &noexcept_fn; } catch (...) {}
+  return false;
+}
+#endif
+
 int main(void) {
   // std::uncaught_exceptions()
   check("uncaught_exceptions-idle", t_uncaught_exceptions() == 0, "nonzero with nothing in flight");
@@ -104,6 +174,31 @@ int main(void) {
 #endif
 #ifdef __SIZEOF_FLOAT128__
   check("typeinfo-float128-name", !std::strcmp(typeid(__float128).name(), "g"), typeid(__float128).name());
+#endif
+
+  // pointer and member-pointer handlers
+  static int i = 7;
+  static int *pi = &i;
+  static D d;
+  static VD vd;
+  static P pr;
+  static Amb amb;
+  check("catch-nullptr-pointer", nullptr_as_pointer(), "a thrown nullptr was not caught as a null int*");
+  check("catch-nullptr-data-member", nullptr_as_data_member_pointer(), "a thrown nullptr was not caught as a null int M::*");
+  check("catch-nullptr-function-member", nullptr_as_function_member_pointer(), "a thrown nullptr was not caught as a null void (M::*)()");
+  check("catch-multi-level-qualified", multi_level_qualified(&pi), "a thrown int** was not caught as const int* const*");
+  check("catch-null-derived-as-base", null_derived_as_base(), "a thrown null D* was caught as a non-null B2*, or not at all");
+  check("catch-multi-level-unsafe", multi_level_unsafe_refused(&pi), "a thrown int** was caught as const int**");
+  static int **ppi = &pi;
+  check("catch-three-level-unsafe", three_level_unsafe_refused(&ppi), "a thrown int*** was caught as const int** const*");
+  check("catch-derived-as-base", derived_as_base(&d), "a thrown D* was not caught as its B2* subobject");
+  check("catch-derived-as-virtual-base", derived_as_virtual_base(&vd), "a thrown VD* was not caught as its virtual B2* subobject");
+  check("catch-private-base", private_base_refused(&pr), "a thrown P* was caught as its private base");
+  check("catch-ambiguous-base", ambiguous_base_refused(&amb), "a thrown Amb* was caught as its ambiguous base");
+  check("catch-void-pointer", object_as_void_pointer(&i), "a thrown int* was not caught as void*");
+  check("catch-member-pointer", member_pointer_exact(&M::d), "a thrown int M::* was not caught as one");
+#ifdef __cpp_noexcept_function_type
+  check("catch-noexcept-function-pointer", noexcept_as_plain_function_pointer(), "a thrown noexcept function pointer was not caught as a plain one");
 #endif
   return failed;
 }

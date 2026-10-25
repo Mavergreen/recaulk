@@ -1,0 +1,7 @@
+# Spec rule 1's one exception: a HIDDEN definition, in librecaulk.a, of a name 10.9 already exports.
+# It binds only inside the image that links Recaulk and replaces nothing for any other image.
+# Exact and reviewed: tests/rule-backfills-add-only.sh fails on any hidden copy of a system export not
+# listed here, on any listed name that is not hidden, and on any entry nothing defines any more.
+# One per line: <member> <symbol> <reason>.
+recaulk-cxxabi_pointer_catch.o __ZTVN10__cxxabiv119__pointer_type_infoE pointer handlers catch by LLVM 22's rules, with one runtime and one exception state
+recaulk-cxxabi_pointer_catch.o __ZTVN10__cxxabiv129__pointer_to_member_type_infoE member-pointer handlers catch by LLVM 22's rules, with one runtime and one exception state
