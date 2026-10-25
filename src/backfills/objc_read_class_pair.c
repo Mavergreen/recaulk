@@ -44,7 +44,7 @@ struct mpls_objc_class {
 
 /* objc4-551.1 addSubclass() propagates these from the superclass when it
  * realizes a class, and the minimal realization below has to do the same.
- * RR is the important one: it marks the class as having its own retain/release,
+ * RR is the most important: it marks the class as having its own retain/release,
  * which makes objc_retain send -retain instead of using libobjc's side table.
  *
  * A Swift class inherits retain/release from SwiftObject, so it must carry
@@ -60,7 +60,20 @@ struct mpls_objc_class {
  * Bit 17 there is RW_METHOD_ARRAY, which must never be inherited. */
 #define MPLS_RW_HAS_CUSTOM_RR  (1u << 15)
 #define MPLS_RW_HAS_CUSTOM_AWZ (1u << 16)
-#define MPLS_RW_INHERITED_MASK (MPLS_RW_HAS_CUSTOM_RR | MPLS_RW_HAS_CUSTOM_AWZ)
+
+/* Without these, objc skips this class's .cxx_construct and .cxx_destruct and
+ * every superclass's, which is where Swift initializes and destroys the stored
+ * properties of a class with Objective-C ancestry. realizeClass() sets them
+ * from the ro's flags and addSubclass() from the superclass's (objc4-551.1
+ * runtime/objc-runtime-new.mm, lines 1846-1852 and 1388-1394; values from its
+ * objc-runtime-new.h). */
+#define MPLS_RW_HAS_CXX_DTOR (1u << 19)
+#define MPLS_RW_HAS_CXX_CTOR (1u << 20)
+#define MPLS_RO_HAS_CXX_STRUCTORS (1u << 2)
+#define MPLS_RO_HAS_CXX_DTOR_ONLY (1u << 8)
+
+#define MPLS_RW_INHERITED_MASK (MPLS_RW_HAS_CUSTOM_RR | MPLS_RW_HAS_CUSTOM_AWZ \
+                                | MPLS_RW_HAS_CXX_CTOR | MPLS_RW_HAS_CXX_DTOR)
 
 extern struct objc_cache _objc_empty_cache;
 
@@ -73,6 +86,13 @@ static uint32_t mpls_inherited_flags(struct mpls_objc_class *cls) {
         (struct mpls_objc_class_rw *)(data & ~(uintptr_t)3);
     if (!super_rw || !(super_rw->flags & MPLS_RW_REALIZED)) return 0;
     return super_rw->flags & MPLS_RW_INHERITED_MASK;
+}
+
+static uint32_t mpls_ro_cxx_flags(const void *ro) {
+    uint32_t ro_flags = *(const uint32_t *)ro;
+    if (!(ro_flags & MPLS_RO_HAS_CXX_STRUCTORS)) return 0;
+    if (ro_flags & MPLS_RO_HAS_CXX_DTOR_ONLY) return MPLS_RW_HAS_CXX_DTOR;
+    return MPLS_RW_HAS_CXX_DTOR | MPLS_RW_HAS_CXX_CTOR;
 }
 
 static void mpls_minimal_realize(void *clsPtr) {
@@ -88,10 +108,11 @@ static void mpls_minimal_realize(void *clsPtr) {
     if (maybeRW && (maybeRW->flags & MPLS_RW_REALIZED)) return;
 
     const void *ro = maybeRW;
+    if (!ro) return;
     struct mpls_objc_class_rw *rw = calloc(1, sizeof *rw);
     if (!rw) return;
     /* One method list, so no RW_METHOD_ARRAY. */
-    rw->flags = MPLS_RW_REALIZED | mpls_inherited_flags(cls);
+    rw->flags = MPLS_RW_REALIZED | mpls_inherited_flags(cls) | mpls_ro_cxx_flags(ro);
     rw->version = 0;
     rw->ro = ro;
 

@@ -236,6 +236,13 @@ bucket pointer and two 32-bit counts) where 532.2's held a cache pointer and a v
 realization stored `&_objc_empty_vtable` into those counts; 10.9's libobjc defines that symbol as
 absolute 0, so they were already 0, and are now written as 0. `class_rw_t` is 56 bytes, not 48.
 
+The realization also skipped the C++ structor flags. objc4-551.1's `realizeClass` sets
+`RW_HAS_CXX_DTOR` (bit 19) from `RO_HAS_CXX_STRUCTORS` and `RW_HAS_CXX_CTOR` (bit 20) unless
+`RO_HAS_CXX_DTOR_ONLY` (`runtime/objc-runtime-new.mm` lines 1846 to 1852), and `addSubclass` copies
+both from the superclass (lines 1388 to 1394). Without them `object_cxxConstructFromClass` and
+`object_cxxDestructFromClass` (`runtime/objc-class.mm` lines 436 and 389) stop at the class, so neither
+its `.cxx_construct` and `.cxx_destruct` nor any superclass's ran. The realization now does both.
+
 `tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,
 made with OpenSSL 3.6.2: a self-signed RSA-2048 root, and two RSA-2048 leaves it signed with
 SHA-256, valid 2026 to 2126 and 2000 to 2001. Their keys were not kept.
