@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 . tests/helpers/macos.sh
 x86_64_runs || { echo "SKIP: this host cannot run x86_64 programs"; exit 77; }
 D="$(mktemp -d "${TMPDIR:-/tmp}/forward-dylib.XXXXXX")"
+D="$(cd "$D" && pwd -P)"
 trap 'rm -rf "$D"' EXIT
 fail=0
 bad() { echo "FAIL: $*"; fail=1; }
