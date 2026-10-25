@@ -382,7 +382,10 @@ RTLD_NOLOAD)` handle finds any forwarded name, from a program or a dylib, so the
 add nothing there; it is not used. `tests/forward-runtime.sh` checks `clock_gettime` both ways, from a
 program linking `librecaulk.a` and from one linking `libRecaulkSystem.dylib`. On 10.9 it checks that our
 implementation ran; on 10.12 and later, which CI's runners provide, that the system's did. Nothing
-checks 10.10 or 10.11.
+checks 10.10 or 10.11. `tests/forward-dylib.sh` checks the same from inside an ordinary dylib
+linked from the members that define `os_system_version_get_current_version` and `qos_class_self`,
+with those names passed to `-Wl,-unexported_symbol` and without, loaded before libSystem, after it
+and by `dlopen`. There `RTLD_NEXT` must never find the dylib itself.
 
 The renamed `___recaulk_impl_` functions stay global in `librecaulk.a`, since drydock renames symbols
 but cannot make them private. `libRecaulkSystem.dylib` is linked with
