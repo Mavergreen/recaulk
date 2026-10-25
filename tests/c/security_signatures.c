@@ -12,6 +12,7 @@ OSStatus SecKeyRawVerify(SecKeyRef key, SecPadding padding, const uint8_t *signe
                          const uint8_t *sig, size_t sigLen);
 
 static int failures, checks;
+static void fails_with(const char *label, SecKeyRef key, CFStringRef alg, CFDataRef data, long code);
 static int backfill;
 
 static void check(int ok, const char *what) {
@@ -101,6 +102,37 @@ static int raw_verifies_rsa(SecKeyRef pub, const struct digest *d, CFDataRef dig
 static int raw_verifies_ec(SecKeyRef pub, CFDataRef digest, CFDataRef sig) {
   return SecKeyRawVerify(pub, kSecPaddingNone, CFDataGetBytePtr(digest), (size_t)CFDataGetLength(digest),
                          CFDataGetBytePtr(sig), (size_t)CFDataGetLength(sig)) == errSecSuccess;
+}
+
+static void rsa_input_of_length(SecKeyRef pub, SecKeyRef priv, size_t len, int signs) {
+  char what[256];
+  uint8_t in[200], info[256];
+  size_t i;
+  for (i = 0; i < len; i++) in[i] = (uint8_t)(i * 7 + 1);
+  CFDataRef data = CFDataCreate(NULL, in, (CFIndex)len);
+  CFErrorRef err = NULL;
+  CFDataRef sig = SecKeyCreateSignature(priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), data, &err);
+  if (signs) {
+    snprintf(what, sizeof what, "RSA SHA-256 given a %zu-byte input: SecKeyCreateSignature signs it, as Apple's does", len);
+    check(sig != NULL, what);
+    if (sig) {
+      /* spec: RFC 8017 appendix A.2.4, DigestInfo ::= SEQUENCE { SEQUENCE { OID, NULL }, OCTET STRING } */
+      memcpy(info, di_sha256, sizeof di_sha256);
+      info[1] = (uint8_t)(sizeof di_sha256 - 2 + len);
+      info[sizeof di_sha256 - 1] = (uint8_t)len;
+      memcpy(info + sizeof di_sha256, in, len);
+      snprintf(what, sizeof what, "RSA SHA-256 given a %zu-byte input: SecKeyRawVerify accepts it as PKCS#1 v1.5 over DigestInfo(SHA-256 OID, input)", len);
+      check(SecKeyRawVerify(pub, kSecPaddingPKCS1, info, sizeof di_sha256 + len, CFDataGetBytePtr(sig), (size_t)CFDataGetLength(sig)) == errSecSuccess, what);
+      CFRelease(sig);
+    }
+    if (err) CFRelease(err);
+  } else {
+    if (sig) CFRelease(sig);
+    if (err) CFRelease(err);
+    snprintf(what, sizeof what, "RSA SHA-256 given a %zu-byte input, whose DigestInfo is too long to encode", len);
+    fails_with(what, priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), data, errSecParam);
+  }
+  CFRelease(data);
 }
 
 static CFDataRef tampered(CFDataRef sig) {
@@ -233,7 +265,10 @@ int main(void) {
   fails_with("signing with an RSA public key", rsa_pub, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("signing with an EC public key", p256_pub, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("an algorithm Apple does not define", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA3"), d256, errSecParam);
-  fails_with("RSA SHA-256 given a 20-byte digest", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d20, backfill ? errSecParam : 0);
+  rsa_input_of_length(rsa_pub, rsa_priv, 0, 1);
+  rsa_input_of_length(rsa_pub, rsa_priv, 20, 1);
+  rsa_input_of_length(rsa_pub, rsa_priv, 107, 1);
+  rsa_input_of_length(rsa_pub, rsa_priv, 108, 0);
   fails_with("ECDSA SHA-256 given a 20-byte digest", p256_priv, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d20, errSecParam);
 
   if (backfill) {

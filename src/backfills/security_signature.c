@@ -71,7 +71,7 @@ static int key_signs(SecKeyRef key, enum recaulk_sig_family family) {
 
 CFDataRef SecKeyCreateSignature(SecKeyRef key, SecKeyAlgorithm algorithm, CFDataRef dataToSign, CFErrorRef *error) {
 	const struct recaulk_sig_algorithm *alg;
-	uint8_t input[19 + 64];
+	uint8_t input[127];
 	const uint8_t *in;
 	size_t in_len, sig_len;
 	CFMutableDataRef sig;
@@ -88,18 +88,29 @@ CFDataRef SecKeyCreateSignature(SecKeyRef key, SecKeyAlgorithm algorithm, CFData
 	}
 	in = CFDataGetBytePtr(dataToSign);
 	in_len = (size_t)CFDataGetLength(dataToSign);
-	if (in_len != alg->digest_len) {
-		set_error(error, errSecParam, CFSTR("SecKeyCreateSignature: bad digest size for signing with algorithm"));
-		return NULL;
-	}
-	if (alg->family == RECAULK_SIG_RSA_PKCS1V15) {
+	sig_len = SecKeyGetBlockSize(key);
+	if (alg->family == RECAULK_SIG_ECDSA_X962) {
+		/* spec: Apple Security-58286.1.32 OSX/sec/Security/SecKeyAdaptors.c line 182 (10.13 on) */
+		if (in_len != alg->digest_len) {
+			set_error(error, errSecParam, CFSTR("SecKeyCreateSignature: bad digest size for signing with algorithm"));
+			return NULL;
+		}
+	} else {
+		/* spec: apple/corecrypto ccrsa/src/ccrsa_emsa_pkcs1v15_encode.c lines 31-66, which
+		   SecKeyAdaptors.c line 323 hands the input: DigestInfo(OID, input) of any length that fits */
+		size_t tlen = alg->digest_info_len + in_len;
+		if (tlen >= sizeof input || sig_len < 11 || tlen > sig_len - 11) {
+			set_error(error, errSecParam, CFSTR("SecKeyCreateSignature: RSAsign wrong input data length"));
+			return NULL;
+		}
 		memcpy(input, alg->digest_info, alg->digest_info_len);
+		input[1] = (uint8_t)(tlen - 2);
+		input[alg->digest_info_len - 1] = (uint8_t)in_len;
 		memcpy(input + alg->digest_info_len, in, in_len);
 		in = input;
-		in_len += alg->digest_info_len;
+		in_len = tlen;
 	}
 
-	sig_len = SecKeyGetBlockSize(key);
 	sig = CFDataCreateMutable(kCFAllocatorDefault, (CFIndex)sig_len);
 	if (!sig) {
 		set_error(error, errSecAllocate, NULL);

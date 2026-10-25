@@ -179,16 +179,25 @@ dataToSign, CFErrorRef *error)`, `typedef CFStringRef SecKeyAlgorithm`) and its 
 
 | Algorithm | 10.9 back-fill |
 |---|---|
-| `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | PKCS#1 v1.5 over the RFC 8017 DigestInfo of the digest |
-| `kSecKeyAlgorithmECDSASignatureDigestX962SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | X9.62 DER ECDSA over the digest |
+| `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | PKCS#1 v1.5 over DigestInfo(the hash's OID, the input), whatever the input's length; refused with `errSecParam` when that DigestInfo reaches 127 bytes or does not fit the key |
+| `kSecKeyAlgorithmECDSASignatureDigestX962SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | X9.62 DER ECDSA over the digest; input of any other length is refused with `errSecParam` |
 | `kSecKeyAlgorithmRSASignatureDigestPSS*` | refused: `NULL` and `errSecParam`, "algorithm not supported by the key". 10.9 has no PSS primitive |
 | any other algorithm | refused the same way |
 
-A key of the wrong type or a public key gets that same refusal, as Apple's adaptors give it. Input that
-is not the algorithm's digest length fails with `errSecParam`: Apple's ECDSA adaptor checks this,
-and `SecKey.h` says the RSA input "must be" that digest, so the back-fill does not guess at a
-DigestInfo for anything else. On newer macOS, `tests/security-signatures.sh` requires
-Apple's own to refuse the RSA case too, with any error. Every
+A key of the wrong type or a public key gets that same refusal, as Apple's adaptors give it. The input's
+length is handled as Apple's is, though `SecKey.h` says the input "must be" the digest:
+
+- RSA: `SecKeyAdaptors.c` (Security-58286.1.32, line 323; Security-57740.1.18, line 252) hands the
+  input, of any length, to corecrypto's `ccrsa_emsa_pkcs1v15_encode`. That
+  (`apple/corecrypto` `ccrsa/src/ccrsa_emsa_pkcs1v15_encode.c`, lines 31 to 66) writes
+  DigestInfo(OID, input) with the input's own length, and fails, which Security reports as
+  `errSecParam` "RSAsign wrong input data length", when the DigestInfo is 127 bytes or more or
+  longer than the key's block less 11. macOS 26 signs a 20-byte input given as SHA-256.
+- ECDSA: from Security-58286.1.32 (10.13), `SecKeyAdaptors.c` line 182 refuses a digest whose length
+  is not the hash's with `errSecParam` "bad digest size". 10.12's Security-57740.1.18 (lines 168 to 172)
+  passed any length through; the back-fill follows 10.13 and later.
+
+`tests/security-signatures.sh` asserts both on every macOS, against whichever implementation runs. Every
 error is in `kCFErrorDomainOSStatus` and owned by the caller; a failed `SecKeyRawSign` reports its own
 `OSStatus`, and a failed allocation `errSecAllocate`. Success leaves `*error` untouched, as Apple's
 does. A `NULL` key or data, which Apple's raises on, fails with `errSecParam`. `SecKeyVerifySignature`,
@@ -197,7 +206,7 @@ parameter.
 
 Security Transforms, which Tailscale's certstore overlay signs with, are not used: given an input that
 is not exactly the digest's length, a 10.9 sign transform returned an RSA signature that does not verify
-as PKCS#1 v1.5 over that input's DigestInfo. The transforms are the test's independent verifier instead.
+as PKCS#1 v1.5 over that input's DigestInfo, where Apple's signs exactly that. The transforms are the test's independent verifier instead.
 
 `SecTrustEvaluateWithError`: behaviour fix (spec: back-fills match the real API). A failure set an
 error whose domain was a description string and whose code was 0. As Apple's `SecTrustCopyError` does
