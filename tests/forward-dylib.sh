@@ -24,6 +24,7 @@ elif version_below "$ver" 10.10 && ! version_below "$ver" 10.9; then
 else
   era=between
 fi
+echo "era: $era ($ver)"
 
 nm -A "$T/lib/librecaulk.a" > "$D/archive.nm" || { echo "FAIL: nm -A could not read librecaulk.a"; exit 1; }
 want="___recaulk_resolve"
@@ -55,7 +56,7 @@ for shape in hidden exported; do
   cmp -s "$D/$shape.exports" "$D/$shape.want" \
     || bad "the $shape dylib exports $(tr '\n' ' ' < "$D/$shape.exports")but should export only $(tr '\n' ' ' < "$D/$shape.want")(no ___recaulk_ name, and an API name only where the link leaves it exported)"
   for n in $names; do
-    nm -u "$lib" | grep -qx "_$n" && bad "the $shape dylib imports _$n instead of carrying Recaulk's trampoline"
+    nm -u "$lib" | awk "{ print \$NF }" | grep -qx "_$n" && bad "the $shape dylib imports _$n instead of carrying Recaulk's trampoline"
     nm "$lib" | awk -v s="_$n" '$NF == s && ($2 == "t" || $2 == "T") { f = 1 } END { exit !f }' \
       || bad "the $shape dylib does not define _$n"
   done
@@ -91,7 +92,7 @@ esac
 bounded() {
   "$@" > "$D/out" 2>&1 &
   bpid=$!
-  ( sleep 60; kill -9 "$bpid" ) > /dev/null 2>&1 &
+  ( sleep 60 & spid=$!; trap "kill \$spid; exit 0" TERM; wait "$spid"; kill -9 "$bpid" ) > /dev/null 2>&1 &
   wpid=$!
   wait "$bpid" && brc=0 || brc=$?
   { kill "$wpid"; wait "$wpid"; } > /dev/null 2>&1 || true
@@ -126,10 +127,18 @@ judge() {
           || bad "$label: control: dlsym(RTLD_DEFAULT, \"qos_class_self\") found $(field "$out" default-qos), not the dylib's own exported trampoline, so this test cannot show a resolver that would self-resolve"
       fi ;;
     system)
-      [ "$(field "$out" osv-version)" = "$(field "$out" system-osv | sed 's/^0 //')" ] \
-        || bad "$label: the dylib's os_system_version_get_current_version reported $(field "$out" osv-version), the system's $(field "$out" system-osv)"
-      [ "$(field "$out" qos)" = "$(field "$out" system-qos)" ] \
-        || bad "$label: the dylib's qos_class_self returned $(field "$out" qos), the system's $(field "$out" system-qos)"
+      osv_sys="$(field "$out" system-osv | sed "s/^0 //")"
+      if [ "$(field "$out" osv-version)" = "$osv_sys" ]; then
+        echo "$label: on $ver os_system_version_get_current_version from the dylib reported $osv_sys, as the system's does"
+      else
+        bad "$label: the dylib's os_system_version_get_current_version reported $(field "$out" osv-version), the system's $(field "$out" system-osv)"
+      fi
+      if [ "$(field "$out" qos)" = "$(field "$out" system-qos)" ]; then
+        echo "$label: on $ver qos_class_self from the dylib returned $(field "$out" qos), as the system's does"
+      else
+        bad "$label: the dylib's qos_class_self returned $(field "$out" qos), the system's $(field "$out" system-qos)"
+      fi
+      echo "$label: on $ver RTLD_NEXT from the dylib found osv in $(field "$out" next-osv), qos in $(field "$out" next-qos), getpid in $(field "$out" next-getpid)"
       for n in osv qos; do
         tgt="$(field "$out" "$n-target")"
         case "$tgt" in
