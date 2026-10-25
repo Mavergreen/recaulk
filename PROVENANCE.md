@@ -231,6 +231,11 @@ and 16, the RR and AWZ flags objc4-551.1's `addSubclass` propagates. `tests/objc
 realizes subclasses of `NSObject` and of a custom retain/release root and checks their methods, their
 retain/release and their flags.
 
+Its layout structs now follow objc4-551.1 too. 551.1's `objc_class` holds an inline `cache_t` (a
+bucket pointer and two 32-bit counts) where 532.2's held a cache pointer and a vtable pointer. The
+realization stored `&_objc_empty_vtable` into those counts; 10.9's libobjc defines that symbol as
+absolute 0, so they were already 0, and are now written as 0. `class_rw_t` is 56 bytes, not 48.
+
 `tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,
 made with OpenSSL 3.6.2: a self-signed RSA-2048 root, and two RSA-2048 leaves it signed with
 SHA-256, valid 2026 to 2126 and 2000 to 2001. Their keys were not kept.

@@ -18,7 +18,7 @@
 #include <objc/objc.h>
 #include <objc/runtime.h>
 
-/* objc4-532.2 class_rw_t (x86_64), 48 bytes. */
+/* objc4-551.1 class_rw_t (x86_64), 56 bytes. */
 struct mpls_objc_class_rw {
     uint32_t flags;
     uint32_t version;
@@ -30,12 +30,13 @@ struct mpls_objc_class_rw {
     void *nextSiblingClass;
 };
 
-/* objc4-532.2 class_t (x86_64), 40 bytes. */
+/* objc4-551.1 objc_class (x86_64), 40 bytes: cache_t is inline, with no vtable. */
 struct mpls_objc_class {
     struct mpls_objc_class *isa;
     struct mpls_objc_class *superclass;
-    void *cache;
-    void *vtable;
+    void *cache_buckets;
+    uint32_t cache_shiftmask;
+    uint32_t cache_occupied;
     uintptr_t data_NEVER_USE;   /* data() is this with the low 2 bits masked */
 };
 
@@ -62,7 +63,6 @@ struct mpls_objc_class {
 #define MPLS_RW_INHERITED_MASK (MPLS_RW_HAS_CUSTOM_RR | MPLS_RW_HAS_CUSTOM_AWZ)
 
 extern struct objc_cache _objc_empty_cache;
-extern void *_objc_empty_vtable;
 
 /* Flags a realized class carries that a newly realized subclass must inherit.
  * Returns 0 if the superclass is missing or not itself realized yet. */
@@ -95,13 +95,14 @@ static void mpls_minimal_realize(void *clsPtr) {
     rw->version = 0;
     rw->ro = ro;
 
-    cls->cache = &_objc_empty_cache;
-    cls->vtable = &_objc_empty_vtable;
-    /* setData, preserving the is-swift low bits that objc-532 masks off. */
+    cls->cache_buckets = &_objc_empty_cache;
+    cls->cache_shiftmask = 0;
+    cls->cache_occupied = 0;
+    /* setData, preserving the is-swift low bits, as objc4-551.1's does. */
     cls->data_NEVER_USE = (uintptr_t)rw | (data & (uintptr_t)3);
 }
 
-/* objc4-532 class_ro_t (x86_64): baseMethods sits at offset 32. */
+/* objc4-551.1 class_ro_t (x86_64): baseMethods sits at offset 32. */
 struct mpls_objc_method {
     void *name;          /* a SEL once registered; a char* before that */
     const char *types;
@@ -113,14 +114,14 @@ struct mpls_objc_method_list {
     struct mpls_objc_method first;
 };
 
-/* Realizing the class is not enough on its own: objc4-532 builds a realized
+/* Realizing the class is not enough on its own: objc4-551.1 builds a realized
  * class's method list during realizeClass, and the minimal realization above
  * leaves it empty. A class with no methods answers nothing, so a Swift generic
  * class standing in for NSDictionary fails as
  *
  *   -[NSDictionary count]: method only defined for abstract class
  *
- * the moment Foundation asks it anything. Rather than reproduce objc-532's
+ * the moment Foundation asks it anything. Rather than reproduce objc4-551.1's
  * method-list layout -- which varies with whether categories have been
  * attached -- the methods are handed to objc through class_addMethod, which
  * builds whatever representation this runtime uses and updates the class's
