@@ -28,8 +28,8 @@ defined_in_archive() {
     }'
 }
 
-# Rule 1's one exception, exact and declared: build/image-local-shadows.txt lists each hidden
-# definition allowed to shadow a 10.9 export inside the linking image, with its reason.
+# spec: rule 1's one exception, exact and declared: build/image-local-shadows.txt lists each hidden
+#       definition allowed to shadow a 10.9 export inside the linking image, with its reason.
 grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $1, $2 }' > "$tmp/shadows"
 defined_in_archive "$W/librecaulk-backfills.a" > "$tmp/defined"
 while read -r member sym vis; do
