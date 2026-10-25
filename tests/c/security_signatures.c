@@ -106,7 +106,7 @@ static int raw_verifies_ec(SecKeyRef pub, CFDataRef digest, CFDataRef sig) {
 
 static void rsa_input_of_length(SecKeyRef pub, SecKeyRef priv, size_t len, int signs) {
   char what[256];
-  uint8_t in[200], info[256];
+  uint8_t in[256], info[300];
   size_t i;
   for (i = 0; i < len; i++) in[i] = (uint8_t)(i * 7 + 1);
   CFDataRef data = CFDataCreate(NULL, in, (CFIndex)len);
@@ -129,10 +129,29 @@ static void rsa_input_of_length(SecKeyRef pub, SecKeyRef priv, size_t len, int s
   } else {
     if (sig) CFRelease(sig);
     if (err) CFRelease(err);
-    snprintf(what, sizeof what, "RSA SHA-256 given a %zu-byte input, whose DigestInfo is too long to encode", len);
+    snprintf(what, sizeof what, "RSA SHA-256 given a %zu-byte input, longer than the SHA-256 digest", len);
     fails_with(what, priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), data, errSecParam);
   }
   CFRelease(data);
+}
+
+static void rsa_length_diagnostic(SecKeyRef priv) {
+  uint8_t in[256];
+  size_t len, limit = SecKeyGetBlockSize(priv) - 11, largest = 0;
+  long first_refusal = 0;
+  int any = 0, refused_at = -1;
+  memset(in, 0x5c, sizeof in);
+  for (len = 0; len <= limit && len <= sizeof in; len++) {
+    CFDataRef data = CFDataCreate(NULL, in, (CFIndex)len);
+    CFErrorRef err = NULL;
+    CFDataRef sig = SecKeyCreateSignature(priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), data, &err);
+    if (sig) { largest = len; any = 1; CFRelease(sig); }
+    else if (refused_at < 0) { refused_at = (int)len; first_refusal = err ? (long)CFErrorGetCode(err) : 0; }
+    if (err) CFRelease(err);
+    CFRelease(data);
+  }
+  printf("diagnostic: RSA-%zu SHA-256 PKCS#1 v1.5 signs inputs up to %s%zu bytes; first refused at %d bytes, error %ld\n",
+         SecKeyGetBlockSize(priv) * 8, any ? "" : "(none) ", largest, refused_at, first_refusal);
 }
 
 static CFDataRef tampered(CFDataRef sig) {
@@ -265,10 +284,12 @@ int main(void) {
   fails_with("signing with an RSA public key", rsa_pub, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("signing with an EC public key", p256_pub, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d256, backfill ? errSecParam : 0);
   fails_with("an algorithm Apple does not define", rsa_priv, CFSTR("algid:sign:RSA:digest-PKCS1v15:SHA3"), d256, errSecParam);
+  rsa_length_diagnostic(rsa_priv);
   rsa_input_of_length(rsa_pub, rsa_priv, 0, 1);
   rsa_input_of_length(rsa_pub, rsa_priv, 20, 1);
-  rsa_input_of_length(rsa_pub, rsa_priv, 107, 1);
-  rsa_input_of_length(rsa_pub, rsa_priv, 108, 0);
+  rsa_input_of_length(rsa_pub, rsa_priv, 32, 1);
+  rsa_input_of_length(rsa_pub, rsa_priv, 33, 0);
+  rsa_input_of_length(rsa_pub, rsa_priv, 107, 0);
   fails_with("ECDSA SHA-256 given a 20-byte digest", p256_priv, CFSTR("algid:sign:ECDSA:digest-X962:SHA256"), d20, errSecParam);
 
   if (backfill) {

@@ -179,7 +179,7 @@ dataToSign, CFErrorRef *error)`, `typedef CFStringRef SecKeyAlgorithm`) and its 
 
 | Algorithm | 10.9 back-fill |
 |---|---|
-| `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | PKCS#1 v1.5 over DigestInfo(the hash's OID, the input), whatever the input's length; refused with `errSecParam` when that DigestInfo reaches 127 bytes or does not fit the key |
+| `kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | PKCS#1 v1.5 over DigestInfo(the hash's OID, the input) for input up to the digest's length, shorter included; longer input is refused with `errSecParam` |
 | `kSecKeyAlgorithmECDSASignatureDigestX962SHA1`, `SHA224`, `SHA256`, `SHA384`, `SHA512` | X9.62 DER ECDSA over the digest; input of any other length is refused with `errSecParam` |
 | `kSecKeyAlgorithmRSASignatureDigestPSS*` | refused: `NULL` and `errSecParam`, "algorithm not supported by the key". 10.9 has no PSS primitive |
 | any other algorithm | refused the same way |
@@ -187,12 +187,13 @@ dataToSign, CFErrorRef *error)`, `typedef CFStringRef SecKeyAlgorithm`) and its 
 A key of the wrong type or a public key gets that same refusal, as Apple's adaptors give it. The input's
 length is handled as Apple's is, though `SecKey.h` says the input "must be" the digest:
 
-- RSA: `SecKeyAdaptors.c` (Security-58286.1.32, line 323; Security-57740.1.18, line 252) hands the
-  input, of any length, to corecrypto's `ccrsa_emsa_pkcs1v15_encode`. That
-  (`apple/corecrypto` `ccrsa/src/ccrsa_emsa_pkcs1v15_encode.c`, lines 31 to 66) writes
-  DigestInfo(OID, input) with the input's own length, and fails, which Security reports as
-  `errSecParam` "RSAsign wrong input data length", when the DigestInfo is 127 bytes or more or
-  longer than the key's block less 11. macOS 26 signs a 20-byte input given as SHA-256.
+- RSA: every 10.9 key is a CDSA key, and on later macOS such a key (one `SecKeyGeneratePair` makes
+  outside the data protection keychain, say) signs in its own backend, `SecCDSAKeyCopyOperationResult`
+  (`OSX/libsecurity_keychain/lib/SecKey.cpp` at db15acbe, lines 615 to 618 and 724 to 727; Security-58286.1.32,
+  lines 560 and 667). It refuses input longer than the digest with `errSecParam` and signs shorter input
+  under the digest's OID. macOS 26 signs 0- and 20-byte SHA-256 input and refuses 107 bytes. A key in the
+  data protection keychain takes the `SecKeyAdaptors` path to corecrypto's `ccrsa_emsa_pkcs1v15_encode`
+  instead, which takes longer input; 10.9 has no such key.
 - ECDSA: from Security-58286.1.32 (10.13), `SecKeyAdaptors.c` line 182 refuses a digest whose length
   is not the hash's with `errSecParam` "bad digest size". 10.12's Security-57740.1.18 (lines 168 to 172)
   passed any length through; the back-fill follows 10.13 and later.

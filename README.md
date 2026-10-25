@@ -53,9 +53,9 @@ and must refresh the snapshot when registrations change.
 
 `SecKeyCreateSignature` takes Apple's `SecKeyAlgorithm` constants and signs on 10.9 with RSA
 PKCS#1 v1.5 or X9.62 ECDSA over a SHA-1, SHA-224, SHA-256, SHA-384 or SHA-512 digest. As Apple's
-does, it signs RSA input of any length that fits, and refuses ECDSA input that is not the digest's
-length. It refuses RSA-PSS, for which 10.9's Security has no primitive, and every other algorithm,
-with `errSecParam`, as Apple's does for an algorithm a key does not support.
+does for a 10.9 key, it signs RSA input no longer than the digest, and refuses ECDSA input that is
+not the digest's length. It refuses RSA-PSS, for which 10.9's Security has no primitive, and every
+other algorithm, with `errSecParam`, as Apple's does for an algorithm a key does not support.
 `SecTrustEvaluateWithError` reports a failure as Apple's does, in `kCFErrorDomainOSStatus` with
 codes such as `errSecNotTrusted` and `errSecCertificateExpired`, and `SecTrustCopyCertificateChain`
 returns `NULL` for a chain without certificates. Through `include/recaulk`, `<Security/Security.h>`
