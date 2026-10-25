@@ -389,6 +389,19 @@ but cannot make them private. `libRecaulkSystem.dylib` is linked with
 `-Wl,-unexported_symbol,___recaulk_*`, and a product that links `librecaulk.a` into a dylib of its own
 passes the same flag.
 
+## Pointer catch rules, hidden and public
+
+`src/backfills/cxxabi_pointer_catch.c` is our own (2026-10-25), ported from LLVM 22's
+`libcxxabi/src/private_typeinfo.cpp` (Apache-2.0 WITH LLVM-exception). It defines the
+`__pointer_type_info` and `__pointer_to_member_type_info` vtables, which 10.9's libc++abi exports
+too. In `librecaulk.a` they are hidden, so they bind only inside the linking image:
+`build/image-local-shadows.txt` declares them as rule 1's one exception. `build/build-lib.sh` builds
+the same source again with `RECAULK_CXXABI_EXPORTS`, public, into `librecaulk-cxxabi-exports.a`,
+the one archive that deliberately exports system-named symbols. Its single intended consumer is
+libcxx22's `libc++abi.1.dylib`. `tests/cxxabi-exports.sh` checks that `librecaulk.a` defines both
+hidden, that the new archive defines exactly the two, public, and that a dylib built the way
+`libc++abi.1.dylib` is gives a program linked against it the same catch results.
+
 ## Parity fixture
 
 `tests/fixtures/libSystemWrapper-exports.txt` is the export list of Mavericks Forever's shipped

@@ -14,8 +14,12 @@
  *
  * HIDDEN, deliberately: these replace the system's vtables only inside the image that links them,
  * and other images, the system's own libraries among them, keep the system's rules. Both names are
- * 10.9 exports, so build/image-local-shadows.txt declares them, rule 1's one exception. Left as the system has it: catch (void *) of a
- * function pointer, since void*'s type_info is the system's.
+ * 10.9 exports, so build/image-local-shadows.txt declares them, rule 1's one exception. Left as the
+ * system has it: catch (void *) of a function pointer, since void*'s type_info is the system's.
+ *
+ * Built a second time with RECAULK_CXXABI_EXPORTS, public, into librecaulk-cxxabi-exports.a and never
+ * into librecaulk.a: for libcxx22's libc++abi.1.dylib, its one consumer, to export, so every program
+ * that reaches the C++ ABI through libcxx22 gets these rules too.
  *
  * Ported from LLVM 22's libcxxabi/src/private_typeinfo.cpp: throw nullptr caught as a pointer or
  * member pointer, noexcept function pointers caught as plain ones, multi-level qualification
@@ -180,7 +184,13 @@ static bool ptm_can_catch(const struct ptm *self, const struct ti *thrown, void 
 
 static void nothing(const struct ti *self) { (void)self; }
 
-#define RECAULK_VTABLE(var, sym) __attribute__((visibility("hidden"), used)) const void *const var[7] __asm__(sym)
+#ifdef RECAULK_CXXABI_EXPORTS
+#define RECAULK_VTABLE_VISIBILITY "default"
+#else
+#define RECAULK_VTABLE_VISIBILITY "hidden"
+#endif
+#define RECAULK_VTABLE(var, sym) \
+  __attribute__((visibility(RECAULK_VTABLE_VISIBILITY), used)) const void *const var[7] __asm__(sym)
 RECAULK_VTABLE(recaulk_pointer_vt, "__ZTVN10__cxxabiv119__pointer_type_infoE") =
   { NULL, &ti_pointer, (const void *)nothing, (const void *)nothing, (const void *)nothing,
     (const void *)nothing, (const void *)pointer_can_catch };

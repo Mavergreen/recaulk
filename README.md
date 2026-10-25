@@ -7,6 +7,7 @@ Recaulk supplies them:
 
 - `librecaulk.a` for source code
 - `libRecaulkSystem.dylib` for binaries
+- `librecaulk-cxxabi-exports.a` for one consumer only, libcxx22's `libc++abi.1.dylib` (see C++ exceptions)
 
 When running on newer macOS and a system-provided version of a Recaulk function exists, the system's version is preferred, with a few exceptions.
 
@@ -56,6 +57,11 @@ C++ code linked with `librecaulk.a` catches pointers and member pointers by the 
 derived pointer as a null base pointer, which 10.9's libc++abi gets wrong. The rules hold for the
 `catch` clauses of the program or dylib that links Recaulk; other libraries, the system's among
 them, keep their own.
+
+`librecaulk-cxxabi-exports.a` is the one archive that deliberately exports names the system
+exports: the same two C++ ABI vtables, public. Its one intended consumer is libcxx22's
+`libc++abi.1.dylib`, which exports them, so every program that reaches the C++ ABI through libcxx22
+gets these rules as well. Link it into nothing else.
 
 ## OS version
 

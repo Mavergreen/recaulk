@@ -46,6 +46,13 @@ for dir in backfills overrides; do
   done
   /usr/bin/libtool -static -o "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
 done
+# spec: README.md "C++ exceptions" -- the pointer catch vtables, public, for libcxx22's
+#       libc++abi.1.dylib to export; librecaulk.a keeps them hidden.
+mkdir -p "$W/cxxabi-exports" "$T/lib"
+/usr/bin/clang $flags -arch x86_64 -Os -fPIC -Wall -DRECAULK_CXXABI_EXPORTS \
+  -c "$MAVERICKS_ROOT/src/backfills/cxxabi_pointer_catch.c" -o "$W/cxxabi-exports/recaulk-cxxabi_pointer_catch.o"
+rm -f "$T/lib/librecaulk-cxxabi-exports.a"
+/usr/bin/libtool -static -o "$T/lib/librecaulk-cxxabi-exports.a" "$W/cxxabi-exports/recaulk-cxxabi_pointer_catch.o"
 
 mkdir -p "$B/drydock"
 DRYDOCK="$(sh "$SELF/fetch-drydock.sh" "$(cat "$MAVERICKS_ROOT/components/drydock/version")" "$B/drydock")"
