@@ -227,6 +227,35 @@ SHA-256, valid 2026 to 2126 and 2000 to 2001. Their keys were not kept.
 the 64-byte `b1`, an overrun. It now declares `unsigned char big[257]` and uses it for those two calls.
 That overrun is why it only survived an optimised build; the test builds without `-Os` now.
 
+## os_system_version_get_current_version
+
+`src/backfills/os_system_version.c` and `src/include/os/system_version.h` are Recaulk's own. The function
+is private SPI in `/usr/lib/system/libxpc.dylib`, re-exported by libSystem (11.3 SDK
+`usr/lib/system/libxpc.tbd` line 143). It is first exported in macOS 10.12: the 10.10 and 10.11 SDKs'
+`libxpc.tbd` lack it, and the 10.12 SDK's has it. No SDK header declares it, so the declaration is the one
+Apple's Swift runtime uses (`swiftlang/swift` `stdlib/public/stubs/Availability.mm` lines 24 to 31):
+`int os_system_version_get_current_version(struct os_system_version_s *)`, filling the caller's
+`{unsigned int major, minor, patch}`.
+
+On 10.9 the back-fill reads `ProductVersion` from `/System/Library/CoreServices/SystemVersion.plist`,
+which is XML there, with `open` and `read` alone: no CoreFoundation. It accepts two or three decimal
+components, with a missing patch reported as 0. It caches nothing, so concurrent first calls share no state.
+A test seam (the private-external `___recaulk_os_system_version_read`) feeds `tests/os-system-version.sh`
+a missing file and malformed plists.
+
+Its failure behaviour is a decision, because Apple publishes none. On success it fills the struct and
+returns 0. When the file cannot be read, it returns that `errno`. When `ProductVersion` is missing or is
+not `N.N` or `N.N.N` within `unsigned int`, it returns `EINVAL`. In every failure case it leaves the
+struct untouched. `errno` is unchanged either way. The value returned is safe for Swift's caller, which
+zeroes the struct first and ignores the return. On 10.12 and later the forwarding layer hands every call
+to libxpc's.
+
+Revisit trigger: these failure semantics stand by decision until Apple's real implementation confirms or
+contradicts them. On a macOS that has the function, `tests/os-system-version.sh` prints lldb's
+disassembly of it and of its `.cold.1` path into the CI log. If that disassembly shows a different
+success value, failure value or struct handling, or that the function traps instead of returning,
+change the back-fill to match it.
+
 ## Known MacPorts deviations and 10.9-fallback checks
 
 `test_polyfills` links `librecaulk.a`, so on 10.12 and later its calls to a forwarded function reach the

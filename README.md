@@ -57,6 +57,13 @@ derived pointer as a null base pointer, which 10.9's libc++abi gets wrong. The r
 `catch` clauses of the program or dylib that links Recaulk; other libraries, the system's among
 them, keep their own.
 
+## OS version
+
+`os_system_version_get_current_version`, which Swift's runtime calls for `if #available`, is
+declared by `<os/system_version.h>` through `include/recaulk`. On 10.9 it reads the version from
+`/System/Library/CoreServices/SystemVersion.plist` and returns 0. If it cannot read that file it returns
+an `errno` and leaves the version untouched, as it does when the file holds no version it can read. Newer macOS uses its own.
+
 ## Security
 
 `SecKeyCreateSignature` takes Apple's `SecKeyAlgorithm` constants and signs on 10.9 with RSA
