@@ -219,6 +219,18 @@ undeclared `SecKeyRawSign` are weak imports (`tests/security-weak-imports.sh`): 
 still launches a program linking these back-fills. Without the mapping the code is the raw CSSM one. With no result code it is `errSecInternalError`,
 Apple's default.
 
+`src/backfills/objc_read_class_pair.c`: behaviour fix (spec: back-fills match the real API). A newly
+realized class inherited its superclass's bit 17 as `RW_HAS_CUSTOM_AWZ`, the value objc4-532.2 (10.8)
+gives that bit. 10.9's objc4-551.1 (`runtime/objc-runtime-new.h` at tag `objc4-551.1`,
+`https://github.com/apple-oss-distributions/objc4/blob/objc4-551.1/runtime/objc-runtime-new.h`, lines
+133 to 137) makes bit 17 `RW_METHOD_ARRAY` and `RW_HAS_CUSTOM_AWZ` bit 16. A class whose superclass had
+categories, `NSObject` among them, was marked as holding an array of method lists while holding none.
+The first `class_addMethod` then stored a single list where objc expected the array, and the next lookup
+read the list's header as a pointer and crashed in `search_method_list`. The class now inherits bits 15
+and 16, the RR and AWZ flags objc4-551.1's `addSubclass` propagates. `tests/objc-read-class-pair.sh`
+realizes subclasses of `NSObject` and of a custom retain/release root and checks their methods, their
+retain/release and their flags.
+
 `tests/fixtures/trust-root.der`, `trust-leaf.der` and `trust-leaf-expired.der` are Recaulk's own,
 made with OpenSSL 3.6.2: a self-signed RSA-2048 root, and two RSA-2048 leaves it signed with
 SHA-256, valid 2026 to 2126 and 2000 to 2001. Their keys were not kept.

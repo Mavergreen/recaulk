@@ -41,10 +41,10 @@ struct mpls_objc_class {
 
 #define MPLS_RW_REALIZED (1u << 31)
 
-/* objc4-532 propagates these from the superclass when it realizes a class, and
- * the minimal realization below has to do the same. Bit 15 is the important
- * one: it marks the class as having its own retain/release, which makes
- * objc_retain send -retain instead of using libobjc's side table.
+/* objc4-551.1 addSubclass() propagates these from the superclass when it
+ * realizes a class, and the minimal realization below has to do the same.
+ * RR is the important one: it marks the class as having its own retain/release,
+ * which makes objc_retain send -retain instead of using libobjc's side table.
  *
  * A Swift class inherits retain/release from SwiftObject, so it must carry
  * this bit. Without it, ObjC retains land in the side table while Swift's own
@@ -55,11 +55,10 @@ struct mpls_objc_class {
  *
  * on the first Dictionary or Set to cross into Objective-C.
  *
- * The bit positions were established by observation on this OS rather than
- * taken from a header: build a class that overrides retain/release, register a
- * subclass of it, and see which flag the subclass inherits. */
+ * Values: objc4-551.1 runtime/objc-runtime-new.h, the objc4 in OS X 10.9.
+ * Bit 17 there is RW_METHOD_ARRAY, which must never be inherited. */
 #define MPLS_RW_HAS_CUSTOM_RR  (1u << 15)
-#define MPLS_RW_HAS_CUSTOM_AWZ (1u << 17)
+#define MPLS_RW_HAS_CUSTOM_AWZ (1u << 16)
 #define MPLS_RW_INHERITED_MASK (MPLS_RW_HAS_CUSTOM_RR | MPLS_RW_HAS_CUSTOM_AWZ)
 
 extern struct objc_cache _objc_empty_cache;
