@@ -31,7 +31,8 @@ static NSArray *records(NSString *dir, pid_t pid) {
     for (NSString *line in [s componentsSeparatedByString:@"\n"]) {
         if (![line length]) continue;
         id r = [NSJSONSerialization JSONObjectWithData:[line dataUsingEncoding:NSUTF8StringEncoding] options:0 error:NULL];
-        if (r) [out addObject:r];
+        if (![r isKindOfClass:[NSDictionary class]]) [NSException raise:@"WorkspaceEvidenceError" format:@"invalid fixture JSON record in PID %d", pid];
+        [out addObject:r];
     }
     return out;
 }
@@ -49,6 +50,16 @@ static BOOL contains(NSArray *rs, NSString *kind, NSString *url) {
                 [[expectedURL URLByResolvingSymlinksInPath] isEqual:[actualURL URLByResolvingSymlinksInPath]]) return YES;
         }
     }
+    return NO;
+}
+static BOOL startupMatches(NSDictionary *r, NSArray *arguments, NSString *environment) {
+    NSArray *argv = [r objectForKey:@"argv"];
+    return [argv isKindOfClass:[NSArray class]] && [argv count] == [arguments count] + 1 &&
+        [[argv subarrayWithRange:NSMakeRange(1, [arguments count])] isEqual:arguments] &&
+        [[r objectForKey:@"sentinel"] isEqual:environment];
+}
+static BOOL customPayload(NSArray *rs, NSString *payload) {
+    for (NSDictionary *r in rs) if ([[r objectForKey:@"kind"] isEqual:@"custom"] && [[r objectForKey:@"direct_string"] isEqual:payload]) return YES;
     return NO;
 }
 static NSArray *waitRecords(NSString *dir, pid_t pid, NSArray *urls, NSString *kind) {
@@ -86,7 +97,7 @@ int main(int argc, char **argv) {
     NSMutableArray *cleanup = [NSMutableArray array];
     [result setObject:calls forKey:@"calls"];
     int rc = 0;
-    NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
+    NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error nil-error-failure ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
     if (![known containsObject:c]) {
         [failures addObject:@"unknown case"]; rc = 1; goto finish;
     }
@@ -109,6 +120,7 @@ int main(int argc, char **argv) {
             [urls addObject:[NSURL fileURLWithPath:file]];
         }
         if ([c isEqual:@"empty"] || [c isEqual:@"custom-event"]) [urls removeAllObjects];
+        [result setObject:@{@"source": @"Pinned SDK NSWorkspace.h configuration comments; NSNumber architecture values from NSBundle.h", @"arguments_type": @"NSArray<NSString *>", @"environment_type": @"NSDictionary<NSString *, NSString *>", @"apple_event_type": @"NSAppleEventDescriptor", @"architecture_type": @"NSNumber containing NSBundleExecutableArchitecture", @"ownership_limit": @"Tests explicit caller retains across an autorelease pool, not internal autorelease/retain counts", @"activation_limit": @"Final frontmost state only; transient activation is unmeasured"} forKey:@"contract_provenance"];
         NSMutableDictionary *config = [NSMutableDictionary dictionaryWithObjectsAndKeys:@[@"--workspace-sentinel", @"argv exact value"], NSWorkspaceLaunchConfigurationArguments, @{@"WORKSPACE_PROBE_SENTINEL": @"environment exact value"}, NSWorkspaceLaunchConfigurationEnvironment, nil];
         NSRunningApplication *first = nil;
         if (reuse) {
@@ -130,7 +142,7 @@ int main(int argc, char **argv) {
         if ([c isEqual:@"unknown-key"]) [config setObject:@"sentinel" forKey:@"org.mavergreen.unknown-configuration-key"];
         if ([c isEqual:@"architecture"] || [c isEqual:@"impossible-architecture"]) {
 #if defined(__arm64__)
-            NSNumber *arch = @(0x0100000c); /* CPU_TYPE_ARM64, same NSNumber contract as NSBundleExecutableArchitecture */
+            NSNumber *arch = @(NSBundleExecutableArchitectureARM64);
 #else
             NSNumber *arch = @(NSBundleExecutableArchitectureX86_64);
 #endif
@@ -140,12 +152,20 @@ int main(int argc, char **argv) {
         NSWorkspaceLaunchOptions flags = NSWorkspaceLaunchWithoutActivation;
         if ([c isEqual:@"new-instance"]) flags |= NSWorkspaceLaunchNewInstance;
         if ([c isEqual:@"asynchronous"]) flags |= NSWorkspaceLaunchAsync;
-        NSURL *target = [c isEqual:@"invalid-app"] ? [NSURL fileURLWithPath:[report stringByAppendingPathComponent:@"DoesNotExist.app"]] : appURL;
+        NSURL *target = ([c isEqual:@"invalid-app"] || [c isEqual:@"nil-error-failure"]) ? [NSURL fileURLWithPath:[report stringByAppendingPathComponent:@"DoesNotExist.app"]] : appURL;
         NSRunningApplication *front = [NSWorkspace sharedWorkspace].frontmostApplication;
         pid_t frontPID = [front processIdentifier];
         NSAutoreleasePool *inner = [NSAutoreleasePool new];
         NSError *error = nil;
-        NSRunningApplication *returned = [[[NSWorkspace sharedWorkspace] openURLs:urls withApplicationAtURL:target options:flags configuration:config error:[c isEqual:@"nil-error"] ? NULL : &error] retain];
+        NSRunningApplication *returned = nil;
+        /* Only exceptions from this invocation are native behavior. Evidence,
+         * JSON and harness failures remain failures even in observation cases. */
+        @try {
+            returned = [[[NSWorkspace sharedWorkspace] openURLs:urls withApplicationAtURL:target options:flags configuration:config error:[c hasPrefix:@"nil-error"] ? NULL : &error] retain];
+        } @catch (NSException *native) {
+            [result setObject:@{@"name": native.name, @"reason": native.reason ?: @""} forKey:@"native_exception"];
+            if (!observation) [failures addObject:@"native API raised exception"];
+        }
         [error retain];
         NSDictionary *immediate = @{ @"finished_launching": @([returned isFinishedLaunching]), @"terminated": @([returned isTerminated]) };
         [immediate retain];
@@ -158,6 +178,7 @@ int main(int argc, char **argv) {
         NSArray *rs = returned ? waitRecords(events, pid, expected, [c isEqual:@"custom-event"] ? @"custom" : nil) : @[];
         [call setObject:rs forKey:@"evidence"];
         if ([c isEqual:@"invalid-app"]) workspaceCheck(!returned && error && [error.domain length], @"invalid app returns nil and usable NSError across pool boundary", failures);
+        else if ([c isEqual:@"nil-error-failure"]) workspaceCheck(!returned && !error, @"invalid app with NULL error output returns nil without exception", failures);
         else if (!observation) {
             workspaceCheck(owned(returned, appURL), @"returned application is fixture bundle", failures);
             workspaceCheck(pid > 0 && contains(rs, @"startup", nil), @"returned PID has startup evidence", failures);
@@ -165,42 +186,52 @@ int main(int argc, char **argv) {
             if (reuse) workspaceCheck([c isEqual:@"new-instance"] ? pid != first.processIdentifier : pid == first.processIdentifier, @"reuse/new-instance PID relationship", failures);
             for (NSDictionary *r in rs) if ([[r objectForKey:@"kind"] isEqual:@"startup"]) {
                 BOOL newInstance = [c isEqual:@"new-instance"];
-                NSArray *args = [r objectForKey:@"argv"];
-                workspaceCheck(newInstance ? [args containsObject:@"--must-not-reach-existing-process"] : ([args containsObject:@"--workspace-sentinel"] && [args containsObject:@"argv exact value"]), @"exact sentinel startup arguments", failures);
-                workspaceCheck([[r objectForKey:@"sentinel"] isEqual:newInstance ? @"must not replace startup environment" : @"environment exact value"], @"exact sentinel startup environment (unchanged on reuse)", failures);
+                workspaceCheck(startupMatches(r, newInstance ? @[@"--must-not-reach-existing-process"] : @[@"--workspace-sentinel", @"argv exact value"], newInstance ? @"must not replace startup environment" : @"environment exact value"), @"exact startup argv sequence (excluding argv[0]) and environment; no injected extras", failures);
                 if ([c isEqual:@"architecture"]) workspaceCheck([[r objectForKey:@"architecture"] isEqual:hostArch()], @"requested host architecture actually executed", failures);
             }
-            if ([c isEqual:@"custom-event"]) workspaceCheck(contains(rs, @"custom", nil), @"custom initial Apple event delivered", failures);
+            if ([c isEqual:@"custom-event"]) workspaceCheck(customPayload(rs, @"custom sentinel"), @"exact custom initial Apple event payload delivered", failures);
             if ([c isEqual:@"without-activation"]) workspaceCheck([[NSWorkspace sharedWorkspace].frontmostApplication processIdentifier] != pid && frontPID != pid, @"without-activation does not activate fixture", failures);
         }
         [immediate release]; [returned release]; [error release];
         /* Capture every fixture-owned PID, including side effects of failing calls.
          * Bundle identity, not process name or untrusted log PID, authorizes termination. */
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
+        NSDate *observationDeadline = [NSDate dateWithTimeIntervalSinceNow:3];
+        do {
+            for (NSRunningApplication *a in [[NSWorkspace sharedWorkspace] runningApplications]) if (owned(a, appURL) && ![cleanup containsObject:a]) [cleanup addObject:a];
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        } while (observationDeadline.timeIntervalSinceNow > 0);
         NSMutableArray *sideEffects = [NSMutableArray array];
-        for (NSRunningApplication *a in [[NSWorkspace sharedWorkspace] runningApplications]) if (owned(a, appURL)) {
-            if (![cleanup containsObject:a]) [cleanup addObject:a];
-            [sideEffects addObject:@{@"pid": @(a.processIdentifier), @"records": records(events, a.processIdentifier)}];
+        /* Include logs of exited fixture processes, never use their untrusted PID
+         * to authorize termination. Only the running-app identity above does so. */
+        for (NSString *file in [[NSFileManager defaultManager] contentsOfDirectoryAtPath:events error:NULL]) {
+            if (![file hasSuffix:@".jsonl"]) continue;
+            pid_t recordedPID = [[file stringByDeletingPathExtension] intValue];
+            [sideEffects addObject:@{@"pid": @(recordedPID), @"records": records(events, recordedPID)}];
         }
         [result setObject:sideEffects forKey:@"side_effects"];
+        [result setObject:@3 forKey:@"side_effect_observation_seconds"];
+        [result setObject:@"bounded snapshot only; events after deadline and processes exiting without logs are unmeasured" forKey:@"observation_limit"];
+        if (returned && !contains(rs, @"startup", nil)) [result setObject:@"returned PID startup not observed before deadline" forKey:@"missing_observation"];
         if ([c isEqual:@"architecture"]) [result setObject:@"dual-slice capability not measured" forKey:@"missing_observation"];
     } @catch (NSException *e) {
-        [result setObject:@{@"name": e.name, @"reason": e.reason ?: @""} forKey:@"exception"];
-        if (![[result objectForKey:@"observation_only"] boolValue]) [failures addObject:@"native API raised exception"];
-        NSMutableArray *sideEffects = [NSMutableArray array];
-        for (NSRunningApplication *a in [[NSWorkspace sharedWorkspace] runningApplications]) if (owned(a, appURL)) {
-            if (![cleanup containsObject:a]) [cleanup addObject:a];
-            [sideEffects addObject:@{@"pid": @(a.processIdentifier), @"records": records(events, a.processIdentifier)}];
-        }
-        [result setObject:sideEffects forKey:@"side_effects"];
+        [result setObject:@{@"name": e.name, @"reason": e.reason ?: @""} forKey:@"harness_exception"];
+        [failures addObject:@"harness/evidence exception (not native behavior)"];
+        [result setObject:@"side-effect collection incomplete after harness failure; raw files retained" forKey:@"missing_observation"];
+        for (NSRunningApplication *a in [[NSWorkspace sharedWorkspace] runningApplications]) if (owned(a, appURL) && ![cleanup containsObject:a]) [cleanup addObject:a];
     }
-finish:
+finish:;
+    BOOL cleanupCompleted = YES;
     for (NSRunningApplication *a in cleanup) if (owned(a, appURL)) {
         [a terminate];
         NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:3];
         while (!a.terminated && deadline.timeIntervalSinceNow > 0) [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
         if (!a.terminated && owned(a, appURL)) [a forceTerminate];
+        deadline = [NSDate dateWithTimeIntervalSinceNow:3];
+        while (!a.terminated && deadline.timeIntervalSinceNow > 0) [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        cleanupCompleted &= a.terminated;
     }
+    [result setObject:@(cleanupCompleted) forKey:@"cleanup_completed"];
+    if (!cleanupCompleted) [failures addObject:@"fixture cleanup did not complete before deadline"];
     [result setObject:failures forKey:@"failures"];
     rc = [failures count] ? 1 : rc;
     [result setObject:rc ? @"failed" : ([[result objectForKey:@"observation_only"] boolValue] ? @"observed-only" : @"passed") forKey:@"disposition"];
