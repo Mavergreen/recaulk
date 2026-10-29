@@ -7,6 +7,17 @@
 #import <objc/runtime.h>
 #include <unistd.h>
 
+#if !defined(MAC_OS_X_VERSION_10_10) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
+/* platform: declaration only for the floor SDK; runtime absence is checked before either call. */
+@interface NSWorkspace (WorkspaceReferenceDeclaration)
+- (NSRunningApplication *)openURLs:(NSArray *)urls
+             withApplicationAtURL:(NSURL *)applicationURL
+                          options:(NSWorkspaceLaunchOptions)options
+                    configuration:(NSDictionary *)configuration
+                            error:(NSError **)error;
+@end
+#endif
+
 static NSString *hostArch(void) {
 #if defined(__arm64__)
     return @"arm64";
@@ -44,7 +55,7 @@ static NSArray *waitRecords(NSString *dir, pid_t pid, NSArray *urls, NSString *k
 static BOOL owned(NSRunningApplication *app, NSURL *url) {
     return app && [[[app bundleURL] URLByResolvingSymlinksInPath] isEqual:[url URLByResolvingSymlinksInPath]];
 }
-static void check(BOOL ok, NSString *message, NSMutableArray *failures) {
+static void workspaceCheck(BOOL ok, NSString *message, NSMutableArray *failures) {
     if (!ok) [failures addObject:message];
 }
 int main(int argc, char **argv) {
@@ -63,14 +74,16 @@ int main(int argc, char **argv) {
     NSMutableArray *cleanup = [NSMutableArray array];
     [result setObject:calls forKey:@"calls"];
     int rc = 0;
-    if (!method) { [result setObject:@"system-method-absent" forKey:@"disposition"]; rc = 77; goto write; }
-    [result setObject:[NSString stringWithUTF8String:method_getTypeEncoding(method)] forKey:@"method_encoding"];
+    NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
+    if (![known containsObject:c]) {
+        [failures addObject:@"unknown case"]; rc = 1; goto finish;
+    }
     if (![[NSFileManager defaultManager] isExecutableFileAtPath:[[appURL path] stringByAppendingPathComponent:@"Contents/MacOS/WorkspaceProbe"]] || ![[NSFileManager defaultManager] fileExistsAtPath:events]) {
         [failures addObject:@"missing fixture/report prerequisites"]; rc = 1; goto finish;
     }
+    if (!method) { [result setObject:@"system-method-absent" forKey:@"disposition"]; rc = 77; goto write; }
+    [result setObject:[NSString stringWithUTF8String:method_getTypeEncoding(method)] forKey:@"method_encoding"];
     @try {
-        NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
-        if (![known containsObject:c]) [NSException raise:@"UnknownCase" format:@"%@", c];
         BOOL reuse = [@[@"reused", @"new-instance", @"reuse-configuration"] containsObject:c];
         BOOL observation = [@[@"empty", @"conflicting-event", @"unknown-key", @"impossible-architecture", @"asynchronous"] containsObject:c];
         [result setObject:[NSNumber numberWithBool:observation] forKey:@"observation_only"];
@@ -80,7 +93,7 @@ int main(int argc, char **argv) {
         if ([c isEqual:@"multiple"]) [urls addObject:two];
         if ([c isEqual:@"mixed"]) {
             NSString *file = [report stringByAppendingPathComponent:@"sentinel.txt"];
-            check([@"fixture" writeToFile:file atomically:YES encoding:NSUTF8StringEncoding error:NULL], @"write mixed file", failures);
+            workspaceCheck([@"fixture" writeToFile:file atomically:YES encoding:NSUTF8StringEncoding error:NULL], @"write mixed file", failures);
             [urls addObject:[NSURL fileURLWithPath:file]];
         }
         if ([c isEqual:@"empty"] || [c isEqual:@"custom-event"]) [urls removeAllObjects];
@@ -91,7 +104,7 @@ int main(int argc, char **argv) {
             first = [[NSWorkspace sharedWorkspace] openURLs:@[two] withApplicationAtURL:appURL options:NSWorkspaceLaunchWithoutActivation configuration:config error:&e];
             if (owned(first, appURL)) [cleanup addObject:first];
             NSArray *rs = waitRecords(events, [first processIdentifier], @[two], nil);
-            check(owned(first, appURL) && contains(rs, @"open", [two absoluteString]), @"seed instance received URL", failures);
+            workspaceCheck(owned(first, appURL) && contains(rs, @"open", [two absoluteString]), @"seed instance received URL", failures);
             [result setObject:rs forKey:@"seed_evidence"];
             [result setObject:@([first processIdentifier]) forKey:@"seed_pid"];
             [config setObject:@[@"--must-not-reach-existing-process"] forKey:NSWorkspaceLaunchConfigurationArguments];
@@ -132,21 +145,21 @@ int main(int argc, char **argv) {
         NSArray *expected = observation ? @[] : urls;
         NSArray *rs = returned ? waitRecords(events, pid, expected, [c isEqual:@"custom-event"] ? @"custom" : nil) : @[];
         [call setObject:rs forKey:@"evidence"];
-        if ([c isEqual:@"invalid-app"]) check(!returned && error && [error.domain length], @"invalid app returns nil and usable NSError across pool boundary", failures);
+        if ([c isEqual:@"invalid-app"]) workspaceCheck(!returned && error && [error.domain length], @"invalid app returns nil and usable NSError across pool boundary", failures);
         else if (!observation) {
-            check(owned(returned, appURL), @"returned application is fixture bundle", failures);
-            check(pid > 0 && contains(rs, @"startup", nil), @"returned PID has startup evidence", failures);
-            for (NSURL *u in urls) check(contains(rs, @"open", u.absoluteString), @"returned PID received exact URL", failures);
-            if (reuse) check([c isEqual:@"new-instance"] ? pid != first.processIdentifier : pid == first.processIdentifier, @"reuse/new-instance PID relationship", failures);
+            workspaceCheck(owned(returned, appURL), @"returned application is fixture bundle", failures);
+            workspaceCheck(pid > 0 && contains(rs, @"startup", nil), @"returned PID has startup evidence", failures);
+            for (NSURL *u in urls) workspaceCheck(contains(rs, @"open", u.absoluteString), @"returned PID received exact URL", failures);
+            if (reuse) workspaceCheck([c isEqual:@"new-instance"] ? pid != first.processIdentifier : pid == first.processIdentifier, @"reuse/new-instance PID relationship", failures);
             for (NSDictionary *r in rs) if ([[r objectForKey:@"kind"] isEqual:@"startup"]) {
                 BOOL newInstance = [c isEqual:@"new-instance"];
                 NSArray *args = [r objectForKey:@"argv"];
-                check(newInstance ? [args containsObject:@"--must-not-reach-existing-process"] : ([args containsObject:@"--workspace-sentinel"] && [args containsObject:@"argv exact value"]), @"exact sentinel startup arguments", failures);
-                check([[r objectForKey:@"sentinel"] isEqual:newInstance ? @"must not replace startup environment" : @"environment exact value"], @"exact sentinel startup environment (unchanged on reuse)", failures);
-                if ([c isEqual:@"architecture"]) check([[r objectForKey:@"architecture"] isEqual:hostArch()], @"requested host architecture actually executed", failures);
+                workspaceCheck(newInstance ? [args containsObject:@"--must-not-reach-existing-process"] : ([args containsObject:@"--workspace-sentinel"] && [args containsObject:@"argv exact value"]), @"exact sentinel startup arguments", failures);
+                workspaceCheck([[r objectForKey:@"sentinel"] isEqual:newInstance ? @"must not replace startup environment" : @"environment exact value"], @"exact sentinel startup environment (unchanged on reuse)", failures);
+                if ([c isEqual:@"architecture"]) workspaceCheck([[r objectForKey:@"architecture"] isEqual:hostArch()], @"requested host architecture actually executed", failures);
             }
-            if ([c isEqual:@"custom-event"]) check(contains(rs, @"custom", nil), @"custom initial Apple event delivered", failures);
-            if ([c isEqual:@"without-activation"]) check([[NSWorkspace sharedWorkspace].frontmostApplication processIdentifier] != pid && frontPID != pid, @"without-activation does not activate fixture", failures);
+            if ([c isEqual:@"custom-event"]) workspaceCheck(contains(rs, @"custom", nil), @"custom initial Apple event delivered", failures);
+            if ([c isEqual:@"without-activation"]) workspaceCheck([[NSWorkspace sharedWorkspace].frontmostApplication processIdentifier] != pid && frontPID != pid, @"without-activation does not activate fixture", failures);
         }
         [immediate release]; [returned release]; [error release];
         /* Capture every fixture-owned PID, including side effects of failing calls.
