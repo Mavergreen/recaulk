@@ -36,7 +36,19 @@ static NSArray *records(NSString *dir, pid_t pid) {
     return out;
 }
 static BOOL contains(NSArray *rs, NSString *kind, NSString *url) {
-    for (NSDictionary *r in rs) if ([[r objectForKey:@"kind"] isEqual:kind] && (!url || [[r objectForKey:@"urls"] containsObject:url])) return YES;
+    for (NSDictionary *r in rs) {
+        if (![[r objectForKey:@"kind"] isEqual:kind]) continue;
+        if (!url) return YES;
+        for (NSString *actual in [r objectForKey:@"urls"]) {
+            if ([actual isEqual:url]) return YES;
+            NSURL *expectedURL = [NSURL URLWithString:url];
+            NSURL *actualURL = [NSURL URLWithString:actual];
+            /* Launch Services resolves file aliases such as /var -> /private/var.
+             * Compare only file referents this way; non-file URLs stay exact. */
+            if ([expectedURL isFileURL] && [actualURL isFileURL] &&
+                [[expectedURL URLByResolvingSymlinksInPath] isEqual:[actualURL URLByResolvingSymlinksInPath]]) return YES;
+        }
+    }
     return NO;
 }
 static NSArray *waitRecords(NSString *dir, pid_t pid, NSArray *urls, NSString *kind) {
