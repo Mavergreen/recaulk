@@ -18,12 +18,12 @@ int main(int argc, char **argv) {
  NSString *link = [dir stringByAppendingPathComponent:@"alias"];
  if (![@"sentinel" writeToFile:target atomically:YES encoding:NSUTF8StringEncoding error:NULL] ||
      ![[NSFileManager defaultManager] createSymbolicLinkAtPath:link withDestinationPath:target error:NULL]) return 1;
- NSArray *rs = @[@{@"kind": @"open", @"urls": @[[NSURL fileURLWithPath:target].absoluteString, @"https://workspace-probe.invalid/exact"]}];
- BOOL equivalent = contains(rs, @"open", [NSURL fileURLWithPath:link].absoluteString);
- BOOL wrongFile = contains(rs, @"open", [NSURL fileURLWithPath:[dir stringByAppendingPathComponent:@"other"]].absoluteString);
+ NSArray *rs = @[@{@"kind": @"open", @"urls": @[[[NSURL fileURLWithPath:target] absoluteString], @"https://workspace-probe.invalid/exact"]}];
+ BOOL equivalent = contains(rs, @"open", [[NSURL fileURLWithPath:link] absoluteString]);
+ BOOL wrongFile = contains(rs, @"open", [[NSURL fileURLWithPath:[dir stringByAppendingPathComponent:@"other"]] absoluteString]);
  BOOL exact = contains(rs, @"open", @"https://workspace-probe.invalid/exact");
  BOOL wrongNonfile = contains(rs, @"open", @"https://workspace-probe.invalid/exact/");
- BOOL wrongKind = contains(rs, @"print", [NSURL fileURLWithPath:link].absoluteString);
+ BOOL wrongKind = contains(rs, @"print", [[NSURL fileURLWithPath:link] absoluteString]);
  printf("equivalent-file=%d wrong-file=%d exact-https=%d changed-https=%d wrong-kind=%d\n", equivalent, wrongFile, exact, wrongNonfile, wrongKind);
  [pool drain];
  return equivalent && !wrongFile && exact && !wrongNonfile && !wrongKind ? 0 : 1;
