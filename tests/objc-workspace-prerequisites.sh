@@ -1,6 +1,7 @@
 #!/bin/sh
 # platform: macOS-only -- invalid oracle inputs must fail even when the system method is absent
 set -eu
+umask 077
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 : "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
 T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-prerequisites.XXXXXX")

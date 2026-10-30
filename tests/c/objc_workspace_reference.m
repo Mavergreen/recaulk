@@ -7,6 +7,24 @@
 #import <objc/runtime.h>
 #include <unistd.h>
 #include <math.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <limits.h>
+static volatile sig_atomic_t workspaceInterrupted;
+static void workspaceSignal(int number) { workspaceInterrupted = number; }
+static void installWorkspaceSignals(void) {
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = workspaceSignal;
+    sigemptyset(&action.sa_mask);
+    sigaction(SIGINT, &action, NULL);
+    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGHUP, &action, NULL);
+}
 
 #if !defined(MAC_OS_X_VERSION_10_10) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
 /* platform: declaration only for the floor SDK; runtime absence is checked before either call. */
@@ -106,11 +124,12 @@ static NSDictionary *waitRecordSnapshot(NSString *dir, pid_t pid, NSArray *urls,
         if (kind) ready &= contains(rs, kind, nil);
         for (NSURL *u in urls) ready &= contains(rs, @"open", [u absoluteString]);
         BOOL expired = [[NSProcessInfo processInfo] systemUptime] >= deadline;
-        if (ready || expired) {
+        if (ready || expired || workspaceInterrupted) {
             NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:snapshot];
             [result setObject:@(ready) forKey:@"requirements_observed"];
             [result setObject:@(!ready && expired) forKey:@"deadline_expired"];
             [result setObject:@(timeout) forKey:@"deadline_seconds"];
+            [result setObject:@(workspaceInterrupted != 0) forKey:@"interrupted"];
             return result;
         }
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
@@ -125,13 +144,73 @@ static BOOL owned(NSRunningApplication *app, NSURL *url) {
 static void workspaceCheck(BOOL ok, NSString *message, NSMutableArray *failures) {
     if (!ok) [failures addObject:message];
 }
+static NSString *canonicalFixturePath(NSString *path) {
+    char resolved[PATH_MAX];
+    return realpath(path.fileSystemRepresentation, resolved) ? [NSString stringWithUTF8String:resolved] : nil;
+}
+static BOOL safeFixturePath(NSString *path) {
+    if (![path isAbsolutePath]) return NO;
+    NSString *cursor = @"/";
+    for (NSString *part in [path pathComponents]) {
+        if ([part isEqual:@"/"]) continue;
+        if ([part isEqual:@"."] || [part isEqual:@".."]) return NO;
+        cursor = [cursor stringByAppendingPathComponent:part];
+        struct stat st;
+        if (lstat(cursor.fileSystemRepresentation, &st)) return NO;
+        if (S_ISLNK(st.st_mode)) {
+            /* Preserve native /var and /tmp lexical-path coverage, but no
+             * caller-created aliases inside the private fixture tree. */
+            NSString *resolved = canonicalFixturePath(cursor);
+            BOOL systemAlias = st.st_uid == 0 &&
+                (([cursor isEqual:@"/var"] && [resolved isEqual:@"/private/var"]) ||
+                 ([cursor isEqual:@"/tmp"] && [resolved isEqual:@"/private/tmp"]));
+            if (!systemAlias) return NO;
+        }
+    }
+    return YES;
+}
+static BOOL fixturePrerequisites(NSURL *app, NSString *report, NSString *events) {
+    if (![app isFileURL] || (app.host.length && ![app.host isEqual:@"localhost"]) || app.query || app.fragment ||
+        !safeFixturePath(app.path) || !safeFixturePath(events)) return NO;
+    NSString *expected = canonicalFixturePath([report stringByAppendingPathComponent:@"Probe.app"]);
+    if (![canonicalFixturePath(app.path) isEqual:expected]) return NO;
+    NSString *executable = [app.path stringByAppendingPathComponent:@"Contents/MacOS/WorkspaceProbe"];
+    NSString *info = [app.path stringByAppendingPathComponent:@"Contents/Info.plist"];
+    if (!safeFixturePath(executable) || !safeFixturePath(info) || ![[NSFileManager defaultManager] isExecutableFileAtPath:executable]) return NO;
+    NSDictionary *plist = [NSDictionary dictionaryWithContentsOfFile:info];
+    id identifier = [plist objectForKey:@"CFBundleIdentifier"];
+    id configuredReport = [plist objectForKey:@"WorkspaceProbeReportDirectory"];
+    struct stat st;
+    if (stat(events.fileSystemRepresentation, &st) || !S_ISDIR(st.st_mode) || st.st_uid != geteuid() || (st.st_mode & 022)) return NO;
+    return [identifier isKindOfClass:[NSString class]] && [identifier hasPrefix:@"org.mavergreen."] &&
+        [[plist objectForKey:@"CFBundleExecutable"] isEqual:@"WorkspaceProbe"] &&
+        [[plist objectForKey:@"CFBundlePackageType"] isEqual:@"APPL"] &&
+        [configuredReport isKindOfClass:[NSString class]] && [configuredReport isAbsolutePath] &&
+        [canonicalFixturePath(configuredReport) isEqual:canonicalFixturePath(events)];
+}
 int main(int argc, char **argv) {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     if (argc != 4) { fprintf(stderr, "usage: reference CASE APP_URL REPORT_DIR\n"); return 1; }
+    installWorkspaceSignals();
     NSString *c = [NSString stringWithUTF8String:argv[1]];
     NSURL *appURL = [NSURL URLWithString:[NSString stringWithUTF8String:argv[2]]];
-    if (![appURL isFileURL]) appURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:argv[2]]];
+    NSString *appInput = [NSString stringWithUTF8String:argv[2]];
+    if ([appInput isAbsolutePath]) appURL = [NSURL fileURLWithPath:appInput];
+    else if (![appURL isFileURL]) appURL = nil;
     NSString *report = [NSString stringWithUTF8String:argv[3]];
+    if (![report isAbsolutePath]) report = [[[NSFileManager defaultManager] currentDirectoryPath] stringByAppendingPathComponent:report];
+    if (!safeFixturePath(report)) { fprintf(stderr, "unsafe report directory\n"); return 1; }
+    int reportFD = open(report.fileSystemRepresentation, O_RDONLY | O_NOFOLLOW);
+    struct stat reportStat;
+    if (reportFD < 0 || fstat(reportFD, &reportStat) || !S_ISDIR(reportStat.st_mode) || reportStat.st_uid != geteuid() || (reportStat.st_mode & 077) || fchdir(reportFD)) {
+        if (reportFD >= 0) close(reportFD);
+        fprintf(stderr, "report directory must be private and owned by caller\n"); return 1;
+    }
+    /* Reserve the output without following/replacing anything. fchdir pins output
+     * to the opened directory on 10.9, whose SDK lacks the newer *at APIs. */
+    int outputFD = open("controller.json", O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
+    close(reportFD);
+    if (outputFD < 0) { fprintf(stderr, "controller output already exists or is unsafe\n"); return 1; }
     NSString *events = [report stringByAppendingPathComponent:@"events"];
     SEL sel = @selector(openURLs:withApplicationAtURL:options:configuration:error:);
     Method method = class_getInstanceMethod([NSWorkspace class], sel);
@@ -141,18 +220,19 @@ int main(int argc, char **argv) {
     NSMutableArray *cleanup = [NSMutableArray array];
     [result setObject:calls forKey:@"calls"];
     int rc = 0;
-    NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error nil-error-failure ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
+    NSArray *known = [@"stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event custom-reuse invalid-app nil-error nil-error-failure ownership empty empty-custom conflicting-event unknown-key impossible-architecture asynchronous architecture" componentsSeparatedByString:@" "];
     if (![known containsObject:c]) {
         [failures addObject:@"unknown case"]; rc = 1; goto finish;
     }
-    if (![[NSFileManager defaultManager] isExecutableFileAtPath:[[appURL path] stringByAppendingPathComponent:@"Contents/MacOS/WorkspaceProbe"]] || ![[NSFileManager defaultManager] fileExistsAtPath:events]) {
+    if (!fixturePrerequisites(appURL, report, events)) {
         [failures addObject:@"missing fixture/report prerequisites"]; rc = 1; goto finish;
     }
     if (!method) { [result setObject:@"system-method-absent" forKey:@"disposition"]; rc = 77; goto write; }
     [result setObject:[NSString stringWithUTF8String:method_getTypeEncoding(method)] forKey:@"method_encoding"];
+    if (workspaceInterrupted) goto finish;
     @try {
-        BOOL reuse = [@[@"reused", @"new-instance", @"reuse-configuration"] containsObject:c];
-        BOOL observation = [@[@"empty", @"conflicting-event", @"unknown-key", @"impossible-architecture", @"asynchronous"] containsObject:c];
+        BOOL reuse = [@[@"reused", @"new-instance", @"reuse-configuration", @"custom-reuse"] containsObject:c];
+        BOOL observation = [@[@"empty", @"empty-custom", @"conflicting-event", @"unknown-key", @"impossible-architecture", @"asynchronous"] containsObject:c];
         [result setObject:[NSNumber numberWithBool:observation] forKey:@"observation_only"];
         NSURL *one = [NSURL URLWithString:@"https://workspace-probe.invalid/sentinel-one"];
         NSURL *two = [NSURL URLWithString:@"https://workspace-probe.invalid/sentinel-two"];
@@ -163,7 +243,7 @@ int main(int argc, char **argv) {
             workspaceCheck([@"fixture" writeToFile:file atomically:YES encoding:NSUTF8StringEncoding error:NULL], @"write mixed file", failures);
             [urls addObject:[NSURL fileURLWithPath:file]];
         }
-        if ([c isEqual:@"empty"] || [c isEqual:@"custom-event"]) [urls removeAllObjects];
+        if ([c isEqual:@"empty"] || [c isEqual:@"empty-custom"]) [urls removeAllObjects];
         [result setObject:@{@"source": @"Pinned SDK NSWorkspace.h configuration comments; NSNumber architecture values from NSBundle.h", @"arguments_type": @"NSArray<NSString *>", @"environment_type": @"NSDictionary<NSString *, NSString *>", @"apple_event_type": @"NSAppleEventDescriptor", @"architecture_type": @"NSNumber containing NSBundleExecutableArchitecture", @"ownership_limit": @"Tests explicit caller retains across an autorelease pool, not internal autorelease/retain counts", @"activation_limit": @"Final frontmost state only; transient activation is unmeasured"} forKey:@"contract_provenance"];
         NSMutableDictionary *config = [NSMutableDictionary dictionaryWithObjectsAndKeys:@[@"--workspace-sentinel", @"argv exact value"], NSWorkspaceLaunchConfigurationArguments, @{@"WORKSPACE_PROBE_SENTINEL": @"environment exact value"}, NSWorkspaceLaunchConfigurationEnvironment, nil];
         NSRunningApplication *first = nil;
@@ -174,11 +254,12 @@ int main(int argc, char **argv) {
             NSArray *rs = waitRecords(events, [first processIdentifier], @[two], nil);
             workspaceCheck(owned(first, appURL) && contains(rs, @"open", [two absoluteString]), @"seed instance received URL", failures);
             [result setObject:rs forKey:@"seed_evidence"];
+            [result setObject:[NSDictionary dictionaryWithDictionary:config] forKey:@"seed_configuration"];
             [result setObject:@([first processIdentifier]) forKey:@"seed_pid"];
             [config setObject:@[@"--must-not-reach-existing-process"] forKey:NSWorkspaceLaunchConfigurationArguments];
             [config setObject:@{@"WORKSPACE_PROBE_SENTINEL": @"must not replace startup environment"} forKey:NSWorkspaceLaunchConfigurationEnvironment];
         }
-        if ([c isEqual:@"custom-event"] || [c isEqual:@"conflicting-event"]) {
+        if ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"] || [c isEqual:@"empty-custom"] || [c isEqual:@"conflicting-event"]) {
             NSAppleEventDescriptor *ev = [NSAppleEventDescriptor appleEventWithEventClass:'WPrb' eventID:'ping' targetDescriptor:[NSAppleEventDescriptor descriptorWithDescriptorType:typeApplicationBundleID data:[[[NSBundle bundleWithURL:appURL] bundleIdentifier] dataUsingEncoding:NSUTF8StringEncoding]] returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
             [ev setParamDescriptor:[NSAppleEventDescriptor descriptorWithString:@"custom sentinel"] forKeyword:keyDirectObject];
             [config setObject:ev forKey:NSWorkspaceLaunchConfigurationAppleEvent];
@@ -202,6 +283,7 @@ int main(int argc, char **argv) {
         NSAutoreleasePool *inner = [NSAutoreleasePool new];
         NSError *error = nil;
         NSRunningApplication *returned = nil;
+        if (workspaceInterrupted) [NSException raise:@"WorkspaceInterrupted" format:@"interrupted before native invocation"];
         /* Only exceptions from this invocation are native behavior. Evidence,
          * JSON and harness failures remain failures even in observation cases. */
         @try {
@@ -217,9 +299,23 @@ int main(int argc, char **argv) {
         if (owned(returned, appURL) && ![cleanup containsObject:returned]) [cleanup addObject:returned];
         pid_t pid = [returned processIdentifier];
         NSMutableDictionary *call = [NSMutableDictionary dictionaryWithObjectsAndKeys:@(pid), @"returned_pid", [returned.bundleURL absoluteString] ?: (id)[NSNull null], @"returned_bundle_url", error.domain ?: (id)[NSNull null], @"error_domain", error ? @(error.code) : (id)[NSNull null], @"error_code", immediate, @"immediate_state", @(flags), @"options", nil];
+        NSMutableDictionary *configurationEvidence = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+            [config objectForKey:NSWorkspaceLaunchConfigurationArguments], NSWorkspaceLaunchConfigurationArguments,
+            [config objectForKey:NSWorkspaceLaunchConfigurationEnvironment], NSWorkspaceLaunchConfigurationEnvironment, nil];
+        id architecture = [config objectForKey:NSWorkspaceLaunchConfigurationArchitecture];
+        if (architecture) [configurationEvidence setObject:architecture forKey:NSWorkspaceLaunchConfigurationArchitecture];
+        NSAppleEventDescriptor *configuredEvent = [config objectForKey:NSWorkspaceLaunchConfigurationAppleEvent];
+        if (configuredEvent) [configurationEvidence setObject:@{@"event_class": @(configuredEvent.eventClass), @"event_id": @(configuredEvent.eventID), @"direct_string": [[configuredEvent paramDescriptorForKeyword:keyDirectObject] stringValue] ?: @"", @"target_bundle_id": [[NSBundle bundleWithURL:appURL] bundleIdentifier]} forKey:NSWorkspaceLaunchConfigurationAppleEvent];
+        id unknown = [config objectForKey:@"org.mavergreen.unknown-configuration-key"];
+        if (unknown) [configurationEvidence setObject:unknown forKey:@"org.mavergreen.unknown-configuration-key"];
+        [call setObject:configurationEvidence forKey:@"configuration"];
+        [call setObject:target.absoluteString forKey:@"requested_application_url"];
+        NSMutableArray *requestedURLs = [NSMutableArray array];
+        for (NSURL *u in urls) [requestedURLs addObject:u.absoluteString];
+        [call setObject:requestedURLs forKey:@"requested_urls"];
         [calls addObject:call];
         NSArray *expected = observation ? @[] : urls;
-        NSDictionary *snapshot = returned ? waitRecordSnapshot(events, pid, expected, [c isEqual:@"custom-event"] ? @"custom" : nil, 12) : nil;
+        NSDictionary *snapshot = returned ? waitRecordSnapshot(events, pid, expected, ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"]) ? @"custom" : nil, 12) : nil;
         NSArray *rs = snapshot ? [snapshot objectForKey:@"records"] : @[];
         [call setObject:rs forKey:@"evidence"];
         if (snapshot) {
@@ -240,7 +336,7 @@ int main(int argc, char **argv) {
                 workspaceCheck(startupMatches(r, newInstance ? @[@"--must-not-reach-existing-process"] : @[@"--workspace-sentinel", @"argv exact value"], newInstance ? @"must not replace startup environment" : @"environment exact value"), @"exact startup argv sequence (excluding argv[0]) and environment; no injected extras", failures);
                 if ([c isEqual:@"architecture"]) workspaceCheck([[r objectForKey:@"architecture"] isEqual:hostArch()], @"requested host architecture actually executed", failures);
             }
-            if ([c isEqual:@"custom-event"]) workspaceCheck(customPayload(rs, @"custom sentinel"), @"exact custom initial Apple event payload delivered", failures);
+            if ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"]) workspaceCheck(customPayload(rs, @"custom sentinel"), @"exact custom initial Apple event payload delivered", failures);
             if ([c isEqual:@"without-activation"]) workspaceCheck([[NSWorkspace sharedWorkspace].frontmostApplication processIdentifier] != pid && frontPID != pid, @"without-activation does not activate fixture", failures);
         }
         [immediate release]; [returned release]; [error release];
@@ -250,7 +346,7 @@ int main(int argc, char **argv) {
         do {
             for (NSRunningApplication *a in [[NSWorkspace sharedWorkspace] runningApplications]) if (owned(a, appURL) && ![cleanup containsObject:a]) [cleanup addObject:a];
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-        } while (observationDeadline.timeIntervalSinceNow > 0);
+        } while (observationDeadline.timeIntervalSinceNow > 0 && !workspaceInterrupted);
         NSMutableArray *sideEffects = [NSMutableArray array];
         /* Include logs of exited fixture processes, never use their untrusted PID
          * to authorize termination. Only the running-app identity above does so. */
@@ -286,6 +382,11 @@ finish:;
         while (!a.terminated && deadline.timeIntervalSinceNow > 0) [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
         cleanupCompleted &= a.terminated;
     }
+    if (workspaceInterrupted) {
+        [result setObject:@(workspaceInterrupted) forKey:@"interrupted_signal"];
+        [result setObject:@"interrupted bounded observation; evidence is incomplete" forKey:@"missing_observation"];
+        [failures addObject:@"controller interrupted"];
+    }
     [result setObject:@(cleanupCompleted) forKey:@"cleanup_completed"];
     if (!cleanupCompleted) [failures addObject:@"fixture cleanup did not complete before deadline"];
     [result setObject:failures forKey:@"failures"];
@@ -294,7 +395,16 @@ finish:;
 write:
     {
         NSData *data = [NSJSONSerialization dataWithJSONObject:result options:NSJSONWritingPrettyPrinted error:NULL];
-        if (!data || ![data writeToFile:[report stringByAppendingPathComponent:@"controller.json"] atomically:YES]) rc = 1;
+        if (!data) rc = 1;
+        const unsigned char *bytes = data.bytes;
+        NSUInteger remaining = data.length;
+        while (remaining) {
+            ssize_t count = write(outputFD, bytes, remaining);
+            if (count < 0 && errno == EINTR) continue;
+            if (count <= 0) { rc = 1; break; }
+            bytes += count; remaining -= count;
+        }
+        if (close(outputFD)) rc = 1;
         printf("%s: %s\n", c.UTF8String, [[result objectForKey:@"disposition"] UTF8String]);
     }
     [pool drain];

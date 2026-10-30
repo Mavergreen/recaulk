@@ -22,7 +22,23 @@ case $# in
   2) [ "$1" = --report ] || exit 2; claim_report "$2"; keep=1 ;;
   *) echo 'usage: objc-workspace-reference.sh [--report DIR]' >&2; exit 2 ;;
 esac
+child=''
+interrupt() {
+  trap '' INT TERM HUP
+  if [ -n "$child" ]; then
+    kill -"$1" "$child" 2>/dev/null || :
+    wait "$child" 2>/dev/null || :
+  else
+    # If interrupted between background launch and assigning $!, reap our own
+    # children before the EXIT trap can remove their fixture/report directories.
+    wait 2>/dev/null || :
+  fi
+  exit 130
+}
 trap '[ "$keep" = 1 ] || rm -rf "$D"' EXIT
+trap 'interrupt INT' INT
+trap 'interrupt TERM' TERM
+trap 'interrupt HUP' HUP
 [ "$(uname -s)" = Darwin ] || { echo 'FAIL: macOS required'; exit 1; }
 : "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
 arch=$(uname -m)
@@ -37,7 +53,7 @@ done
 /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations tests/c/objc_workspace_reference.m -o "$D/reference" -framework AppKit -framework Carbon
 /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc tests/c/objc_workspace_probe_app.m -o "$D/probe" -framework AppKit -framework Carbon
 status=0
-for c in stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event invalid-app nil-error nil-error-failure ownership empty conflicting-event unknown-key impossible-architecture asynchronous architecture; do
+for c in stopped reused multiple mixed new-instance startup reuse-configuration without-activation custom-event custom-reuse invalid-app nil-error nil-error-failure ownership empty empty-custom conflicting-event unknown-key impossible-architecture asynchronous architecture; do
   R="$D/$c"
   [ ! -e "$R" ] || { echo "FAIL: refusing existing case directory $R"; exit 1; }
   mkdir -p "$R/Probe.app/Contents/MacOS" "$R/events"
@@ -46,8 +62,11 @@ for c in stopped reused multiple mixed new-instance startup reuse-configuration 
   /usr/libexec/PlistBuddy -c "Set :WorkspaceProbeReportDirectory $R/events" "$R/Probe.app/Contents/Info.plist"
   /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.mavergreen.workspace-probe.$(basename "$D" | tr -cd 'a-zA-Z0-9').$c" "$R/Probe.app/Contents/Info.plist"
   /usr/bin/codesign --force --sign - "$R/Probe.app" > "$R/codesign.log" 2>&1
+  "$D/reference" "$c" "$R/Probe.app" "$R" > "$R/controller.log" 2>&1 &
+  child=$!
   rc=0
-  "$D/reference" "$c" "$R/Probe.app" "$R" > "$R/controller.log" 2>&1 || rc=$?
+  wait "$child" || rc=$?
+  child=''
   echo "$c: exit $rc"
   [ "$rc" != 77 ] || exit 77
   [ "$rc" = 0 ] || status=1
