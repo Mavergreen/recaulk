@@ -67,10 +67,19 @@ static BOOL validRecord(id r, pid_t pid, NSUInteger sequence) {
 }
 static NSDictionary *recordSnapshot(NSString *dir, pid_t pid) {
     NSString *path = [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.jsonl", pid]];
-    NSError *error = nil;
-    NSData *data = [NSData dataWithContentsOfFile:path options:0 error:&error];
-    if (!data && !([error.domain isEqual:NSCocoaErrorDomain] && error.code == NSFileReadNoSuchFileError))
-        [NSException raise:@"WorkspaceEvidenceError" format:@"cannot read fixture records for PID %d", pid];
+    int fd = open(path.fileSystemRepresentation, O_RDONLY | O_NOFOLLOW | O_NONBLOCK);
+    NSData *data = nil;
+    if (fd < 0 && errno != ENOENT) [NSException raise:@"WorkspaceEvidenceError" format:@"cannot safely open fixture records for PID %d", pid];
+    if (fd >= 0) {
+        struct stat st;
+        if (fstat(fd, &st) || !S_ISREG(st.st_mode) || st.st_uid != geteuid() || st.st_nlink != 1 || (st.st_mode & 022)) {
+            close(fd);
+            [NSException raise:@"WorkspaceEvidenceError" format:@"unsafe fixture record file for PID %d", pid];
+        }
+        NSFileHandle *handle = [[NSFileHandle alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
+        @try { data = [handle readDataToEndOfFile]; }
+        @finally { [handle release]; }
+    }
     NSMutableArray *out = [NSMutableArray array];
     const unsigned char *bytes = data.bytes;
     NSUInteger start = 0;

@@ -31,7 +31,20 @@ int main(int argc, char **argv) {
   @try { recordSnapshot(dir,pid); } @catch (NSException *e) { raised = [e.name isEqual:@"WorkspaceEvidenceError"]; }
   ok &= raised;
  }
- printf("partial-write, exited-record and schema checks: %d\n",ok);
+ // A schema-valid record must still not be read through a symlink/hardlink.
+ NSString *source = [dir stringByAppendingPathComponent:@"unrelated-records"];
+ put(source,startup);
+ [[NSFileManager defaultManager] removeItemAtPath:p error:NULL];
+ ok &= [[NSFileManager defaultManager] createSymbolicLinkAtPath:p withDestinationPath:source error:NULL];
+ BOOL linkRaised = NO;
+ @try { recordSnapshot(dir,pid); } @catch (NSException *e) { linkRaised = [e.name isEqual:@"WorkspaceEvidenceError"]; }
+ ok &= linkRaised;
+ [[NSFileManager defaultManager] removeItemAtPath:p error:NULL];
+ ok &= link(source.fileSystemRepresentation,p.fileSystemRepresentation) == 0;
+ linkRaised = NO;
+ @try { recordSnapshot(dir,pid); } @catch (NSException *e) { linkRaised = [e.name isEqual:@"WorkspaceEvidenceError"]; }
+ ok &= linkRaised;
+ printf("partial-write, exited-record, schema and linked-log checks: %d\n",ok);
  [pool drain]; return ok ? 0 : 1;
 }
 SOURCE
