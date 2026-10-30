@@ -236,6 +236,12 @@ int main(int argc, char **argv) {
     if (!fixturePrerequisites(appURL, report, events)) {
         [failures addObject:@"missing fixture/report prerequisites"]; rc = 1; goto finish;
     }
+    if ([c isEqual:@"mixed"]) {
+        struct stat st;
+        if (!lstat("sentinel.txt", &st) || errno != ENOENT) {
+            [failures addObject:@"mixed fixture output already exists or cannot be inspected"]; rc = 1; goto finish;
+        }
+    }
     if (!method) { [result setObject:@"system-method-absent" forKey:@"disposition"]; rc = 77; goto write; }
     [result setObject:[NSString stringWithUTF8String:method_getTypeEncoding(method)] forKey:@"method_encoding"];
     if (workspaceInterrupted) goto finish;
@@ -249,7 +255,15 @@ int main(int argc, char **argv) {
         if ([c isEqual:@"multiple"]) [urls addObject:two];
         if ([c isEqual:@"mixed"]) {
             NSString *file = [report stringByAppendingPathComponent:@"sentinel.txt"];
-            workspaceCheck([@"fixture" writeToFile:file atomically:YES encoding:NSUTF8StringEncoding error:NULL], @"write mixed file", failures);
+            int fd = open("sentinel.txt", O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0600);
+            BOOL written = fd >= 0;
+            if (written) {
+                ssize_t count;
+                do { count = write(fd, "fixture", 7); } while (count < 0 && errno == EINTR);
+                written = count == 7;
+                if (close(fd)) written = NO;
+            }
+            if (!written) [NSException raise:@"WorkspaceEvidenceError" format:@"cannot exclusively create mixed fixture file"];
             [urls addObject:[NSURL fileURLWithPath:file]];
         }
         if ([c isEqual:@"empty"] || [c isEqual:@"empty-custom"]) [urls removeAllObjects];

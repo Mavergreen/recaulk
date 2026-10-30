@@ -14,6 +14,8 @@ already exist, be owned by the caller and private (no group/other permissions).
 Its `controller.json` must not exist. The controller reserves that file using
 exclusive/no-follow creation and writes through its descriptor, including on
 failure or method absence. It will not replace an existing file or symlink.
+The mixed-URL case likewise refuses any pre-existing sentinel.txt, including
+linked files, and exclusively creates its fixture file before invoking the API.
 
 The only accepted app is the controlled `REPORT_DIR/Probe.app`, with local file
 URL/path, no query/fragment or remote file host, CFBundleExecutable
