@@ -25,16 +25,49 @@ static NSString *hostArch(void) {
     return @"x86_64";
 #endif
 }
-static NSArray *records(NSString *dir, pid_t pid) {
-    NSString *s = [NSString stringWithContentsOfFile:[dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.jsonl", pid]] encoding:NSUTF8StringEncoding error:NULL];
-    NSMutableArray *out = [NSMutableArray array];
-    for (NSString *line in [s componentsSeparatedByString:@"\n"]) {
-        if (![line length]) continue;
-        id r = [NSJSONSerialization JSONObjectWithData:[line dataUsingEncoding:NSUTF8StringEncoding] options:0 error:NULL];
-        if (![r isKindOfClass:[NSDictionary class]]) [NSException raise:@"WorkspaceEvidenceError" format:@"invalid fixture JSON record in PID %d", pid];
-        [out addObject:r];
+static BOOL stringArray(id value) {
+    if (![value isKindOfClass:[NSArray class]]) return NO;
+    for (id s in value) if (![s isKindOfClass:[NSString class]]) return NO;
+    return YES;
+}
+static BOOL validRecord(id r, pid_t pid, NSUInteger sequence) {
+    if (![r isKindOfClass:[NSDictionary class]]) return NO;
+    id kind = [r objectForKey:@"kind"], p = [r objectForKey:@"pid"], n = [r objectForKey:@"sequence"];
+    if (![kind isKindOfClass:[NSString class]] || ![p isKindOfClass:[NSNumber class]] || ![n isKindOfClass:[NSNumber class]] ||
+        [p doubleValue] != pid || [n doubleValue] != sequence) return NO;
+    if ([kind isEqual:@"startup"]) {
+        id arch = [r objectForKey:@"architecture"], sentinel = [r objectForKey:@"sentinel"];
+        return sequence == 0 && stringArray([r objectForKey:@"argv"]) && [[r objectForKey:@"argv"] count] > 0 &&
+            ([sentinel isKindOfClass:[NSString class]] || sentinel == [NSNull null]) &&
+            [@[@"arm64", @"x86_64"] containsObject:arch ?: @""];
     }
-    return out;
+    if ([kind isEqual:@"finished-launching"]) return sequence > 0;
+    return sequence > 0 && [@[@"open", @"open-application", @"reopen", @"print", @"custom"] containsObject:kind] &&
+        stringArray([r objectForKey:@"urls"]) && [[r objectForKey:@"direct_string"] isKindOfClass:[NSString class]] &&
+        [[r objectForKey:@"event_class"] isKindOfClass:[NSNumber class]] && [[r objectForKey:@"event_id"] isKindOfClass:[NSNumber class]];
+}
+static NSDictionary *recordSnapshot(NSString *dir, pid_t pid) {
+    NSString *path = [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.jsonl", pid]];
+    NSError *error = nil;
+    NSData *data = [NSData dataWithContentsOfFile:path options:0 error:&error];
+    if (!data && !([error.domain isEqual:NSCocoaErrorDomain] && error.code == NSFileReadNoSuchFileError))
+        [NSException raise:@"WorkspaceEvidenceError" format:@"cannot read fixture records for PID %d", pid];
+    NSMutableArray *out = [NSMutableArray array];
+    const unsigned char *bytes = data.bytes;
+    NSUInteger start = 0;
+    for (NSUInteger i = 0; i < data.length; i++) {
+        if (bytes[i] != '\n') continue;
+        NSData *line = [data subdataWithRange:NSMakeRange(start, i-start)];
+        id r = [NSJSONSerialization JSONObjectWithData:line options:0 error:NULL];
+        if (!validRecord(r, pid, out.count)) [NSException raise:@"WorkspaceEvidenceError" format:@"invalid completed fixture record in PID %d", pid];
+        [out addObject:r]; start = i + 1;
+    }
+    /* Only newline-terminated records are complete, including when a partial
+     * UTF-8 codepoint is present. Polling retries a tail; it is never a pass. */
+    return @{@"records": out, @"incomplete_tail_bytes": @(data.length-start), @"file_missing": @(!data)};
+}
+static NSArray *records(NSString *dir, pid_t pid) {
+    return [recordSnapshot(dir, pid) objectForKey:@"records"];
 }
 static BOOL contains(NSArray *rs, NSString *kind, NSString *url) {
     for (NSDictionary *r in rs) {
@@ -206,7 +239,12 @@ int main(int argc, char **argv) {
         for (NSString *file in [[NSFileManager defaultManager] contentsOfDirectoryAtPath:events error:NULL]) {
             if (![file hasSuffix:@".jsonl"]) continue;
             pid_t recordedPID = [[file stringByDeletingPathExtension] intValue];
-            [sideEffects addObject:@{@"pid": @(recordedPID), @"records": records(events, recordedPID)}];
+            NSDictionary *snapshot = recordSnapshot(events, recordedPID);
+            [sideEffects addObject:@{@"pid": @(recordedPID), @"records": [snapshot objectForKey:@"records"], @"incomplete_tail_bytes": [snapshot objectForKey:@"incomplete_tail_bytes"]}];
+            if ([[snapshot objectForKey:@"incomplete_tail_bytes"] unsignedIntegerValue]) {
+                [result setObject:@"incomplete JSONL tail remains at observation deadline" forKey:@"missing_observation"];
+                [failures addObject:@"incomplete fixture record at deadline; cannot measure complete evidence"];
+            }
         }
         [result setObject:sideEffects forKey:@"side_effects"];
         [result setObject:@3 forKey:@"side_effect_observation_seconds"];
