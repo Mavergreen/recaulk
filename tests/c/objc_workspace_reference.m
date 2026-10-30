@@ -6,6 +6,7 @@
 #import <Carbon/Carbon.h>
 #import <objc/runtime.h>
 #include <unistd.h>
+#include <math.h>
 
 #if !defined(MAC_OS_X_VERSION_10_10) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
 /* platform: declaration only for the floor SDK; runtime absence is checked before either call. */
@@ -95,18 +96,28 @@ static BOOL customPayload(NSArray *rs, NSString *payload) {
     for (NSDictionary *r in rs) if ([[r objectForKey:@"kind"] isEqual:@"custom"] && [[r objectForKey:@"direct_string"] isEqual:payload]) return YES;
     return NO;
 }
-static NSArray *waitRecords(NSString *dir, pid_t pid, NSArray *urls, NSString *kind) {
-    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:12];
-    NSArray *rs = nil;
-    do {
-        rs = records(dir, pid);
-        BOOL ready = contains(rs, @"startup", nil);
+static NSDictionary *waitRecordSnapshot(NSString *dir, pid_t pid, NSArray *urls, NSString *kind, NSTimeInterval timeout) {
+    if (!isfinite(timeout) || timeout < 0) [NSException raise:@"WorkspaceEvidenceError" format:@"invalid observation deadline"];
+    NSTimeInterval deadline = [[NSProcessInfo processInfo] systemUptime] + timeout;
+    for (;;) {
+        NSDictionary *snapshot = recordSnapshot(dir, pid);
+        NSArray *rs = [snapshot objectForKey:@"records"];
+        BOOL ready = contains(rs, @"startup", nil) && [[snapshot objectForKey:@"incomplete_tail_bytes"] unsignedIntegerValue] == 0;
         if (kind) ready &= contains(rs, kind, nil);
         for (NSURL *u in urls) ready &= contains(rs, @"open", [u absoluteString]);
-        if (ready) break;
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-    } while ([deadline timeIntervalSinceNow] > 0);
-    return rs;
+        BOOL expired = [[NSProcessInfo processInfo] systemUptime] >= deadline;
+        if (ready || expired) {
+            NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:snapshot];
+            [result setObject:@(ready) forKey:@"requirements_observed"];
+            [result setObject:@(!ready && expired) forKey:@"deadline_expired"];
+            [result setObject:@(timeout) forKey:@"deadline_seconds"];
+            return result;
+        }
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
+    }
+}
+static NSArray *waitRecords(NSString *dir, pid_t pid, NSArray *urls, NSString *kind) {
+    return [waitRecordSnapshot(dir, pid, urls, kind, 12) objectForKey:@"records"];
 }
 static BOOL owned(NSRunningApplication *app, NSURL *url) {
     return app && [[[app bundleURL] URLByResolvingSymlinksInPath] isEqual:[url URLByResolvingSymlinksInPath]];
@@ -208,8 +219,15 @@ int main(int argc, char **argv) {
         NSMutableDictionary *call = [NSMutableDictionary dictionaryWithObjectsAndKeys:@(pid), @"returned_pid", [returned.bundleURL absoluteString] ?: (id)[NSNull null], @"returned_bundle_url", error.domain ?: (id)[NSNull null], @"error_domain", error ? @(error.code) : (id)[NSNull null], @"error_code", immediate, @"immediate_state", @(flags), @"options", nil];
         [calls addObject:call];
         NSArray *expected = observation ? @[] : urls;
-        NSArray *rs = returned ? waitRecords(events, pid, expected, [c isEqual:@"custom-event"] ? @"custom" : nil) : @[];
+        NSDictionary *snapshot = returned ? waitRecordSnapshot(events, pid, expected, [c isEqual:@"custom-event"] ? @"custom" : nil, 12) : nil;
+        NSArray *rs = snapshot ? [snapshot objectForKey:@"records"] : @[];
         [call setObject:rs forKey:@"evidence"];
+        if (snapshot) {
+            NSMutableDictionary *status = [NSMutableDictionary dictionaryWithDictionary:snapshot];
+            [status removeObjectForKey:@"records"];
+            [call setObject:status forKey:@"evidence_observation"];
+            workspaceCheck(![[snapshot objectForKey:@"deadline_expired"] boolValue], @"returned PID evidence incomplete at deadline (cannot-measure)", failures);
+        }
         if ([c isEqual:@"invalid-app"]) workspaceCheck(!returned && error && [error.domain length], @"invalid app returns nil and usable NSError across pool boundary", failures);
         else if ([c isEqual:@"nil-error-failure"]) workspaceCheck(!returned && !error, @"invalid app with NULL error output returns nil without exception", failures);
         else if (!observation) {
