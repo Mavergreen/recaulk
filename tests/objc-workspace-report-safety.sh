@@ -1,6 +1,8 @@
 #!/bin/sh
 # platform: macOS-only -- oracle report paths must not overwrite or follow symlinks
 set -eu
+# Exercise direct report claiming independently of a configured app-hosted run.
+unset RECAULK_WORKSPACE_CONTEXT
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-report-safety.XXXXXX")
 T=$(cd "$T" && pwd -P)

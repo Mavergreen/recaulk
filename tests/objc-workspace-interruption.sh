@@ -2,6 +2,8 @@
 # platform: macOS-only -- interrupt only owned controller/shell children; require fixture cleanup
 set -eu
 umask 077
+# This regression intentionally exercises the legacy shell/controller boundary.
+unset RECAULK_WORKSPACE_CONTEXT
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 : "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
 T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-interruption.XXXXXX")

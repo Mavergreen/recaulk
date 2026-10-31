@@ -2,6 +2,14 @@
 # platform: macOS-only -- observes the native AppKit launch contract using a private fixture
 set -eu
 umask 077
+context_helper="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)/helpers/workspace-context.sh"
+case "${1:-}" in
+  --prepare-context|--verify-context|--context|--authorize-context|--preflight-context) exec sh "$context_helper" "$@" ;;
+esac
+if [ -n "${RECAULK_WORKSPACE_CONTEXT:-}" ]; then
+  if [ "$#" = 0 ]; then exec sh "$context_helper" --context "$RECAULK_WORKSPACE_CONTEXT"; fi
+  exec sh "$context_helper" --context "$RECAULK_WORKSPACE_CONTEXT" "$@"
+fi
 # Reject every existing output and any symlink component before fetching/building.
 # mkdir (without -p) claims the new leaf atomically; never reuse a report directory.
 claim_report() {

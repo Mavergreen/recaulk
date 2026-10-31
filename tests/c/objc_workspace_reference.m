@@ -224,6 +224,9 @@ int main(int argc, char **argv) {
     SEL sel = @selector(openURLs:withApplicationAtURL:options:configuration:error:);
     Method method = class_getInstanceMethod([NSWorkspace class], sel);
     NSMutableDictionary *result = [NSMutableDictionary dictionaryWithObjectsAndKeys:c, @"case", [[NSProcessInfo processInfo] operatingSystemVersionString], @"os", hostArch(), @"architecture", nil];
+    NSString *caseNonce = [[NSProcessInfo processInfo] globallyUniqueString];
+    NSString *customSentinel = [@"custom sentinel " stringByAppendingString:caseNonce];
+    [result setObject:caseNonce forKey:@"case_nonce"];
     NSMutableArray *failures = [NSMutableArray array];
     NSMutableArray *calls = [NSMutableArray array];
     NSMutableArray *cleanup = [NSMutableArray array];
@@ -249,8 +252,8 @@ int main(int argc, char **argv) {
         BOOL reuse = [@[@"reused", @"new-instance", @"reuse-configuration", @"custom-reuse"] containsObject:c];
         BOOL observation = [@[@"empty", @"empty-custom", @"conflicting-event", @"unknown-key", @"impossible-architecture", @"asynchronous"] containsObject:c];
         [result setObject:[NSNumber numberWithBool:observation] forKey:@"observation_only"];
-        NSURL *one = [NSURL URLWithString:@"https://workspace-probe.invalid/sentinel-one"];
-        NSURL *two = [NSURL URLWithString:@"https://workspace-probe.invalid/sentinel-two"];
+        NSURL *one = [NSURL URLWithString:[@"https://workspace-probe.invalid/sentinel-one/" stringByAppendingString:caseNonce]];
+        NSURL *two = [NSURL URLWithString:[@"https://workspace-probe.invalid/sentinel-two/" stringByAppendingString:caseNonce]];
         NSMutableArray *urls = [NSMutableArray arrayWithObject:one];
         if ([c isEqual:@"multiple"]) [urls addObject:two];
         if ([c isEqual:@"mixed"]) {
@@ -284,7 +287,7 @@ int main(int argc, char **argv) {
         }
         if ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"] || [c isEqual:@"empty-custom"] || [c isEqual:@"conflicting-event"]) {
             NSAppleEventDescriptor *ev = [NSAppleEventDescriptor appleEventWithEventClass:'WPrb' eventID:'ping' targetDescriptor:[NSAppleEventDescriptor descriptorWithDescriptorType:typeApplicationBundleID data:[[[NSBundle bundleWithURL:appURL] bundleIdentifier] dataUsingEncoding:NSUTF8StringEncoding]] returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
-            [ev setParamDescriptor:[NSAppleEventDescriptor descriptorWithString:@"custom sentinel"] forKeyword:keyDirectObject];
+            [ev setParamDescriptor:[NSAppleEventDescriptor descriptorWithString:customSentinel] forKeyword:keyDirectObject];
             [config setObject:ev forKey:NSWorkspaceLaunchConfigurationAppleEvent];
         }
         if ([c isEqual:@"unknown-key"]) [config setObject:@"sentinel" forKey:@"org.mavergreen.unknown-configuration-key"];
@@ -359,7 +362,7 @@ int main(int argc, char **argv) {
                 workspaceCheck(startupMatches(r, newInstance ? @[@"--must-not-reach-existing-process"] : @[@"--workspace-sentinel", @"argv exact value"], newInstance ? @"must not replace startup environment" : @"environment exact value"), @"exact startup argv sequence (excluding argv[0]) and environment; no injected extras", failures);
                 if ([c isEqual:@"architecture"]) workspaceCheck([[r objectForKey:@"architecture"] isEqual:hostArch()], @"requested host architecture actually executed", failures);
             }
-            if ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"]) workspaceCheck(customPayload(rs, @"custom sentinel"), @"exact custom initial Apple event payload delivered", failures);
+            if ([c isEqual:@"custom-event"] || [c isEqual:@"custom-reuse"]) workspaceCheck(customPayload(rs, customSentinel), @"exact custom initial Apple event payload delivered", failures);
             if ([c isEqual:@"without-activation"]) workspaceCheck([[NSWorkspace sharedWorkspace].frontmostApplication processIdentifier] != pid && frontPID != pid, @"without-activation does not activate fixture", failures);
         }
         [immediate release]; [returned release]; [error release];

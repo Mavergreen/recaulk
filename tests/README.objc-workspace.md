@@ -52,14 +52,95 @@ returns/errors and process/event side effects rather than inventing success.
 Custom Apple-event delivery requires an established execution/transport context.
 The rotating CLI fixtures do **not** inherit permission granted to the separate,
 stable research sender/fixture pair. Missing delivery remains failure, never a
-permission skip or a broad waiver. This CLI does not request a grant or implement
-a reusable consent-aware sender. Do not approve Terminal/PiG or unrelated apps
+permission skip or a broad waiver. The direct CLI does not request a grant.
+The explicit stable-context path below hosts the same current implementation
+inside a dedicated sender app. Do not approve Terminal/PiG or unrelated apps
 as a shortcut. The successful consented native research matrix is separate
 contract evidence, not a passing execution of this whole suite.
 
-The oracle remains a partial foundation until that reusable execution path and
-independent review are completed. Architecture coverage is host-only where no
+The oracle remains a partial foundation until the prepared execution identities
+are approved, ordinary scoped consent is established, all native cases are
+actually executed under that context, and independent review is completed. Architecture coverage is host-only where no
 alternate execution capability exists. Ownership tests measure explicit caller
 retains across a pool, not internal retain/autorelease counts. Nonactivation is
 a final-state observation, not a transient-activation proof. Bounded observation
 deadlines and partial JSONL states are not quiescence proofs.
+
+## Stable app-hosted context
+
+Use physical absolute paths. Preparation does not launch the pair or query/request
+Automation permission. Verification never silently rebuilds signed inputs.
+Commit source before preparing identities intended for approval:
+
+```
+sh tests/objc-workspace-reference.sh --prepare-context /private/tmp/NEW_CONTEXT
+sh tests/objc-workspace-reference.sh --verify-context /private/tmp/NEW_CONTEXT
+```
+
+A context contains fixed Sender.app, Probe.app and unsigned events/. Both apps
+are ad-hoc signed once. Source fingerprint/commit, host architecture, compiler,
+explicit pinned SDK identity, app-tree hashes, signing details and absolute
+paths are recorded in the context. Moving it, changing source/commit/build inputs
+or modifying any signed app file makes verification fail. No auto-update or
+permission-reset operation is provided. Source changes require a deliberately
+prepared context and a fresh identity review, not silent re-signing.
+
+**Only after exact identity approval**, the explicit authorization interface is:
+
+```
+sh tests/objc-workspace-reference.sh --authorize-context CONTEXT --report NEW_DIR
+```
+
+This launches Sender.app through NSWorkspace, not direct execution of its Mach-O.
+Only that app runs the public permission query/request against its verified
+private Probe.app. A new ordinary prompt must be approved manually; a denial or
+unexpected requesting identity is a blocker, not permission to reset policy.
+`permission-before.json` records the nonprompting preflight and actor identity
+before the sole requesting branch. Authorization tests status, not delivery.
+Preparation tests never invoke this operation.
+
+Nonprompting status or full execution (reports must be new and outside CONTEXT):
+
+```
+sh tests/objc-workspace-reference.sh --preflight-context CONTEXT --report NEW_DIR
+sh tests/objc-workspace-reference.sh --context CONTEXT --report NEW_DIR
+RECAULK_WORKSPACE_CONTEXT=CONTEXT sh tests/objc-workspace-reference.sh --report NEW_DIR
+RECAULK_WORKSPACE_CONTEXT=CONTEXT MAVERICKS_TEST_JOBS=4 sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh"
+```
+
+The environment variable selects the app-hosted path for the auto-discovered
+reference test only. No context means the existing direct behavior, including
+strict custom-delivery failures rather than a skip. Context execution without
+permission fails nonzero/cannot-measure and does not prompt. Even permission
+status zero is insufficient: a no-prompt, nonce-bearing external transport
+control must deliver the exact payload before any native case is accepted.
+
+All 21 current cases run serially via the actual reference main compiled into
+the sender. They keep CONTEXT as REPORT_DIR and CONTEXT/Probe.app as APP_URL.
+Each case has fresh URL/custom payload nonces and exact existing assertions.
+After closed output and verified fixture cleanup, controller.json/events and
+known mixed sentinel are moved into NEW_DIR/CASE/, then an empty unsigned
+events directory is recreated. Signed plist/output paths never rotate. Archived
+metadata retains original paths, including file-URL referents. Events are bounded
+observations, not quiescence. Six observational cases remain observational.
+
+A context run lock refuses overlap; it is never broken using a PID log. Unknown
+or unarchived state fails rather than being replaced. Actor exit, missing/partial
+JSON, source mismatch, timeout and interruption fail. The launcher forwards
+signals only after checking the running sender bundle identity; sender and
+launcher cleanup target only verified fixture/sender bundle URLs. Partial
+failed state may deliberately block a later run until reviewed; no broad or
+automatic destructive recovery is offered. SIGKILL/same-user races are not a
+sandbox guarantee. The existing bounded signal limitations still apply.
+
+Modern contexts use the pinned 11.3 SDK: arm64/min 11.0, or native x86_64/min
+10.14 with that SDK explicitly selected for public no-prompt support. The direct
+floor controller remains x86_64/10.9. Context unit controls compile against the
+host floor pin; modern preparation integration skips where no-prompt APIs cannot
+be tested. No Rosetta installation is required.
+
+`objc-workspace-context-test.sh` exercises lock/archive/stale-response logic and
+fixture-free unit actors (exit/interruption), not the native API contract.
+`objc-workspace-context-prepare.sh` prepares a disposable unique pair, verifies
+immutability/output/lock/tamper refusal and an ungranted nonprompt failure. It
+never asks for consent, and does not establish whole-oracle native GREEN.
