@@ -31,6 +31,10 @@ grep -q 'ungranted context' "$T/ungranted-report/response.json" || exit 1
 # event records that would make an eventual authorized run impossible.
 sh "$entry" --verify-context "$T/context"
 [ -z "$(ls -A "$T/context/events")" ] || exit 1
+# Auto-discovery invokes the selected reference with no arguments. Generated
+# internal reports must use physical paths, even under the usual lexical TMPDIR.
+rc=0; RECAULK_WORKSPACE_CONTEXT="$T/context" sh "$entry" > "$T/selected.log" 2>&1 || rc=$?
+[ "$rc" = 1 ] && grep -q 'ungranted context' "$T/selected.log" || { echo 'FAIL: selected no-argument path did not reach nonprompt prerequisite'; exit 1; }
 # Existing result is never replaced.
 find "$T/ungranted-report" -type f -exec /usr/bin/shasum -a 256 {} \; | LC_ALL=C sort > "$T/report-before"
 rc=0; sh "$entry" --context "$T/context" --report "$T/ungranted-report" > "$T/existing.log" 2>&1 || rc=$?

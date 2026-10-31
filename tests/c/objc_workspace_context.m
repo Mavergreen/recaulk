@@ -336,6 +336,7 @@ int main(int argc,char **argv) {
         id returnedExit=[response objectForKey:@"exit"];
         demand([returnedExit isKindOfClass:[NSNumber class]] && ([returnedExit intValue]==0 || [returnedExit intValue]==1) && [[response objectForKey:@"disposition"] isKindOfClass:[NSString class]],@"incomplete actor response schema");
         status=[returnedExit intValue];
+        if(status && [[response objectForKey:@"failure"] isKindOfClass:[NSString class]]) fprintf(stderr,"context cannot-measure/failed: %s\n",[[response objectForKey:@"failure"] UTF8String]);
         if(status==0 && [[NSString stringWithUTF8String:argv[3]] isEqual:@"run"]) demand([[response objectForKey:@"cases"] count]==21,@"successful response omitted cases");
         moveFresh(at(contextRoot,@"response.json"),at(report,@"response.json"));
         moveFresh(at(contextRoot,@"request.json"),at(report,@"request.json"));

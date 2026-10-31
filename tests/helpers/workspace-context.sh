@@ -42,6 +42,7 @@ case "$arch" in
  *) exit 1 ;;
 esac
 T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-context-build.XXXXXX")
+T=$(cd "$T" && pwd -P)
 trap 'rm -rf "$T"' EXIT
 manifest() {
  # Known signed roots only; never interpret paths supplied by a checksum file.
