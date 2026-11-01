@@ -66,7 +66,7 @@ retains across a pool, not internal retain/autorelease counts. Nonactivation is
 a final-state observation, not a transient-activation proof. Bounded observation
 deadlines and partial JSONL states are not quiescence proofs.
 
-## Additional native option measurements (contract gate still open)
+## Additional native option measurements (not provider acceptance)
 
 `sh tests/objc-workspace-options.sh --native --report NEW_DIR` compiles a separate
 controller against the unchanged probe source. It does not load a provider,
@@ -93,8 +93,9 @@ Recents queries are read-only. Only matching private app/document counts and
 unresolved counts are retained; unrelated history is never logged, lists are
 never edited/reset, and resolution cannot mount volumes or display UI. Missing
 lists or absence without an observable positive control do **not** prove recents
-suppression. The without-recents case is explicitly observed-only; that contract
-choice remains open. HideOthers and error-panel UI are not executed. Nil target
+suppression. The without-recents case is explicitly observed-only in this unchanged native
+controller. The separate public-floor controls below provide an observable
+positive control for the implementation decision. HideOthers and error-panel UI are not executed. Nil target
 URLs are not automatically tested because they could select a real default app.
 
 `sh tests/objc-workspace-options-safety.sh` checks rejection of out-of-report private apps,
@@ -105,9 +106,59 @@ optional `--mutation-check` deliberately changes a temporary observer copy to
 return after the first print callback; expected exit is 1, not a passing suite.
 
 A Mavericks exit 77 is only valid API absence, **not** native option acceptance.
-The production body remains gated on modern measurements, comparison to public
-Mavericks controls, and the full 21-case run from the separate frozen source
-clone. Do not use this newer checkout with the approved source-bound context.
+Those reference inputs must still be kept separate from newer implementation
+source. Do not use this newer checkout with the approved source-bound context.
+Verified native evidence contains eight asserted passes/six observation-only
+option cases and 15 asserted passes/six observation-only original cases. It is
+not a claim that a provider exists or that observation-only cases became passes.
+
+## Approved public-floor Recents refinement
+
+The old URL-based launcher plus manually queued events delivered files but did
+not update document Recents during the checked interval. The old public
+bundle-ID URL-opening API supplied a working SAME-HOST positive control, but
+cannot replace exact selected-PID/configuration behavior in the provider.
+The maintainer approved supplemental public-API requested-file bookkeeping.
+
+`sh tests/objc-workspace-recent-decisions.sh` uses the REAL research helper with
+recording CoreServices boundaries: no shared list or preference is edited.
+Checks include disabled limit0, WithoutAddingToRecents, browser-only no-access,
+unknown/missing preference, unavailable list, partial failure and optional
+error output. Its `--mutation-check` breaks only a temporary copy's zero-limit
+guard; expected exit1 proves the disabled-preference assertion is effective.
+These are decision/characterization tests, not native failure-mode acceptance.
+
+Explicit real-Mavericks reproduction (NEW physical absolute report path):
+
+```
+RECAULK_WORKSPACE_RECENTS_PROBE=1 sh tests/objc-workspace-recent-controls.sh /private/tmp/NEW_PRIVATE_REPORT
+```
+
+This opt-in RESEARCH experiment creates fresh controlled recording fixtures;
+ordinary launch effects and public LSSharedFileListInsertItemURL record only
+requested files. Default cases compare two-file launch+bookkeeping against the
+old public URL-opening control; WithoutAddingToRecents; worker-thread delivery
+without a caller loop; and print-event recording against the old public print
+control. No real printing, external app/default handler, permission request,
+history reset/removal or preference change. Normal public insertion enforces
+the observed system capacity and can naturally evict oldest items, just as the
+URL-opening control does. No explicit removal API is used.
+
+No-argument ordinary suite discovery emits an explicit unmeasured/SKIP without
+opt-in; direct invocations without opt-in FAIL. A disabled/unreadable positive
+control is cannot-measure/failure, never a request to enable history. The
+read-only observer matches path/reference strings generated ONLY from known
+private files; unrelated candidate paths are never resolved or logged. Its
+unresolved count stays explicit. Snapshot seeds/counts distinguish a changing
+list from merely failing to recognize an opaque item. Observations are bounded,
+not a quiescence or universal ordering guarantee. Every fixture input is hashed
+before/after and cleanup is checked.
+
+These tests do not register the missing method. Production implementation,
+activation, genuine method-based delivery and modern preservation tests remain
+separate acceptance gates. The research helper's explicit error on unknown or
+failed bookkeeping is an implementation decision, not an induced native error
+experiment. Partial side effects are not rolled back by clearing history.
 
 ## Stable app-hosted context
 
