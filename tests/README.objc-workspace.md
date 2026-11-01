@@ -160,6 +160,27 @@ separate acceptance gates. The research helper's explicit error on unknown or
 failed bookkeeping is an implementation decision, not an induced native error
 experiment. Partial side effects are not rolled back by clearing history.
 
+## Unregistered backend unit gate
+
+`sh tests/objc-workspace-backfill-unit.sh` compiles the actual MRC backend,
+event planner and public Recents implementation. Per-call recording operations
+exercise launch/lookup/send/bookkeeping failures without launching an app or
+editing history. The production Recents implementation is additionally compiled
+against recording CoreServices boundaries, NOT substituted with the research
+helper, to exercise disabled/missing preferences and partial failures.
+
+Coverage includes caller config/event copies, four documented configuration
+keys and unknown keys, unchanged flag bits, all-file odoc/pdoc grouping, exact
+PID addressing, custom initial event, missing/wrong reacquisition, empty-array
+failure after launch, observed invalid-member/relative-URL handling, optional
+error output, and caller-retained +0 objects/errors across a pool boundary.
+Reuse argv/environment semantics remain delegated to the public launcher and
+are checked by actual native/floor integration, not by asserting a fake OS model.
+
+This does NOT register a method or build/link a companion archive. These tests
+are not external delivery, activation, modern preservation or Codex sign-in
+acceptance. No new sender permission is requested or inherited.
+
 ## Stable app-hosted context
 
 Use physical absolute paths. Preparation does not launch the pair or query/request
