@@ -66,6 +66,49 @@ retains across a pool, not internal retain/autorelease counts. Nonactivation is
 a final-state observation, not a transient-activation proof. Bounded observation
 deadlines and partial JSONL states are not quiescence proofs.
 
+## Additional native option measurements (contract gate still open)
+
+`sh tests/objc-workspace-options.sh --native --report NEW_DIR` compiles a separate
+controller against the unchanged probe source. It does not load a provider,
+register a method, request consent or use/re-sign the stable context. The only
+app it may select is its new private `REPORT_DIR/Probe.app`; ordinary ad-hoc
+signing applies only to that fresh fixture. Input source hashes and the fixture
+executable/plist hashes are retained, with post-run verification.
+
+The 14 cases cover the real webbrowser call shape (Default, empty dictionary,
+one URL), multiple/interleaved files and URLs, recording-only print, Hide,
+WithoutActivation, WithoutAddingToRecents, empty arrays, async return identity,
+worker-thread calls and selected malformed inputs. No caller event loop runs
+during the API call itself. Worker invocation uses a join; this is not a bound
+on the OS call's latency. Record collection and cleanup remain bounded.
+
+Assertions on valid nonempty calls require exact returned fixture identity and
+complete returned-PID payload evidence. The print waiter requires **every**
+expected file, not merely the first print callback. Group sizes/order, immediate
+async state and malformed-input outcomes are observations, not newly promised
+API behavior. Hide waits for finish and a bounded final hidden-state check;
+nonactivation remains final-state-only. Empty/error outcomes retain side effects.
+
+Recents queries are read-only. Only matching private app/document counts and
+unresolved counts are retained; unrelated history is never logged, lists are
+never edited/reset, and resolution cannot mount volumes or display UI. Missing
+lists or absence without an observable positive control do **not** prove recents
+suppression. The without-recents case is explicitly observed-only; that contract
+choice remains open. HideOthers and error-panel UI are not executed. Nil target
+URLs are not automatically tested because they could select a real default app.
+
+`sh tests/objc-workspace-options-safety.sh` checks rejection of out-of-report private apps,
+unknown cases, existing/linked output and regular/symlink/hardlink sentinels
+before invocation or absence handling. `sh tests/objc-workspace-options-observation.sh`
+uses a real gated writer to prove split print batches are fully awaited. Its
+optional `--mutation-check` deliberately changes a temporary observer copy to
+return after the first print callback; expected exit is 1, not a passing suite.
+
+A Mavericks exit 77 is only valid API absence, **not** native option acceptance.
+The production body remains gated on modern measurements, comparison to public
+Mavericks controls, and the full 21-case run from the separate frozen source
+clone. Do not use this newer checkout with the approved source-bound context.
+
 ## Stable app-hosted context
 
 Use physical absolute paths. Preparation does not launch the pair or query/request
