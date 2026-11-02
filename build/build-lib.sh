@@ -119,4 +119,6 @@ mkdir -p "$T/share/recaulk"
 
 printf "build-make=%s\n" "$("$MAKE" --version | sed -n 1p)" > "$B/build-tools.txt"
 
+SDK="$SDK" sh "$SELF/build-objc.sh" "$T" "$W/objc-companion" 1>&2
+
 printf '%s\n' "$B"

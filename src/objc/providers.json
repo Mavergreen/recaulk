@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "providers": [
+    {
+      "provider_id": "recaulk.nsworkspace.open-urls.v1",
+      "class": "NSWorkspace",
+      "method_kind": "-",
+      "selector": "openURLs:withApplicationAtURL:options:configuration:error:",
+      "encoding": "@56@0:8@16@24Q32@40^@48",
+      "implementation_symbol": "__recaulk_objc_workspace_open_urls",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    }
+  ]
+}

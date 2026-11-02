@@ -11,7 +11,7 @@ dylib="$T/lib/libRecaulkSystem.dylib"
 fail=0
 bad() { echo "FAIL: $*"; fail=1; }
 
-for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib; do
+for f in librecaulk.a librecaulk-cxxabi-exports.a librecaulk-objc.a libRecaulkSystem.dylib; do
   [ "$("$LIPO" -info "$T/lib/$f" | sed -n 's/.*: //p' | xargs)" = x86_64 ] || bad "$f is not x86_64-only"
 done
 "$OTOOL" -l "$dylib" | grep -A2 LC_VERSION_MIN_MACOSX | grep -q 'version 10.9' || bad "dylib min is not 10.9"
@@ -28,7 +28,8 @@ want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dy
 [ -f "$T/include/recaulk/MacportsLegacySupport.h" ] || bad "include/recaulk/MacportsLegacySupport.h missing"
 cmp -s sdk-metadata/recipes.json "$T/share/sdk-metadata/recipes.json" || bad "share/sdk-metadata/recipes.json is not the committed sdk-metadata/recipes.json"
 [ "$(ls "$T/share/sdk-metadata" | tr "\n" " ")" = "recipes.json " ] || bad "share/sdk-metadata holds: $(ls "$T/share/sdk-metadata" | tr "\n" " ")"
-[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
+[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
+[ -f "$T/share/recaulk/objc-providers.json" ] || bad "separate Objective-C provider metadata missing"
 stray="$(cd "$B/stage" && find . -mindepth 1 -not -path ./usr -not -path ./usr/local -not -path ./usr/local/mavergreen \
   -not -path ./usr/local/mavergreen/recaulk -not -path './usr/local/mavergreen/recaulk/*' | head -5)"
 [ -z "$stray" ] || bad "stage holds files outside usr/local/mavergreen/recaulk: $stray"

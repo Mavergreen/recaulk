@@ -181,6 +181,55 @@ This does NOT register a method or build/link a companion archive. These tests
 are not external delivery, activation, modern preservation or Codex sign-in
 acceptance. No new sender permission is requested or inherited.
 
+## Separate archive and activation gate
+
+`SDK=TARGET_SDK HOST_SDK=NATIVE_SDK sh build/build-objc.sh ABSOLUTE_STAGE ABSOLUTE_WORK`
+stages only `lib/librecaulk-objc.a` and `share/recaulk/objc-providers.json`.
+Default output is SHIPPING x86_64/10.9, including on an arm64 build host.
+A third `--native-test` argument explicitly creates a host-native TEST-ONLY
+archive; metadata records `artifact_role=native-test-only`. It is not a product
+slice or a shipping-provider attestation.
+
+Consumer linkage requires strong AppKit and Carbon plus
+`-Wl,-u,___recaulk_objc_activate`. There is no automatic Objective-C load through
+ordinary Recaulk C libraries. `build-lib.sh` merely stages the separate companion
+after the unchanged C archive/dylib links. No companion objects enter those links.
+
+The checked-in schema1 document is `{schema, providers:[declaration]}`; generated
+metadata adds a root `build` object with the actual archive digest/thin slice,
+role, target SDKSettings hash, compiler identity and hashed source/generated
+header receipts. A host Foundation-only tool validates the fixed declaration
+and a compiled typed-carrier encoding before generating registration constants.
+It never links AppKit. Unsupported slice/reader/declaration shapes fail without
+writing a new header/manifest. This metadata is NOT proof of activation.
+
+`sh tests/objc-workspace-activation.sh` needs a real built C prefix through
+`RECAULK_BUILD` or `RECAULK_C_PREFIX`. It retains evidence at an optional NEW
+`RECAULK_OBJC_ACTIVATION_REPORT` absolute path (otherwise a fresh temporary path).
+It rejects runtime injection inputs. Tests compare unrooted/rooted ordinary,
+dead-strip and consumer-LTO binaries. Consumer code has no direct provider symbol
+references: runtime dlsym checks do not themselves cause archive extraction.
+LTO input bitcode is checked, and the native Apple compiler's selected paired
+linker is bound by executable digest before/after and recorded version; no
+force-load substitutes for the named root.
+
+The tests check startup installation on missing-only hosts; unchanged native
+IMP/type encoding where supplied; unchanged inherited methods without synthetic
+class initialization; repeat activation and compiled ABI; required strong-load
+commands; and absence of the companion/AppKit from an ordinary C consumer.
+Weak-owner artifacts are rejected by LOAD-COMMAND POLICY, not executed or
+misrepresented as proving a runtime weak-link rejection. Actual older C library
+bytes remain unchanged by companion staging, and an actual C archive consumer
+is linked/inspected (executed natively on x86_64; never install Rosetta on arm64).
+No fixture app, browser, history insertion or permission query is performed.
+
+Registration uses class/superclass metadata walks and atomic class_addMethod,
+never replacement or dynamic method resolution. Atomic add preserves a competing
+own-class winner. No universal guarantee is made against unrelated code changing
+ancestor method tables concurrently with the walk; ordinary static/native and
+inherited-before-registration cases are tested. No AppKit messages or framework
+loading occur inside the registrar.
+
 ## Stable app-hosted context
 
 Use physical absolute paths. Preparation does not launch the pair or query/request
