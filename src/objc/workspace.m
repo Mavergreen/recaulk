@@ -8,7 +8,22 @@ static NSRunningApplication *failure(NSError **out, NSString *domain, NSInteger 
 static NSRunningApplication *launch(NSWorkspace *workspace, NSURL *url, NSWorkspaceLaunchOptions options, NSDictionary *configuration, NSError **error) {
     return [workspace launchApplicationAtURL:url options:options configuration:configuration error:error];
 }
-static NSRunningApplication *lookup(pid_t pid) { return [NSRunningApplication runningApplicationWithProcessIdentifier:pid]; }
+static NSRunningApplication *lookup(pid_t pid) {
+    /* Mavericks can publish the bundle URL before the executable architecture.
+     * Measured populated identity at ~84ms while finishedLaunching was FALSE.
+     * Allow a bounded registration grace, not an application-finish wait. No
+     * caller run loop, worker surviving return, flag changes or provisional +0
+     * success. After the polling budget the core still validates/fails usefully.
+     * Budget excludes time spent inside an individual public lookup call. */
+    NSTimeInterval deadline=[[NSProcessInfo processInfo] systemUptime]+0.25;
+    for (;;) {
+        NSRunningApplication *application=[NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+        if ((application && application.processIdentifier!=pid) ||
+            (application.bundleURL && application.executableArchitecture>0) ||
+            [[NSProcessInfo processInfo] systemUptime]>=deadline) return application;
+        [NSThread sleepForTimeInterval:0.002];
+    }
+}
 static OSStatus sendEvent(NSAppleEventDescriptor *event) {
     return AESendMessage(event.aeDesc,NULL,kAENoReply|kAENeverInteract,kAEDefaultTimeout);
 }

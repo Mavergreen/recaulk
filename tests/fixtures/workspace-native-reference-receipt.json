@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "kind": "out-of-band-native-reference-only",
+  "boundary": "Pinned historical execution receipt, NOT measurement on the discovering host, provider delivery proof, or authentication acceptance.",
+  "source_commit": "409f9589d9586955265779fb7d814bfe6e0dc945",
+  "reference_host": {"macos": "27.0.1", "architecture": "arm64", "sdk": "11.3"},
+  "method_encoding": "@56@0:8@16@24Q32@40^@48",
+  "case_count": 21,
+  "normative_passed": 15,
+  "observed_only": 6,
+  "source_inputs": {
+    "tests/c/objc_workspace_context.m": "3d7a1fbb070f8f47363dc651ef47020e57f99dc90436a2c8404a227ced2259fa",
+    "tests/c/objc_workspace_probe_app.m": "fcac100261d8d0649858ba7e78db611a43271971cef06599d5b7120299ba7cd9",
+    "tests/c/objc_workspace_reference.m": "4ea7bb3e8b4b0094705a3ba846adbf0899a7b84cead5d1eb967f22887b0a56c4",
+    "tests/fixtures/workspace-probe-Info.plist.in": "a4e65ca0437746411016a7fe97d3ddb1bad2da7b2127383711b9221fac71f56e",
+    "tests/helpers/workspace-context.sh": "8a4850aaf5b1bdd0ea057a93cc851698d33d9923a453a9b14a43ac68bac65878",
+    "tests/objc-workspace-reference.sh": "6055e36ec919dd9a5b3549de92ab41c98b2606a4606b89c574f596a51c6c1ace"
+  },
+  "cases": {
+    "architecture": {"disposition": "passed", "controller_sha256": "8e3e2a00deeb1c953ef9a5a232b0aaef6e4ea8157431dc05bead86d7d1af80e2"},
+    "asynchronous": {"disposition": "observed-only", "controller_sha256": "15f0fe446cc42597567ab30a22ae9b87b77cb371c4c9eef44d90b22efbec6ca2"},
+    "conflicting-event": {"disposition": "observed-only", "controller_sha256": "ff8f5b3460a025f85bd282579ec5c763b748de90f989b24685d6f379d12ff7b8"},
+    "custom-event": {"disposition": "passed", "controller_sha256": "ae012d8b44bc19aa0d7202e6798459f866b782ba1da9569b3abef7d56994561c"},
+    "custom-reuse": {"disposition": "passed", "controller_sha256": "cc2149f66a27dcf0f61c0640c8838d411e9a3f1a112ac10a70e959378ff04fe9"},
+    "empty": {"disposition": "observed-only", "controller_sha256": "4b5cc8bf82814b62a8146b5cf08ef63a393b354f5aea92c6265d924229b53736"},
+    "empty-custom": {"disposition": "observed-only", "controller_sha256": "4b4704cb9469da50cafbab241c9337730b5df7d809ebdbaba22dc70a7ffda479"},
+    "impossible-architecture": {"disposition": "observed-only", "controller_sha256": "f8004f621ddcd8a281cff1a5740b01f974b8fe5627de7cf29d5e270de0593bcd"},
+    "invalid-app": {"disposition": "passed", "controller_sha256": "d5c223d0d1a706b18338fd54c002c949c5e31d3beca31bea9b09966ec89c1c92"},
+    "mixed": {"disposition": "passed", "controller_sha256": "25d50dd6fab3b85a36e0c320e378cfe2d7dfd00e3cfb57d5cabc175e3d84107b"},
+    "multiple": {"disposition": "passed", "controller_sha256": "e69e5f724004d469e9c94457c5b036ac07f30ad9e51a64f18cab85571e672923"},
+    "new-instance": {"disposition": "passed", "controller_sha256": "41a3e006065800390e7c70160ab91a4a8864a340ca01e9e3215986dac46e5dde"},
+    "nil-error": {"disposition": "passed", "controller_sha256": "c7d70bfe62f58cdcbe5b2984ad32859c2eedf84ab4b37c20cef63167e24f683e"},
+    "nil-error-failure": {"disposition": "passed", "controller_sha256": "f0c75139f4a1fe4aedbd14af0203440f123f8f5e8a50a67da2510c62bd481b6a"},
+    "ownership": {"disposition": "passed", "controller_sha256": "1a40b8695db0b1d0acc5d4e58b79ce3b2ced05ca8e4790e4252e383316569972"},
+    "reuse-configuration": {"disposition": "passed", "controller_sha256": "8ab02c8de4bfe27f2e9e1925a855963af189870f697d8a6b400542d4552e58bb"},
+    "reused": {"disposition": "passed", "controller_sha256": "3e171e2abaccdc6f15dbdf5f9a7dbcb3ca1e49a38f9d0b136cc4403d7e296241"},
+    "startup": {"disposition": "passed", "controller_sha256": "39b3a3bc5c619a44685041983bb12400ace7ca0c660a21f7273b641fb0d0dec9"},
+    "stopped": {"disposition": "passed", "controller_sha256": "32b0e06d2137c7c1abd5b8c859a67963751516aa2df41f4cecbabf1dcedd61b5"},
+    "unknown-key": {"disposition": "observed-only", "controller_sha256": "f259f14fe8f59bf0c0626a61f045127be10df72b637c1b731bdf2038522a3e71"},
+    "without-activation": {"disposition": "passed", "controller_sha256": "2c2f379f05b55d4a5550d7a69a93c2030d0e8fadd8a08fbb755a2de30e2a783e"}
+  }
+}

@@ -181,6 +181,47 @@ This does NOT register a method or build/link a companion archive. These tests
 are not external delivery, activation, modern preservation or Codex sign-in
 acceptance. No new sender permission is requested or inherited.
 
+## Actual-method delivery and immutable reference routing
+
+On Mavericks, explicitly run `sh tests/objc-workspace-backfill.sh --prefix PREFIX
+--report NEW_ABSOLUTE_DIR`. No-argument discovery is unmeasured/SKIP77. The real
+companion is linked through its named root; an unrooted/no-body negative control
+must report actual method absence77. The unchanged original21 assertions run
+with fifteen normative cases and six retained observations. Separate dual-slice
+x86_64/i386 controls verify i386 selection, reuse, distinct new instance, worker
+calls with no caller-created loop, and delivery of BOTH URLs after the actual
+asynchronous caller process exits. No printer/browser/default handler is used.
+
+The first real async controls caught transient architecture -1 in a fresh public
+running-app lookup. A disposable public-primitive diagnostic measured populated
+identity at84ms while finishedLaunching remained false. Production now allows a
+250ms polling budget for identity registration, using fresh public PID lookups
+and2ms thread sleeps; it does NOT wait for didFinishLaunching, clear Async, run
+a caller loop or retain a worker after return. Budget excludes individual public
+API call latency/scheduler overshoot, not a hard wall-clock guarantee. Unavailable
+identity still produces explicit useful failure, never provisional success.
+`objc_workspace_lookup_deadline.m` queries an impossible PID through the actual
+private default helper; self-only alarm catches a missing deadline. Injection
+failure/ownership tests remain separate from real delivery evidence.
+
+`RECAULK_WORKSPACE_REFERENCE_ROOT=ABSOLUTE_FROZEN_CLONE` delegates ONLY `--context`
+runs or configured discovery to exact409f958 and its six pinned original source
+inputs. The original context verifier still runs before launch. Root self-alias,
+symlink, wrong HEAD or modified inputs fail. Preparation, verification, preflight
+and authorization remain explicit operations on their own source; no auto-consent
+or signer changes. Local adapter tests reject invalid contexts with the actual
+original helper; valid modern-context execution is a separate required gate.
+
+Approved optional CI policy: for UNCONFIGURED NO-ARGUMENT discovery only,
+`RECAULK_WORKSPACE_CI_REFERENCE_RECEIPT=FILE` accepts only byte-identical versioned
+`tests/fixtures/workspace-native-reference-receipt.json`. This sanitized shared
+reference fixture pins real21 native report hashes and original source hashes;
+it emits `not-measured-on-this-host`/SKIP77, NOT an oracle/provider/current-host
+pass. Missing/stale/partial/symlink receipts or missing prerequisites fail. Direct
+runs and configured contexts cannot inherit this omission. It never requests
+Automation consent. The receipt stays with the shared oracle-source pin, not a
+Codex-local workaround. Real native and Mavericks evidence remain mandatory.
+
 ## Separate archive and activation gate
 
 `SDK=TARGET_SDK HOST_SDK=NATIVE_SDK sh build/build-objc.sh ABSOLUTE_STAGE ABSOLUTE_WORK`

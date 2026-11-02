@@ -58,7 +58,7 @@ static BOOL validRecord(id r, pid_t pid, NSUInteger sequence) {
         id arch = [r objectForKey:@"architecture"], sentinel = [r objectForKey:@"sentinel"];
         return sequence == 0 && stringArray([r objectForKey:@"argv"]) && [[r objectForKey:@"argv"] count] > 0 &&
             ([sentinel isKindOfClass:[NSString class]] || sentinel == [NSNull null]) &&
-            [@[@"arm64", @"x86_64"] containsObject:arch ?: @""];
+            [@[@"arm64", @"x86_64", @"i386"] containsObject:arch ?: @""];
     }
     if ([kind isEqual:@"finished-launching"]) return sequence > 0;
     return sequence > 0 && [@[@"open", @"open-application", @"reopen", @"print", @"custom"] containsObject:kind] &&

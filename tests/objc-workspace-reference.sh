@@ -3,12 +3,25 @@
 set -eu
 umask 077
 context_helper="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)/helpers/workspace-context.sh"
+# Only context RUNS delegate. Preparation, verification, preflight and explicit
+# authorization remain bound to their own source root and original checks.
+if [ -n "${RECAULK_WORKSPACE_REFERENCE_ROOT:-}" ]; then
+ if [ "${1:-}" = --context ]; then exec sh "$(dirname "$context_helper")/workspace-reference-root.sh" "$@"; fi
+ if [ -n "${RECAULK_WORKSPACE_CONTEXT:-}" ] && { [ "$#" = 0 ] || [ "${1:-}" = --report ]; }; then
+  exec sh "$(dirname "$context_helper")/workspace-reference-root.sh" --context "$RECAULK_WORKSPACE_CONTEXT" "$@"
+ fi
+fi
 case "${1:-}" in
   --prepare-context|--verify-context|--context|--authorize-context|--preflight-context) exec sh "$context_helper" "$@" ;;
 esac
 if [ -n "${RECAULK_WORKSPACE_CONTEXT:-}" ]; then
   if [ "$#" = 0 ]; then exec sh "$context_helper" --context "$RECAULK_WORKSPACE_CONTEXT"; fi
   exec sh "$context_helper" --context "$RECAULK_WORKSPACE_CONTEXT" "$@"
+fi
+# Approved CI omission is for UNCONFIGURED no-argument discovery ONLY. Existing
+# context/direct branches above retain their verifier/permission failures.
+if [ "$#" = 0 ] && [ -n "${RECAULK_WORKSPACE_CI_REFERENCE_RECEIPT:-}" ]; then
+ exec sh "$(dirname "$context_helper")/workspace-reference-discovery.sh" "$RECAULK_WORKSPACE_CI_REFERENCE_RECEIPT"
 fi
 # Reject every existing output and any symlink component before fetching/building.
 # mkdir (without -p) claims the new leaf atomically; never reuse a report directory.

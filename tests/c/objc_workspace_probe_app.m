@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
     if (![directory isAbsolutePath] || ![[NSFileManager defaultManager] fileExistsAtPath:directory]) return 1;
 #if defined(__arm64__)
     NSString *arch = @"arm64";
+#elif defined(__i386__)
+    NSString *arch = @"i386";
 #else
     NSString *arch = @"x86_64";
 #endif
