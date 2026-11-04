@@ -12,6 +12,5 @@ trap 'rm -rf "$work"' EXIT
 /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" \
   tests/c/strtonum_contract.c -L"$T/lib" -lRecaulkSystem -o "$work/dylib"
 DYLD_LIBRARY_PATH="$T/lib" "$work/dylib"
-# Catch a missing public declaration as well as a missing runtime export.
 printf '#include <stdlib.h>\nlong long (*parse)(const char *, long long, long long, const char **) = strtonum;\n' |
   /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -x c -c -o "$work/header.o" -
