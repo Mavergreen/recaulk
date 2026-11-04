@@ -2,6 +2,8 @@
 # platform: macOS-only -- prepare/verify a disposable ungranted pair, never request permission
 set -eu
 umask 077
+# Prepares and checks a context from the CURRENT source; never the frozen verifier.
+unset RECAULK_WORKSPACE_REFERENCE_ROOT RECAULK_WORKSPACE_CONTEXT RECAULK_WORKSPACE_CI_REFERENCE_RECEIPT
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 # The 10.9 declaration-only host is covered by the context unit test, not this
 # modern no-prompt Automation integration prerequisite.
