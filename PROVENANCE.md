@@ -446,7 +446,11 @@ next object allocated at its address, and moved the whole process's working dire
 so every other thread saw the child's directory meanwhile.
 
 The builders now record every chdir action, in order, in a list keyed by the object `*file_actions`
-points at, and refuse as Apple's do (`EINVAL` for an uninitialised object, `EBADF` for a descriptor
+points at. libSystem reallocs that object when it outgrows its first allocation (two actions), so
+`posix_spawn_file_actions_addopen`, `_adddup2`, `_addclose` and `_addinherit_np` are wrapped too: on an
+object with recorded actions they hold the list's lock through the system's call and move the key to
+wherever the object went. Holding it keeps an `init` in another thread, whose fresh object may land on
+the freed address, from forgetting the list before the key moves. The builders refuse as Apple's do (`EINVAL` for an uninitialised object, `EBADF` for a descriptor
 outside 0 to `OPEN_MAX`, `ENAMETOOLONG` for a path of `PATH_MAX` bytes or more, `ENOMEM`). `posix_spawn`
 and `posix_spawnp` take the recorded directories with `pthread_chdir_np` and `pthread_fchdir_np`, which
 change the calling thread's directory alone, call the system's, and return the thread to the process's
@@ -454,7 +458,7 @@ directory with `pthread_fchdir_np(-1)`. 10.9's kernel starts the child in the sp
 directory, and resolves its program path, a PATH search and relative open actions there; with
 `POSIX_SPAWN_SETEXEC` the replacing program starts there too. A directory that cannot be entered fails
 the spawn with its `errno`, as on 10.15. `posix_spawn_file_actions_init` and `_destroy` forget an object's
-list. On 10.15 and later the forwarding layer hands the builders to the system's, nothing is recorded,
+list. With nothing recorded in the process, no wrapper takes the lock. On 10.15 and later the forwarding layer hands the builders to the system's, nothing is recorded,
 and the wrappers only call the system's.
 
 Known limits:
@@ -465,9 +469,11 @@ Known limits:
   these, adds its chdir action first.
 - A thread that had a directory of its own from `pthread_chdir_np` is returned to the process's after
   the spawn.
+- An actions object grown by another image, whose calls bind to libSystem's builders rather than these,
+  loses its recorded chdir actions once libSystem moves it.
 
-`posix_spawn`, `posix_spawnp`, `posix_spawn_file_actions_init` and `posix_spawn_file_actions_destroy`
-are 10.9 exports, so in `librecaulk.a` they are weak and hidden, declared in
+`posix_spawn`, `posix_spawnp` and `posix_spawn_file_actions_init`, `_destroy`, `_addopen`, `_adddup2`,
+`_addclose` and `_addinherit_np` are 10.9 exports, so in `librecaulk.a` they are weak and hidden, declared in
 `build/image-local-shadows.txt` as rule 1's one exception. A static link binds a program's own calls to
 them whenever the archive's member is loaded: when any of them is still undefined as the linker reaches
 `librecaulk.a` (clang-22 and Apple's clang both put it before `-lSystem`), or when the program names a

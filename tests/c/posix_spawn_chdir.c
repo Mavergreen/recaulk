@@ -21,12 +21,19 @@ static int failures;
 
 static char base[PATH_MAX], sub[PATH_MAX], other[PATH_MAX], start[PATH_MAX];
 
-/* Every actions object starts by sending the child's stdout to OUT_FD, which run() points at a
- * fresh pipe before each spawn, so one object can be spawned from again and again. */
+/* Each actions object gets its chdir actions first and then a child's usual stdio, as Zig sets one
+ * up: stdin from /dev/null, stdout to OUT_FD, which run() points at a fresh pipe before each spawn
+ * so one object can be spawned from again and again, stderr kept, OUT_FD closed. Four actions
+ * outgrow the object's first allocation, so libSystem reallocs it after the chdir is recorded. */
 #define OUT_FD 100
 static void actions(posix_spawn_file_actions_t *fa) {
     posix_spawn_file_actions_init(fa);
-    posix_spawn_file_actions_adddup2(fa, OUT_FD, 1);
+}
+static void stdio(posix_spawn_file_actions_t *fa) {
+    CHECK(posix_spawn_file_actions_addopen(fa, 0, "/dev/null", O_RDONLY, 0) == 0);
+    CHECK(posix_spawn_file_actions_adddup2(fa, OUT_FD, 1) == 0);
+    CHECK(posix_spawn_file_actions_adddup2(fa, 2, 2) == 0);
+    CHECK(posix_spawn_file_actions_addclose(fa, OUT_FD) == 0);
 }
 
 /* Spawn argv[0] (by path, or by PATH search when search is set); return posix_spawn's result and
@@ -84,6 +91,7 @@ int main(void) {
     /* addchdir_np, by absolute path. */
     actions(&fa);
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, sub) == 0);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == 0 && strcmp(out, sub) == 0);
     parent_unmoved();
     /* The same actions, reused, chdir again. */
@@ -97,6 +105,7 @@ int main(void) {
     CHECK(posix_spawn_file_actions_addfchdir_np(&fa, fd) == 0);
     {
         char *argv[] = {"pwd", "-P", NULL};
+        stdio(&fa);
         CHECK(run(&fa, NULL, 1, argv, out, sizeof out) == 0 && strcmp(out, other) == 0);
     }
     posix_spawn_file_actions_destroy(&fa);
@@ -106,11 +115,13 @@ int main(void) {
     actions(&fa);
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, base) == 0);
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, "sub") == 0);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == 0 && strcmp(out, sub) == 0);
     posix_spawn_file_actions_destroy(&fa);
     actions(&fa);
     CHECK(posix_spawn_file_actions_addfchdir_np(&fa, fd) == 0);
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, "../sub") == 0);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == 0 && strcmp(out, sub) == 0);
     posix_spawn_file_actions_destroy(&fa);
 
@@ -119,6 +130,7 @@ int main(void) {
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, sub) == 0);
     posix_spawn_file_actions_destroy(&fa);
     actions(&fa);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == 0 && strcmp(out, start) == 0);
     posix_spawn_file_actions_destroy(&fa);
 
@@ -127,12 +139,14 @@ int main(void) {
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, "/bin") == 0);
     {
         char *argv[] = {"./pwd", "-P", NULL};
+        stdio(&fa);
         CHECK(run(&fa, NULL, 0, argv, out, sizeof out) == 0 && strcmp(out, "/bin") == 0);
     }
     posix_spawn_file_actions_destroy(&fa);
     actions(&fa);
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, base) == 0);
     CHECK(posix_spawn_file_actions_addopen(&fa, 2, "made-here", O_WRONLY | O_CREAT | O_TRUNC, 0600) == 0);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == 0 && strcmp(out, base) == 0);
     posix_spawn_file_actions_destroy(&fa);
     {
@@ -153,17 +167,37 @@ int main(void) {
         CHECK(posix_spawn_file_actions_addchdir_np(&fa, longpath) == ENAMETOOLONG);
     }
     CHECK(posix_spawn_file_actions_addchdir_np(&fa, "/nonexistent/recaulk") == 0);
+    stdio(&fa);
     CHECK(pwd_in(&fa, out) == ENOENT);
     posix_spawn_file_actions_destroy(&fa);
     actions(&fa);
     {
         int file = open("/etc/hosts", O_RDONLY);
         CHECK(posix_spawn_file_actions_addfchdir_np(&fa, file) == 0);
+        stdio(&fa);
         CHECK(pwd_in(&fa, out) == ENOTDIR);
         close(file);
     }
     posix_spawn_file_actions_destroy(&fa);
     parent_unmoved();
+
+    /* An object that libSystem moves while growing keeps its chdir actions. */
+    {
+        void *first;
+        int i, moved_object = 0;
+        actions(&fa);
+        CHECK(posix_spawn_file_actions_addchdir_np(&fa, sub) == 0);
+        first = fa;
+        for (i = 0; i < 64; i++) {
+            void *before = fa;
+            CHECK(posix_spawn_file_actions_addinherit_np(&fa, 2) == 0);
+            if (fa != before) moved_object = 1;
+        }
+        stdio(&fa);
+        CHECK(moved_object && fa != first);
+        CHECK(pwd_in(&fa, out) == 0 && strcmp(out, sub) == 0);
+        posix_spawn_file_actions_destroy(&fa);
+    }
 
     /* Another thread never sees the parent's cwd move while children spawn in sub. */
     {
@@ -172,6 +206,7 @@ int main(void) {
         CHECK(pthread_create(&t, NULL, watch, NULL) == 0);
         actions(&fa);
         CHECK(posix_spawn_file_actions_addchdir_np(&fa, sub) == 0);
+        stdio(&fa);
         for (i = 0; i < 100; i++)
             CHECK(pwd_in(&fa, out) == 0 && strcmp(out, sub) == 0);
         posix_spawn_file_actions_destroy(&fa);

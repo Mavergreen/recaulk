@@ -10,3 +10,7 @@ recaulk-posix_spawn_chdir.o _posix_spawn carries out the chdir actions 10.9's po
 recaulk-posix_spawn_chdir.o _posix_spawnp carries out the chdir actions 10.9's posix_spawnp lacks, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_init forgets a reused actions object's recorded chdir actions, weak for the same reason
 recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_destroy forgets a destroyed actions object's recorded chdir actions, weak for the same reason
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addclose keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_adddup2 keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addinherit_np keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addopen keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
