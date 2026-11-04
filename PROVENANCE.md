@@ -435,6 +435,18 @@ libcxx22's `libc++abi.1.dylib`. `tests/cxxabi-exports.sh` checks that `librecaul
 hidden, that the new archive defines exactly the two, public, and that a dylib built the way
 `libc++abi.1.dylib` is gives a program linked against it the same catch results.
 
+## preadv and pwritev
+
+`src/backfills/preadv_pwritev.c` is Recaulk's own (2026-11-04); macOS 11 is the first to export both,
+and the forwarding layer prefers those. They are positional, leaving the file offset where it was;
+refuse an `iovcnt` outside 1 to `IOV_MAX`, or lengths whose sum exceeds `SSIZE_MAX`, with `EINVAL`
+before any I/O; and report a short transfer as the bytes moved. One iovec, or several moving at most
+1 MiB in all, take a single `pread` or `pwrite` (several through a bounce buffer), and are as atomic as
+that call. A larger transfer of several iovecs, or one whose bounce buffer cannot be allocated, takes one
+call per iovec and stops at the first short or failed one; a concurrent writer to the same range can
+interleave with it. `tests/preadv-pwritev-test.sh` checks the data, the offset, short reads at end of
+file, and the errors, on every macOS against whichever implementation runs.
+
 ## Parity fixture
 
 `tests/fixtures/libSystemWrapper-exports.txt` is the export list of Mavericks Forever's shipped

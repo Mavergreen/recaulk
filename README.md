@@ -82,3 +82,9 @@ codes such as `errSecNotTrusted` and `errSecCertificateExpired`, and `SecTrustCo
 returns `NULL` for a chain without certificates. Through `include/recaulk`, `<Security/Security.h>`
 declares these and the signing constants where the SDK does not. Newer macOS uses its own
 implementations.
+
+## Vector I/O at an offset
+
+`preadv` and `pwritev` read and write at an offset without moving the file offset, as on macOS 11 and
+later, which use their own. On 10.9, a transfer of several buffers over 1 MiB is not atomic: another
+writer to the same range can interleave with it.
