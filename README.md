@@ -83,6 +83,16 @@ returns `NULL` for a chain without certificates. Through `include/recaulk`, `<Se
 declares these and the signing constants where the SDK does not. Newer macOS uses its own
 implementations.
 
+## Child processes
+
+`posix_spawn_file_actions_addchdir_np` and `posix_spawn_file_actions_addfchdir_np` work on 10.9: the
+child starts in the directory they name, and its program path and relative open actions resolve there.
+Only the spawning thread's directory changes, and only during the spawn. On 10.9 every chdir action is
+taken before the other file actions, wherever it was added among them. To carry them out, programs
+linking `librecaulk.a` get Recaulk's `posix_spawn`, `posix_spawnp`, `posix_spawn_file_actions_init` and
+`posix_spawn_file_actions_destroy` in place of the system's, inside that program or dylib only; they call
+the system's. Newer macOS uses its own chdir actions.
+
 ## Vector I/O at an offset
 
 `preadv` and `pwritev` read and write at an offset without moving the file offset, as on macOS 11 and

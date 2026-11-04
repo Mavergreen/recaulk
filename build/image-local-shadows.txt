@@ -1,7 +1,12 @@
 # Spec rule 1's one exception: a HIDDEN definition, in librecaulk.a, of a name 10.9 already exports.
-# It binds only inside the image that links Recaulk and replaces nothing for any other image.
+# It binds only inside the image that links Recaulk and replaces nothing for any other image. A weak one
+# also yields to libRecaulkSystem.dylib's public override of the same name, in the one link that has both.
 # Exact and reviewed: tests/rule-backfills-add-only.sh fails on any hidden copy of a system export not
 # listed here, on any listed name that is not hidden, and on any entry nothing defines any more.
 # One per line: <member> <symbol> <reason>.
 recaulk-cxxabi_pointer_catch.o __ZTVN10__cxxabiv119__pointer_type_infoE pointer handlers catch by LLVM 22's rules, with one runtime and one exception state
 recaulk-cxxabi_pointer_catch.o __ZTVN10__cxxabiv129__pointer_to_member_type_infoE member-pointer handlers catch by LLVM 22's rules, with one runtime and one exception state
+recaulk-posix_spawn_chdir.o _posix_spawn carries out the chdir actions 10.9's posix_spawn lacks, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-posix_spawn_chdir.o _posix_spawnp carries out the chdir actions 10.9's posix_spawnp lacks, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_init forgets a reused actions object's recorded chdir actions, weak for the same reason
+recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_destroy forgets a destroyed actions object's recorded chdir actions, weak for the same reason

@@ -3,8 +3,9 @@
 # platform: Apple clang 6 on 10.9 emits a <sym>.eh beside each function; the pair is one definition
 duplicate_report() {
   for _dr_a in "$@"; do
-    "${NM:-nm}" -gU -A "$_dr_a" | awk '
-      NF >= 3 && $(NF-1) ~ /^[A-Za-z]$/ && $NF !~ /\.eh$/ {
+    # spec: build/image-local-shadows.txt -- a weak hidden definition yields to any other, so it never collides
+    "${NM:-nm}" -gU -m -A "$_dr_a" | awk '
+      NF >= 3 && $NF !~ /\.eh$/ && !/ weak private external / {
         member = $1; sub(/^.*\.a:/, "", member); sub(/:$/, "", member)
         print $NF, member
       }'

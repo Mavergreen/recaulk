@@ -20,7 +20,7 @@ below, his files differ in one way: `src/include/os/log.h` and `src/backfills/di
 | `mavericks-legacy-support/src/jit.c` | `src/backfills/jit.c`, `src/overrides/mmap_jit.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/kevent64_shim.c` | `src/overrides/kevent64_shim.c` | ISC, Wowfunhappy; EV_RECEIPT fix by Amitai Schleier, e8b35b9 |
 | `mavericks-legacy-support/src/objc_read_class_pair.c` | `src/backfills/objc_read_class_pair.c`, `src/backfills/objc_realize_class_from_swift.c` (moved, split) | ISC, Wowfunhappy |
-| `mavericks-legacy-support/src/posix_spawn_chdir.c` | `src/overrides/posix_spawn_chdir.c` | ISC, Wowfunhappy |
+| `mavericks-legacy-support/src/posix_spawn_chdir.c` | `src/backfills/posix_spawn_chdir.c` (moved, rewritten), `src/overrides/posix_spawn_chdir_export.c` (split) | ISC, Wowfunhappy; rewrite by Amitai Schleier (see Child-process chdir actions) |
 | `mavericks-legacy-support/src/security.c` | `src/backfills/security.c`, `src/backfills/security_k*.c` (one per constant), `src/overrides/sectrust_evaluate.c` (split) | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/write_underline.c` | `src/overrides/write_underline.c` | ISC, Wowfunhappy |
 | `mavericks-legacy-support/src/aligned_alloc.c` | `src/backfills/aligned_alloc.c` | ISC, Wowfunhappy |
@@ -118,8 +118,10 @@ layer), stands alone under its own name in its archive member:
 - `signpost.c`: `os_signpost_enabled` goes to `backfills/signpost_enabled.c`, whose header's first line
   names the new file. `_os_signpost_emit_with_name_impl` stays.
 
-`posix_spawn_chdir.c` stays whole in overrides: its `addchdir_np` functions fill the table that its
-`posix_spawn` wrapper reads.
+`posix_spawn_chdir.c` moved from overrides to back-fills, so that products linking `librecaulk.a` get
+`posix_spawn_file_actions_addchdir_np` and `_addfchdir_np`, which 10.9 lacks. Its `posix_spawn` and
+`posix_spawnp`, which 10.9 has, stay in the same object, weak and hidden; their public copies for
+`libRecaulkSystem.dylib` go to `overrides/posix_spawn_chdir_export.c` (see Child-process chdir actions).
 
 ## Behaviour fixes
 
@@ -434,6 +436,50 @@ the one archive that deliberately exports system-named symbols. Its single inten
 libcxx22's `libc++abi.1.dylib`. `tests/cxxabi-exports.sh` checks that `librecaulk.a` defines both
 hidden, that the new archive defines exactly the two, public, and that a dylib built the way
 `libc++abi.1.dylib` is gives a program linked against it the same catch results.
+
+## Child-process chdir actions, hidden and public
+
+`src/backfills/posix_spawn_chdir.c` is Recaulk's own rewrite (2026-11-04) of Wowfunhappy's override.
+His recorded at most one chdir per actions object in a 16-slot table, dropped a request silently when
+the table was full, forgot the request after the first spawn, kept a destroyed object's request for the
+next object allocated at its address, and moved the whole process's working directory around each spawn,
+so every other thread saw the child's directory meanwhile.
+
+The builders now record every chdir action, in order, in a list keyed by the object `*file_actions`
+points at, and refuse as Apple's do (`EINVAL` for an uninitialised object, `EBADF` for a descriptor
+outside 0 to `OPEN_MAX`, `ENAMETOOLONG` for a path of `PATH_MAX` bytes or more, `ENOMEM`). `posix_spawn`
+and `posix_spawnp` take the recorded directories with `pthread_chdir_np` and `pthread_fchdir_np`, which
+change the calling thread's directory alone, call the system's, and return the thread to the process's
+directory with `pthread_fchdir_np(-1)`. 10.9's kernel starts the child in the spawning thread's
+directory, and resolves its program path, a PATH search and relative open actions there; with
+`POSIX_SPAWN_SETEXEC` the replacing program starts there too. A directory that cannot be entered fails
+the spawn with its `errno`, as on 10.15. `posix_spawn_file_actions_init` and `_destroy` forget an object's
+list. On 10.15 and later the forwarding layer hands the builders to the system's, nothing is recorded,
+and the wrappers only call the system's.
+
+Known limits:
+
+- Every chdir action is taken before the system's own actions, not in its place among them. A relative
+  open action added before a chdir action therefore resolves in the new directory too, and a dup2 or
+  close action does not change what `addfchdir_np`'s descriptor names. Zig, the consumer that needed
+  these, adds its chdir action first.
+- A thread that had a directory of its own from `pthread_chdir_np` is returned to the process's after
+  the spawn.
+
+`posix_spawn`, `posix_spawnp`, `posix_spawn_file_actions_init` and `posix_spawn_file_actions_destroy`
+are 10.9 exports, so in `librecaulk.a` they are weak and hidden, declared in
+`build/image-local-shadows.txt` as rule 1's one exception. A static link binds a program's own calls to
+them whenever the archive's member is loaded: when any of them is still undefined as the linker reaches
+`librecaulk.a` (clang-22 and Apple's clang both put it before `-lSystem`), or when the program names a
+builder, as every program using a chdir action does, even with `librecaulk.a` after `-lSystem`. Both
+linkers, ld64 and lld, then prefer the definition in the program's own objects to libSystem's.
+`tests/posix-spawn-chdir-test.sh` links both ways and through the dylib. Without a recorded chdir
+action the wrappers call the system's unchanged.
+
+`libRecaulkSystem.dylib` must export these names, so a program relinked onto it reaches them;
+`src/overrides/posix_spawn_chdir_export.c` defines them there, public. They are weak in `librecaulk.a` so
+the public copies win that one link that has both; `build/duplicates.sh` passes a weak hidden definition
+for that reason, and `tests/rule-no-duplicates.sh` checks it still reports a strong hidden one.
 
 ## preadv and pwritev
 

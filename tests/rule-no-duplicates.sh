@@ -34,6 +34,22 @@ case "$out" in
   *"FAIL: _probe is defined by more than one member: recaulk-probe.o recaulk-probe2.o -- every one of them is ours: delete our own duplicate"*) ;;
   *) echo "FAIL: self-test: two of our members defining ___recaulk_impl_probe were not reported as our own duplicate: $out"; fail=1 ;;
 esac
+printf '__attribute__((weak, visibility("hidden"))) int shadow(void) { return 0; }\n' > "$tmp/fx/recaulk-weak.c"
+printf 'int shadow(void) { return 1; }\n' > "$tmp/fx/recaulk-public.c"
+printf '__attribute__((visibility("hidden"))) int shadow(void) { return 0; }\n' > "$tmp/fx/recaulk-hidden.c"
+for n in recaulk-weak recaulk-public recaulk-hidden; do
+  /usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/fx/$n.c" -o "$tmp/fx/$n.o"
+done
+/usr/bin/libtool -static -o "$tmp/fx/weak.a" "$tmp/fx/recaulk-weak.o" 2>/dev/null
+/usr/bin/libtool -static -o "$tmp/fx/public.a" "$tmp/fx/recaulk-public.o" 2>/dev/null
+/usr/bin/libtool -static -o "$tmp/fx/hidden.a" "$tmp/fx/recaulk-hidden.o" 2>/dev/null
+out="$(duplicate_report "$tmp/fx/weak.a" "$tmp/fx/public.a")"
+[ -z "$out" ] || { echo "FAIL: self-test: a weak hidden _shadow beside a public one read as a duplicate, though the public one always wins the link: $out"; fail=1; }
+out="$(duplicate_report "$tmp/fx/hidden.a" "$tmp/fx/public.a")"
+case "$out" in
+  *"FAIL: _shadow is defined by more than one member: recaulk-hidden.o recaulk-public.o"*) ;;
+  *) echo "FAIL: self-test: a hidden but strong _shadow beside a public one was not reported, though the two collide in libRecaulkSystem.dylib's link: $out"; fail=1 ;;
+esac
 [ "$fail" = 0 ] || exit 1
 
 report="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
