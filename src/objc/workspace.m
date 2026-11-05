@@ -27,7 +27,46 @@ static NSRunningApplication *lookup(pid_t pid) {
 static OSStatus sendEvent(NSAppleEventDescriptor *event) {
     return AESendMessage(event.aeDesc,NULL,kAENoReply|kAENeverInteract,kAEDefaultTimeout);
 }
-static const RecaulkWorkspaceOps publicOps={launch,lookup,sendEvent,recaulk_workspace_note_recent_files};
+static OSStatus lsOpen(NSArray *urls, NSURL *app, LSLaunchFlags flags, NSDictionary *environment, NSArray *arguments,
+    NSAppleEventDescriptor *initial, pid_t *pid) {
+    FSRef ref;
+    if (![app isFileURL] || !CFURLGetFSRef((CFURLRef)app,&ref)) return fnfErr;
+    LSApplicationParameters params={0,flags,&ref,NULL,(CFDictionaryRef)environment,(CFArrayRef)arguments,
+        initial ? (AppleEvent *)initial.aeDesc : NULL};
+    ProcessSerialNumber psn={0,kNoProcess};
+    /* With an explicit application LS ignores the role, launches if needed and
+     * delivers every URL itself (GURL; file URLs as documents). */
+    OSStatus status=urls.count ? LSOpenURLsWithRole((CFArrayRef)urls,kLSRolesAll,NULL,&params,&psn,1)
+                               : LSOpenApplication(&params,&psn);
+    if (status!=noErr) return status;
+    return GetProcessPID(&psn,pid);
+}
+static const RecaulkWorkspaceOps publicOps={launch,lookup,sendEvent,recaulk_workspace_note_recent_files,lsOpen};
+/* NSWorkspaceLaunchOptions bits whose LSLaunchFlags values are identical. */
+static const NSWorkspaceLaunchOptions lsShared=NSWorkspaceLaunchAndPrint|NSWorkspaceLaunchWithErrorPresentation|
+    NSWorkspaceLaunchInhibitingBackgroundOnly|NSWorkspaceLaunchWithoutAddingToRecents|NSWorkspaceLaunchWithoutActivation|
+    NSWorkspaceLaunchAsync|NSWorkspaceLaunchNewInstance|NSWorkspaceLaunchAndHide|NSWorkspaceLaunchAndHideOthers;
+static NSRunningApplication *openWithLaunchServices(NSArray *urls, NSArray *valid, NSURL *app, NSWorkspaceLaunchOptions options,
+    NSDictionary *configuration, NSError **error, const RecaulkWorkspaceOps *ops) {
+    id environment=[configuration objectForKey:NSWorkspaceLaunchConfigurationEnvironment];
+    id arguments=[configuration objectForKey:NSWorkspaceLaunchConfigurationArguments];
+    id custom=[configuration objectForKey:NSWorkspaceLaunchConfigurationAppleEvent];
+    if (custom && ![custom isKindOfClass:[NSAppleEventDescriptor class]])
+        [NSException raise:NSInvalidArgumentException format:@"Initial Apple event must be an NSAppleEventDescriptor"];
+    if ((environment && ![environment isKindOfClass:[NSDictionary class]]) || (arguments && ![arguments isKindOfClass:[NSArray class]]))
+        [NSException raise:NSInvalidArgumentException format:@"Launch environment must be a dictionary and arguments an array"];
+    pid_t pid=0;
+    OSStatus status=ops->ls_open(valid,app,(LSLaunchFlags)(options&lsShared),environment,arguments,
+        custom ? [[custom copy] autorelease] : nil,&pid);
+    /* A missing application is Cocoa 260, as the native method reports it. */
+    if (status==fnfErr) return failure(error,NSCocoaErrorDomain,NSFileReadNoSuchFileError,@"The application could not be found.");
+    if (status!=noErr) return failure(error,NSOSStatusErrorDomain,status,@"Launch Services could not open the URLs with the application.");
+    NSRunningApplication *selected=pid>0 ? ops->lookup(pid) : nil;
+    if (!selected || selected.processIdentifier!=pid || !selected.bundleURL || selected.executableArchitecture<=0)
+        return failure(error,NSPOSIXErrorDomain,ESRCH,@"Launch Services opened every URL, but the application's populated process identity could not be reacquired.");
+    if (!urls.count) return failure(error,NSCocoaErrorDomain,NSFileReadUnknownError,@"The URL array is empty; application launch or initial-event delivery may have occurred.");
+    return selected;
+}
 NSRunningApplication *recaulk_workspace_open_urls_with_ops(NSWorkspace *workspace, NSArray *urls, NSURL *app,
     NSWorkspaceLaunchOptions options, NSDictionary *configuration, NSError **error, const RecaulkWorkspaceOps *provided) {
     if (!urls || !app) [NSException raise:NSInternalInconsistencyException format:@"Invalid parameter: urls and applicationURL must not be nil"];
@@ -39,6 +78,10 @@ NSRunningApplication *recaulk_workspace_open_urls_with_ops(NSWorkspace *workspac
     for (id value in urls) if ([value isKindOfClass:[NSURL class]]) {
         [valid addObject:value]; if ([value isFileURL]) [files addObject:value];
     }
+    /* Launch Services has no architecture parameter: only that request keeps the
+     * launch-then-send path, whose later URLs wait on the identity lookup. */
+    if (ops->ls_open && ![configuration objectForKey:NSWorkspaceLaunchConfigurationArchitecture])
+        return openWithLaunchServices(urls,valid,app,options,configuration,error,ops);
     NSError *local=nil;
     NSArray *events=recaulk_workspace_url_events(valid,options,&local);
     if (!events) { if (error) *error=local; return nil; }

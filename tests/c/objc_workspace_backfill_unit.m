@@ -39,6 +39,18 @@ static BOOL note(NSArray *files, NSWorkspaceLaunchOptions flags, NSError **e) {
     return YES;
 }
 static const RecaulkWorkspaceOps ops={launch,lookup,sendEvent,note};
+static int lsCalls, lsStatus;
+static NSArray *lsURLs, *lsArguments;
+static NSDictionary *lsEnvironment;
+static NSAppleEventDescriptor *lsInitial;
+static LSLaunchFlags lsFlags;
+static OSStatus lsOpen(NSArray *urls, NSURL *a, LSLaunchFlags flags, NSDictionary *environment, NSArray *arguments, NSAppleEventDescriptor *initial, pid_t *pid) {
+    lsCalls++; lsURLs=urls; lsFlags=flags; lsEnvironment=environment; lsArguments=arguments; lsInitial=initial;
+    if (lsStatus) return lsStatus;
+    *pid=4242; return noErr;
+}
+static const RecaulkWorkspaceOps lsOps={launch,lookup,sendEvent,note,lsOpen};
+static void lsReset(void) { lsCalls=lsStatus=0; lsURLs=lsArguments=nil; lsEnvironment=nil; lsInitial=nil; lsFlags=0; }
 static void reset(void) {
     [captured release]; captured=nil; sent=[NSMutableArray array]; noted=nil;
     launches=lookups=notes=failLaunch=noLaunchError=failLookup=wrongPID=failSendAt=failNote=mutate=0;
@@ -113,6 +125,31 @@ int main(void) {
     CHECK(ownedError.code==ENOENT && ownedError.localizedDescription.length,"caller-retained +0 error survives pool"); [ownedError release];
     reset(); e=[NSError errorWithDomain:@"sentinel" code:1 userInfo:nil]; NSError *sentinel=e;
     CHECK(openURLs(@[web],0,nil,&e) && e==sentinel,"success leaves optional error output untouched");
+    /* Launch Services path: one request carries every URL and the configuration. */
+    #define LSOPEN(u,f,c,err) recaulk_workspace_open_urls_with_ops(nil,(u),app,(f),(c),(err),&lsOps)
+    reset(); lsReset(); e=nil;
+    NSAppleEventDescriptor *lsCustom=[NSAppleEventDescriptor appleEventWithEventClass:'RvTr' eventID:'Work' targetDescriptor:nil returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
+    NSDictionary *lsConfig=@{NSWorkspaceLaunchConfigurationArguments:@[@"--owned"],NSWorkspaceLaunchConfigurationEnvironment:@{@"TOKEN":@"fixture-only"},NSWorkspaceLaunchConfigurationAppleEvent:lsCustom};
+    result=LSOPEN((@[file,web,file2,web2]),NSWorkspaceLaunchWithoutActivation|NSWorkspaceLaunchNewInstance,lsConfig,&e);
+    CHECK(result.processIdentifier==4242 && !e && lsCalls==1 && [lsURLs isEqual:(@[file,web,file2,web2])],"LS path: one request carries every URL in order");
+    CHECK(lsFlags==(kLSLaunchDontSwitch|kLSLaunchNewInstance),"LS path: shared flag bits forwarded unchanged");
+    CHECK([lsArguments isEqual:@[@"--owned"]] && [lsEnvironment isEqual:@{@"TOKEN":@"fixture-only"}],"LS path: arguments and environment forwarded");
+    CHECK(lsInitial && lsInitial!=lsCustom && lsInitial.eventClass=='RvTr',"LS path: caller's initial event copied, not reused");
+    CHECK(!launches && !sent.count && !notes,"LS path: no legacy launch, no own sends, no own Recents bookkeeping");
+    reset(); lsReset(); e=nil; failLookup=1;
+    CHECK(!LSOPEN((@[web,web2]),0,nil,&e) && e.code==ESRCH && lsCalls==1 && lsURLs.count==2,"LS path: identity failure reported after every URL was handed to LS");
+    reset(); lsReset(); e=nil; lsStatus=fnfErr;
+    CHECK(!LSOPEN(@[web],0,nil,&e) && [e.domain isEqual:NSCocoaErrorDomain] && e.code==NSFileReadNoSuchFileError && !lookups,"LS path: missing application is Cocoa 260, as natively");
+    reset(); lsReset(); e=nil; lsStatus=kLSUnknownErr;
+    CHECK(!LSOPEN(@[web],0,nil,&e) && [e.domain isEqual:NSOSStatusErrorDomain] && e.code==kLSUnknownErr && !lookups,"LS path: other LS failures propagate as OSStatus errors, no lookup");
+    reset(); lsReset(); e=nil;
+    CHECK(!LSOPEN(@[],0,nil,&e) && lsCalls==1 && !lsURLs.count && [e.domain isEqual:NSCocoaErrorDomain] && e.code==256,"LS path: empty input launches, then nil/Cocoa256");
+    reset(); lsReset(); e=nil;
+    result=LSOPEN((@[web,web2]),0,(@{NSWorkspaceLaunchConfigurationArchitecture:@(NSBundleExecutableArchitectureI386)}),&e);
+    CHECK(result && !lsCalls && launches==1 && sent.count==1,"architecture request keeps the launch-then-send path");
+    reset(); lsReset(); raised=NO;
+    @try { LSOPEN(@[web],0,(@{NSWorkspaceLaunchConfigurationEnvironment:@"not a dictionary"}),NULL); } @catch(NSException *x) { raised=[x.name isEqual:NSInvalidArgumentException]; }
+    CHECK(raised && !lsCalls,"LS path: malformed environment is an explicit precondition");
     [captured release]; captured=nil;
     printf("%s: real backend/planner with per-call recording boundaries; not external delivery proof\n", failures ? "FAIL":"PASS");
     [pool drain]; return failures ? 1:0;
