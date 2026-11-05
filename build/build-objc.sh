@@ -22,8 +22,10 @@ mkdir -p "$W/objects" "$W/generated" "$T/lib" "$T/share/recaulk"
 /usr/bin/clang -arch "$host" -isysroot "$HOST_SDK" -mmacosx-version-min="$hostfloor" -fno-objc-arc -Wno-deprecated-declarations "$ROOT/build/objc-provider-manifest.m" -o "$W/objc-provider-manifest" -framework Foundation
 G="$W/objc-provider-manifest"; D="$ROOT/src/objc/providers.json"
 "$G" header "$D" "$W/generated/providers-generated.h"
+# -g keeps each member's line table: shipyard maps the archive's message sends to the
+# prepared source through it (its objc source receipt). Code generation is unchanged.
 for f in workspace workspace-events workspace-recents register; do
- /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Os -fPIC -Wall -Wno-deprecated-declarations -I"$W/generated" -c "$ROOT/src/objc/$f.m" -o "$W/objects/$f.o"
+ /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations -I"$W/generated" -c "$ROOT/src/objc/$f.m" -o "$W/objects/$f.o"
 done
 /usr/bin/libtool -static -o "$W/librecaulk-objc.a" "$W/objects/workspace.o" "$W/objects/workspace-events.o" "$W/objects/workspace-recents.o" "$W/objects/register.o"
 (cd "$ROOT" && shasum -a 256 src/objc/workspace.m src/objc/workspace-events.m src/objc/workspace-recents.m src/objc/register.m src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh build/objc-provider-manifest.m) > "$W/source-inputs.txt"
