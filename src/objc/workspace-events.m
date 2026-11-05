@@ -9,7 +9,8 @@ static NSAppleEventDescriptor *event(AEEventClass cls, AEEventID identifier, NSA
 NSArray *__recaulk_workspace_url_events(NSArray *urls, NSWorkspaceLaunchOptions options, NSError **error) {
     NSMutableArray *files=[NSMutableArray array], *others=[NSMutableArray array], *result=[NSMutableArray array];
     for (id value in urls) if ([value isKindOfClass:[NSURL class]]) {
-        if ([value isFileURL]) [files addObject:value]; else [others addObject:value];
+        NSURL *url=value;
+        if ([url isFileURL]) [files addObject:url]; else [others addObject:url];
     }
     BOOL ok=YES;
     if (files.count) {

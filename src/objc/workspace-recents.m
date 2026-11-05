@@ -4,7 +4,10 @@
 BOOL __recaulk_workspace_note_recent_files(NSArray *urls, NSWorkspaceLaunchOptions options, NSError **error) {
     if (options & NSWorkspaceLaunchWithoutAddingToRecents) return YES;
     NSMutableArray *documents=[NSMutableArray array];
-    for (id value in urls) if ([value isKindOfClass:[NSURL class]] && [value isFileURL]) [documents addObject:value];
+    for (id value in urls) if ([value isKindOfClass:[NSURL class]]) {
+        NSURL *url=value;
+        if ([url isFileURL]) [documents addObject:url];
+    }
     if (!documents.count) return YES;
     BOOL completed=NO;
     LSSharedFileListRef recent=LSSharedFileListCreate(kCFAllocatorDefault,kLSSharedFileListRecentDocumentItems,NULL);
