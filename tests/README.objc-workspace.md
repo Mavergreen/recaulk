@@ -89,7 +89,14 @@ async state and malformed-input outcomes are observations, not newly promised
 API behavior. Hide waits for finish and a bounded final hidden-state check;
 nonactivation remains final-state-only. Empty/error outcomes retain side effects.
 
-Recents queries are read-only. Only matching private app/document counts and
+Native mode is opt-in (`--native`, `--report`, or
+`RECAULK_WORKSPACE_OPTIONS_NATIVE=1`); with no arguments the suite run SKIPs
+with 77. It writes to the user's Recent Items: the default and files cases open
+the probe app and fixture documents with Recents left on, on purpose, as the
+positive control for without-recents, and so do interleaved and print. Those
+entries point at scratch paths that are deleted afterwards.
+
+The Recents *queries* are read-only. Only matching private app/document counts and
 unresolved counts are retained; unrelated history is never logged, lists are
 never edited/reset, and resolution cannot mount volumes or display UI. Missing
 lists or absence without an observable positive control do **not** prove recents
@@ -184,7 +191,12 @@ acceptance. No new sender permission is requested or inherited.
 ## Actual-method delivery and immutable reference routing
 
 On Mavericks, explicitly run `sh tests/objc-workspace-backfill.sh --prefix PREFIX
---report NEW_ABSOLUTE_DIR`. No-argument discovery is unmeasured/SKIP77. The real
+--report NEW_ABSOLUTE_DIR`. No-argument discovery is unmeasured/SKIP77. PREFIX's
+`share/recaulk/objc-providers.json` must show the archive was built from this
+tree: its source receipt is checked against the current files and its archive
+hash against `lib/librecaulk-objc.a`, so a stale prefix fails. The original
+`mixed` case opens a file URL with Recents on, so this run also adds a scratch
+document to the user's Recent Documents. The real
 companion is linked through its named root; an unrooted/no-body negative control
 must report actual method absence77. The unchanged original21 assertions run
 with fifteen normative cases and six retained observations. Separate dual-slice

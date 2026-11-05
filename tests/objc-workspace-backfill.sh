@@ -16,6 +16,13 @@ case "$(/usr/bin/sw_vers -productVersion)" in 10.9.*) ;; *) echo 'FAIL: actual M
 cursor=$D
 while [ "$cursor" != / ]; do [ ! -L "$cursor" ] || { echo 'FAIL: symlink report component'; exit 1; }; cursor=$(dirname "$cursor"); done
 mkdir -m 700 "$D"
+# The archive must be built from THIS tree; a stale prefix would otherwise turn
+# an older provider's run into this commit's evidence.
+/usr/bin/plutil -convert xml1 -o "$D/objc-providers.plist" "$P/share/recaulk/objc-providers.json"
+/usr/libexec/PlistBuddy -c 'Print :build:source_inputs_receipt' "$D/objc-providers.plist" | grep -v '  generated/' | grep . > "$D/source-inputs-receipt.txt"
+[ "$(/usr/libexec/PlistBuddy -c 'Print :build:architecture' "$D/objc-providers.plist")" = x86_64 ] || { echo 'FAIL: prefix archive is not x86_64'; exit 1; }
+(cd "$ROOT" && /usr/bin/shasum -a 256 -c "$D/source-inputs-receipt.txt") > "$D/source-inputs-verification.log" 2>&1 || { echo 'FAIL: prefix archive was not built from this tree'; cat "$D/source-inputs-verification.log"; exit 1; }
+[ "$(/usr/bin/shasum -a 256 "$P/lib/librecaulk-objc.a" | cut -d' ' -f1)" = "$(/usr/libexec/PlistBuddy -c 'Print :build:archive_sha256' "$D/objc-providers.plist")" ] || { echo 'FAIL: prefix archive does not match its manifest'; exit 1; }
 SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
 unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
 /usr/bin/clang --version > "$D/compiler.txt"

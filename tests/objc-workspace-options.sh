@@ -4,9 +4,19 @@ set -eu
 umask 077
 START=$(pwd -P)
 cd "$(dirname "$0")/.."
-mode=native
+mode=
 keep=0
-case "${1:-}" in --native) shift ;; --self-test) mode=self; shift ;; esac
+case "${1:-}" in --native) mode=native; shift ;; --self-test) mode=self; shift ;; esac
+# Native mode launches private fixture apps, and its default/files cases add
+# fixture documents and the probe app to the user's Recent Items on purpose
+# (the positive control for without-recents). Never do that unasked.
+if [ -z "$mode" ]; then
+  [ "$#" -gt 0 ] || [ "${RECAULK_WORKSPACE_OPTIONS_NATIVE:-0}" = 1 ] || {
+    echo 'SKIP: native options launches (fixture apps, Recent Items) are opt-in: --native or RECAULK_WORKSPACE_OPTIONS_NATIVE=1; not measured'
+    exit 77
+  }
+  mode=native
+fi
 case $# in
   0) D=$(mktemp -d "${TMPDIR:-/tmp}/workspace-options.XXXXXX") ;;
   2)
@@ -107,7 +117,8 @@ for c in default files interleaved print hide without-activation without-recents
   fixture "$c"
   run_case "$c" "$R/Probe.app"
   echo "$c: exit $rc"
-  [ "$rc" != 77 ] || exit 77
+  # Method absence (77) is all-or-nothing, but never let it hide an earlier failure.
+  [ "$rc" != 77 ] || { [ "$status" = 0 ] || exit 1; exit 77; }
   [ "$rc" = 0 ] || status=1
 done
 exit "$status"

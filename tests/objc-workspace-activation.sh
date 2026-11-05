@@ -7,17 +7,18 @@ ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
 : "${SHIPYARD_SCRIPTS:?set pinned shipyard scripts}"
 [ -z "${DYLD_INSERT_LIBRARIES:-}${DYLD_FRAMEWORK_PATH:-}${DYLD_LIBRARY_PATH:-}" ] || { echo 'FAIL: injected runtime inputs cannot establish activation evidence'; exit 1; }
 CP=${RECAULK_C_PREFIX:-${RECAULK_BUILD:-/not-configured}/stage/usr/local/mavergreen/recaulk}
-if [ ! -f "$CP/lib/librecaulk.a" ] || [ ! -f "$CP/lib/libRecaulkSystem.dylib" ]; then
- echo 'SKIP: actual C archive/dylib required for isolation checks; not measured'; exit 77
-fi
+# Objective-C activation (plain/dead-strip/LTO, ABI, weak owner) needs no C
+# stage and always runs; only the C-isolation checks need the real C outputs.
+c_measured=1
+if [ ! -f "$CP/lib/librecaulk.a" ] || [ ! -f "$CP/lib/libRecaulkSystem.dylib" ]; then c_measured=0; fi
 if [ -n "${RECAULK_OBJC_ACTIVATION_REPORT:-}" ]; then D=$RECAULK_OBJC_ACTIVATION_REPORT; case "$D" in /*) ;; *) exit 2 ;; esac; mkdir -m 700 "$D"; else D=$(mktemp -d "${TMPDIR:-/tmp}/workspace-activation.XXXXXX"); fi
 # Preserve actual objects/binaries/logs as evidence; never remove caller output.
 case "$(uname -m)" in arm64) arch=arm64; floor=11.0 ;; x86_64) arch=x86_64; floor=10.9 ;; *) exit 1 ;; esac
 SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
 unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
-shasum -a 256 "$CP/lib/librecaulk.a" "$CP/lib/libRecaulkSystem.dylib" > "$D/c-before.sha256"
+if [ "$c_measured" = 1 ]; then shasum -a 256 "$CP/lib/librecaulk.a" "$CP/lib/libRecaulkSystem.dylib" > "$D/c-before.sha256"; fi
 SDK="$SDK" HOST_SDK="$SDK" sh "$ROOT/build/build-objc.sh" "$D/stage" "$D/work" --native-test > "$D/builder.log" 2>&1
-shasum -a 256 -c "$D/c-before.sha256" > "$D/c-after.log"
+if [ "$c_measured" = 1 ]; then shasum -a 256 -c "$D/c-before.sha256" > "$D/c-after.log"; fi
 A="$D/stage/lib/librecaulk-objc.a"
 [ -f "$D/stage/share/recaulk/objc-providers.json" ]
 /usr/bin/otool -L "$D/work/objc-provider-manifest" > "$D/generator-loads.txt"
@@ -65,10 +66,15 @@ printf '%s\n' '#include <mach-o/dyld.h>' '#include <string.h>' 'int main(void){f
 /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" "$D/ordinary.c" "$A" -o "$D/ordinary"
 "$D/ordinary"
 /usr/bin/nm "$D/ordinary" > "$D/ordinary-symbols.txt"
+! grep -q __recaulk_objc_activate "$D/ordinary-symbols.txt"
+if [ "$c_measured" = 0 ]; then
+ echo "PASS: actual root in ordinary/dead-strip/LTO; inherited/native/ABI preserved; weak owner rejected by policy. Evidence: $D"
+ echo 'SKIP: actual C archive/dylib required for C isolation checks; not measured'
+ exit 77
+fi
 /usr/bin/nm "$CP/lib/librecaulk.a" > "$D/c-archive-symbols.txt"
 /usr/bin/nm "$CP/lib/libRecaulkSystem.dylib" > "$D/c-dylib-symbols.txt"
 /usr/bin/otool -L "$CP/lib/libRecaulkSystem.dylib" > "$D/c-dylib-loads.txt"
-! grep -q __recaulk_objc_activate "$D/ordinary-symbols.txt"
 ! grep -q __recaulk_objc "$D/c-archive-symbols.txt"
 ! grep -q __recaulk_objc "$D/c-dylib-symbols.txt"
 ! grep -q AppKit "$D/c-dylib-loads.txt"
