@@ -5,11 +5,15 @@ umask 077
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
 if [ "$#" = 0 ]; then
  # Default suite on 10.9: build this tree's companion and run the floor
- # controls through the real method (private fixture apps, URL-only, so only
- # Recent Applications is touched). Elsewhere the method is native: unmeasured.
+ # controls through the real method. Private fixture apps only; documents are
+ # opened WithoutAddingToRecents, so only Recent Applications is touched.
+ # Elsewhere the method is native: unmeasured.
  case "$(/usr/bin/sw_vers -productVersion)" in 10.9.*) ;; *) echo 'SKIP: real backfill delivery runs only on Mavericks; not measured'; exit 77 ;; esac
- : "${SHIPYARD_SCRIPTS:?select pinned shipyard scripts}"
+ [ -n "${SHIPYARD_SCRIPTS:-}" ] || { echo 'SKIP: SHIPYARD_SCRIPTS not set; not measured'; exit 77; }
+ # Resolve symlinks (/var, /tmp -> /private): report paths must have none.
  T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-backfill.XXXXXX")
+ T=$(cd "$T" && pwd -P)
+ echo "evidence: $T"
  sh "$ROOT/build/build-objc.sh" "$T/stage" "$T/work" > "$T/builder.log" 2>&1 || { echo "FAIL: companion build; see $T/builder.log"; exit 1; }
  set -- --prefix "$T/stage" --report "$T/report" --floor-controls-only
 fi
@@ -73,7 +77,7 @@ for c in $original_cases; do
 done
 /usr/bin/shasum -a 256 -c "$D/input-sha256.txt" > "$D/input-verification.log"
 if [ "$only_floor" = 0 ]; then echo 'Original21: fifteen normative cases plus six observations, not21 normative passes.'; fi
-for c in i386-selection i386-reuse i386-new-instance worker async-caller-exit; do
+for c in i386-selection i386-reuse i386-new-instance worker async-caller-exit ls-mixed; do
  fixture "$c"
  "$D/controller" floor-controls "$c" "$R/Probe.app" "$R" > "$R/controller.log" 2>&1 & child=$!
  rc=0; wait "$child" || rc=$?; child=

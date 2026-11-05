@@ -27,7 +27,7 @@ static int integrationFloor(int argc,char **argv,BOOL child) {
     NSString *input=[NSString stringWithUTF8String:argv[3]];
     NSURL *app=[input isAbsolutePath] ? [NSURL fileURLWithPath:input]:[NSURL URLWithString:input];
     NSString *events=[root stringByAppendingPathComponent:@"events"];
-    NSArray *known=@[@"i386-selection",@"i386-reuse",@"i386-new-instance",@"worker",@"async-caller-exit"];
+    NSArray *known=@[@"i386-selection",@"i386-reuse",@"i386-new-instance",@"worker",@"async-caller-exit",@"ls-mixed"];
     if (![known containsObject:name] || !integrationPin(root) || !fixturePrerequisites(app,root,events) ||
         !class_getInstanceMethod([NSWorkspace class],@selector(openURLs:withApplicationAtURL:options:configuration:error:))) { [pool drain]; return 1; }
     NSString *nonce=child ? [NSString stringWithContentsOfFile:@"nonce.txt" encoding:NSUTF8StringEncoding error:NULL] : [[NSProcessInfo processInfo] globallyUniqueString];
@@ -42,6 +42,17 @@ static int integrationFloor(int argc,char **argv,BOOL child) {
     BOOL multiple=[name isEqual:@"worker"] || [name isEqual:@"async-caller-exit"];
     OptionsCall call; memset(&call,0,sizeof(call)); call.workspace=[NSWorkspace sharedWorkspace]; call.urls=multiple ? @[url,second]:@[url]; call.app=app;
     call.flags=NSWorkspaceLaunchWithoutActivation;
+    /* ls-mixed: no architecture, so the Launch Services path; a document plus
+     * two URLs, opened WithoutAddingToRecents so Recent Documents is untouched. */
+    if ([name isEqual:@"ls-mixed"]) {
+        if (!child) {
+            int fd=open("floor-document.txt",O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW,0600);
+            if (fd<0) { [pool drain]; return 1; }
+            BOOL ok=optionsWrite(fd,[@"floor document" dataUsingEncoding:NSUTF8StringEncoding]); if (close(fd) || !ok) { [pool drain]; return 1; }
+        }
+        call.urls=@[[NSURL fileURLWithPath:[root stringByAppendingPathComponent:@"floor-document.txt"]],url,second];
+        call.flags|=NSWorkspaceLaunchWithoutAddingToRecents;
+    }
     NSArray *arguments=@[@"--floor-sentinel",@"exact floor argv"];
     NSString *environment=@"exact floor environment";
     NSMutableDictionary *cfg=[NSMutableDictionary dictionaryWithObjectsAndKeys:arguments,NSWorkspaceLaunchConfigurationArguments,
@@ -60,7 +71,7 @@ static int integrationFloor(int argc,char **argv,BOOL child) {
     }
     NSMutableDictionary *result=[NSMutableDictionary dictionaryWithObjectsAndKeys:name,@"case",nonce,@"nonce",url.absoluteString,@"requested_url",
         @"real rooted method; bounded observation only; no caller-created loop during worker/caller call",@"scope",nil];
-    [result setObject:multiple ? @[url.absoluteString,second.absoluteString]:@[url.absoluteString] forKey:@"requested_urls"];
+    [result setObject:[call.urls valueForKey:@"absoluteString"] forKey:@"requested_urls"];
     NSMutableArray *failures=[NSMutableArray array], *cleanup=[NSMutableArray array];
     OptionsCall seed; memset(&seed,0,sizeof(seed));
     @try {

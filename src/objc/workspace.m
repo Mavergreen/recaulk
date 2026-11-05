@@ -30,7 +30,7 @@ static OSStatus sendEvent(NSAppleEventDescriptor *event) {
 static OSStatus lsOpen(NSArray *urls, NSURL *app, LSLaunchFlags flags, NSDictionary *environment, NSArray *arguments,
     NSAppleEventDescriptor *initial, pid_t *pid) {
     FSRef ref;
-    if (![app isFileURL] || !CFURLGetFSRef((CFURLRef)app,&ref)) return fnfErr;
+    if (![app isFileURL] || !CFURLGetFSRef((CFURLRef)app,&ref)) return RECAULK_LS_NO_APPLICATION;
     LSApplicationParameters params={0,flags,&ref,NULL,(CFDictionaryRef)environment,(CFArrayRef)arguments,
         initial ? (AppleEvent *)initial.aeDesc : NULL};
     ProcessSerialNumber psn={0,kNoProcess};
@@ -39,7 +39,10 @@ static OSStatus lsOpen(NSArray *urls, NSURL *app, LSLaunchFlags flags, NSDiction
     OSStatus status=urls.count ? LSOpenURLsWithRole((CFArrayRef)urls,kLSRolesAll,NULL,&params,&psn,1)
                                : LSOpenApplication(&params,&psn);
     if (status!=noErr) return status;
-    return GetProcessPID(&psn,pid);
+    /* LS succeeded, so every URL was handed over: a lost PSN is a lost identity
+     * (pid stays 0 and the caller reports ESRCH), not an open failure. */
+    if (GetProcessPID(&psn,pid)!=noErr) *pid=0;
+    return noErr;
 }
 static const RecaulkWorkspaceOps publicOps={launch,lookup,sendEvent,__recaulk_workspace_note_recent_files,lsOpen};
 /* NSWorkspaceLaunchOptions bits whose LSLaunchFlags values are identical. */
@@ -55,11 +58,17 @@ static NSRunningApplication *openWithLaunchServices(NSArray *urls, NSArray *vali
         [NSException raise:NSInvalidArgumentException format:@"Initial Apple event must be an NSAppleEventDescriptor"];
     if ((environment && ![environment isKindOfClass:[NSDictionary class]]) || (arguments && ![arguments isKindOfClass:[NSArray class]]))
         [NSException raise:NSInvalidArgumentException format:@"Launch environment must be a dictionary and arguments an array"];
+    /* Launch Services requires CFString elements; reject anything else here. */
+    for (id value in (NSArray *)arguments) if (![value isKindOfClass:[NSString class]])
+        [NSException raise:NSInvalidArgumentException format:@"Launch arguments must be strings"];
+    for (id key in (NSDictionary *)environment) if (![key isKindOfClass:[NSString class]] || ![[environment objectForKey:key] isKindOfClass:[NSString class]])
+        [NSException raise:NSInvalidArgumentException format:@"Launch environment keys and values must be strings"];
     pid_t pid=0;
     OSStatus status=ops->ls_open(valid,app,(LSLaunchFlags)(options&lsShared),environment,arguments,
         custom ? [[custom copy] autorelease] : nil,&pid);
-    /* A missing application is Cocoa 260, as the native method reports it. */
-    if (status==fnfErr) return failure(error,NSCocoaErrorDomain,NSFileReadNoSuchFileError,@"The application could not be found.");
+    /* Only an application that can't be resolved is Cocoa 260, as natively; an
+     * LS fnfErr (say, a missing document) stays an OSStatus error. */
+    if (status==RECAULK_LS_NO_APPLICATION) return failure(error,NSCocoaErrorDomain,NSFileReadNoSuchFileError,@"The application could not be found.");
     if (status!=noErr) return failure(error,NSOSStatusErrorDomain,status,@"Launch Services could not open the URLs with the application.");
     NSRunningApplication *selected=pid>0 ? ops->lookup(pid) : nil;
     if (!selected || selected.processIdentifier!=pid || !selected.bundleURL || selected.executableArchitecture<=0)

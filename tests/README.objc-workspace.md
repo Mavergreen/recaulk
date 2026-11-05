@@ -208,8 +208,13 @@ with the first URL and sends the rest to its PID after the lookup.
 On Mavericks, explicitly run `sh tests/objc-workspace-backfill.sh --prefix PREFIX
 --report NEW_ABSOLUTE_DIR` for the original 21 plus the floor controls. With no
 arguments on Mavericks (the default suite) it builds this tree's companion and
-runs only the floor controls, which launch private fixtures with URLs only, so
-they add the fixture to Recent Applications. Elsewhere it is SKIP77. PREFIX's
+runs only the floor controls, which launch private fixtures and so add them to
+Recent Applications. Which path each takes: the three i386 controls name an
+architecture, so they exercise the launch-then-send path; `worker` and
+`async-caller-exit` (two URLs) and `ls-mixed` (a document plus two URLs, opened
+WithoutAddingToRecents) exercise Launch Services. Zero URLs, print, custom
+events and reuse on the Launch Services path are measured only by the explicit
+original-21 run. Elsewhere it is SKIP77. PREFIX's
 `share/recaulk/objc-providers.json` must show the archive was built from this
 tree: its source receipt is checked against the current files and its archive
 hash against `lib/librecaulk-objc.a`, so a stale prefix fails. The original

@@ -39,7 +39,7 @@ static BOOL note(NSArray *files, NSWorkspaceLaunchOptions flags, NSError **e) {
     return YES;
 }
 static const RecaulkWorkspaceOps ops={launch,lookup,sendEvent,note};
-static int lsCalls, lsStatus;
+static int lsCalls, lsStatus, lsPID=4242;
 static NSArray *lsURLs, *lsArguments;
 static NSDictionary *lsEnvironment;
 static NSAppleEventDescriptor *lsInitial;
@@ -47,10 +47,10 @@ static LSLaunchFlags lsFlags;
 static OSStatus lsOpen(NSArray *urls, NSURL *a, LSLaunchFlags flags, NSDictionary *environment, NSArray *arguments, NSAppleEventDescriptor *initial, pid_t *pid) {
     lsCalls++; lsURLs=urls; lsFlags=flags; lsEnvironment=environment; lsArguments=arguments; lsInitial=initial;
     if (lsStatus) return lsStatus;
-    *pid=4242; return noErr;
+    *pid=lsPID; return noErr;
 }
 static const RecaulkWorkspaceOps lsOps={launch,lookup,sendEvent,note,lsOpen};
-static void lsReset(void) { lsCalls=lsStatus=0; lsURLs=lsArguments=nil; lsEnvironment=nil; lsInitial=nil; lsFlags=0; }
+static void lsReset(void) { lsCalls=lsStatus=0; lsPID=4242; lsURLs=lsArguments=nil; lsEnvironment=nil; lsInitial=nil; lsFlags=0; }
 static void reset(void) {
     [captured release]; captured=nil; sent=[NSMutableArray array]; noted=nil;
     launches=lookups=notes=failLaunch=noLaunchError=failLookup=wrongPID=failSendAt=failNote=mutate=0;
@@ -138,8 +138,18 @@ int main(void) {
     CHECK(!launches && !sent.count && !notes,"LS path: no legacy launch, no own sends, no own Recents bookkeeping");
     reset(); lsReset(); e=nil; failLookup=1;
     CHECK(!LSOPEN((@[web,web2]),0,nil,&e) && e.code==ESRCH && lsCalls==1 && lsURLs.count==2,"LS path: identity failure reported after every URL was handed to LS");
+    reset(); lsReset(); e=nil; lsStatus=RECAULK_LS_NO_APPLICATION;
+    CHECK(!LSOPEN(@[web],0,nil,&e) && [e.domain isEqual:NSCocoaErrorDomain] && e.code==NSFileReadNoSuchFileError && !lookups,"LS path: unresolvable application is Cocoa 260, as natively");
     reset(); lsReset(); e=nil; lsStatus=fnfErr;
-    CHECK(!LSOPEN(@[web],0,nil,&e) && [e.domain isEqual:NSCocoaErrorDomain] && e.code==NSFileReadNoSuchFileError && !lookups,"LS path: missing application is Cocoa 260, as natively");
+    CHECK(!LSOPEN(@[file],0,nil,&e) && [e.domain isEqual:NSOSStatusErrorDomain] && e.code==fnfErr,"LS path: LS's own fnfErr (e.g. a missing document) is not called a missing application");
+    reset(); lsReset(); e=nil; lsPID=0;
+    CHECK(!LSOPEN((@[web,web2]),0,nil,&e) && e.code==ESRCH && !lookups,"LS path: a lost PSN after LS success is a lost identity, not an open failure");
+    reset(); lsReset(); raised=NO;
+    @try { LSOPEN(@[web],0,(@{NSWorkspaceLaunchConfigurationArguments:@[@1]}),NULL); } @catch(NSException *x) { raised=[x.name isEqual:NSInvalidArgumentException]; }
+    CHECK(raised && !lsCalls,"LS path: non-string argument rejected before LS");
+    reset(); lsReset(); raised=NO;
+    @try { LSOPEN(@[web],0,(@{NSWorkspaceLaunchConfigurationEnvironment:@{@"K":@1}}),NULL); } @catch(NSException *x) { raised=[x.name isEqual:NSInvalidArgumentException]; }
+    CHECK(raised && !lsCalls,"LS path: non-string environment value rejected before LS");
     reset(); lsReset(); e=nil; lsStatus=kLSUnknownErr;
     CHECK(!LSOPEN(@[web],0,nil,&e) && [e.domain isEqual:NSOSStatusErrorDomain] && e.code==kLSUnknownErr && !lookups,"LS path: other LS failures propagate as OSStatus errors, no lookup");
     reset(); lsReset(); e=nil;
