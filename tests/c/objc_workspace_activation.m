@@ -51,7 +51,7 @@ int main(int argc,char **argv) {
         if (before ? after!=before : after!=body) failures++;
         if (before && strcmp(beforeTypes,method_getTypeEncoding(current))) failures++;
         if (activate) { activate(); if (method_getImplementation(metadata(owner,sel))!=after) failures++; }
-        void (*registerClass)(Class)=dlsym(RTLD_DEFAULT,"recaulk_objc_register_workspace_class");
+        void (*registerClass)(Class)=dlsym(RTLD_DEFAULT,"__recaulk_objc_register_workspace_class");
         if (!registerClass) failures++;
         else {
             Class parent=objc_allocateClassPair([NSObject class],"ActivationParent",0);

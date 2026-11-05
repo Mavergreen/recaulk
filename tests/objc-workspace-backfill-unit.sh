@@ -16,7 +16,7 @@ unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_D
 "$D/unit"
 # Run the same recording preference/failure decisions against the PRODUCTION
 # helper, not its research predecessor. Macros affect this test TU only.
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations '-DFLOOR_NOTE_HEADER="../../src/objc/workspace-recents.m"' -Drecaulk_workspace_note_recent_files=floorNoteRecentFiles "$ROOT/tests/c/objc_workspace_recent_decisions.m" -o "$D/recents" -framework AppKit -framework Carbon
+/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations '-DFLOOR_NOTE_HEADER="../../src/objc/workspace-recents.m"' -D__recaulk_workspace_note_recent_files=floorNoteRecentFiles "$ROOT/tests/c/objc_workspace_recent_decisions.m" -o "$D/recents" -framework AppKit -framework Carbon
 "$D/recents"
 # Compile the default lookup itself (not the per-call recording replacement).
 # Query only an impossible PID; self alarm catches a removed polling deadline.

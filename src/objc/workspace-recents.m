@@ -1,7 +1,7 @@
 /* Supplemental document bookkeeping after successful launch/queue operations.
  * Only public APIs; never remove/reset history or change a preference. */
 #import "workspace-private.h"
-BOOL recaulk_workspace_note_recent_files(NSArray *urls, NSWorkspaceLaunchOptions options, NSError **error) {
+BOOL __recaulk_workspace_note_recent_files(NSArray *urls, NSWorkspaceLaunchOptions options, NSError **error) {
     if (options & NSWorkspaceLaunchWithoutAddingToRecents) return YES;
     NSMutableArray *documents=[NSMutableArray array];
     for (id value in urls) if ([value isKindOfClass:[NSURL class]] && [value isFileURL]) [documents addObject:value];

@@ -3,7 +3,16 @@
 set -eu
 umask 077
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
-if [ "$#" = 0 ]; then echo 'SKIP: explicit real Mavericks backfill prefix/report not configured; not measured'; exit 77; fi
+if [ "$#" = 0 ]; then
+ # Default suite on 10.9: build this tree's companion and run the floor
+ # controls through the real method (private fixture apps, URL-only, so only
+ # Recent Applications is touched). Elsewhere the method is native: unmeasured.
+ case "$(/usr/bin/sw_vers -productVersion)" in 10.9.*) ;; *) echo 'SKIP: real backfill delivery runs only on Mavericks; not measured'; exit 77 ;; esac
+ : "${SHIPYARD_SCRIPTS:?select pinned shipyard scripts}"
+ T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-backfill.XXXXXX")
+ sh "$ROOT/build/build-objc.sh" "$T/stage" "$T/work" > "$T/builder.log" 2>&1 || { echo "FAIL: companion build; see $T/builder.log"; exit 1; }
+ set -- --prefix "$T/stage" --report "$T/report" --floor-controls-only
+fi
 { [ "$#" = 4 ] || { [ "$#" = 5 ] && [ "$5" = --floor-controls-only ]; }; } && [ "$1" = --prefix ] && [ "$3" = --report ] || { echo 'usage: objc-workspace-backfill.sh --prefix PREFIX --report NEW_ABSOLUTE_DIR [--floor-controls-only]' >&2; exit 2; }
 only_floor=0; [ "$#" != 5 ] || only_floor=1
 P=$2; D=$4

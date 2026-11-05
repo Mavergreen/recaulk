@@ -96,6 +96,13 @@ the probe app and fixture documents with Recents left on, on purpose, as the
 positive control for without-recents, and so do interleaved and print. Those
 entries point at scratch paths that are deleted afterwards.
 
+Accepted: on a modern Mac, the default `objc-workspace-interruption.sh` and
+`objc-workspace-harness-errors.sh` launch private fixture apps through the
+pinned original-21 controller, and the configured `objc-workspace-reference.sh`
+launches the approved pair, so each suite run adds those apps to Recent
+Applications. Stopping that would mean changing a file pinned to the frozen
+reference (or making the tests opt-in and losing their coverage).
+
 The Recents *queries* are read-only. Only matching private app/document counts and
 unresolved counts are retained; unrelated history is never logged, lists are
 never edited/reset, and resolution cannot mount volumes or display UI. Missing
@@ -190,8 +197,19 @@ acceptance. No new sender permission is requested or inherited.
 
 ## Actual-method delivery and immutable reference routing
 
+The provider opens the URLs as the native method does: one Launch Services
+request (`LSOpenURLsWithRole`, or `LSOpenApplication` for no URLs) carries the
+application, every URL, the launch flags, environment, arguments and initial
+event, and Launch Services delivers the URLs and keeps Recents. The populated
+identity lookup then only decides what is returned. Launch Services has no
+architecture parameter, so a request naming an architecture launches the app
+with the first URL and sends the rest to its PID after the lookup.
+
 On Mavericks, explicitly run `sh tests/objc-workspace-backfill.sh --prefix PREFIX
---report NEW_ABSOLUTE_DIR`. No-argument discovery is unmeasured/SKIP77. PREFIX's
+--report NEW_ABSOLUTE_DIR` for the original 21 plus the floor controls. With no
+arguments on Mavericks (the default suite) it builds this tree's companion and
+runs only the floor controls, which launch private fixtures with URLs only, so
+they add the fixture to Recent Applications. Elsewhere it is SKIP77. PREFIX's
 `share/recaulk/objc-providers.json` must show the archive was built from this
 tree: its source receipt is checked against the current files and its archive
 hash against `lib/librecaulk-objc.a`, so a stale prefix fails. The original

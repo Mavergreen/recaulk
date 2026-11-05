@@ -8,6 +8,7 @@ Recaulk supplies them:
 - `librecaulk.a` for source code
 - `libRecaulkSystem.dylib` for binaries
 - `librecaulk-cxxabi-exports.a` for one consumer only, libcxx22's `libc++abi.1.dylib` (see C++ exceptions)
+- `librecaulk-objc.a` for Objective-C methods 10.9's frameworks lack (see Objective-C methods)
 
 When running on newer macOS and a system-provided version of a Recaulk function exists, the system's version is preferred, with a few exceptions.
 
@@ -30,6 +31,24 @@ helpers are renamed `___recaulk_<name>` in the archive. `libRecaulkSystem.dylib`
 names unrenamed, as libSystemWrapper.dylib did.
 
 (For C++ built against the system's libc++abi, as clang-22's libc++ is, also pass `-lc++abi`: Recaulk fills in the C++ runtime entry points 10.9's libc++abi lacks, and they call the rest of it.)
+
+### Objective-C methods
+
+`librecaulk-objc.a` adds framework methods 10.9 lacks, such as NSWorkspace's
+`openURLs:withApplicationAtURL:options:configuration:error:`. It is separate from
+`librecaulk.a` and does nothing unless you ask for it: link it and keep its
+activation root, and AppKit and Carbon strong-linked:
+
+```sh
+cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
+   -Wl,-u,___recaulk_objc_activate -framework AppKit -framework Carbon
+```
+
+Don't use `-force_load`; `-u` is enough, and survives `-dead_strip` and LTO. At
+load, each method is added only where the class doesn't already have it, so a
+native or inherited implementation on newer macOS is left alone.
+`share/recaulk/objc-providers.json` lists the methods, their ABI encodings and
+the build that produced the archive (source hashes, archive hash, compiler, SDK).
 
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
 

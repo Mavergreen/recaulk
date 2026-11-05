@@ -41,7 +41,7 @@ static OSStatus lsOpen(NSArray *urls, NSURL *app, LSLaunchFlags flags, NSDiction
     if (status!=noErr) return status;
     return GetProcessPID(&psn,pid);
 }
-static const RecaulkWorkspaceOps publicOps={launch,lookup,sendEvent,recaulk_workspace_note_recent_files,lsOpen};
+static const RecaulkWorkspaceOps publicOps={launch,lookup,sendEvent,__recaulk_workspace_note_recent_files,lsOpen};
 /* NSWorkspaceLaunchOptions bits whose LSLaunchFlags values are identical. */
 static const NSWorkspaceLaunchOptions lsShared=NSWorkspaceLaunchAndPrint|NSWorkspaceLaunchWithErrorPresentation|
     NSWorkspaceLaunchInhibitingBackgroundOnly|NSWorkspaceLaunchWithoutAddingToRecents|NSWorkspaceLaunchWithoutActivation|
@@ -67,7 +67,7 @@ static NSRunningApplication *openWithLaunchServices(NSArray *urls, NSArray *vali
     if (!urls.count) return failure(error,NSCocoaErrorDomain,NSFileReadUnknownError,@"The URL array is empty; application launch or initial-event delivery may have occurred.");
     return selected;
 }
-NSRunningApplication *recaulk_workspace_open_urls_with_ops(NSWorkspace *workspace, NSArray *urls, NSURL *app,
+NSRunningApplication *__recaulk_workspace_open_urls_with_ops(NSWorkspace *workspace, NSArray *urls, NSURL *app,
     NSWorkspaceLaunchOptions options, NSDictionary *configuration, NSError **error, const RecaulkWorkspaceOps *provided) {
     if (!urls || !app) [NSException raise:NSInternalInconsistencyException format:@"Invalid parameter: urls and applicationURL must not be nil"];
     if (![urls isKindOfClass:[NSArray class]] || ![app isKindOfClass:[NSURL class]] ||
@@ -83,7 +83,7 @@ NSRunningApplication *recaulk_workspace_open_urls_with_ops(NSWorkspace *workspac
     if (ops->ls_open && ![configuration objectForKey:NSWorkspaceLaunchConfigurationArchitecture])
         return openWithLaunchServices(urls,valid,app,options,configuration,error,ops);
     NSError *local=nil;
-    NSArray *events=recaulk_workspace_url_events(valid,options,&local);
+    NSArray *events=__recaulk_workspace_url_events(valid,options,&local);
     if (!events) { if (error) *error=local; return nil; }
     NSMutableDictionary *copy=configuration ? [[configuration mutableCopy] autorelease] : [NSMutableDictionary dictionary];
     NSAppleEventDescriptor *custom=[copy objectForKey:NSWorkspaceLaunchConfigurationAppleEvent];
@@ -129,5 +129,5 @@ NSRunningApplication *recaulk_workspace_open_urls_with_ops(NSWorkspace *workspac
 }
 NSRunningApplication *__recaulk_objc_workspace_open_urls(id receiver, SEL command, NSArray *urls, NSURL *app,
     NSWorkspaceLaunchOptions options, NSDictionary *configuration, NSError **error) {
-    return recaulk_workspace_open_urls_with_ops(receiver,urls,app,options,configuration,error,NULL);
+    return __recaulk_workspace_open_urls_with_ops(receiver,urls,app,options,configuration,error,NULL);
 }

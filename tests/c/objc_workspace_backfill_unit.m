@@ -57,7 +57,7 @@ static void reset(void) {
 }
 #define CHECK(x, name) do { if (!(x)) { printf("FAIL line%d: %s\n",__LINE__,name); failures++; } } while (0)
 static NSRunningApplication *openURLs(NSArray *urls, NSWorkspaceLaunchOptions flags, NSDictionary *cfg, NSError **e) {
-    return recaulk_workspace_open_urls_with_ops(nil, urls, app, flags, cfg, e, &ops);
+    return __recaulk_workspace_open_urls_with_ops(nil, urls, app, flags, cfg, e, &ops);
 }
 static pid_t addressedPID(NSAppleEventDescriptor *event) {
     NSAppleEventDescriptor *d=[event attributeDescriptorForKeyword:keyAddressAttr]; pid_t p=0;
@@ -84,9 +84,9 @@ int main(void) {
     result=openURLs(@[web,web2],0,cfg,&e);
     CHECK(result && sent.count==2 && ![cfg objectForKey:@"injected-by-launch"] && [[[custom paramDescriptorForKeyword:'mark'] stringValue] isEqual:@"original"],"custom event copied, preserved against launch mutation; all URLs sent");
     for (NSAppleEventDescriptor *event in sent) CHECK(addressedPID(event)==4242,"custom URL leg targets selected PID");
-    reset(); NSArray *events=recaulk_workspace_url_events(@[file,web,file2,web2],0,&e);
+    reset(); NSArray *events=__recaulk_workspace_url_events(@[file,web,file2,web2],0,&e);
     CHECK(events.count==3 && [[events objectAtIndex:0] eventID]==kAEOpenDocuments && [[[events objectAtIndex:0] paramDescriptorForKeyword:keyDirectObject] numberOfItems]==2,"all files grouped first");
-    events=recaulk_workspace_url_events(@[file,file2],NSWorkspaceLaunchAndPrint,&e);
+    events=__recaulk_workspace_url_events(@[file,file2],NSWorkspaceLaunchAndPrint,&e);
     CHECK(events.count==1 && [[events objectAtIndex:0] eventID]==kAEPrintDocuments && [[[events objectAtIndex:0] paramDescriptorForKeyword:keyDirectObject] numberOfItems]==2,"recording-only print plan groups both files");
     reset(); result=openURLs(@[file,web,file2],0,nil,&e);
     CHECK((result && notes==1 && [noted isEqual:@[file,file2]]),"only requested files noted after queues");
@@ -126,7 +126,7 @@ int main(void) {
     reset(); e=[NSError errorWithDomain:@"sentinel" code:1 userInfo:nil]; NSError *sentinel=e;
     CHECK(openURLs(@[web],0,nil,&e) && e==sentinel,"success leaves optional error output untouched");
     /* Launch Services path: one request carries every URL and the configuration. */
-    #define LSOPEN(u,f,c,err) recaulk_workspace_open_urls_with_ops(nil,(u),app,(f),(c),(err),&lsOps)
+    #define LSOPEN(u,f,c,err) __recaulk_workspace_open_urls_with_ops(nil,(u),app,(f),(c),(err),&lsOps)
     reset(); lsReset(); e=nil;
     NSAppleEventDescriptor *lsCustom=[NSAppleEventDescriptor appleEventWithEventClass:'RvTr' eventID:'Work' targetDescriptor:nil returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
     NSDictionary *lsConfig=@{NSWorkspaceLaunchConfigurationArguments:@[@"--owned"],NSWorkspaceLaunchConfigurationEnvironment:@{@"TOKEN":@"fixture-only"},NSWorkspaceLaunchConfigurationAppleEvent:lsCustom};
