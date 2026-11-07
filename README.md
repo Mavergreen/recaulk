@@ -57,7 +57,7 @@ products. `libRecaulkSystem.dylib` exports it publicly (its source is in `src/ov
 `librecaulk.a` carries it weak and hidden (`src/backfills/`), so it binds only inside the program or
 dylib that links the archive and yields to the dylib's in the one link that has both. Each such name is
 listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backfills-add-only.sh`
-holds that list exact. Recaulk's C++ exception rules and its `posix_spawn` are fixes of
+holds that list exact. Recaulk's C++ exception rules, its `posix_spawn` and its `pselect` are fixes of
 this kind.
 
 ## C++ exceptions
@@ -108,6 +108,25 @@ the system's. Newer macOS uses its own chdir actions.
 `preadv` and `pwritev` read and write at an offset without moving the file offset, as on macOS 11 and
 later, which use their own. On 10.9, a transfer of several buffers over 1 MiB is not atomic: another
 writer to the same range can interleave with it.
+
+## Waiting with pselect
+
+10.9's `pselect` sets the signal mask, calls `select`, then restores the mask, as three steps, so a signal
+it unblocks that is already pending, or arrives before `select` starts, runs its handler and the wait then
+sleeps on. Recaulk's `pselect`, all five of 10.9's symbols for it, never loses such a signal: it returns
+`EINTR`, the handler run, as an atomic `pselect` does. Each thread keeps a kqueue that records every signal
+posted to the process, from when the image loads (the main thread), the fork (a child) or its first wait
+(any other thread); 10.11 and later use their own atomic `pselect`.
+
+Limits on 10.9: a signal handled outside any wait can end the thread's next wait at once with `EINTR`; a
+signal sent to one thread (`pthread_kill`) is no better covered than by 10.9's own; one that another
+thread handles can end the wait with `EINTR`; one under way as a new thread's first wait begins, or as a
+fork's child registers its kqueue, is not seen; and a signal can end a wait a moment before its handler
+runs, which it then does as the caller next unblocks it. Where no kqueue can be had (descriptors or
+memory exhausted), a wait falls back to 10.9's own `pselect` rather than fail. A program may close the
+kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and registers another. Callers
+already loop on `EINTR`. `librecaulk.a` must come before libSystem in the link, as clang
+puts it; after libSystem, libSystem's `pselect` binds instead.
 
 ## Tests
 

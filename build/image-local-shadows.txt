@@ -14,3 +14,8 @@ recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addclose keeps an actions 
 recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_adddup2 keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
 recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addinherit_np keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
 recaulk-posix_spawn_chdir.o _posix_spawn_file_actions_addopen keeps an actions object's recorded chdir actions when libSystem reallocs the object, weak for the same reason
+recaulk-pselect.o _pselect waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-pselect.o _pselect$1050 waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-pselect.o _pselect$DARWIN_EXTSN waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-pselect.o _pselect$DARWIN_EXTSN$NOCANCEL waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-pselect.o _pselect$NOCANCEL waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
