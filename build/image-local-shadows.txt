@@ -19,3 +19,6 @@ recaulk-pselect.o _pselect$1050 waits without losing a signal 10.9's mask-then-s
 recaulk-pselect.o _pselect$DARWIN_EXTSN waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-pselect.o _pselect$DARWIN_EXTSN$NOCANCEL waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-pselect.o _pselect$NOCANCEL waits without losing a signal 10.9's mask-then-select pselect can lose, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-libm_fixes.o _fma rounds a*b+c once, as 10.9's fma does not (its sign is wrong when a*b and c cancel), weak so libRecaulkSystem.dylib's public override wins there
+recaulk-libm_fixes.o _fmal rounds a*b+c once, as 10.9's fmal does not (it overflows when only a*b would, and drops tiny products), weak for the same reason
+recaulk-libm_fixes.o _truncl keeps the sign of a zero result, which 10.9's truncl takes from a register it never set, weak for the same reason

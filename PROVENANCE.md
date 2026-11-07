@@ -541,3 +541,42 @@ The legacy `_pselect` symbol does not hold `nfds` to `FD_SETSIZE` on 10.9 (MEASU
 `librecaulk.a` has no constructor (`tests/rule-backfills-add-only.sh`), so a program linking it registers
 its main thread's kqueue at that thread's first wait, as any thread does; `libRecaulkSystem.dylib`'s
 override constructor registers it as the dylib loads.
+
+## fma, fmal and truncl
+
+REPORTED 2026-11-07 by Swift's `test/stdlib/FloatingPoint` on 10.9.5: `Double.addingProduct`, which calls
+`fma` at -Onone, gave `fma(1+ε, ε-1, 1) = -ε²`; `Float80.round(.towardZero)` on `-0` gave `+0`.
+
+READ: Apple's last published Libm, Libm-2026 (10.9), `Source/Intel/xmm_fma.c` computes `fma` from
+26/27-bit splits accumulated in x87 long double with hand-made sticky bits, and `fmal` by a
+head-and-tail sum that "only works in round-to-nearest", returns the product when it alone overflows,
+and returns `c` when the product's exponent is below the denormals. `Source/Intel/fmaf.c` computes in
+double and repairs the one double-rounding case. `Source/Intel/truncl.s`, x86_64, for `|x| < 1` builds
+the zero from `andl $0x80000000, %edx` after `movswl %cx, %edx`: `%cx`, not the exponent it loaded into
+`%eax`, so the sign is whatever the caller left in `%rcx`. 10.9.5's `/usr/lib/system/libsystem_m.dylib`
+(current version 3047.16.0) disassembles to that `truncl` instruction for instruction. No later Libm
+source has been published, so nothing says when, or whether, a later x86_64 macOS fixed these.
+
+MEASURED 2026-11-07 on a 10.9.5 Mac (Ivy Bridge, no FMA instructions), with `tests/c/libm_fixes.c` and
+the cases in `tests/c/libm_cases.h`, a, b, c with a*b+c rounded once in each of the four rounding modes by
+exact rational arithmetic (`tests/c/gen_libm_cases.py`, Python's `fractions`), 331 cases each: 10.9's
+`fma` rounded 18 of its 1324 wrong, in 7 cases, and its `fmal` 127, in 87. To nearest, `fma` gave the
+reported cancellation the wrong sign and tiny results the wrong zero; `fmal` gave `inf` where only the
+product overflows, NaN where `-inf` is due, misrounded denormal results and gave zeros the wrong sign,
+`fmal(-0, 1, -0)` among them. The rest were in the directed modes. `truncl` gave 4 of 18 inputs a zero of the
+wrong sign: here -0, -0.5, -0x1.fffffffffffffffep-1 and -0x1p-16445 gave +0, while a build of the same
+test that evaluated each call twice saw +0, 0.5 and the others give -0, as `%rcx` changed. `fmaf`, `trunc`
+and `truncf` passed every case. With 20031 cases per function, 10.9's `fma` was wrong in 50 and `fmal` in
+5484 of the 80124 roundings each; Recaulk's in none.
+
+Recaulk's `fma` computes a*b+c exactly in integers (a 192-bit sum with a sticky bit), rounds it to odd at
+64 bits into an x87 long double, and lets the hardware's conversion round that to double: Boldo and
+Melquiond (IEEE Trans. Computers 57(4), 2008) prove rounding to odd at p+2 or more bits followed by
+rounding to p bits is one correct rounding, and the conversion raises the flags and honours the mode.
+`fmal` rounds the same exact sum to 64 bits itself, in the current mode, down to the denormals, and raises
+the flags with `feraiseexcept`. Infinities, NaNs and zero operands go to the hardware's `a*b+c`, which is
+exact or correctly rounded for them, except a finite product with an infinite `c`, which is `c`.
+
+They are used on every macOS: with no evidence that any later x86_64 libm is right, a version boundary
+would be a guess, and a wrong one returns wrong results silently. Reconsider when a later x86_64 macOS
+passes `tests/c/libm_fixes.c` against its own libm: forward from that version, as `pselect` does.

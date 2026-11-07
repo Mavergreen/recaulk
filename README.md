@@ -65,8 +65,8 @@ products. `libRecaulkSystem.dylib` exports it publicly (its source is in `src/ov
 `librecaulk.a` carries it weak and hidden (`src/backfills/`), so it binds only inside the program or
 dylib that links the archive and yields to the dylib's in the one link that has both. Each such name is
 listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backfills-add-only.sh`
-holds that list exact. Recaulk's C++ exception rules, its `posix_spawn` and its `pselect` are fixes of
-this kind.
+holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect` and its `fma`,
+`fmal` and `truncl` are fixes of this kind.
 
 ## C++ exceptions
 
@@ -136,6 +136,19 @@ memory exhausted), a wait falls back to 10.9's own `pselect` rather than fail. A
 kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and registers another. Callers
 already loop on `EINTR`. `librecaulk.a` must come before libSystem in the link, as clang
 puts it; after libSystem, libSystem's `pselect` binds instead.
+
+## Floating point
+
+`fma` and `fmal` round `a*b+c` once, in the current rounding mode, as C requires; 10.9's do not.
+Its `fma` gets the sign wrong when the product and the addend nearly cancel (`fma(1+ε, ε-1, 1)` is
+`-ε²`, not `ε²`), and its `fmal` misrounds in the directed modes and near the denormals, overflows
+whenever the product alone would, and loses products too small to be a denormal. `truncl` keeps the
+sign of a zero result: 10.9's, given a value between -1 and 1, takes the sign of its zero from whatever
+its caller left in a register, so `truncl(-0.5)` can be `+0` and `truncl(0.5)` `-0`. `fmaf`, `trunc` and
+`truncf` are 10.9's own, which are right.
+
+Recaulk's three are used on every macOS, not only 10.9: Apple's published Libm source ends with 10.9's,
+and no later x86_64 macOS has been tested, so no version is known to be right.
 
 ## Queue assertions
 
