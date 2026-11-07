@@ -17,7 +17,8 @@ esac
 
 if [ "$RECAULK_TEST_PHASE" = run ]; then
   : "${RECAULK_BUILD:?the run phase needs RECAULK_BUILD, the build tree the build phase made}"
-  B="$RECAULK_BUILD"
+  # platform: canonical, so a path dyld reports for a program in it matches the one a test expects
+  B="$(cd "$RECAULK_BUILD" && pwd -P)"
 else
   . build/lib.sh
   B="$(recaulk_build_dir)"

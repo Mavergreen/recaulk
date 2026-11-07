@@ -283,10 +283,12 @@ zeroes the struct first and ignores the return. On 10.12 and later the forwardin
 to libxpc's.
 
 Revisit trigger: these failure semantics stand by decision until Apple's real implementation confirms or
-contradicts them. On a macOS that has the function, `tests/os-system-version.sh` prints lldb's
-disassembly of it and of its `.cold.1` path into the CI log. If that disassembly shows a different
-success value, failure value or struct handling, or that the function traps instead of returning,
-change the back-fill to match it.
+contradicts them. Until 2026-11-06 `tests/os-system-version.sh` printed lldb's disassembly of Apple's
+function and its `.cold.1` path into the CI log, from Rosetta on macOS 26. Runtime tests now run on a
+real 10.9 guest, which has no such function, so nothing reads it automatically; that waits on a runtime
+newer than 10.9 for CI (queued). Read the disassembly by hand on a macOS that has the function; if it
+shows a different success value, failure value or struct handling, or that the function traps instead
+of returning, change the back-fill to match it.
 
 ## Known MacPorts deviations and 10.9-fallback checks
 

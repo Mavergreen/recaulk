@@ -1,34 +1,36 @@
 #!/bin/sh
-# platform: macOS-only -- builds and executes x86_64 Mach-O
+# platform: macOS-only -- builds x86_64 Mach-O with drydock and the forwarding generator; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
-x86_64_runs || { echo "SKIP: this host cannot run x86_64 programs"; exit 77; }
-DRYDOCK="$B/drydock/drydock-macho-rewrite"
-[ -x "$DRYDOCK" ] || { echo "FAIL: $DRYDOCK is not executable: sh build/build-lib.sh fetches it"; exit 1; }
 D="$(mktemp -d "${TMPDIR:-/tmp}/fwd-abi.XXXXXX")"
 trap 'rm -rf "$D"' EXIT
 
-xcc() { /usr/bin/clang $FLAGS -arch x86_64 -Os "$@"; }
-xcc -c tests/c/forward_abi_impl.c -o "$D/impl.o"
-xcc -dynamiclib -install_name "$D/libmgsys.dylib" -o "$D/libmgsys.dylib" tests/c/forward_abi_sys.c
-printf '%s\n' _mgfwd_float _mgfwd_nop _mgfwd_varargs > "$D/symbols"
-sh build/rename-impls.sh "$DRYDOCK" "$D/symbols" "$D/impl.o"
-SDK="$SDK" sh build/gen-trampolines.sh "$D/symbols" "$D/fwd"
-printf 'symbol rename _dlsym _mgfwd_clobbering_dlsym\nsymbol rename _sysctl _mgfwd_modern_sysctl\n' \
-  | "$DRYDOCK" "$D/fwd/fwd-resolve.o" "$D/fwd/fwd-resolve.clobbering.o" >/dev/null 2>&1 \
-  || { echo "FAIL: could not point fwd-resolve.o's dlsym and sysctl at the stand-ins"; exit 1; }
-mv -f "$D/fwd/fwd-resolve.clobbering.o" "$D/fwd/fwd-resolve.o"
-/usr/bin/libtool -static -o "$D/libabi.a" "$D/impl.o" "$D"/fwd/fwd-*.o
-xcc -o "$D/impl-path" tests/c/forward_abi.c "$D/libabi.a"
-xcc -o "$D/forward-path" tests/c/forward_abi.c "$D/libabi.a" "$D/libmgsys.dylib"
-
+if compiling; then
+  DRYDOCK="$B/drydock/drydock-macho-rewrite"
+  [ -x "$DRYDOCK" ] || { echo "FAIL: $DRYDOCK is not executable: sh build/build-lib.sh fetches it"; exit 1; }
+  xcc() { /usr/bin/clang $FLAGS -arch x86_64 -Os "$@"; }
+  xcc -c tests/c/forward_abi_impl.c -o "$D/impl.o"
+  xcc -dynamiclib -install_name @executable_path/libmgsys.dylib -o "$(tbin libmgsys.dylib)" tests/c/forward_abi_sys.c
+  printf '%s\n' _mgfwd_float _mgfwd_nop _mgfwd_varargs > "$D/symbols"
+  sh build/rename-impls.sh "$DRYDOCK" "$D/symbols" "$D/impl.o"
+  SDK="$SDK" sh build/gen-trampolines.sh "$D/symbols" "$D/fwd"
+  printf 'symbol rename _dlsym _mgfwd_clobbering_dlsym\nsymbol rename _sysctl _mgfwd_modern_sysctl\n' \
+    | "$DRYDOCK" "$D/fwd/fwd-resolve.o" "$D/fwd/fwd-resolve.clobbering.o" >/dev/null 2>&1 \
+    || { echo "FAIL: could not point fwd-resolve.o's dlsym and sysctl at the stand-ins"; exit 1; }
+  mv -f "$D/fwd/fwd-resolve.clobbering.o" "$D/fwd/fwd-resolve.o"
+  /usr/bin/libtool -static -o "$D/libabi.a" "$D/impl.o" "$D"/fwd/fwd-*.o
+  xcc -o "$(tbin impl-path)" tests/c/forward_abi.c "$D/libabi.a"
+  xcc -o "$(tbin forward-path)" tests/c/forward_abi.c "$D/libabi.a" "$(tbin libmgsys.dylib)"
+  check_loads "$(tbin impl-path)" "$(tbin forward-path)" "$(tbin libmgsys.dylib)"
+fi
+runtime_half
 fail=0
 expect() {
   printf 'varargs %s\nvarargs %s\nvarargs-fp %s\nvarargs-fp %s\nfloat %s\nfloat %s\nregs 0\nregs 0\n' "$1" "$1" "$2" "$2" "$3" "$3"
 }
 check() {
-  got="$("$D/$1" 2>&1)" || { echo "FAIL: the $1 binary exited non-zero: $got"; fail=1; return; }
+  got="$("$(tbin "$1")" 2>&1)" || { echo "FAIL: the $1 binary exited non-zero: $got"; fail=1; return; }
   want="$(expect "$2" "$3" "$4")"
   [ "$got" = "$want" ] && return
   echo "FAIL: the $1 binary printed, against what it should:"
