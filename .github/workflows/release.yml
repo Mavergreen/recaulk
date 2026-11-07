@@ -133,6 +133,7 @@ jobs:
           [ -f "$pkg" ] || { echo "::error::package-pkg.sh did not print a pkg path: $pkg"; exit 1; }
           mkdir -p dist
           cp "$pkg" "$(dirname "$pkg")/build-info-release.txt" dist/
+          cp "$MAVERICKS_BUILD_ROOT/$(basename "$PWD")/stage/usr/local/mavergreen/recaulk/share/recaulk/notices.tsv" dist/recaulk-notices.tsv
 
       - name: Exactly one .pkg, named recaulk-<version>.pkg
         env:

@@ -18,9 +18,20 @@ rm -rf "$B/stage"
 mkdir -p "$T/lib" "$T/include/recaulk" "$W"
 src="$(sh "$SELF/fetch-macports.sh" "$W")"
 
-# platform: MacPorts' Makefile compiles and runs a probe program to choose TESTARCHS unless it is given
-"$MAKE" -C "$src" CC="$CC" ARCHS=x86_64 TESTARCHS=x86_64 CFLAGS="$flags" LDFLAGS="$flags" \
-  ARX="$AR" BUILDSLIBFLAGS="--format=darwin -qs" slib 1>&2
+mp_slib() {
+  # platform: MacPorts' Makefile compiles and runs a probe program to choose TESTARCHS unless it is given
+  "$MAKE" -C "$src" "$@" CC="$CC" ARCHS=x86_64 TESTARCHS=x86_64 CFLAGS="$flags" LDFLAGS="$flags" \
+    ARX="$AR" BUILDSLIBFLAGS="--format=darwin -qs" slib 1>&2
+}
+mp_slib
+# spec: README.md "Licences" -- the second pass recompiles only the Apple-derived members MacPorts kept
+apsl="$(AR="$AR" sh "$SELF/apsl-notices.sh" "$src" "$W/apsl")"
+for stem in $apsl; do rm -f "$src/bin/$stem.o"; done
+mp_slib -f Makefile -f "$W/apsl/notices.mk"
+for stem in $apsl; do
+  "$NM" "$src/bin/$stem.o" | grep -q ' s _recaulk_apsl_notice$' \
+    || { echo "build-lib: MacPorts' $stem.o was rebuilt without its APSL notice; did its Makefile's object path change?" >&2; exit 1; }
+done
 
 rm -rf "$W/mp-headers"
 "$MAKE" -C "$src" PREFIX=/ DESTDIR="$W/mp-headers" TESTARCHS=x86_64 install-headers 1>&2
@@ -89,6 +100,14 @@ dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
   -framework CoreFoundation -framework Security -framework CoreVideo \
   -framework CoreGraphics -framework CoreServices -lobjc -lc++abi
+
+mkdir -p "$T/share/recaulk"
+{
+  printf '# artifact\tmember\tlicence\tcovered-files\tcopyright\tsource-urls\tnotice\n'
+  for a in librecaulk.a libRecaulkSystem.dylib; do
+    sed "s/^/$a$(printf '\t')/" "$W/apsl/rows.tsv"
+  done
+} > "$T/share/recaulk/notices.tsv"
 
 printf "build-make=%s\n" "$("$MAKE" --version | sed -n 1p)" > "$B/build-tools.txt"
 

@@ -129,6 +129,25 @@ kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and regis
 already loop on `EINTR`. `librecaulk.a` must come before libSystem in the link, as clang
 puts it; after libSystem, libSystem's `pselect` binds instead.
 
+## Licences
+
+Recaulk's own code is under the ISC licence in `LICENSE`. Some MacPorts members of `librecaulk.a` are
+built from Apple sources under the Apple Public Source License 2.0, whose section 2.3 asks object code
+to say, in the code itself, where its source is. Each such member carries that notice as a string in
+the section `__TEXT,__recaulk_apsl`, under a local symbol, `_recaulk_apsl_notice`. Nothing exports
+it, and `-dead_strip` keeps it whenever the member is linked. `libRecaulkSystem.dylib` carries every
+member's notice. MacPorts' sources stay unmodified: the build compiles those members a second time,
+with a header holding the notice. A member is Apple-derived when its source, or a header that source
+includes by `"name"`, carries Apple's licence header. Any such licence other than APSL 2.0 stops the
+build until its notice is decided.
+
+`share/recaulk/notices.tsv` lists the notices, one tab-separated line per artifact and member:
+artifact (`librecaulk.a` or `libRecaulkSystem.dylib`), member, licence, the Apple-licensed files,
+their copyright lines, those files' URLs at the pinned MacPorts commit, and the notice text. Lines
+starting `#` are comments. Each release attaches the same file as `recaulk-notices.tsv`. A consumer
+that links `librecaulk.a` can take the members its link pulls in (ld64's `-why_load`, or the
+`__recaulk_apsl` strings in its output) and assemble its own NOTICE from those lines.
+
 ## Tests
 
 `sh build/build-lib.sh` builds Recaulk with clang22 (`components/clang22/version`, fetched by
