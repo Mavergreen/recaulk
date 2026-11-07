@@ -288,3 +288,9 @@ A test that runs an x86_64 program has two halves, and `RECAULK_TEST_PHASE` says
 Unset, it is `both` on 10.9 and `build` elsewhere. CI builds on Linux, installs the pkg on a real 10.9.5
 guest through [mavericks-vm](https://github.com/Mavergreen/mavericks-vm), and runs the `run` half there
 against the installed Recaulk.
+
+The guest runs its tests over ssh, with no one logged in at its desktop, and Launch Services launches
+apps only in a logged-in (Aqua) session. So a test that launches apps through it
+(`objc-workspace-backfill.sh`, the Objective-C provider's real delivery, and `objc-workspace-context-test.sh`)
+is `macOS-only` rather than marked for the guest: it builds like the others, and its `run` half runs on a
+10.9 Mac's desktop, skipping (77) anywhere without one.

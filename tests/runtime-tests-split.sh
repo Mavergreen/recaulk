@@ -23,8 +23,9 @@ for f in tests/*.sh; do
   case "$f" in "$self"|tests/test-phases.sh) continue ;; esac
   grep -q '"$(tbin ' "$f" || continue
   grep -q '^runtime_half$' "$f" || bad "$f builds programs into tbin but has no runtime_half line"
-  # spec: tests/guest/run-runtime-tests.sh -- it takes the tests marked on line 2, so none goes unrun
-  sed -n 2p "$f" | grep -q '(RECAULK_TEST_PHASE)' \
+  # spec: tests/guest/run-runtime-tests.sh -- it takes the tests marked on line 2, so none goes unrun;
+  #       README.md "Tests" -- a macOS-only test needs a Mac's desktop, which the guest lacks
+  sed -n 2p "$f" | grep -q -e '(RECAULK_TEST_PHASE)' -e '^# platform: macOS-only' \
     || bad "$f builds programs into tbin but line 2 lacks (RECAULK_TEST_PHASE), so the guest would not run it"
   # spec: README.md "Tests" -- a program built in a scratch directory never reaches the guest; an
   #       object (-c, .o) or archive (.a) is an intermediate, never run, so it may stay there
