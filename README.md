@@ -278,9 +278,28 @@ the 10.11 SDK declares:
 `NS_ASSUME_NONNULL_BEGIN`/`END` as the 10.10 and 10.11 SDKs do. These are compile-time annotations: the
 compiler checks with them and emits the same code.
 
+`foundation-array-generics-v2` is `foundation-array-generics-v1` plus element-typed `objectAtIndex:`,
+`firstObject`, `lastObject` and subscripting, as the 10.11 SDK declares them, so `array.lastObject.name`
+compiles. It edits the same header, so a target selects one or the other.
+
+The AppKit recipes re-declare as properties the accessors the 10.10 SDK turned into properties
+(`NSView.hidden`, `NSControl.enabled` and `continuous`, `NSCell.highlighted`, `NSTextField.editable`,
+`bordered` and `selectable`, `NSWindowController.windowLoaded`). Each uses the 10.9 method as its getter,
+so the code compiled is the same. They also add the newer names of existing constants and types
+(`NSTextAlignmentRight`, `NSRectEdgeMinY`, `NSWindowStyleMask`) and the `NSSearchFieldDelegate`
+protocol.
+
+APIs 10.9 does not have at all are declared with their availability, so references to them are weak
+and a binary using them still loads on 10.9. A caller must check that they exist before using them:
+`NSEvent.stage`, `NSTextField.placeholderString`, `NSTitlebarAccessoryViewController` and
+`-[NSWindow addTitlebarAccessoryViewController:]` (`appkit-*`), the WebKit2 classes a caller looks up at
+run time (`webkit-wkwebview-v1`), and `LSCopyDefaultApplicationURLForURL`
+(`launchservices-default-app-v1`). Linking such a reference needs the linker told that the symbol may
+stay undefined, since 10.9's frameworks do not export it.
+
 `tests/sdk-metadata-compile.sh` proves each recipe with its probe in `tests/fixtures/sdk-probes/<id>.m`:
 the probe compiles with `-Werror` through the recipe's overlay, made by shipyard's own module, and fails
-to compile without it.
+to compile without it. A probe's `// weak:` symbols must be weak references in its object file.
 
 `build/stage-sdk-metadata.sh` validates the file (`build/sdk-metadata-validate.cmake`, through
 `shipyard-cmake -P`) and stages it alone; malformed data stages nothing.

@@ -22,6 +22,44 @@
       ]
     },
     {
+      "id": "foundation-array-generics-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h",
+      "sha256": "62c14ca4c2ab6fc0194328585cce9d18aab0b65338bd0aab2146ad9b0053c585",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSArray.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSArray : NSObject",
+          "new": "@interface NSArray<__covariant ObjectType> : NSObject"
+        },
+        {
+          "old": "@interface NSMutableArray : NSArray",
+          "new": "@interface NSMutableArray<ObjectType> : NSArray<ObjectType>"
+        },
+        {
+          "old": "- (id)objectAtIndex:(NSUInteger)index;",
+          "new": "- (ObjectType)objectAtIndex:(NSUInteger)index;"
+        },
+        {
+          "old": "- (id)firstObject NS_AVAILABLE(10_6, 4_0);",
+          "new": "- (ObjectType)firstObject NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (id)lastObject;",
+          "new": "- (ObjectType)lastObject;"
+        },
+        {
+          "old": "- (id)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);",
+          "new": "- (ObjectType)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);"
+        },
+        {
+          "old": "@interface NSArray (NSExtendedArray)",
+          "new": "@interface NSArray<ObjectType> (NSExtendedArray)"
+        }
+      ]
+    },
+    {
       "id": "foundation-dictionary-generics-v1",
       "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDictionary.h",
       "sha256": "5bbee99d8cf92f75cf7ce8abce6f0c249fb16e0a753c5c518ee2e013305c4a57",
@@ -132,6 +170,196 @@
         {
           "old": "#define NS_UNAVAILABLE UNAVAILABLE_ATTRIBUTE",
           "new": "#define NS_UNAVAILABLE UNAVAILABLE_ATTRIBUTE\n\n/* Recaulk: declared from the 10.10/10.11 SDK so newer sources compile against 10.9. */\n#if !defined(NS_DESIGNATED_INITIALIZER)\n#if __has_attribute(objc_designated_initializer)\n#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))\n#else\n#define NS_DESIGNATED_INITIALIZER\n#endif\n#endif\n#if !defined(NS_ASSUME_NONNULL_BEGIN)\n#define NS_ASSUME_NONNULL_BEGIN _Pragma(\"clang assume_nonnull begin\")\n#define NS_ASSUME_NONNULL_END _Pragma(\"clang assume_nonnull end\")\n#endif"
+        }
+      ]
+    },
+    {
+      "id": "appkit-view-properties-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSView.h",
+      "sha256": "e02f732aaf4f655a21f9c6130796f7aa6ad8eaf5ad774370062b0cc8b7a2c108",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSView.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)setHidden:(BOOL)flag;\n- (BOOL)isHidden;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHidden) BOOL hidden;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-control-properties-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+      "sha256": "b38aae56a8bb9c10649fbd1bcd4e002be6241ebbf9b7d2ea561f1c3a4ed95432",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSControl.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isContinuous;\n- (void)setContinuous:(BOOL)flag;\n- (BOOL)isEnabled;\n- (void)setEnabled:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isContinuous) BOOL continuous;\n@property (getter=isEnabled) BOOL enabled;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-cell-properties-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSCell.h",
+      "sha256": "b44392f3a430fae14972160cc6965b96b34aa826cb732e36129271746389eb54",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSCell.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isHighlighted;\n- (void)setHighlighted:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHighlighted) BOOL highlighted;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-textfield-properties-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTextField.h",
+      "sha256": "1787a08c831151b22c3605a675a7bf02859b2bf0efb6616293fd4ca5651a4632",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSTextField.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isBordered;\n- (void)setBordered:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isBordered) BOOL bordered;"
+        },
+        {
+          "old": "- (BOOL)isEditable;\n- (void)setEditable:(BOOL)flag;\n- (BOOL)isSelectable;\n- (void)setSelectable:(BOOL)flag;",
+          "new": "@property (getter=isEditable) BOOL editable;\n@property (getter=isSelectable) BOOL selectable;\n/* 10.10: on 10.9 only NSTextFieldCell has it; callers check respondsToSelector: first. */\n@property (copy) NSString *placeholderString __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-windowcontroller-properties-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindowController.h",
+      "sha256": "cd4bbf0032a9c521163eb347523df67aa3db2057c868df72c179d2834c9812bb",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWindowController.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isWindowLoaded;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (readonly, getter=isWindowLoaded) BOOL windowLoaded;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-event-stage-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSEvent.h",
+      "sha256": "484b535edeef7fb4cff4a3f95730b052588a29a230fb35343840975b3e7a0227",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSEvent.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (NSEventPhase)phase NS_AVAILABLE_MAC(10_7);",
+          "new": "- (NSEventPhase)phase NS_AVAILABLE_MAC(10_7);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10.3, Force Touch: callers check respondsToSelector:@selector(stage) first. */\n@property (readonly) NSInteger stage __attribute__((availability(macosx,introduced=10.10.3)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-window-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+      "sha256": "677557c70c2cdb6ade4ce7dd9ba642544d3661a1e774ee61226204953b4a6743",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWindow : NSResponder",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n@class NSTitlebarAccessoryViewController;\n\n@interface NSWindow : NSResponder"
+        },
+        {
+          "old": "+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;",
+          "new": "/* Recaulk: 10.10; callers check respondsToSelector: first. */\n- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)childViewController __attribute__((availability(macosx,introduced=10.10)));\n\n+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-titlebar-accessory-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSViewController.h",
+      "sha256": "191a0a11524f025f89e643f14d73e8115d3cf97901aa8337f8f1d8fe916de0b7",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)discardEditing;\n\n@end",
+          "new": "- (void)discardEditing;\n\n@end\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#import <AppKit/NSLayoutConstraint.h>\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface NSTitlebarAccessoryViewController : NSViewController\n@property NSLayoutAttribute layoutAttribute;\n@property CGFloat fullScreenMinHeight;\n@end"
+        }
+      ]
+    },
+    {
+      "id": "appkit-searchfield-delegate-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSSearchField.h",
+      "sha256": "6061f80fd7bca464410c4292352e9ef3e285ede12359120abd886502c0f2705b",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSSearchField.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSSearchField : NSTextField {",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@protocol NSSearchFieldDelegate <NSTextFieldDelegate>\n@end\n\n@interface NSSearchField : NSTextField {"
+        }
+      ]
+    },
+    {
+      "id": "appkit-textalignment-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSText.h",
+      "sha256": "60394ce6077b412f5439b2924dd61a460ba2a150b4b17f005c356a33af0183ee",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSText.h"
+      ],
+      "replacements": [
+        {
+          "old": "typedef NSUInteger NSTextAlignment;",
+          "new": "typedef NSUInteger NSTextAlignment;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.11 names, with AppKit's values (not UIKit's). */\nenum {\n    NSTextAlignmentLeft = NSLeftTextAlignment,\n    NSTextAlignmentRight = NSRightTextAlignment,\n    NSTextAlignmentCenter = NSCenterTextAlignment,\n    NSTextAlignmentJustified = NSJustifiedTextAlignment,\n    NSTextAlignmentNatural = NSNaturalTextAlignment\n};"
+        }
+      ]
+    },
+    {
+      "id": "foundation-rectedge-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSGeometry.h",
+      "sha256": "e6a48d99f0987072bb43dd3d4f8be7c7f9ce62f385459359c2f8b17198d85bc1",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSGeometry.h"
+      ],
+      "replacements": [
+        {
+          "old": "typedef NSUInteger NSRectEdge;",
+          "new": "typedef NSUInteger NSRectEdge;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\nenum {\n    NSRectEdgeMinX = NSMinXEdge,\n    NSRectEdgeMinY = NSMinYEdge,\n    NSRectEdgeMaxX = NSMaxXEdge,\n    NSRectEdgeMaxY = NSMaxYEdge\n};"
+        }
+      ]
+    },
+    {
+      "id": "webkit-wkwebview-v1",
+      "header": "System/Library/Frameworks/WebKit.framework/Versions/A/Headers/WebKit.h",
+      "sha256": "841dbef8ed84dbdbe7d03e794fcd4cd2d751b68e2c1becf0550558847fa97081",
+      "aliases": [
+        "System/Library/Frameworks/WebKit.framework/Headers/WebKit.h"
+      ],
+      "replacements": [
+        {
+          "old": "#import <WebKit/WebView.h>",
+          "new": "#import <WebKit/WebView.h>\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* WebKit2 (10.10+): only what callers that look it up at run time use. */\n@class WKNavigation;\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface WKPreferences : NSObject <NSCoding>\n@property (nonatomic) BOOL javaEnabled;\n@property (nonatomic) BOOL javaScriptEnabled;\n@property (nonatomic) BOOL javaScriptCanOpenWindowsAutomatically;\n@end\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface WKProcessPool : NSObject <NSCoding>\n@end\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface WKUserContentController : NSObject <NSCoding>\n@end\n__attribute__((availability(macosx,introduced=10.11), weak_import))\n@interface WKWebsiteDataStore : NSObject\n+ (WKWebsiteDataStore *)defaultDataStore;\n@end\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface WKWebViewConfiguration : NSObject <NSCoding, NSCopying>\n@property (nonatomic, strong) WKProcessPool *processPool;\n@property (nonatomic, strong) WKPreferences *preferences;\n@property (nonatomic, strong) WKUserContentController *userContentController;\n@property (nonatomic, strong) WKWebsiteDataStore *websiteDataStore __attribute__((availability(macosx,introduced=10.11)));\n@property (nonatomic, copy) NSString *applicationNameForUserAgent __attribute__((availability(macosx,introduced=10.11)));\n@end\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface WKWebView : NSView\n- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration;\n@property (nonatomic, readonly, copy) NSURL *URL;\n- (WKNavigation *)loadRequest:(NSURLRequest *)request;\n- (WKNavigation *)loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;\n- (void)stopLoading;\n@end"
+        }
+      ]
+    },
+    {
+      "id": "launchservices-default-app-v1",
+      "header": "System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Versions/A/Headers/LSInfo.h",
+      "sha256": "713906f8cbce353a1e5ee7a6fee0584dccabb3655b9787bb834f704764ee01f6",
+      "aliases": [
+        "System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Headers/LSInfo.h"
+      ],
+      "replacements": [
+        {
+          "old": "#pragma pack(pop)",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10: callers check that the function is present first. */\nextern CFURLRef LSCopyDefaultApplicationURLForURL(CFURLRef inURL, LSRolesMask inRoleMask, CFErrorRef *outError) __attribute__((availability(macosx,introduced=10.10)));\n\n#pragma pack(pop)"
         }
       ]
     }
