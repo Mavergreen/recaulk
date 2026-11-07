@@ -30,5 +30,9 @@ if ! out="$("$SC" -DRECIPES="$abs" -DREASON_FILE="$tmp/reason" -P "$SELF/sdk-met
 fi
 cp "$abs" "$tmp/recipes.json"
 cmp -s "$abs" "$tmp/recipes.json" || { echo "stage-sdk-metadata: the staged copy differs from $abs" >&2; exit 1; }
+# platform: mktemp -d creates its directory 0700, and the pkg installs this tree as root, so without
+#           this only root could read the recipes (Recaulk 20261107.2 shipped that way)
+chmod 755 "$tmp"
+chmod 644 "$tmp/recipes.json"
 mv "$tmp" "$dest"
 trap - EXIT
