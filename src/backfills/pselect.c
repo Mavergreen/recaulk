@@ -374,3 +374,17 @@ SHADOW(recaulk_pselect_1050, "_pselect$1050", 0)
 SHADOW(recaulk_pselect_extsn, "_pselect$DARWIN_EXTSN", RECAULK_PSELECT_EXTSN)
 SHADOW(recaulk_pselect_extsn_nocancel, "_pselect$DARWIN_EXTSN$NOCANCEL", RECAULK_PSELECT_EXTSN | RECAULK_PSELECT_NOCANCEL)
 SHADOW(recaulk_pselect_nocancel, "_pselect$NOCANCEL", RECAULK_PSELECT_NOCANCEL)
+
+/* spec: README.md "Fixes to functions 10.9 has" -- the names <sys/select.h> gives pselect in a program built
+   from source, each with its own variant's suffix. Public, so they bind whatever the link order. */
+#define ENTRY(name, symbol, variant)                                                                 \
+    int name(int, fd_set *, fd_set *, fd_set *, const struct timespec *, const sigset_t *) __asm(symbol); \
+    int name(int nfds, fd_set *r, fd_set *w, fd_set *e, const struct timespec *t, const sigset_t *m) {   \
+        return __recaulk_pselect(variant, nfds, r, w, e, t, m);                                          \
+    }
+ENTRY(recaulk_entry_pselect_legacy, "___recaulk_pselect_entry", RECAULK_PSELECT_LEGACY)
+ENTRY(recaulk_entry_pselect_1050, "___recaulk_pselect_entry$1050", 0)
+ENTRY(recaulk_entry_pselect_extsn, "___recaulk_pselect_entry$DARWIN_EXTSN", RECAULK_PSELECT_EXTSN)
+ENTRY(recaulk_entry_pselect_extsn_nocancel, "___recaulk_pselect_entry$DARWIN_EXTSN$NOCANCEL",
+      RECAULK_PSELECT_EXTSN | RECAULK_PSELECT_NOCANCEL)
+ENTRY(recaulk_entry_pselect_nocancel, "___recaulk_pselect_entry$NOCANCEL", RECAULK_PSELECT_NOCANCEL)

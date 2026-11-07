@@ -264,6 +264,18 @@ int __recaulk_posix_spawn_file_actions_addopen(posix_spawn_file_actions_t *file_
     return rc;
 }
 
+/* spec: README.md "Fixes to functions 10.9 has" -- the names <spawn.h> gives posix_spawn and posix_spawnp in a
+   program built from source. Public, so they bind whatever the link order. */
+int __recaulk_posix_spawn_entry(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions,
+                                const posix_spawnattr_t *attr, char *const argv[], char *const envp[]) {
+    return __recaulk_posix_spawn(0, pid, path, file_actions, attr, argv, envp);
+}
+
+int __recaulk_posix_spawnp_entry(pid_t *pid, const char *file, const posix_spawn_file_actions_t *file_actions,
+                                 const posix_spawnattr_t *attr, char *const argv[], char *const envp[]) {
+    return __recaulk_posix_spawn(1, pid, file, file_actions, attr, argv, envp);
+}
+
 #define IMAGE_LOCAL __attribute__((weak, visibility("hidden")))
 
 IMAGE_LOCAL int image_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions,

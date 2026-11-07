@@ -53,7 +53,7 @@ for dir in backfills overrides; do
   mkdir -p "$W/$dir"
   rm -f "$W/$dir"/*.o "$W/librecaulk-$dir.a"
   for c in "$MAVERICKS_ROOT/src/$dir"/*.c; do
-    "$CC" $flags -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations \
+    "$CC" $flags -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations -D__RECAULK_SOURCE__ \
       -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$src/include" \
       -c "$c" -o "$W/$dir/recaulk-$(basename "$c" .c).o"
   done
@@ -95,10 +95,15 @@ dups="$(duplicate_report "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a")"
   exit 1
 }
 
+# spec: build/header-entries.txt -- the dylib keeps Recaulk's ___recaulk_ names private but these, which a program
+#       built against Recaulk's headers references
+grep -v '^#' "$MAVERICKS_ROOT/build/header-entries.txt" | awk 'NF' | LC_ALL=C sort > "$W/header-entries"
+"$NM" -gU "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a" | awk '{ print $NF }' | grep '^___recaulk_' \
+  | LC_ALL=C sort -u | LC_ALL=C comm -23 - "$W/header-entries" > "$W/unexported"
 "$CC" -dynamiclib $flags -arch x86_64 -fuse-ld=lld --ld-path="$CL/bin/ld64.lld" -o "$T/lib/libRecaulkSystem.dylib" \
   -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
   -Wl,-force_load,"$W/librecaulk-dylib.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
-  '-Wl,-unexported_symbol,___recaulk_*' \
+  -Wl,-unexported_symbols_list,"$W/unexported" \
   -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
   -framework CoreFoundation -framework Security -framework CoreVideo \
