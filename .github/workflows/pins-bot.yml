@@ -27,6 +27,7 @@ jobs:
       contents: read
     outputs:
       pins: ${{ steps.pin.outputs.pins }}
+      linux_pin: ${{ steps.linux.outputs.linux_pin }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,9 +44,16 @@ jobs:
           pins="$(sh build/pins-bot.sh fill origin/main)"
           echo "pins=$pins" >> "$GITHUB_OUTPUT"
 
+      - name: The Linux clang22 digest, if components/clang22/version moved and it is stale
+        id: linux
+        run: |
+          set -eu
+          linux_pin="$(sh build/pin-linux-clang.sh fill origin/main)"
+          echo "linux_pin=$linux_pin" >> "$GITHUB_OUTPUT"
+
   push:
     needs: pins
-    if: needs.pins.outputs.pins != ''
+    if: needs.pins.outputs.pins != '' || needs.pins.outputs.linux_pin != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,15 +70,30 @@ jobs:
         with:
           token: ${{ steps.app.outputs.token }}
 
-      - name: Commit the pin to the branch, as the App, which starts release.yml on its new head
+      - name: Install mavericks-shipyard
+        uses: Mavergreen/shipyard/.github/actions/install@v1
+
+      - name: Commit the pins to the branch, as the App, which starts release.yml on its new head
         env:
           PINS: ${{ needs.pins.outputs.pins }}
+          LINUX_PIN: ${{ needs.pins.outputs.linux_pin }}
           BRANCH: ${{ github.ref_name }}
         run: |
           set -eu
-          applied="$(sh build/pins-bot.sh apply $PINS)"
-          [ "$applied" = changed ] || { echo "the pin file already holds it"; exit 0; }
-          git -c user.name='mavergreen-pins-bot[bot]' -c user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com' \
-            commit -q -m "chore(pins): the MacPorts tarball's SHA-256" \
-            -m 'Written by .github/workflows/pins-bot.yml: its pins job checked, with git, that the tarball is the commit'"'"'s tree.' components/macports-legacy-support/version
+          if [ -n "$PINS" ]; then
+            applied="$(sh build/pins-bot.sh apply $PINS)"
+            if [ "$applied" = changed ]; then
+              git -c user.name='mavergreen-pins-bot[bot]' -c user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com' \
+                commit -q -m "chore(pins): the MacPorts tarball's SHA-256" \
+                -m 'Written by .github/workflows/pins-bot.yml: its pins job checked, with git, that the tarball is the commit'"'"'s tree.' components/macports-legacy-support/version
+            fi
+          fi
+          if [ -n "$LINUX_PIN" ]; then
+            sh build/pin-linux-clang.sh apply $LINUX_PIN
+            if ! git diff --quiet -- components/clang22/linux-sha256; then
+              git -c user.name='mavergreen-pins-bot[bot]' -c user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.com' \
+                commit -q -m "chore(pins): the verified Linux clang22 digest" components/clang22/linux-sha256
+            fi
+          fi
+          [ "$(git rev-list --count "origin/$BRANCH..HEAD")" -gt 0 ] || { echo "the pin files already hold them"; exit 0; }
           git push origin "HEAD:refs/heads/$BRANCH"

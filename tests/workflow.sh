@@ -99,12 +99,32 @@ for f in .github/workflows/*.yml; do
 done
 grep -q 'RECAULK_TEST_PHASE: build' "$w" || { echo "the build job's tests must run in the build phase"; exit 1; }
 grep -q 'name: recaulk-tests' "$w" || { echo "the build job must hand the guest its build tree, as artifact recaulk-tests"; exit 1; }
-om="$(sed -n '/^  on-mavericks:$/,/^  [a-z-]*:$/p' "$w")"
+job() { sed -n "/^  $1:\$/,/^  [a-z-]*:\$/p" "$w" | sed '$d' | grep -v '^ *#'; }
+om="$(job on-mavericks)"
 [ -n "$om" ] || { echo "no on-mavericks job"; exit 1; }
 for want in 'needs: \[build\]' 'timeout-minutes: 60' 'uses: Mavergreen/mavericks-vm@v1' 'copyback: false' \
-    'image-key: \$\{\{ secrets.MAVERICKS_VM_KEY \}\}' 'tests/guest/run-runtime-tests.sh' 'RECAULK_BUILD='; do
-  printf '%s\n' "$om" | grep -Eq "$want" || { echo "the on-mavericks job lacks $want"; exit 1; }
+    'image-key: \$\{\{ secrets.MAVERICKS_VM_KEY \}\}' \
+    'sudo installer -pkg "dist/recaulk-\$RECAULK_VERSION.pkg" -target /' \
+    'RECAULK_VERSION: \$\{\{ needs.build.outputs.ver \}\}' \
+    'got="\$\(/usr/libexec/PlistBuddy -c .Print :version. /usr/local/mavergreen/recaulk/mavergreen.plist\)"' \
+    '/usr/local/bin/mavergreen check' \
+    'RECAULK_BUILD="\$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk sh tests/guest/run-runtime-tests.sh' \
+    'sh build/launch-updater.sh'; do
+  printf '%s\n' "$om" | grep -Eq "^ *(- )?$want" || { echo "the on-mavericks job lacks a line $want"; exit 1; }
 done
+[ "$(printf '%s\n' "$om" | grep -c '^    if:')" -eq 1 ] \
+  && printf '%s\n' "$om" | grep -qxF "    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository" \
+  || { echo "on-mavericks may be skipped only for a fork's pull request"; exit 1; }
+! printf '%s\n' "$om" | grep -q 'continue-on-error' || { echo "on-mavericks must not continue on error: publish needs it to pass"; exit 1; }
+! grep -Eq '^ +runs-on: .*macos' "$w" || { echo "no job runs on a macOS runner"; exit 1; }
+job build | grep -q '^    runs-on: ubuntu-latest$' || { echo "the build job runs on Linux"; exit 1; }
+job build | grep -q 'run-repo-tests.sh" --strict-host$' || { echo "the build job runs every host-agnostic test with --strict-host"; exit 1; }
+req="$(job required | sed -n 's/^    needs: \[\(.*\)\]$/\1/p' | tr -d ' ' | tr ',' '\n' | LC_ALL=C sort)"
+others="$(sed -n '/^jobs:$/,$p' "$w" | grep -E '^  [a-z-]+:$' | sed 's/^  //; s/:$//' | grep -vx required | LC_ALL=C sort)"
+[ -n "$req" ] && [ "$req" = "$others" ] || { echo "required (release) must need every other job: needs [$(printf '%s ' $req)], jobs [$(printf '%s ' $others)]"; exit 1; }
+! grep -q 'secrets: inherit' "$w" || { echo "no job inherits every secret"; exit 1; }
+stray="$(awk '/^  [a-z-]+:$/ { j = $1 } /^      - / { st = $0 } /SPARKLE_PRIVATE_KEY/ && j != "scan:" && !(j == "build:" && st ~ /- name: EdDSA-sign the .pkg/) { print NR ": " $0 }' "$w")"
+[ -z "$stray" ] || { echo "SPARKLE_PRIVATE_KEY may appear only in the build job's signing step and the scan job: $stray"; exit 1; }
 sed -n '/^  publish:$/,/^  [a-z-]*:$/p' "$w" | grep -Eq 'needs: \[.*on-mavericks.*\]' \
   || { echo "publish must wait for on-mavericks"; exit 1; }
 echo "workflow OK"
