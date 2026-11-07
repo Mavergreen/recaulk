@@ -323,17 +323,14 @@ system's. Every entry in either fixture must appear in the output, as `ok` or `F
 output of a 10.9.5 run, with `sw_vers` stubbed to report 10.9.5, 10.11.6, 10.12, 14.0, 26.0 and
 26.6.2, the last with the getentropy and clonefile failures macOS 26.6.2 printed.
 
-## MacPorts' own tests under Rosetta 2
+## MacPorts' own tests on 10.9
 
-`tests/macports-own.sh` runs MacPorts' unmodified `make test_static` with `-k`. On Apple silicon the x86_64
-test programs run under Rosetta 2, which reports mach time at 1 GHz while the kernel's
-`SO_TIMESTAMP_MONOTONIC` packet stamp stays in the hardware's mach units, so the stamp reads about 41.7
-times too small. MacPorts' `test/test_packet.c` describes this Rosetta 2 bug and ignores it, but only
-when built for macOS 11 or later (`TARGET_OSVER >= 110000`); our 10.9 build compiles that check out.
-`tests/fixtures/macports-own-rosetta.txt` names the four `test_packet` programs that check the stamp.
-Under Rosetta 2, and only there, each may fail, if its only complaint is an underreported
-`SO_TIMESTAMP_MONOTONIC` value; any other failure fails, and a listed program that passes under Rosetta 2
-fails too ("remove it"). `tests/macports-own-verdict.sh` replays a native and a Rosetta 2 log.
+`tests/macports-own.sh` builds MacPorts' unmodified static test programs (`tests/helpers/macports-own.mk`
+names its `$(TESTSPRGS)`), and runs each on a 10.9 guest as MacPorts' run rule does, from its tree with
+`tst_data` present. Every failure fails: none is tolerated. Until 2026-11-06 they ran under Rosetta 2 on
+Apple silicon, which reports mach time at 1 GHz while the kernel's `SO_TIMESTAMP_MONOTONIC` packet stamp
+stays in the hardware's units, so the four `test_packet` programs were allowed that one complaint there.
+On real 10.9 there is no such allowance to make. `tests/macports-own-verdict.sh` replays logs.
 
 ## Dropped: MacPorts-derived files
 
