@@ -50,6 +50,16 @@ Other filters remain native. Synthetic UDP events report readiness with `data=0`
 receive the datagram to determine its length. The caller owns descriptor lifetime
 and must refresh the snapshot when registrations change.
 
+## Fixes to functions 10.9 has
+
+When Recaulk fixes a defect in a function 10.9's libSystem already exports, the fix reaches both
+products. `libRecaulkSystem.dylib` exports it publicly (its source is in `src/overrides/`), and
+`librecaulk.a` carries it weak and hidden (`src/backfills/`), so it binds only inside the program or
+dylib that links the archive and yields to the dylib's in the one link that has both. Each such name is
+listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backfills-add-only.sh`
+holds that list exact. Recaulk's C++ exception rules and its `posix_spawn` are fixes of
+this kind.
+
 ## C++ exceptions
 
 C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on

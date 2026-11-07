@@ -430,7 +430,7 @@ passes the same flag.
 `libcxxabi/src/private_typeinfo.cpp` (Apache-2.0 WITH LLVM-exception). It defines the
 `__pointer_type_info` and `__pointer_to_member_type_info` vtables, which 10.9's libc++abi exports
 too. In `librecaulk.a` they are hidden, so they bind only inside the linking image:
-`build/image-local-shadows.txt` declares them as rule 1's one exception. `build/build-lib.sh` builds
+`build/image-local-shadows.txt` declares them, as README's "Fixes to functions 10.9 has" requires. `build/build-lib.sh` builds
 the same source again with `RECAULK_CXXABI_EXPORTS`, public, into `librecaulk-cxxabi-exports.a`,
 the one archive that deliberately exports system-named symbols. Its single intended consumer is
 libcxx22's `libc++abi.1.dylib`. `tests/cxxabi-exports.sh` checks that `librecaulk.a` defines both
@@ -474,7 +474,7 @@ Known limits:
 
 `posix_spawn`, `posix_spawnp` and `posix_spawn_file_actions_init`, `_destroy`, `_addopen`, `_adddup2`,
 `_addclose` and `_addinherit_np` are 10.9 exports, so in `librecaulk.a` they are weak and hidden, declared in
-`build/image-local-shadows.txt` as rule 1's one exception. A static link binds a program's own calls to
+`build/image-local-shadows.txt`, as README's "Fixes to functions 10.9 has" requires. A static link binds a program's own calls to
 them whenever the archive's member is loaded: when any of them is still undefined as the linker reaches
 `librecaulk.a` (clang-22 and Apple's clang both put it before `-lSystem`), or when the program names a
 builder, as every program using a chdir action does, even with `librecaulk.a` after `-lSystem`. Both

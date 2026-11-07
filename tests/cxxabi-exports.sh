@@ -1,7 +1,7 @@
 #!/bin/sh
 # platform: macOS-only -- links and executes x86_64 Mach-O
 # spec: src/backfills/cxxabi_pointer_catch.c and README "C++ exceptions" -- the pointer catch rules,
-#       hidden in librecaulk.a (rule 1's declared exception) and public only in
+#       hidden in librecaulk.a (a fix to a function 10.9 has; README) and public only in
 #       librecaulk-cxxabi-exports.a, whose one consumer is libcxx22's libc++abi.1.dylib.
 set -eu
 cd "$(dirname "$0")/.."
