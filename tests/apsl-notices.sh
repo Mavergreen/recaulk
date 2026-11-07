@@ -15,16 +15,31 @@ bad() { echo "FAIL: $*"; fail=1; }
 lib="$T/lib/librecaulk.a"
 dylib="$T/lib/libRecaulkSystem.dylib"
 tsv="$T/share/recaulk/notices.tsv"
-set -- "$W"/macports-legacy-support-*/src
-mp="$1"
+set -- "$W"/macports-legacy-support-*
+mpdir="$1"
+mp="$mpdir/src"
 [ -d "$mp" ] || { echo "FAIL: no MacPorts source under $W"; exit 1; }
 digest="$(macports_pin DIGEST)"
 apple='[Cc]opyright.*Apple|Apple Public Source|APPLE_LICENSE_HEADER'
+allow=build/apsl-declaration-only.txt
 
+marked() {
+  _mk=0; grep -Eq "$apple" "$1" || _mk=$?
+  [ "$_mk" -le 1 ] || { echo "FAIL: cannot read $1 (grep exit $_mk), so whether it is Apple-licensed is unknown"; exit 1; }
+  return "$_mk"
+}
+# spec: README.md "Licences" -- a member's sources are everything the compiler reads for it but the SDK
+#       and the compiler's own headers; a reviewed declaration-only Apple header counts only at its pinned bytes
 apple_derived() {
-  grep -Eq "$apple" "$1" && return 0
-  for h in $(sed -n 's/^[[:space:]]*#[[:space:]]*include[[:space:]]*"\([^"]*\)".*/\1/p' "$1"); do
-    [ -f "$(dirname "$1")/$h" ] && grep -Eq "$apple" "$(dirname "$1")/$h" && return 0
+  _ad_src="$1"; shift
+  _ad_deps="$("$CC" $FLAGS -arch x86_64 -Os "$@" -M -MT x "$_ad_src")" \
+    || { echo "FAIL: clang22 -M could not list what $_ad_src includes"; exit 1; }
+  for _ad_d in $(printf '%s\n' "$_ad_deps" | tr '\\' ' '); do
+    case "$_ad_d" in x:|"$SDK"/*|"$CL"/*) continue ;; esac
+    marked "$_ad_d" || continue
+    _ad_h="$(shasum -a 256 < "$_ad_d" | cut -c1-64)"
+    awk -v p="${_ad_d#"$mpdir"/}" -v h="$_ad_h" '$1 == h && $2 == p { f = 1 } END { exit !f }' "$allow" && continue
+    return 0
   done
   return 1
 }
@@ -33,12 +48,13 @@ apple_derived() {
 : > "$tmp/expect"
 while IFS= read -r m; do
   case "$m" in
-    mp-*.o) src="$mp/${m#mp-}"; src="${src%.o}.c" ;;
-    recaulk-*.o) stem="${m#recaulk-}"; stem="${stem%.o}"; src="$MAVERICKS_ROOT/src/backfills/$stem.c" ;;
+    mp-*.o) src="$mp/${m#mp-}"; src="${src%.o}.c"; set -- -I"$mpdir/include" ;;
+    recaulk-*.o) stem="${m#recaulk-}"; stem="${stem%.o}"; src="$MAVERICKS_ROOT/src/backfills/$stem.c"
+      set -- -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$mpdir/include" ;;
     *) continue ;;
   esac
   [ -f "$src" ] || { bad "$m has no source at $src, so whether it is Apple-derived cannot be read"; continue; }
-  if apple_derived "$src"; then echo "$m" >> "$tmp/expect"; fi
+  if apple_derived "$src" "$@"; then echo "$m" >> "$tmp/expect"; fi
 done < "$tmp/members"
 [ -s "$tmp/expect" ] || bad "no member of $lib is built from an Apple-licensed source; MacPorts' atcalls.c and utimensat.c are"
 
@@ -84,6 +100,29 @@ grep -v '^#' "$tsv" | awk -F '\t' '$3 != "APSL-2.0" { print "FAIL: notices.tsv n
 cut -f2 "$tmp/embedded" | sort | cmp -s - "$tmp/in-dylib" || bad "libRecaulkSystem.dylib does not carry exactly every member's notice"
 
 "$NM" -gU "$lib" 2>/dev/null | awk 'NF == 3 { print $3 }' | sort -u > "$tmp/lib-globals"
+fx="$tmp/fixture"
+cp -R "$mpdir" "$fx"
+printf '#include "atcalls.h"\n' > "$fx/src/apsl_between.h"
+for c in fdopendir statxx; do
+  grep -q '^#include "atcalls.h"' "$fx/src/$c.c" || bad "the fixture expects MacPorts' $c.c to include atcalls.h directly"
+  sed 's/^#include "atcalls.h"/#include "apsl_between.h"/' "$mp/$c.c" > "$fx/src/$c.c"
+done
+rc=0; AR="$AR" CC="$CC" MP_CFLAGS="$FLAGS" sh build/apsl-notices.sh "$fx" "$tmp/fx-out" > "$tmp/fx.log" 2>&1 || rc=$?
+got="$(tr '\n' ' ' < "$tmp/fx.log")"
+[ "$rc" = 0 ] || bad "build/apsl-notices.sh failed (rc $rc) on a tree whose atcalls.h arrives through another header: $got"
+for c in atcalls fdopendir statxx utimensat; do
+  case " $got" in *" $c "*) ;; *) bad "build/apsl-notices.sh missed $c when atcalls.h arrives through another header: $got" ;; esac
+done
+{
+  printf '/*\n * Copyright (c) 1999 Apple Computer, Inc.\n * @APPLE_LICENSE_HEADER_START@\n'
+  printf ' * subject to the Apple Public Source License Version 1.1 (the "License").\n'
+  printf ' * @APPLE_LICENSE_HEADER_END@\n */\n/* Not Version 2.0 of anything. */\n'
+} > "$fx/src/apsl_one.h"
+printf '#include "apsl_one.h"\n' >> "$fx/src/apsl_between.h"
+rc=0; AR="$AR" CC="$CC" MP_CFLAGS="$FLAGS" sh build/apsl-notices.sh "$fx" "$tmp/fx-out" > "$tmp/fx.log" 2>&1 || rc=$?
+[ "$rc" = 1 ] && grep -q 'not APSL 2.0' "$tmp/fx.log" \
+  || bad "an APSL 1.1 header that mentions Version 2.0 passed as APSL 2.0 (rc $rc): $(cat "$tmp/fx.log")"
+
 ld="-fuse-ld=lld --ld-path=$CL/bin/ld64.lld"
 fw="-framework CoreFoundation -framework Security -framework CoreVideo -framework CoreGraphics -framework CoreServices -framework IOKit -lobjc -lc++abi"
 link_proof() {

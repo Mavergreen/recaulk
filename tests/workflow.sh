@@ -25,7 +25,7 @@ for s in release-state-record.sh check-ingredient-pins.sh stand-in-feeds.sh; do
 done
 grep -q -- '--product recaulk' "$w" || { echo "signing must use --product recaulk"; exit 1; }
 grep -q -- '--product Recaulk' "$w" || { echo "notes must use --product Recaulk"; exit 1; }
-grep -q 'share/recaulk/notices.tsv" dist/recaulk-notices.tsv$' "$w" || { echo "the release must attach the installed notices.tsv as recaulk-notices.tsv (README.md \"Licences\")"; exit 1; }
+grep -q 'recaulk_build_dir)/stage/usr/local/mavergreen/recaulk/share/recaulk/notices.tsv" dist/recaulk-notices.tsv$' "$w" || { echo "the release must attach the installed notices.tsv as recaulk-notices.tsv (README.md \"Licences\")"; exit 1; }
 grep -q 'name: Exactly one .pkg, named recaulk-<version>.pkg' "$w" || { echo "the one-pkg step is missing"; exit 1; }
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/workflow.XXXXXX")"   # template: 10.9 BSD mktemp requires one
 trap 'rm -rf "$tmp"' EXIT
