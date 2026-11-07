@@ -5,6 +5,7 @@ set(CMAKE_OSX_ARCHITECTURES x86_64 CACHE STRING "Intel-only (10.9)")
 project(RecaulkUpdater LANGUAGES OBJC)
 
 find_package(MavericksShipyard REQUIRED)
+set(MAVERICKS_REQUIRE_APPLECLANG OFF)
 include(Mavericks)
 include(MavericksSparkle)
 
