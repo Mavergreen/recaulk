@@ -580,3 +580,18 @@ exact or correctly rounded for them, except a finite product with an infinite `c
 They are used on every macOS: with no evidence that any later x86_64 libm is right, a version boundary
 would be a guess, and a wrong one returns wrong results silently. Reconsider when a later x86_64 macOS
 passes `tests/c/libm_fixes.c` against its own libm: forward from that version, as `pselect` does.
+
+`fma` does not need that evidence where the CPU has FMA: `vfmadd` is IEEE 754's fusedMultiplyAdd on every
+OS, in the MXCSR's rounding mode and raising its flags, which Darwin's `fesetround` and `fetestexcept` set
+and read with the x87's. So `fma` uses it when CPUID leaf 1 reports FMA, AVX and OSXSAVE and XCR0 has the
+SSE and YMM state bits, checked once. MEASURED by the review of the first round, on this Ivy Bridge: the
+software path took 48.2 ns a call, 10.9's own 11.1 ns. `tests/c/libm_fixes.c`, linked to `librecaulk.a`,
+runs every case through `fma`, through `___recaulk_fma_software` and, where the CPU has FMA, through
+`___recaulk_fma_hardware`, and prints which it ran. Intel's `vfmadd` raises invalid for infinity times
+zero plus a quiet NaN (Annex F allows either); the software path and `fmal` do the same, and the test
+holds all three to it.
+
+`fmal` judges tininess after rounding, as the x87 does and so as `fma`'s final conversion does: IEEE 754
+asks one convention of all operations. `fmal(0x1.0000000000000008p-16382, 0x1.fffffffffffffffcp-1,
+-0x1.8p-16444)` rounds to the least normal and raises inexact only. `truncl` builds its result from the
+bits, so it raises nothing, as C23's `trunc` does not.

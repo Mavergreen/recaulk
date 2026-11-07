@@ -1,8 +1,9 @@
 #!/bin/sh
 # platform: host-agnostic -- builds the staged static archive and dylib's x86_64 programs; runs them on 10.9 (RECAULK_TEST_PHASE)
-# spec: README.md "Floating point" -- fma, fmal and truncl from a program that links librecaulk.a and one
-#       relinked onto libRecaulkSystem.dylib, against tests/c/libm_cases.h; fmaf, trunc and truncf stay
-#       the system's, and the same cases hold them to the same results.
+# spec: README.md "Floating point" -- fma, fmal and truncl, results and exceptions, from a program that
+#       links librecaulk.a and one relinked onto libRecaulkSystem.dylib, against tests/c/libm_cases.h; the
+#       librecaulk.a program also runs fma's software path, and its hardware path where the CPU has FMA,
+#       and says which; fmaf, trunc and truncf stay the system's, and the same cases hold them.
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -13,7 +14,7 @@ if compiling; then
   [ -n "$count" ] || { echo "FAIL: tests/c/libm_cases.h does not say how gen_libm_cases.py made it"; exit 1; }
   "$py" tests/c/gen_libm_cases.py "$count" | cmp -s - tests/c/libm_cases.h \
     || { echo "FAIL: tests/c/libm_cases.h is not what tests/c/gen_libm_cases.py $count prints; regenerate it"; exit 1; }
-  cc tests/c/libm_fixes.c "$T/lib/librecaulk.a" -o "$(tbin static)"
+  cc -DRECAULK_FMA_PATHS tests/c/libm_fixes.c "$T/lib/librecaulk.a" -o "$(tbin static)"
   cc tests/c/libm_fixes.c -L"$T/lib" -lRecaulkSystem -o "$(tbin dylib)"
   check_loads "$(tbin static)" "$(tbin dylib)"
   for s in _fma _fmal _truncl; do

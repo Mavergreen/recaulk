@@ -148,7 +148,11 @@ its caller left in a register, so `truncl(-0.5)` can be `+0` and `truncl(0.5)` `
 `truncf` are 10.9's own, which are right.
 
 Recaulk's three are used on every macOS, not only 10.9: Apple's published Libm source ends with 10.9's,
-and no later x86_64 macOS has been tested, so no version is known to be right.
+and no later x86_64 macOS has been tested, so no version is known to be right. `fma` uses the CPU's FMA
+instruction, one correct rounding by definition, wherever the CPU has it and the OS saves the AVX state
+it needs; elsewhere, 10.9's own Macs among them, it computes in software. `fmal` and `truncl` compute in
+software everywhere. `fma` and `fmal` raise inexact, underflow (a tiny result, judged after rounding, as
+x86 does), overflow and invalid as IEEE 754 does; `truncl` raises nothing.
 
 ## Queue assertions
 
