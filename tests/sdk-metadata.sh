@@ -20,8 +20,8 @@ if sh build/stage-sdk-metadata.sh sdk-metadata "$d/staged"; then
   cmp -s sdk-metadata/recipes.json "$d/staged/recipes.json" || bad "staged recipes.json differs from sdk-metadata/recipes.json"
   extra="$(cd "$d/staged" && find . -type f ! -name recipes.json)"
   [ -z "$extra" ] || bad "staging copied more than recipes.json: $extra"
-  # spec: the pkg installs this tree as root; every user reads the recipes, so the directory is
-  #       0755 and the file 0644, whatever the stager's temporary directory was created with
+  # platform: the pkg installs this tree as root, and mktemp -d makes 0700 directories; every user
+  #           must read the recipes, so the directory is 0755 and the file 0644
   [ "$(ls -ld "$d/staged" | cut -c1-10)" = drwxr-xr-x ] || bad "the staged directory is not 0755: $(ls -ld "$d/staged")"
   [ "$(ls -l "$d/staged/recipes.json" | cut -c1-10)" = -rw-r--r-- ] || bad "the staged recipes.json is not 0644"
 else
