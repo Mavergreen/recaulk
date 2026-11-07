@@ -25,7 +25,7 @@ mp_slib() {
 }
 mp_slib
 # spec: README.md "Licences" -- the second pass recompiles only the Apple-derived members MacPorts kept
-apsl="$(AR="$AR" sh "$SELF/apsl-notices.sh" "$src" "$W/apsl")"
+apsl="$(AR="$AR" CC="$CC" MP_CFLAGS="$flags" sh "$SELF/apsl-notices.sh" "$src" "$W/apsl")"
 for stem in $apsl; do rm -f "$src/bin/$stem.o"; done
 mp_slib -f Makefile -f "$W/apsl/notices.mk"
 for stem in $apsl; do

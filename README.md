@@ -137,13 +137,15 @@ to say, in the code itself, where its source is. Each such member carries that n
 the section `__TEXT,__recaulk_apsl`, under a local symbol, `_recaulk_apsl_notice`. Nothing exports
 it, and `-dead_strip` keeps it whenever the member is linked. `libRecaulkSystem.dylib` carries every
 member's notice. MacPorts' sources stay unmodified: the build compiles those members a second time,
-with a header holding the notice. A member is Apple-derived when its source, or a header that source
-includes by `"name"`, carries Apple's licence header. Any such licence other than APSL 2.0 stops the
-build until its notice is decided.
+with a header holding the notice. A member is Apple-derived when anything clang22 reads to compile it,
+other than the SDK and the compiler's own headers, carries Apple's licence mark. Any such licence other
+than APSL 2.0, or a file the build cannot read, stops the build until its notice is decided.
+`build/apsl-declaration-only.txt` exempts MacPorts headers that hold declarations only, each at the
+sha256 it was reviewed at, so a changed one counts again.
 
 `share/recaulk/notices.tsv` lists the notices, one tab-separated line per artifact and member:
 artifact (`librecaulk.a` or `libRecaulkSystem.dylib`), member, licence, the Apple-licensed files,
-their copyright lines, those files' URLs at the pinned MacPorts commit, and the notice text. Lines
+their Apple copyright lines (not their other authors'), those files' URLs at the pinned MacPorts commit, and the notice text. Lines
 starting `#` are comments. Each release attaches the same file as `recaulk-notices.tsv`. A consumer
 that links `librecaulk.a` can take the members its link pulls in (ld64's `-why_load`, or the
 `__recaulk_apsl` strings in its output) and assemble its own NOTICE from those lines.
