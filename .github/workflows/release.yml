@@ -2,7 +2,7 @@ name: release
 
 on:
   push:
-    branches: [main]
+    branches-ignore: ['renovate/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
       ver: ${{ steps.ver.outputs.ver }}
@@ -40,10 +40,8 @@ jobs:
       - name: Install mavericks-shipyard
         uses: Mavergreen/shipyard/.github/actions/install@v1
 
-      - name: Record the toolchain
-        run: |
-          clang --version
-          xcodebuild -version
+      - name: The pkg test reads its payload with cpio
+        run: command -v cpio || { sudo apt-get update -qq && sudo apt-get install -y -qq cpio; }
 
       - name: Record the pre-build tree
         run: sh "$SHIPYARD_SCRIPTS/assert-tree-clean.sh" --record
@@ -79,12 +77,58 @@ jobs:
       - name: Build the library
         run: sh build/build-lib.sh
 
-      # spec: tests/helpers/built.sh -- runtime tests build here and run on a 10.9 guest (on-mavericks);
-      #       nothing x86_64 runs on this runner
-      - name: Run the repo's tests
+      - name: Build the Sparkle updater
+        env:
+          VER: ${{ steps.ver.outputs.ver }}
+        run: |
+          set -eu
+          app="$(sh build/build-updater.sh "$VER")"
+          [ -x "$app/Contents/MacOS/recaulk-updater" ] || { echo "::error::build-updater.sh did not print a built app: $app"; exit 1; }
+          echo "APP=$app" >> "$GITHUB_ENV"
+
+      - name: clang22's Mach-O readers, for the steps that read what was built
+        run: |
+          set -eu
+          CL="$(sh build/fetch-clang22.sh)"
+          { echo "LIPO=$CL/bin/llvm-lipo"; echo "OTOOL=$CL/bin/llvm-otool"; echo "NM=$CL/bin/llvm-nm"; echo "STRINGS=$CL/bin/llvm-strings"; } >> "$GITHUB_ENV"
+
+      - name: The updater must not link the library it updates, and carries this version
+        env:
+          VER: ${{ steps.ver.outputs.ver }}
+        run: |
+          set -eu
+          # platform: otool -L's first line is the binary's own path, which contains "recaulk"; skip it
+          "$OTOOL" -L "$APP/Contents/MacOS/recaulk-updater" | sed 1d | tee "$RUNNER_TEMP/updater-otool.txt"
+          ! grep -Eq 'librecaulk|libRecaulkSystem' "$RUNNER_TEMP/updater-otool.txt" \
+            || { echo "::error::the updater links the library it updates"; exit 1; }
+          got="$(sed -n '/<key>CFBundleVersion<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' "$APP/Contents/Info.plist")"
+          [ "$got" = "$VER" ] || { echo "::error::updater CFBundleVersion $got is not $VER"; exit 1; }
+
+      - name: Package the .pkg
+        env:
+          VER: ${{ steps.ver.outputs.ver }}
+        run: |
+          set -eu
+          pkg="$(UPD_APP="$APP" VERSION="$VER" sh build/package-pkg.sh)"
+          [ -f "$pkg" ] || { echo "::error::package-pkg.sh did not print a pkg path: $pkg"; exit 1; }
+          mkdir -p dist
+          cp "$pkg" "$(dirname "$pkg")/build-info-release.txt" dist/
+
+      - name: Exactly one .pkg, named recaulk-<version>.pkg
+        env:
+          VER: ${{ steps.ver.outputs.ver }}
+        run: |
+          set -eu
+          set -- dist/*.pkg
+          [ $# -eq 1 ] && [ "$1" = "dist/recaulk-$VER.pkg" ] \
+            || { echo "::error::dist must hold exactly dist/recaulk-$VER.pkg, got: $*"; exit 1; }
+
+      # spec: tests/helpers/built.sh -- runtime tests build here and run on a 10.9 guest (on-mavericks),
+      #       against the installed pkg; nothing x86_64 runs on this runner
+      - name: Every host-agnostic test runs, and none skips
         env:
           RECAULK_TEST_PHASE: build
-        run: sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh"
+        run: sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh" --strict-host
 
       # platform: upload-artifact drops the executable bit, so the build tree travels as a tarball
       - name: The build tree the guest runs the tests from
@@ -96,55 +140,11 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: recaulk-tests
+          if-no-files-found: error
           path: ${{ runner.temp }}/recaulk-tests.tgz
 
       - name: The ingredient pins are declared consistently
         run: sh "$SHIPYARD_SCRIPTS/check-ingredient-pins.sh"
-
-      - name: Build the Sparkle updater (Cocoa/ObjC; must not link the library)
-        env:
-          VER: ${{ steps.ver.outputs.ver }}
-        run: |
-          set -eu
-          B="$MAVERICKS_BUILD_ROOT/updater"
-          shipyard-cmake -S . -B "$B" -DCMAKE_OBJC_COMPILER=/usr/bin/clang -DRECAULK_VERSION="$VER" \
-            -DCMAKE_TOOLCHAIN_FILE="$SHIPYARD_SCRIPTS/../MavericksToolchain.cmake"
-          shipyard-cmake --build "$B" --target recaulk-updater
-          bin="$B/recaulk-updater.app/Contents/MacOS/recaulk-updater"
-          [ -x "$bin" ] || { echo "::error::no updater binary at $bin"; exit 1; }
-          # platform: otool -L's first line is the binary's own path, which contains "recaulk"; skip it
-          otool -L "$bin" | sed 1d | tee "$RUNNER_TEMP/updater-otool.txt"
-          ! grep -Eq 'librecaulk|libRecaulkSystem' "$RUNNER_TEMP/updater-otool.txt" \
-            || { echo "::error::the updater links the library it updates"; exit 1; }
-
-      - name: The updater carries this version
-        env:
-          VER: ${{ steps.ver.outputs.ver }}
-        run: |
-          set -eu
-          plist="$MAVERICKS_BUILD_ROOT/updater/recaulk-updater.app/Contents/Info.plist"
-          [ -f "$plist" ] || { echo "::error::no $plist"; exit 1; }
-          got="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$plist")"
-          [ "$got" = "$VER" ] || { echo "::error::updater CFBundleVersion $got is not $VER"; exit 1; }
-
-      - name: Package the .pkg
-        env:
-          VER: ${{ steps.ver.outputs.ver }}
-        run: |
-          set -eu
-          pkg="$(UPD_APP="$MAVERICKS_BUILD_ROOT/updater/recaulk-updater.app" VERSION="$VER" sh build/package-pkg.sh)"
-          [ -f "$pkg" ] || { echo "::error::package-pkg.sh did not print a pkg path: $pkg"; exit 1; }
-          mkdir -p dist
-          cp "$pkg" dist/
-
-      - name: Exactly one .pkg, named recaulk-<version>.pkg
-        env:
-          VER: ${{ steps.ver.outputs.ver }}
-        run: |
-          set -eu
-          set -- dist/*.pkg
-          [ $# -eq 1 ] && [ "$1" = "dist/recaulk-$VER.pkg" ] \
-            || { echo "::error::dist must hold exactly dist/recaulk-$VER.pkg, got: $*"; exit 1; }
 
       - name: Release notes
         env:
@@ -188,13 +188,15 @@ jobs:
         env:
           VER: ${{ steps.ver.outputs.ver }}
         run: |
-          sh "$SHIPYARD_SCRIPTS/artifact-facts.sh" dist "$VER" \
-            | sh "$SHIPYARD_SCRIPTS/check-artifact-conformance.sh"
+          set -eu
+          facts="$(sh "$SHIPYARD_SCRIPTS/artifact-facts.sh" dist "$VER")"
+          printf '%s\n' "$facts" | sh "$SHIPYARD_SCRIPTS/check-artifact-conformance.sh"
 
       - name: The feed is an upgrade on its line
         if: steps.ver.outputs.publish == 'yes'
         env:
           VER: ${{ steps.ver.outputs.ver }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           [ -f dist/recaulk.xml ] || { echo "::error::no dist/recaulk.xml"; exit 1; }
@@ -207,11 +209,13 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: recaulk
+          if-no-files-found: error
           path: dist/*
 
-  # spec: tests/guest/run-runtime-tests.sh -- each runtime test's runtime half, on a real 10.9.5 guest
-  #       (Mavergreen/mavericks-vm), against the build tree the build job made. A skip (77) fails here.
-  #       A fork's pull request gets no secrets, so cannot boot the guest, and never publishes: it skips this.
+  # spec: tests/guest/run-runtime-tests.sh -- this run's pkg installed on a real 10.9.5 guest
+  #       (Mavergreen/mavericks-vm), then each runtime test's runtime half against it, with the build tree
+  #       the build job made; a skip (77) fails here. A fork's pull request gets no secrets, so cannot boot
+  #       the guest, and never publishes: it skips this.
   on-mavericks:
     needs: [build]
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -228,14 +232,36 @@ jobs:
         with:
           name: recaulk-tests
           path: ${{ runner.temp }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: recaulk
+          path: dist
       - name: Unpack the build tree into the workspace the guest gets
         run: mkdir -p mm-build/recaulk && tar -xzf "$RUNNER_TEMP/recaulk-tests.tgz" -C mm-build/recaulk
-      - uses: Mavergreen/mavericks-vm@v1
+      - name: Install this run's pkg on Mac OS X 10.9, run the runtime tests against it and launch the updater
+        uses: Mavergreen/mavericks-vm@v1
+        env:
+          RECAULK_VERSION: ${{ needs.build.outputs.ver }}
         with:
           image-key: ${{ secrets.MAVERICKS_VM_KEY }}
+          envs: RECAULK_VERSION
           copyback: false
           debug-on-error: true
-          run: RECAULK_BUILD="$PWD/mm-build/recaulk" sh tests/guest/run-runtime-tests.sh
+          run: |
+            set -eu
+            sw_vers
+            sudo -n true || { echo "the guest's user cannot sudo without a password, and installer needs root"; exit 1; }
+            if [ -x /usr/local/bin/mavergreen ] && [ -f /usr/local/mavergreen/recaulk/mavergreen.plist ]; then sudo /usr/local/bin/mavergreen uninstall recaulk; fi
+            if pkgutil --pkg-info dev.mavergreen.recaulk >/dev/null 2>&1; then sudo pkgutil --forget dev.mavergreen.recaulk; fi
+            if [ -e /usr/local/mavergreen/recaulk ] || pkgutil --pkg-info dev.mavergreen.recaulk >/dev/null 2>&1; then
+              echo "a Recaulk the image carried survived its removal, so the tests could not prove this run's pkg installed"; exit 1
+            fi
+            sudo installer -pkg "dist/recaulk-$RECAULK_VERSION.pkg" -target /
+            /usr/local/bin/mavergreen check
+            got="$(/usr/libexec/PlistBuddy -c 'Print :version' /usr/local/mavergreen/recaulk/mavergreen.plist)"
+            [ "$got" = "$RECAULK_VERSION" ] || { echo "the installed Recaulk is $got, not this run's $RECAULK_VERSION"; exit 1; }
+            RECAULK_BUILD="$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk sh tests/guest/run-runtime-tests.sh
+            sh build/launch-updater.sh
 
   scan:
     needs: [build]
@@ -258,3 +284,23 @@ jobs:
     with:
       version: ${{ needs.build.outputs.ver }}
       artifact: recaulk
+
+  retry:
+    needs: [build, publish]
+    if: always() && needs.publish.result == 'failure'
+    permissions:
+      contents: read
+      actions: write
+    uses: Mavergreen/shipyard/.github/workflows/retry-release.yml@v1
+    with:
+      version: ${{ needs.build.outputs.ver }}
+
+  required:
+    name: required (release)
+    if: always()
+    needs: [build, on-mavericks, scan, publish, retry]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Mavergreen/shipyard/.github/actions/required-gate@v1
+        with:
+          needs: ${{ toJSON(needs) }}

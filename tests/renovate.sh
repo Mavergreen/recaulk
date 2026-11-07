@@ -32,6 +32,12 @@ assert d["matchStrings"] == ["^(?<currentValue>.+?)\\s*$"], "drydock manager: ma
 assert d["depNameTemplate"] == "Mavergreen/drydock", "drydock manager: depNameTemplate"
 assert d["datasourceTemplate"] == "github-releases", "drydock manager: datasourceTemplate"
 assert d["extractVersionTemplate"] == "^v(?<version>.+)$", "drydock manager: extractVersionTemplate"
+k = [x for x in cm if x.get("managerFilePatterns") == ["/^components/clang22/version$/"]]
+assert len(k) == 1, "no single customManager for components/clang22/version"
+k = k[0]
+assert k["depNameTemplate"] == "Mavergreen/clang-22", "clang22 manager: depNameTemplate"
+assert k["datasourceTemplate"] == "github-releases", "clang22 manager: datasourceTemplate"
+assert k.get("versioningTemplate") == "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-mavericks\\.(?<build>\\d+)$", "clang22 manager: versioning must compare -mavericks.N"
 print("renovate OK")
 PY
 wf=.github/workflows/repackage-on-ingredient-bump.yml
