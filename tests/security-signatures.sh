@@ -1,10 +1,10 @@
 #!/bin/sh
-# platform: macOS-only -- links an x86_64 program against librecaulk.a and Security.framework; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- links an x86_64 program against librecaulk.a and Security.framework; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 if compiling; then
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Wno-deprecated-declarations -isystem "$T/include/recaulk" \
+  "$CC" $FLAGS -arch x86_64 -Wall -Wno-deprecated-declarations -isystem "$T/include/recaulk" \
     -o "$(tbin security_signatures)" tests/c/security_signatures.c "$T/lib/librecaulk.a" \
     -framework CoreFoundation -framework Security -framework CoreServices -lobjc \
     || { echo "FAIL: a program calling SecKeyCreateSignature does not link plainly with librecaulk.a"; exit 1; }

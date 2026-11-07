@@ -1,9 +1,9 @@
 #!/bin/sh
-# platform: macOS-only -- builds the staged static archive and dylib's x86_64 programs; runs them on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds the staged static archive and dylib's x86_64 programs; runs them on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
-cc() { /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" "$@"; }
+cc() { "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" "$@"; }
 if compiling; then
   cc tests/c/posix_spawn_chdir.c "$T/lib/librecaulk.a" -o "$(tbin static)"
   # spec: README.md "Child processes" -- librecaulk.a at the very end of the link, after libSystem,

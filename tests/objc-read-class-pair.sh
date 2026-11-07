@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds x86_64 Mach-O against 10.9's libobjc; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds x86_64 Mach-O against 10.9's libobjc; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 fail=0
 
 if compiling; then
-  /usr/bin/clang $FLAGS -arch x86_64 -fno-objc-arc -o "$(tbin rcp)" tests/c/objc_read_class_pair.m \
+  "$CC" $FLAGS -arch x86_64 -fno-objc-arc -o "$(tbin rcp)" tests/c/objc_read_class_pair.m \
     tests/c/objc_read_class_pair_cxx.mm -lc++ \
     "$T/lib/librecaulk.a" -framework Foundation -framework CoreFoundation -framework Security \
     -framework CoreServices -lobjc \

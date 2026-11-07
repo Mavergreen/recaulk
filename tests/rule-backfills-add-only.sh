@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm and otool read Mach-O archives and objects
+# platform: host-agnostic -- nm and otool read Mach-O archives and objects
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -59,17 +59,17 @@ for o in "$W"/overrides/*.o; do
 done
 
 mkdir "$tmp/members"
-(cd "$tmp/members" && ar -x "$W/librecaulk-backfills.a")
+(cd "$tmp/members" && "$AR" -x "$W/librecaulk-backfills.a")
 for m in "$tmp"/members/*.o; do
-  if otool -l "$m" | grep -q 'sectname __mod_init_func'; then
+  if "$OTOOL" -l "$m" | grep -q 'sectname __mod_init_func'; then
     bad "$(basename "$m") has a constructor: a constructor in librecaulk.a runs in every product that force-loads it; that is an override's job"
   fi
 done
 mkdir "$tmp/all"
-(cd "$tmp/all" && ar -x "$T/lib/librecaulk.a")
+(cd "$tmp/all" && "$AR" -x "$T/lib/librecaulk.a")
 for m in "$tmp"/all/fwd-*.o; do
   [ -f "$m" ] || continue
-  if otool -l "$m" | grep -q 'sectname __mod_init_func'; then
+  if "$OTOOL" -l "$m" | grep -q 'sectname __mod_init_func'; then
     bad "$(basename "$m") has a constructor: a constructor in librecaulk.a runs in every product that force-loads it; that is an override's job"
   fi
 done

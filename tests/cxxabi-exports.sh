@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- links x86_64 Mach-O and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- links x86_64 Mach-O and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
 # spec: src/backfills/cxxabi_pointer_catch.c and README "C++ exceptions" -- the pointer catch rules,
 #       hidden in librecaulk.a (a fix to a function 10.9 has; README) and public only in
 #       librecaulk-cxxabi-exports.a, whose one consumer is libcxx22's libc++abi.1.dylib.
@@ -29,19 +29,19 @@ if compiling; then
   #       libc++abi and exports the two vtables, linked ahead of the re-export so they are its own.
   set --
   for vt in $VTS; do set -- "$@" "-Wl,-u,$vt"; echo "$vt"; done > "$D/exp"
-  /usr/bin/clang $FLAGS -arch x86_64 -dynamiclib -install_name @loader_path/libabi.dylib -o "$(tbin libabi.dylib)" \
+  "$CC" $FLAGS -arch x86_64 -dynamiclib -install_name @loader_path/libabi.dylib -o "$(tbin libabi.dylib)" \
     "$@" "$EXP" -Wl,-reexport-lc++abi -Wl,-exported_symbols_list,"$D/exp" \
     || { echo "FAIL: a dylib exporting the two vtables from librecaulk-cxxabi-exports.a does not link"; exit 1; }
   for vt in $VTS; do
-    nm -gU "$(tbin libabi.dylib)" | grep -q " $vt\$" || bad "the dylib does not export $vt"
+    "$NM" -gU "$(tbin libabi.dylib)" | grep -q " $vt\$" || bad "the dylib does not export $vt"
   done
   . tests/helpers/cxx.sh
-  /usr/bin/clang++ $FLAGS -arch x86_64 $CXX_STD -o "$(tbin cxxabi)" tests/cxx/cxxabi.cpp "$(tbin libabi.dylib)" "$T/lib/librecaulk.a" \
+  "$CXX" $FLAGS -arch x86_64 $CXX_STD -o "$(tbin cxxabi)" tests/cxx/cxxabi.cpp "$(tbin libabi.dylib)" "$T/lib/librecaulk.a" \
     -framework CoreFoundation -framework Security -framework CoreServices -lobjc -lc++abi \
     || { echo "FAIL: the cxxabi checks do not link against the dylib"; exit 1; }
   for vt in $VTS; do
-    nm -m "$(tbin cxxabi)" | grep -q "(undefined) external $vt (from libabi)" \
-      || bad "the program does not take $vt from the dylib: $(nm -m "$(tbin cxxabi)" | grep " $vt" | head -1)"
+    "$NM" -m "$(tbin cxxabi)" | grep -q "(undefined) external $vt (from libabi)" \
+      || bad "the program does not take $vt from the dylib: $("$NM" -m "$(tbin cxxabi)" | grep " $vt" | head -1)"
   done
   check_loads "$(tbin cxxabi)" "$(tbin libabi.dylib)" || fail=1
   [ "$fail" = 0 ] || exit 1

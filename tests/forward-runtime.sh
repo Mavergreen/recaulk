@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds x86_64 Mach-O and reads the dylib with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds x86_64 Mach-O and reads the dylib with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -27,13 +27,13 @@ field() { printf '%s\n' "$1" | sed -n "s/^$2: //p"; }
 
 dylib="$T/lib/libRecaulkSystem.dylib"
 if compiling; then
-  /usr/bin/clang $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$(tbin fwd)" tests/c/forward_runtime.c \
+  "$CC" $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$(tbin fwd)" tests/c/forward_runtime.c \
     "$T/lib/librecaulk.a" -framework CoreFoundation -framework Security -framework CoreServices -lobjc \
     || { echo "FAIL: a program calling clock_gettime does not link plainly with librecaulk.a"; exit 1; }
-  slot="$(nm "$dylib" | awk '$3 == "___recaulk_slot_clock_gettime" { print $1 }')"
+  slot="$("$NM" "$dylib" | awk '$3 == "___recaulk_slot_clock_gettime" { print $1 }')"
   [ -n "$slot" ] || { echo "FAIL: $dylib has no ___recaulk_slot_clock_gettime in its symbol table"; exit 1; }
   echo "$slot" > "$(tbin slot)"
-  /usr/bin/clang $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$(tbin fwd-dylib)" tests/c/forward_runtime_dylib.c \
+  "$CC" $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$(tbin fwd-dylib)" tests/c/forward_runtime_dylib.c \
     -L"$T/lib" -lRecaulkSystem \
     || { echo "FAIL: a program calling clock_gettime does not link against libRecaulkSystem.dylib"; exit 1; }
   check_loads "$(tbin fwd)" "$(tbin fwd-dylib)"

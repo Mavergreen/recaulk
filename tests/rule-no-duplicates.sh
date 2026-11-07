@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm reads Mach-O archives
+# platform: host-agnostic -- nm reads Mach-O archives
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -17,11 +17,11 @@ printf 'int impl_probe(void) __asm__("___recaulk_impl_probe");\nint impl_probe(v
 cp "$tmp/fx/mp-probe.c" "$tmp/fx/recaulk-probe.c"
 cp "$tmp/fx/mp-probe.c" "$tmp/fx/recaulk-probe2.c"
 for n in fwd-probe mp-probe recaulk-probe recaulk-probe2; do
-  /usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/fx/$n.c" -o "$tmp/fx/$n.o"
+  "$CC" $FLAGS -arch x86_64 -c "$tmp/fx/$n.c" -o "$tmp/fx/$n.o"
 done
-/usr/bin/libtool -static -o "$tmp/fx/ok.a" "$tmp/fx/fwd-probe.o" "$tmp/fx/mp-probe.o" 2>/dev/null
-/usr/bin/libtool -static -o "$tmp/fx/macports.a" "$tmp/fx/mp-probe.o" "$tmp/fx/recaulk-probe.o" 2>/dev/null
-/usr/bin/libtool -static -o "$tmp/fx/ours.a" "$tmp/fx/recaulk-probe.o" "$tmp/fx/recaulk-probe2.o" 2>/dev/null
+recaulk_archive "$tmp/fx/ok.a" "$tmp/fx/fwd-probe.o" "$tmp/fx/mp-probe.o" 2>/dev/null
+recaulk_archive "$tmp/fx/macports.a" "$tmp/fx/mp-probe.o" "$tmp/fx/recaulk-probe.o" 2>/dev/null
+recaulk_archive "$tmp/fx/ours.a" "$tmp/fx/recaulk-probe.o" "$tmp/fx/recaulk-probe2.o" 2>/dev/null
 out="$(duplicate_report "$tmp/fx/ok.a")"
 [ -z "$out" ] || { echo "FAIL: self-test: a trampoline _probe beside ___recaulk_impl_probe read as a duplicate: $out"; fail=1; }
 out="$(duplicate_report "$tmp/fx/macports.a")"
@@ -38,11 +38,11 @@ printf '__attribute__((weak, visibility("hidden"))) int shadow(void) { return 0;
 printf 'int shadow(void) { return 1; }\n' > "$tmp/fx/recaulk-public.c"
 printf '__attribute__((visibility("hidden"))) int shadow(void) { return 0; }\n' > "$tmp/fx/recaulk-hidden.c"
 for n in recaulk-weak recaulk-public recaulk-hidden; do
-  /usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/fx/$n.c" -o "$tmp/fx/$n.o"
+  "$CC" $FLAGS -arch x86_64 -c "$tmp/fx/$n.c" -o "$tmp/fx/$n.o"
 done
-/usr/bin/libtool -static -o "$tmp/fx/weak.a" "$tmp/fx/recaulk-weak.o" 2>/dev/null
-/usr/bin/libtool -static -o "$tmp/fx/public.a" "$tmp/fx/recaulk-public.o" 2>/dev/null
-/usr/bin/libtool -static -o "$tmp/fx/hidden.a" "$tmp/fx/recaulk-hidden.o" 2>/dev/null
+recaulk_archive "$tmp/fx/weak.a" "$tmp/fx/recaulk-weak.o" 2>/dev/null
+recaulk_archive "$tmp/fx/public.a" "$tmp/fx/recaulk-public.o" 2>/dev/null
+recaulk_archive "$tmp/fx/hidden.a" "$tmp/fx/recaulk-hidden.o" 2>/dev/null
 out="$(duplicate_report "$tmp/fx/weak.a" "$tmp/fx/public.a")"
 [ -z "$out" ] || { echo "FAIL: self-test: a weak hidden _shadow beside a public one read as a duplicate, though the public one always wins the link: $out"; fail=1; }
 out="$(duplicate_report "$tmp/fx/hidden.a" "$tmp/fx/public.a")"

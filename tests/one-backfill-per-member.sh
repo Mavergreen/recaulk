@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- links x86_64 Mach-O against librecaulk.a
+# platform: host-agnostic -- links x86_64 Mach-O against librecaulk.a
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -12,7 +12,7 @@ lib="$T/lib/librecaulk.a"
 sdk_exports "$SDK" > "$tmp/sdk"
 # platform: MacPorts' private helpers (the private entries of build/forward-exclude.txt) are never defined by a consumer
 awk '$3 == "private" && $1 == "prefix" { print "p", $2 } $3 == "private" && $1 == "name" { print "n", $2 }' build/forward-exclude.txt > "$tmp/private"
-nm -gU "$lib" | awk 'NF == 3 && $2 ~ /^[A-Za-z]$/ { print $3 }' | LC_ALL=C sort -u \
+"$NM" -gU "$lib" | awk 'NF == 3 && $2 ~ /^[A-Za-z]$/ { print $3 }' | LC_ALL=C sort -u \
   | LC_ALL=C comm -23 - "$tmp/sdk" \
   | grep -v '\.eh$' | grep -v '^___recaulk_' \
   | awk 'NR == FNR { if ($1 == "p") pre[++np] = $2; else ex[$2] = 1; next }
@@ -30,13 +30,13 @@ done
   while read -r s; do printf '.quad "%s"\n' "$s"; done < "$tmp/S"
   printf '.text\n.globl _main\n_main:\n  xorl %%eax, %%eax\n  ret\n'
 } > "$tmp/refs.s"
-/usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/refs.s" -o "$tmp/refs.o"
+"$CC" $FLAGS -arch x86_64 -c "$tmp/refs.s" -o "$tmp/refs.o"
 
 fail=0
 while read -r s; do
   printf '.globl "%s"\n.section __DATA,__data\n.align 3\n"%s": .quad 0\n' "$s" "$s" > "$tmp/stub.s"
-  /usr/bin/clang $FLAGS -arch x86_64 -c "$tmp/stub.s" -o "$tmp/stub.o"
-  if ! /usr/bin/clang $FLAGS -arch x86_64 -o "$tmp/a.out" "$tmp/refs.o" "$tmp/stub.o" "$lib" \
+  "$CC" $FLAGS -arch x86_64 -c "$tmp/stub.s" -o "$tmp/stub.o"
+  if ! "$CC" $FLAGS -arch x86_64 -o "$tmp/a.out" "$tmp/refs.o" "$tmp/stub.o" "$lib" \
       -framework CoreFoundation -framework Security -framework CoreVideo -framework CoreGraphics \
       -framework CoreServices -framework IOKit -lobjc -lc++abi > "$tmp/link.out" 2>&1; then
     # platform: ld names the colliding archive member as lib.a(member.o) under "duplicate symbol"

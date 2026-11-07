@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds x86_64 Mach-O and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds x86_64 Mach-O and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -11,14 +11,14 @@ fail=0
 bad() { echo "FAIL: $*"; fail=1; }
 
 if compiling; then
-  CC="/usr/bin/clang $FLAGS -arch x86_64"
+  CC=""$CC" $FLAGS -arch x86_64"
   STATIC_LIBS="-framework CoreFoundation -framework Security -framework CoreServices -lobjc"
   $CC -isystem "$T/include/recaulk" -o "$(tbin test_polyfills)" tests/c/test_polyfills.c "$T/lib/librecaulk.a" $STATIC_LIBS \
     || { echo "FAIL: test_polyfills does not link plainly with librecaulk.a"; exit 1; }
   adapted() {
     $CC -isystem "$T/include/recaulk" -o "$(tbin "$1")" "tests/c/$1.c" -L"$T/lib" -lRecaulkSystem \
       || { echo "FAIL: $1 does not link against libRecaulkSystem.dylib"; exit 1; }
-    nm -m "$(tbin "$1")" | grep "external $2 (from libRecaulkSystem)" >/dev/null \
+    "$NM" -m "$(tbin "$1")" | grep "external $2 (from libRecaulkSystem)" >/dev/null \
       || bad "$1: an adapted binary must bind the override, not the re-exported libSystem's ($2)"
   }
   adapted kevent64_error_events _kevent64

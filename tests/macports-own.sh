@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds MacPorts' static x86_64 tests with make; runs them on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds MacPorts' static x86_64 tests with make; runs them on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -8,12 +8,11 @@ D="$(mktemp -d "${TMPDIR:-/tmp}/macports-own.XXXXXX")"
 trap 'rm -rf "$D"' EXIT
 if compiling; then
   mp="$W/macports-legacy-support-$(macports_version)"
-  # platform: the make on PATH may be a wrapper; MacPorts' Makefile needs GNU make.
-  /usr/bin/make -k -C "$mp" -f Makefile -f "$PWD/tests/helpers/macports-own.mk" CC=/usr/bin/clang ARCHS=x86_64 \
+  "$MAKE" -k -C "$mp" -f Makefile -f "$PWD/tests/helpers/macports-own.mk" CC="$CC" ARCHS=x86_64 TESTARCHS=x86_64 \
     CFLAGS="$FLAGS" LDFLAGS="$FLAGS" recaulk_static_progs > "$D/make.log" 2>&1 && rc=0 || rc=$?
   cat "$D/make.log"
   macports_own_verdict "$D/make.log" "$rc" || exit 1
-  /usr/bin/make -s -C "$mp" -f Makefile -f "$PWD/tests/helpers/macports-own.mk" recaulk_list_static > "$(tbin progs)"
+  "$MAKE" -s TESTARCHS=x86_64 -C "$mp" -f Makefile -f "$PWD/tests/helpers/macports-own.mk" recaulk_list_static > "$(tbin progs)"
   [ -s "$(tbin progs)" ] || { echo "FAIL: MacPorts' Makefile lists no static test programs"; exit 1; }
   basename "$mp" > "$(tbin tree)"
   set --

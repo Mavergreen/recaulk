@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- assembles x86_64 Mach-O
+# platform: host-agnostic
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
 . "$SELF/lib.sh"
@@ -9,7 +9,8 @@ symlist="$1"; out="$2"
 if [ -z "${SDK:-}" ]; then
   SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
 fi
-flags="-isysroot $SDK -mmacosx-version-min=10.9"
+recaulk_tools
+flags="$TARGET_FLAGS -isysroot $SDK"
 mkdir -p "$out"
 list="$(mktemp "$out/.symbols.XXXXXX")"
 trap 'rm -f "$list"' EXIT
@@ -107,8 +108,8 @@ Lname:
 
 	.subsections_via_symbols
 ASM
-  /usr/bin/clang $flags -arch x86_64 -c "$s" -o "$out/fwd-$i.o"
+  "$CC" $flags -arch x86_64 -c "$s" -o "$out/fwd-$i.o"
 done < "$list"
 
-/usr/bin/clang $flags -arch x86_64 -Os -fPIC -Wall -c "$MAVERICKS_ROOT/src/forward/resolve.c" -o "$out/fwd-resolve.o"
+"$CC" $flags -arch x86_64 -Os -fPIC -Wall -c "$MAVERICKS_ROOT/src/forward/resolve.c" -o "$out/fwd-resolve.o"
 mv -f "$list" "$out/symbols.txt"

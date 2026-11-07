@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- links x86_64 Mach-O against librecaulk.a and reads its imports with nm
+# platform: host-agnostic -- links x86_64 Mach-O against librecaulk.a and reads its imports with nm
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -15,7 +15,7 @@ int main(void) {
          SecKeyCreateSignature(NULL, kSecKeyAlgorithmECDSASignatureDigestX962SHA256, NULL, NULL);
 }
 C
-/usr/bin/clang $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$D/uses" "$D/uses.c" "$T/lib/librecaulk.a" \
+"$CC" $FLAGS -arch x86_64 -isystem "$T/include/recaulk" -o "$D/uses" "$D/uses.c" "$T/lib/librecaulk.a" \
   -framework CoreFoundation -framework Security -framework CoreServices -lobjc \
   || { echo "FAIL: a program calling the Security back-fills does not link plainly with librecaulk.a"; exit 1; }
 "${NM:-nm}" -m "$D/uses" > "$D/imports"

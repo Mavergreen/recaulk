@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm reads Mach-O objects
+# platform: host-agnostic
 set -eu
 [ $# -ge 3 ] || { echo "usage: sh build/rename-impls.sh DRYDOCK SYMLIST OBJ... -- in each OBJ, renames each _<n> of SYMLIST that OBJ defines to ___recaulk_impl_<n>, in place" >&2; exit 2; }
 drydock="$1"; symlist="$2"; shift 2
@@ -9,7 +9,7 @@ trap 'rm -rf "$tmp"' EXIT
 LC_ALL=C sort -u "$symlist" > "$tmp/F"
 
 for obj in "$@"; do
-  nm -gU "$obj" | awk 'NF == 3 && $2 == "T" { print $3 }' | LC_ALL=C sort -u > "$tmp/T"
+  "${NM:-nm}" -gU "$obj" | awk 'NF == 3 && $2 == "T" { print $3 }' | LC_ALL=C sort -u > "$tmp/T"
   LC_ALL=C comm -12 "$tmp/T" "$tmp/F" > "$tmp/defs"
   [ -s "$tmp/defs" ] || continue
   script="$obj.drydock"
