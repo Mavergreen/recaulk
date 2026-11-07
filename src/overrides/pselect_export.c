@@ -13,6 +13,11 @@
 
 int __recaulk_pselect(int variant, int nfds, fd_set *r, fd_set *w, fd_set *e,
                       const struct timespec *timeout, const sigset_t *mask);
+void __recaulk_pselect_early(void);
+
+/* spec: src/backfills/pselect.c -- register the main thread's kqueue as the dylib loads, before any
+ * signal can be under way; an override may have a constructor, a back-fill may not. */
+__attribute__((constructor)) static void register_early(void) { __recaulk_pselect_early(); }
 
 #define EXPORT(name, symbol, variant)                                                                  \
     int name(int, fd_set *, fd_set *, fd_set *, const struct timespec *, const sigset_t *) __asm(symbol); \

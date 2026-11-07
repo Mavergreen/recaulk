@@ -120,8 +120,9 @@ posted to the process, from when the image loads (the main thread), the fork (a 
 
 Limits on 10.9: a signal handled outside any wait can end the thread's next wait at once with `EINTR`; a
 signal sent to one thread (`pthread_kill`) is no better covered than by 10.9's own; one that another
-thread handles can end the wait with `EINTR`; one under way as a new thread's first wait begins, or as a
-fork's child registers its kqueue, is not seen; and a signal can end a wait a moment before its handler
+thread handles can end the wait with `EINTR`; one under way as a thread's first wait begins (the main thread's too, in a program linking
+`librecaulk.a`: `libRecaulkSystem.dylib` registers it as it loads), or as a fork's child registers its
+kqueue, is not seen; and a signal can end a wait a moment before its handler
 runs, which it then does as the caller next unblocks it. Where no kqueue can be had (descriptors or
 memory exhausted), a wait falls back to 10.9's own `pselect` rather than fail. A program may close the
 kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and registers another. Callers
