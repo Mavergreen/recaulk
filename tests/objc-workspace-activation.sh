@@ -1,89 +1,80 @@
 #!/bin/sh
-# platform: macOS-only -- real ordinary/dead-strip/LTO archive activation, no app launch
+# platform: host-agnostic -- links consumers of librecaulk-objc.a with clang22; runs them on 10.9 (RECAULK_TEST_PHASE)
+# spec: README.md "Objective-C provider" -- the provider activates only in a program that roots
+#       __recaulk_objc_activate (plain, dead-strip and LTO links alike), strong-links AppKit and Carbon
+#       when rooted, and never reaches a C-only consumer or librecaulk.a/libRecaulkSystem.dylib.
 set -eu
-umask 077
-ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
-[ -f "$ROOT/build/build-objc.sh" ] || { echo 'FAIL: separate objc companion builder absent'; exit 1; }
-: "${SHIPYARD_SCRIPTS:?set pinned shipyard scripts}"
-[ -z "${DYLD_INSERT_LIBRARIES:-}${DYLD_FRAMEWORK_PATH:-}${DYLD_LIBRARY_PATH:-}" ] || { echo 'FAIL: injected runtime inputs cannot establish activation evidence'; exit 1; }
-CP=${RECAULK_C_PREFIX:-${RECAULK_BUILD:-/not-configured}/stage/usr/local/mavergreen/recaulk}
-# Objective-C activation (plain/dead-strip/LTO, ABI, weak owner) needs no C
-# stage and always runs; only the C-isolation checks need the real C outputs.
-c_measured=1
-if [ ! -f "$CP/lib/librecaulk.a" ] || [ ! -f "$CP/lib/libRecaulkSystem.dylib" ]; then c_measured=0; fi
-if [ -n "${RECAULK_OBJC_ACTIVATION_REPORT:-}" ]; then D=$RECAULK_OBJC_ACTIVATION_REPORT; case "$D" in /*) ;; *) exit 2 ;; esac; mkdir -m 700 "$D"; else D=$(mktemp -d "${TMPDIR:-/tmp}/workspace-activation.XXXXXX"); fi
-# Preserve actual objects/binaries/logs as evidence; never remove caller output.
-case "$(uname -m)" in arm64) arch=arm64; floor=11.0 ;; x86_64) arch=x86_64; floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
-if [ "$c_measured" = 1 ]; then shasum -a 256 "$CP/lib/librecaulk.a" "$CP/lib/libRecaulkSystem.dylib" > "$D/c-before.sha256"; fi
-SDK="$SDK" HOST_SDK="$SDK" sh "$ROOT/build/build-objc.sh" "$D/stage" "$D/work" --native-test > "$D/builder.log" 2>&1
-if [ "$c_measured" = 1 ]; then shasum -a 256 -c "$D/c-before.sha256" > "$D/c-after.log"; fi
-A="$D/stage/lib/librecaulk-objc.a"
-[ -f "$D/stage/share/recaulk/objc-providers.json" ]
-/usr/bin/otool -L "$D/work/objc-provider-manifest" > "$D/generator-loads.txt"
-! grep -q AppKit "$D/generator-loads.txt"
-/usr/bin/nm -u "$D/work/objects/register.o" > "$D/register-imports.txt"
-! grep -q objc_msgSend "$D/register-imports.txt"
-# Reject declaration changes before producing registration constants.
-awk '{sub(/"schema": 1/,"\"schema\": true"); print}' "$ROOT/src/objc/providers.json" > "$D/boolean-schema.json"
-if "$D/work/objc-provider-manifest" header "$D/boolean-schema.json" "$D/bad-header.h" > "$D/bad-schema.log" 2>&1; then echo 'FAIL: boolean schema accepted as integer1'; exit 1; fi
-[ ! -f "$D/bad-header.h" ]
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -c "$ROOT/tests/c/objc_workspace_activation.m" -o "$D/consumer.o"
-strong_frameworks() {
- /usr/bin/otool -l "$1" > "$D/load-commands.txt"
- for framework in AppKit Carbon; do
-  awk -v f="/$framework.framework/" '$1=="cmd" {cmd=$2} $1=="name" && index($2,f) {found=1;if(cmd!="LC_LOAD_DYLIB")bad=1} END{exit(!found || bad)}' "$D/load-commands.txt" || return 1
- done
-}
-for mode in plain dead-strip lto; do
- obj="$D/consumer.o"; extra=
- if [ "$mode" = dead-strip ]; then extra=-Wl,-dead_strip; fi
- if [ "$mode" = lto ]; then
-  # Pin the native compiler's paired linker for THIS run, including its bytes.
-  linker=$(/usr/bin/clang -print-prog-name=ld)
-  case "$linker" in /usr/bin/ld|/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld|/Library/Developer/CommandLineTools/usr/bin/ld) ;; *) echo 'FAIL: unexpected LTO linker outside Apple toolchain'; exit 1 ;; esac
-  shasum -a 256 "$linker" > "$D/lto-linker.sha256"
-  "$linker" -v > "$D/lto-linker-version.txt" 2>&1 || :
-  /usr/bin/clang --version > "$D/lto-compiler-version.txt"
-  /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -flto -c "$ROOT/tests/c/objc_workspace_activation.m" -o "$D/consumer-lto.o"
-  magic=$(od -An -tx1 -N4 "$D/consumer-lto.o" | tr -d ' \n')
-  case "$magic" in 4243c0de|dec0170b) ;; *) echo 'FAIL: consumer LTO input is not measured bitcode'; exit 1 ;; esac
-  obj="$D/consumer-lto.o"; extra='-flto -Wl,-dead_strip'
- fi
- # Deliberate unquoted expansion: fixed compiler flags only, never user input.
- /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" $extra "$obj" "$A" -framework AppKit -framework Carbon -o "$D/$mode-unrooted"
- "$D/$mode-unrooted" 0
- /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" $extra "$obj" "$A" -Wl,-u,___recaulk_objc_activate -framework AppKit -framework Carbon -o "$D/$mode-rooted"
- strong_frameworks "$D/$mode-rooted"
- "$D/$mode-rooted" 1
- if [ "$mode" = lto ]; then shasum -a 256 -c "$D/lto-linker.sha256"; fi
-done
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" "$D/consumer.o" "$A" -Wl,-u,___recaulk_objc_activate -weak_framework AppKit -framework Carbon -o "$D/weak-owner"
-if strong_frameworks "$D/weak-owner"; then echo 'FAIL: weak owner accepted as strong provider policy'; exit 1; fi
-# A plain C native consumer must not acquire the unrooted companion or AppKit.
-printf '%s\n' '#include <mach-o/dyld.h>' '#include <string.h>' 'int main(void){for(unsigned i=0;i<_dyld_image_count();i++)if(strstr(_dyld_get_image_name(i),"/AppKit.framework/"))return 1;return 0;}' > "$D/ordinary.c"
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" "$D/ordinary.c" "$A" -o "$D/ordinary"
-"$D/ordinary"
-/usr/bin/nm "$D/ordinary" > "$D/ordinary-symbols.txt"
-! grep -q __recaulk_objc_activate "$D/ordinary-symbols.txt"
-if [ "$c_measured" = 0 ]; then
- echo "PASS: actual root in ordinary/dead-strip/LTO; inherited/native/ABI preserved; weak owner rejected by policy. Evidence: $D"
- echo 'SKIP: actual C archive/dylib required for C isolation checks; not measured'
- exit 77
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+fail=0
+bad() { echo "FAIL: $*"; fail=1; }
+A="$T/lib/librecaulk-objc.a"
+
+if compiling; then
+  [ -f "$A" ] || { echo "FAIL: the stage has no lib/librecaulk-objc.a"; exit 1; }
+  D="$(dirname "$(tbin x)")"
+  "$NM" -u "$W/objc-companion/objects/register.o" > "$D/register-imports.txt"
+  if grep -q objc_msgSend "$D/register-imports.txt"; then bad "register.o sends messages; registration must use the runtime's C API only"; fi
+  awk '{ sub(/"schema": 1/, "\"schema\": true"); print }' src/objc/providers.json > "$D/boolean-schema.json"
+  if CC="$CC" TARGET_FLAGS="$TARGET_FLAGS" SDK="$SDK" sh build/objc-provider-manifest.sh header "$D/boolean-schema.json" "$D/bad-header.h" > "$D/bad-schema.log" 2>&1; then
+    bad "the manifest generator accepted a boolean schema as the integer 1"
+  fi
+  [ ! -f "$D/bad-header.h" ] || bad "a refused declaration still produced a header"
+
+  "$CC" $FLAGS -fno-objc-arc -c tests/c/objc_workspace_activation.m -o "$D/consumer.o"
+  "$CC" $FLAGS -fno-objc-arc -flto -c tests/c/objc_workspace_activation.m -o "$D/consumer-lto.o"
+  case "$(od -An -tx1 -N4 "$D/consumer-lto.o" | tr -d ' \n')" in
+    4243c0de|dec0170b) ;;
+    *) bad "the LTO consumer object is not bitcode, so the LTO link proves nothing" ;;
+  esac
+  strong_frameworks() {
+    "$OTOOL" -l "$1" > "$1.loads"
+    for _f in AppKit Carbon; do
+      awk -v f="/$_f.framework/" '$1 == "cmd" { cmd = $2 }
+        $1 == "name" && index($2, f) { found = 1; if (cmd != "LC_LOAD_DYLIB") weak = 1 }
+        END { exit(!found || weak) }' "$1.loads" || return 1
+    done
+  }
+  for mode in plain dead-strip lto; do
+    obj="$D/consumer.o"; extra=
+    case "$mode" in
+      dead-strip) extra=-Wl,-dead_strip ;;
+      lto) obj="$D/consumer-lto.o"; extra='-flto -Wl,-dead_strip' ;;
+    esac
+    "$CC" $FLAGS $extra "$obj" "$A" -framework AppKit -framework Carbon -o "$(tbin "$mode-unrooted")"
+    "$CC" $FLAGS $extra "$obj" "$A" -Wl,-u,___recaulk_objc_activate -framework AppKit -framework Carbon \
+      -o "$(tbin "$mode-rooted")"
+    strong_frameworks "$(tbin "$mode-rooted")" || bad "$mode-rooted does not strong-link AppKit and Carbon"
+    check_loads "$(tbin "$mode-unrooted")" "$(tbin "$mode-rooted")" || fail=1
+  done
+  "$CC" $FLAGS "$D/consumer.o" "$A" -Wl,-u,___recaulk_objc_activate -weak_framework AppKit -framework Carbon \
+    -o "$D/weak-owner"
+  if strong_frameworks "$D/weak-owner"; then bad "a weak AppKit owner passed the strong-link check"; fi
+
+  printf '%s\n' '#include <mach-o/dyld.h>' '#include <string.h>' \
+    'int main(void){for(unsigned i=0;i<_dyld_image_count();i++)if(strstr(_dyld_get_image_name(i),"/AppKit.framework/"))return 1;return 0;}' \
+    > "$D/ordinary.c"
+  "$CC" $FLAGS "$D/ordinary.c" "$A" -o "$(tbin ordinary)"
+  if "$NM" "$(tbin ordinary)" | grep -q __recaulk_objc_activate; then bad "a C-only consumer linked the provider"; fi
+
+  if "$NM" "$T/lib/librecaulk.a" 2>/dev/null | grep -q __recaulk_objc; then bad "librecaulk.a carries provider symbols"; fi
+  if "$NM" "$T/lib/libRecaulkSystem.dylib" | grep -q __recaulk_objc; then bad "libRecaulkSystem.dylib carries provider symbols"; fi
+  if "$OTOOL" -L "$T/lib/libRecaulkSystem.dylib" | grep -q AppKit; then bad "libRecaulkSystem.dylib loads AppKit"; fi
+  printf '%s\n' '#include <stddef.h>' 'extern int getentropy(void *,size_t);' '#include <mach-o/dyld.h>' '#include <string.h>' \
+    'int main(void){unsigned char b;if(getentropy(&b,1))return 1;for(unsigned i=0;i<_dyld_image_count();i++)if(strstr(_dyld_get_image_name(i),"/AppKit.framework/"))return 1;return 0;}' \
+    > "$D/actual-c.c"
+  "$CC" $FLAGS "$D/actual-c.c" "$T/lib/librecaulk.a" -framework CoreFoundation -framework Security \
+    -framework CoreVideo -framework CoreGraphics -framework CoreServices -lobjc -lc++abi -o "$(tbin actual-c)"
+  if "$OTOOL" -L "$(tbin actual-c)" | grep -q AppKit; then bad "a librecaulk.a consumer loads AppKit"; fi
+  check_loads "$(tbin ordinary)" "$(tbin actual-c)" || fail=1
+  [ "$fail" = 0 ] || exit 1
 fi
-/usr/bin/nm "$CP/lib/librecaulk.a" > "$D/c-archive-symbols.txt"
-/usr/bin/nm "$CP/lib/libRecaulkSystem.dylib" > "$D/c-dylib-symbols.txt"
-/usr/bin/otool -L "$CP/lib/libRecaulkSystem.dylib" > "$D/c-dylib-loads.txt"
-! grep -q __recaulk_objc "$D/c-archive-symbols.txt"
-! grep -q __recaulk_objc "$D/c-dylib-symbols.txt"
-! grep -q AppKit "$D/c-dylib-loads.txt"
-# Also link the ACTUAL shipping C archive, rather than a placeholder. On arm64
-# this is a cross artifact inspection, never a Rosetta installation/request.
-printf '%s\n' '#include <stddef.h>' 'extern int getentropy(void *,size_t);' '#include <mach-o/dyld.h>' '#include <string.h>' 'int main(void){unsigned char b;if(getentropy(&b,1))return 1;for(unsigned i=0;i<_dyld_image_count();i++)if(strstr(_dyld_get_image_name(i),"/AppKit.framework/"))return 1;return 0;}' > "$D/actual-c.c"
-CSDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
-/usr/bin/clang -arch x86_64 -isysroot "$CSDK" -mmacosx-version-min=10.9 "$D/actual-c.c" "$CP/lib/librecaulk.a" -framework CoreFoundation -framework Security -framework CoreVideo -framework CoreGraphics -framework CoreServices -lobjc -lc++abi -o "$D/actual-c"
-/usr/bin/otool -L "$D/actual-c" > "$D/actual-c-loads.txt"
-! grep -q AppKit "$D/actual-c-loads.txt"
-if [ "$arch" = x86_64 ]; then "$D/actual-c"; fi
-printf 'PASS: actual root in ordinary/dead-strip/LTO; inherited/native/ABI preserved; weak owner rejected by policy; C outputs unchanged. Evidence: %s\n' "$D"
+runtime_half
+for mode in plain dead-strip lto; do
+  "$(tbin "$mode-unrooted")" 0 || bad "$mode-unrooted: the provider activated without its root"
+  "$(tbin "$mode-rooted")" 1 || bad "$mode-rooted: the rooted provider did not activate"
+done
+"$(tbin ordinary)" || bad "a C-only consumer of librecaulk-objc.a loaded AppKit"
+"$(tbin actual-c)" || bad "a librecaulk.a consumer loaded AppKit or failed getentropy"
+[ "$fail" = 0 ] && echo "objc-workspace-activation OK"
+exit $fail

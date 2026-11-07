@@ -1,12 +1,14 @@
 #!/bin/sh
-# platform: macOS-only -- builds the shipping x86_64/10.9 companion and its source receipt with the pinned clang
+# platform: host-agnostic
 # spec: build/build-objc.sh header -- a shipping stage carries share/recaulk/objc-source.receipt beside
 #       objc-providers.json: shipyard's objc-source-inventory.sh receipt of exactly the prepared source the
 #       archive was built from, so a consumer's analysis can close the provider body's own sends.
 set -eu
 umask 077
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
-: "${SHIPYARD_SCRIPTS:?set pinned shipyard scripts}"
+. "$ROOT/build/msc.sh"
+[ -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ] \
+  || { echo "SKIP: the pinned shipyard has no objc-source-inventory.sh, so no stage carries a receipt yet"; exit 77; }
 fail() { echo "FAIL: $*"; exit 1; }
 D=$(mktemp -d "${TMPDIR:-/tmp}/objc-source-receipt.XXXXXX")
 D=$(cd "$D" && pwd -P)
@@ -21,7 +23,8 @@ while read -r sha label; do
   grep -Fx "$(printf 'input\t%s\t%s' "$label" "$sha")" "$R" >/dev/null || fail "the receipt does not record $label at $sha"
 done < "$D/work/source-inputs.txt"
 # A native-test stage is never shipped, so it carries no receipt.
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$(uname -m)")
-SDK="$SDK" HOST_SDK="$SDK" sh "$ROOT/build/build-objc.sh" "$D/native" "$D/native-work" --native-test > "$D/native.log" 2>&1 || fail 'native-test build'
-[ ! -e "$D/native/share/recaulk/objc-source.receipt" ] || fail 'a native-test stage carries a receipt'
+if [ "$(uname -s)" = Darwin ]; then
+  sh "$ROOT/build/build-objc.sh" "$D/native" "$D/native-work" --native-test > "$D/native.log" 2>&1 || fail 'native-test build'
+  [ ! -e "$D/native/share/recaulk/objc-source.receipt" ] || fail 'a native-test stage carries a receipt'
+fi
 echo 'objc-source-receipt: the shipping stage carries a receipt of exactly its prepared source'
