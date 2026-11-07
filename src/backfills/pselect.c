@@ -8,8 +8,9 @@
  *
  * xnu posts a process-directed signal to its kqueue EVFILT_SIGNAL knotes (xnu-2422 bsd/kern/kern_sig.c,
  * psignal_internal, before any mask or ignore check). A kqueue registered for every catchable signal so
- * records each post from then on. One is registered per thread: the main thread's as the image loads,
- * a forked child's at the fork, any other thread's at its first pselect. Registered any later, as each
+ * records each post from then on. One is registered per thread: a forked child's at the fork, the main
+ * thread's as libRecaulkSystem.dylib loads, and any other thread's (and, linked from librecaulk.a, the
+ * main thread's) at its first pselect. Registered any later, as each
  * call, a post already under way when the knote attached would reach neither the knote nor
  * sigpending (it sets the thread's pending set only after its proc_knote): MEASURED 2026-11-06, 5 lost
  * in 3000 waits that way, against libc's 81.
@@ -133,7 +134,11 @@ static void close_kqueue(void *v) {
     int kq = (int)(intptr_t)v - 1;
     if (ours(kq)) close(kq);
 }
-static void make_kqueue_key(void) { pthread_key_create(&kqueue_key, close_kqueue); }
+static void fork_child_kqueue(void);
+static void make_kqueue_key(void) {
+    pthread_key_create(&kqueue_key, close_kqueue);
+    pthread_atfork(NULL, NULL, fork_child_kqueue);
+}
 
 /* This thread's kqueue if it is still the one registered here, or -1. */
 static int current_kqueue(void) {
@@ -190,10 +195,11 @@ static void fork_child_kqueue(void) {
     thread_kqueue();
 }
 
-__attribute__((constructor)) static void register_early(void) {
-    if (atomic_pselect()) return;
-    thread_kqueue();
-    pthread_atfork(NULL, NULL, fork_child_kqueue);
+/* spec: tests/rule-backfills-add-only.sh -- librecaulk.a has no constructor, so a program linking it
+ * registers its main thread's kqueue at that thread's first wait; libRecaulkSystem.dylib's constructor
+ * (src/overrides/pselect_export.c) registers it as the image loads. */
+void __recaulk_pselect_early(void) {
+    if (!atomic_pselect()) thread_kqueue();
 }
 
 struct masked {

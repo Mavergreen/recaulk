@@ -537,3 +537,7 @@ whose drain failed), and with the number left closed every wait failed with `EBA
 
 The legacy `_pselect` symbol does not hold `nfds` to `FD_SETSIZE` on 10.9 (MEASURED), unlike `$1050` and
 `$NOCANCEL`; Recaulk's does as 10.9's does.
+
+`librecaulk.a` has no constructor (`tests/rule-backfills-add-only.sh`), so a program linking it registers
+its main thread's kqueue at that thread's first wait, as any thread does; `libRecaulkSystem.dylib`'s
+override constructor registers it as the dylib loads.
