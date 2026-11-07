@@ -3,6 +3,7 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -23,11 +24,29 @@ static void check(int ok, const char *what) {
   }
 }
 
+/* platform: 10.9's SecKeyGeneratePair needs a keychain even for keys it does not keep, and a session
+ * with no login keychain (ssh to a 10.9 guest) has no default one: errSecNoDefaultKeychain (-25307),
+ * MEASURED 2026-11-06. So the keys are made in a scratch keychain this program creates and deletes. */
+static SecKeychainRef scratch;
+static char scratch_dir[] = "/tmp/security-signatures.XXXXXX";
+static void drop_scratch(void) {
+  if (scratch) SecKeychainDelete(scratch);
+  rmdir(scratch_dir);
+}
+static void make_scratch(void) {
+  char file[sizeof scratch_dir + 32];
+  if (!mkdtemp(scratch_dir)) { printf("FAIL: no scratch directory for a keychain\n"); exit(1); }
+  atexit(drop_scratch);
+  snprintf(file, sizeof file, "%s/scratch.keychain", scratch_dir);
+  OSStatus s = SecKeychainCreate(file, 7, "scratch", FALSE, NULL, &scratch);
+  if (s != errSecSuccess) { printf("FAIL: SecKeychainCreate returned %d\n", (int)s); exit(1); }
+}
+
 static void keypair(CFStringRef type, int bits, SecKeyRef *pub, SecKeyRef *priv) {
   CFNumberRef n = CFNumberCreate(NULL, kCFNumberIntType, &bits);
-  const void *k[] = {kSecAttrKeyType, kSecAttrKeySizeInBits, kSecAttrIsPermanent};
-  const void *v[] = {type, n, kCFBooleanFalse};
-  CFDictionaryRef d = CFDictionaryCreate(NULL, k, v, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+  const void *k[] = {kSecAttrKeyType, kSecAttrKeySizeInBits, kSecAttrIsPermanent, kSecUseKeychain};
+  const void *v[] = {type, n, kCFBooleanFalse, scratch};
+  CFDictionaryRef d = CFDictionaryCreate(NULL, k, v, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
   OSStatus s = SecKeyGeneratePair(d, pub, priv);
   CFRelease(d);
   CFRelease(n);
@@ -258,6 +277,7 @@ int main(void) {
   alarm(120);
   backfill = !(security && dlsym(security, "SecKeyCreateSignature"));
   printf("SecKeyCreateSignature: %s\n", backfill ? "Recaulk's back-fill" : "this macOS's own, forwarded");
+  make_scratch();
 
   keypair(kSecAttrKeyTypeRSA, 2048, &rsa_pub, &rsa_priv);
   keypair(kSecAttrKeyTypeEC, 256, &p256_pub, &p256_priv);
