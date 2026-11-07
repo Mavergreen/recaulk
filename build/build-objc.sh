@@ -31,7 +31,26 @@ done
 (cd "$ROOT" && shasum -a 256 src/objc/workspace.m src/objc/workspace-events.m src/objc/workspace-recents.m src/objc/register.m src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh build/objc-provider-manifest.m) > "$W/source-inputs.txt"
 (cd "$W" && shasum -a 256 generated/providers-generated.h) >> "$W/source-inputs.txt"
 "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" "$SDK/SDKSettings.plist" "$W/compiler.txt" "$W/source-inputs.txt"
-# Stage only a completed matching pair; failures above leave prior outputs alone.
+# A shipping stage also carries the provider body's source receipt: shipyard's
+# objc-source-inventory.sh over exactly the prepared source above, parsed by the
+# pinned clang (shipyard's components/objc-reference-clang/version, or an
+# extracted one named by MAVERICKS_OBJC_CLANG_PREFIX). A consumer's analysis
+# closes the body's own sends only through it.
+rm -f "$W/objc-source.receipt"
+if [ "$role" = shipping ]; then
+ CLANG=${MAVERICKS_OBJC_CLANG_PREFIX:-}
+ if [ -z "$CLANG" ]; then
+  case "$host" in x86_64) short=clang22; flavor=native ;; *) short=clang22-cross; flavor=cross ;; esac
+  version=$(tr -d '[:space:]' < "$SHIPYARD_SCRIPTS/../components/objc-reference-clang/version")
+  CLANG=$(sh "$SHIPYARD_SCRIPTS/fetch_product_pkg.sh" --asset "mavericks-clang-22-$flavor-$version.pkg" "$short" "$version" "$W/objc-reference-$short-$version")
+ fi
+ sh "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" --clang-prefix "$CLANG" --inputs "$W/source-inputs.txt" \
+  --root "$ROOT" --root "$W" --unit src/objc/workspace.m --unit src/objc/workspace-events.m \
+  --unit src/objc/workspace-recents.m --unit src/objc/register.m --include generated --output "$W/objc-source.receipt"
+fi
+# Stage only a completed matching set; failures above leave prior outputs alone.
 cp "$W/librecaulk-objc.a" "$T/lib/librecaulk-objc.a"
 cp "$W/objc-providers.json" "$T/share/recaulk/objc-providers.json"
+if [ -f "$W/objc-source.receipt" ]; then cp "$W/objc-source.receipt" "$T/share/recaulk/objc-source.receipt"
+else rm -f "$T/share/recaulk/objc-source.receipt"; fi
 printf '%s\n' "$T"

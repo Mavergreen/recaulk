@@ -260,7 +260,10 @@ Codex-local workaround. Real native and Mavericks evidence remain mandatory.
 ## Separate archive and activation gate
 
 `SDK=TARGET_SDK HOST_SDK=NATIVE_SDK sh build/build-objc.sh ABSOLUTE_STAGE ABSOLUTE_WORK`
-stages only `lib/librecaulk-objc.a` and `share/recaulk/objc-providers.json`.
+stages only `lib/librecaulk-objc.a`, `share/recaulk/objc-providers.json` and, for a
+shipping stage, `share/recaulk/objc-source.receipt`: shipyard's source receipt of the
+prepared provider source (`tests/objc-source-receipt.sh`), through which a consumer's
+analysis closes the provider body's own sends.
 Default output is SHIPPING x86_64/10.9, including on an arm64 build host.
 A third `--native-test` argument explicitly creates a host-native TEST-ONLY
 archive; metadata records `artifact_role=native-test-only`. It is not a product
