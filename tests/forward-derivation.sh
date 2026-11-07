@@ -22,12 +22,12 @@ awk 'NF == 3 && $2 == "T" { print $3 }' "$tmp/src.nm" | LC_ALL=C sort -u | LC_AL
 policy=build/forward-exclude.txt
 derive() {
   LC_ALL=C comm -23 "$tmp/src.T" "$1/sdk" | grep -v '\.eh$' | grep -v '^___recaulk_' > "$1/F0" || true
-  awk -v OUT="$1/E" -v DATA="$1/Edata" '
+  awk -v OUT="$1/E" -v DATA="$1/Edata" -v PRIV="$1/Epriv" '
     NR == FNR { if ($1 == "prefix") { pre[++np] = $2; prewhy[np] = $3 } else if ($1 == "name") ex[$2] = $3; next }
     { why = ($0 in ex) ? ex[$0] : ""
       for (i = 1; i <= np && why == ""; i++) if (index($0, pre[i]) == 1) why = prewhy[i]
-      if (why == "") print; else { print > OUT; if (why == "data") print > DATA } }' "$policy" "$1/F0" > "$1/F"
-  touch "$1/E" "$1/Edata"
+      if (why == "") print; else { print > OUT; if (why == "data") print > DATA; if (why == "private") print > PRIV } }' "$policy" "$1/F0" > "$1/F"
+  touch "$1/E" "$1/Edata" "$1/Epriv"
 }
 derive "$tmp"
 [ -s "$tmp/F" ] || { echo "FAIL: the forwarded set computed from $mp and $bf is empty"; exit 1; }
@@ -94,6 +94,14 @@ for pair in _DNSServiceGetAddrInfoEx:_kDNSServiceAttrAllowFailover __os_log_impl
 done
 while read -r n; do
   ! grep -qx -- "$n" "$tmp/fwd" || bad "$n is excluded by $policy, but a fwd- member defines it"
+  if grep -qx -- "$n" "$tmp/Epriv"; then
+    p="___recaulk_$(printf '%s' "$n" | sed 's/^_*//')"
+    awk -v s="$p" '$1 !~ /^fwd-/ && $2 == "T" && $3 == s' "$tmp/lib.syms" | grep -q . \
+      || bad "$n is private by $policy, so librecaulk.a must define it as $p (README.md \"How to use\"), but no member does"
+    ! awk -v s="$n" '$2 != "U" && $3 == s' "$tmp/lib.syms" | grep -q . \
+      || bad "$n is private by $policy, but librecaulk.a still defines it unrenamed"
+    continue
+  fi
   awk -v s="$n" '$1 !~ /^fwd-/ && $2 == "T" && $3 == s' "$tmp/lib.syms" | grep -q . \
     || bad "$n is excluded by $policy, so it must stay defined unrenamed, but no member of librecaulk.a defines it"
   ! awk -v s="___recaulk_impl_${n#_}" '$3 == s' "$tmp/lib.syms" | grep -q . \

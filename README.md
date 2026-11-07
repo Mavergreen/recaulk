@@ -23,6 +23,12 @@ cc -isystem /usr/local/mavergreen/recaulk/include/recaulk \
 
 (When you're building a dylib, also pass `-Wl,-unexported_symbol,___recaulk_*` to keep Recaulk's internals private.)
 
+Every global `librecaulk.a` and `librecaulk-cxxabi-exports.a` define, as `nm` lists them, is a named API or
+starts `___recaulk_`, so a consumer can pick members by the names it asks for. MacPorts' private helpers
+(the names `build/forward-exclude.txt` classes private, such as `___mpls_best_fchdir`) and clang's block
+helpers are renamed `___recaulk_<name>` in the archive. `libRecaulkSystem.dylib` still exports MacPorts'
+names unrenamed, as libSystemWrapper.dylib did.
+
 (For C++ built against the system's libc++abi, as clang-22's libc++ is, also pass `-lc++abi`: Recaulk fills in the C++ runtime entry points 10.9's libc++abi lacks, and they call the rest of it.)
 
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):

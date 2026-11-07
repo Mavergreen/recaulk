@@ -82,10 +82,13 @@ done
 cp "$W/backfills"/recaulk-*.o "$F/bf/"
 sh "$SELF/rename-impls.sh" "$DRYDOCK" "$F/symbols.txt" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o
 SDK="$SDK" sh "$SELF/gen-trampolines.sh" "$F/symbols.txt" "$F"
+# spec: tests/parity.sh -- libRecaulkSystem.dylib keeps exporting MacPorts' private names, as libSystemWrapper.dylib does
+recaulk_archive "$W/librecaulk-dylib.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F"/fwd-*.o
+sh "$SELF/rename-private.sh" "$DRYDOCK" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o
 recaulk_archive "$T/lib/librecaulk.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F"/fwd-*.o
 
 . "$SELF/duplicates.sh"
-dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
+dups="$(duplicate_report "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a")"
 [ -z "$dups" ] || {
   printf '%s\n' "$dups" >&2
   echo "build-lib: rule 2 (README): a symbol is defined twice, so libRecaulkSystem.dylib would not link" >&2
@@ -94,7 +97,7 @@ dups="$(duplicate_report "$T/lib/librecaulk.a" "$W/librecaulk-overrides.a")"
 
 "$CC" -dynamiclib $flags -arch x86_64 -fuse-ld=lld --ld-path="$CL/bin/ld64.lld" -o "$T/lib/libRecaulkSystem.dylib" \
   -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
-  -Wl,-force_load,"$T/lib/librecaulk.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
+  -Wl,-force_load,"$W/librecaulk-dylib.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
   '-Wl,-unexported_symbol,___recaulk_*' \
   -install_name /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib \
   -compatibility_version 1.0.0 -current_version 1356.0.0 \
