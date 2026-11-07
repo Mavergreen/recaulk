@@ -52,6 +52,7 @@ need 'usr/local/mavergreen/recaulk/lib/librecaulk.a'
 need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
+need 'usr/local/mavergreen/recaulk/share/recaulk/notices.tsv'
 need 'Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns'
 need 'Library/LaunchAgents/dev.mavergreen.recaulk-updatecheck.plist'
 ! printf '%s\n' "$FILES" | grep -Eq 'usr/local/mavergreen/legacysupport|usr/local/lib' || { echo "the payload carries the old layout or /usr/local/lib"; exit 1; }
