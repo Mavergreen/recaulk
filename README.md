@@ -264,7 +264,23 @@ The file is one JSON object, schema 1:
 
 `foundation-array-generics-v1` gives `NSArray` and `NSMutableArray` their lightweight generic
 parameters, so `NSArray<NSString *> *` compiles against the 10.9 SDK. It adds no method signatures and
-no other classes.
+no other classes. The other Foundation recipes do the same, one header each, with the type parameters
+the 10.11 SDK declares:
+
+- `foundation-dictionary-generics-v1`: `NSDictionary<KeyType, ObjectType>` and `NSMutableDictionary`;
+- `foundation-set-generics-v1`: `NSSet`, `NSMutableSet` and `NSCountedSet`;
+- `foundation-orderedset-generics-v1`: `NSOrderedSet` and `NSMutableOrderedSet`;
+- `foundation-maptable-generics-v1`: `NSMapTable<KeyType, ObjectType>`;
+- `foundation-enumerator-generics-v1`: `NSEnumerator`;
+- `foundation-directoryenumerator-generics-v1`: `NSDirectoryEnumerator` (with the enumerator recipe).
+
+`foundation-objcruntime-macros-v1` defines, where the SDK does not, `NS_DESIGNATED_INITIALIZER` and
+`NS_ASSUME_NONNULL_BEGIN`/`END` as the 10.10 and 10.11 SDKs do. These are compile-time annotations: the
+compiler checks with them and emits the same code.
+
+`tests/sdk-metadata-compile.sh` proves each recipe with its probe in `tests/fixtures/sdk-probes/<id>.m`:
+the probe compiles with `-Werror` through the recipe's overlay, made by shipyard's own module, and fails
+to compile without it.
 
 `build/stage-sdk-metadata.sh` validates the file (`build/sdk-metadata-validate.cmake`, through
 `shipyard-cmake -P`) and stages it alone; malformed data stages nothing.

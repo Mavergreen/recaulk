@@ -1,0 +1,11 @@
+# usage: shipyard-cmake -DRECIPES=<abs recipes.json> -P sdk-metadata-ids.cmake -- prints each recipe id
+cmake_minimum_required(VERSION 3.19)
+file(READ "${RECIPES}" j)
+string(JSON n LENGTH "${j}" recipes)
+math(EXPR last "${n} - 1")
+set(ids "")
+foreach(i RANGE ${last})
+  string(JSON id GET "${j}" recipes ${i} id)
+  string(APPEND ids "${id}\n")
+endforeach()
+message("${ids}")

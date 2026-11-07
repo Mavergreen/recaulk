@@ -20,6 +20,120 @@
           "new": "@interface NSMutableArray<ObjectType> : NSArray<ObjectType>"
         }
       ]
+    },
+    {
+      "id": "foundation-dictionary-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDictionary.h",
+      "sha256": "5bbee99d8cf92f75cf7ce8abce6f0c249fb16e0a753c5c518ee2e013305c4a57",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSDictionary.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSDictionary : NSObject",
+          "new": "@interface NSDictionary<__covariant KeyType, __covariant ObjectType> : NSObject"
+        },
+        {
+          "old": "@interface NSMutableDictionary : NSDictionary",
+          "new": "@interface NSMutableDictionary<KeyType, ObjectType> : NSDictionary<KeyType, ObjectType>"
+        }
+      ]
+    },
+    {
+      "id": "foundation-set-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSSet.h",
+      "sha256": "28763a32fbbf928fcf525fd7e76d7f611646036e95a1e7286a1787c7f51f2430",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSSet.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSSet : NSObject",
+          "new": "@interface NSSet<__covariant ObjectType> : NSObject"
+        },
+        {
+          "old": "@interface NSMutableSet : NSSet",
+          "new": "@interface NSMutableSet<ObjectType> : NSSet<ObjectType>"
+        },
+        {
+          "old": "@interface NSCountedSet : NSMutableSet",
+          "new": "@interface NSCountedSet<ObjectType> : NSMutableSet<ObjectType>"
+        }
+      ]
+    },
+    {
+      "id": "foundation-orderedset-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOrderedSet.h",
+      "sha256": "aa50b727eed7368d0b7d75a801db086931a5e48328e56d45f9887da93bcb8f91",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSOrderedSet.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSOrderedSet : NSObject",
+          "new": "@interface NSOrderedSet<__covariant ObjectType> : NSObject"
+        },
+        {
+          "old": "@interface NSMutableOrderedSet : NSOrderedSet",
+          "new": "@interface NSMutableOrderedSet<ObjectType> : NSOrderedSet<ObjectType>"
+        }
+      ]
+    },
+    {
+      "id": "foundation-maptable-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSMapTable.h",
+      "sha256": "23d034631f2dafaa8c8a568eac3c786ec1f2e80205994f99cbe88e6343b58659",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSMapTable.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSMapTable : NSObject",
+          "new": "@interface NSMapTable<KeyType, ObjectType> : NSObject"
+        }
+      ]
+    },
+    {
+      "id": "foundation-enumerator-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSEnumerator.h",
+      "sha256": "329db4c5483057f2dcd536dd450cf81b87df4503d029a56a35bbb73410953953",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSEnumerator.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSEnumerator : NSObject",
+          "new": "@interface NSEnumerator<ObjectType> : NSObject"
+        }
+      ]
+    },
+    {
+      "id": "foundation-directoryenumerator-generics-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileManager.h",
+      "sha256": "f8012746cc99d4fb8a2dad36e070ad2fb3432385abd67ef3bbd93539bfc3e6df",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSFileManager.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSDirectoryEnumerator : NSEnumerator",
+          "new": "@interface NSDirectoryEnumerator<ObjectType> : NSEnumerator<ObjectType>"
+        }
+      ]
+    },
+    {
+      "id": "foundation-objcruntime-macros-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObjCRuntime.h",
+      "sha256": "1e9034bc346e2b831197a699b3ae64588cc00be0fd9334d2a58a5f0dfe4078cf",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSObjCRuntime.h"
+      ],
+      "replacements": [
+        {
+          "old": "#define NS_UNAVAILABLE UNAVAILABLE_ATTRIBUTE",
+          "new": "#define NS_UNAVAILABLE UNAVAILABLE_ATTRIBUTE\n\n/* Recaulk: declared from the 10.10/10.11 SDK so newer sources compile against 10.9. */\n#if !defined(NS_DESIGNATED_INITIALIZER)\n#if __has_attribute(objc_designated_initializer)\n#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))\n#else\n#define NS_DESIGNATED_INITIALIZER\n#endif\n#endif\n#if !defined(NS_ASSUME_NONNULL_BEGIN)\n#define NS_ASSUME_NONNULL_BEGIN _Pragma(\"clang assume_nonnull begin\")\n#define NS_ASSUME_NONNULL_END _Pragma(\"clang assume_nonnull end\")\n#endif"
+        }
+      ]
     }
   ]
 }
