@@ -73,21 +73,30 @@ jobs:
           { echo "ver=$ver"; echo "publish=$pub"; } >> "$GITHUB_OUTPUT"
           echo "version=$ver publish=$pub"
 
-      - name: Ensure this runner can run x86_64 (Rosetta)
-        run: |
-          set -eu
-          arch -x86_64 /usr/bin/true 2>/dev/null \
-            || sudo softwareupdate --install-rosetta --agree-to-license
-          arch -x86_64 /usr/bin/true
-
       - name: Build out of tree
         run: echo "MAVERICKS_BUILD_ROOT=$RUNNER_TEMP/mm-build" >> "$GITHUB_ENV"
 
       - name: Build the library
         run: sh build/build-lib.sh
 
+      # spec: tests/helpers/built.sh -- runtime tests build here and run on a 10.9 guest (on-mavericks);
+      #       nothing x86_64 runs on this runner
       - name: Run the repo's tests
+        env:
+          RECAULK_TEST_PHASE: build
         run: sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh"
+
+      # platform: upload-artifact drops the executable bit, so the build tree travels as a tarball
+      - name: The build tree the guest runs the tests from
+        run: |
+          set -eu
+          B="$MAVERICKS_BUILD_ROOT/$(basename "$PWD")"
+          (cd "$B" && tar -czf "$RUNNER_TEMP/recaulk-tests.tgz" stage test-bin work/macports-legacy-support-*)
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: recaulk-tests
+          path: ${{ runner.temp }}/recaulk-tests.tgz
 
       - name: The ingredient pins are declared consistently
         run: sh "$SHIPYARD_SCRIPTS/check-ingredient-pins.sh"
@@ -200,6 +209,34 @@ jobs:
           name: recaulk
           path: dist/*
 
+  # spec: tests/guest/run-runtime-tests.sh -- each runtime test's runtime half, on a real 10.9.5 guest
+  #       (Mavergreen/mavericks-vm), against the build tree the build job made. A skip (77) fails here.
+  #       A fork's pull request gets no secrets, so cannot boot the guest, and never publishes: it skips this.
+  on-mavericks:
+    needs: [build]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: recaulk-tests
+          path: ${{ runner.temp }}
+      - name: Unpack the build tree into the workspace the guest gets
+        run: mkdir -p mm-build/recaulk && tar -xzf "$RUNNER_TEMP/recaulk-tests.tgz" -C mm-build/recaulk
+      - uses: Mavergreen/mavericks-vm@v1
+        with:
+          image-key: ${{ secrets.MAVERICKS_VM_KEY }}
+          copyback: false
+          debug-on-error: true
+          run: RECAULK_BUILD="$PWD/mm-build/recaulk" sh tests/guest/run-runtime-tests.sh
+
   scan:
     needs: [build]
     if: always() && needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
@@ -213,7 +250,7 @@ jobs:
       SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
   publish:
-    needs: [build, scan]
+    needs: [build, scan, on-mavericks]
     if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     permissions:
       contents: write

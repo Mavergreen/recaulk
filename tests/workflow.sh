@@ -93,4 +93,18 @@ grep -qF "user.email='342268518+mavergreen-pins-bot[bot]@users.noreply.github.co
 grep -qxF "  group: pins-bot-\${{ github.ref }}\${{ github.actor == 'mavergreen-pins-bot[bot]' && format('-{0}', github.run_id) || '' }}" "$pb" \
   && sed -n '/^  pins:$/,/^  push:$/p' "$pb" | grep -qxF "    if: github.actor != 'mavergreen-pins-bot[bot]'" \
   || { echo "pins-bot.yml: the run the bot's own push starts must not cancel the run that pushed, nor check again"; exit 1; }
+# spec: README.md "Tests" -- runtime tests build on the runner and run on a 10.9 guest, never Rosetta
+for f in .github/workflows/*.yml; do
+  ! grep -n -i -E 'rosetta|arch -x86_64' "$f" || { echo "$f relies on Rosetta"; exit 1; }
+done
+grep -q 'RECAULK_TEST_PHASE: build' "$w" || { echo "the build job's tests must run in the build phase"; exit 1; }
+grep -q 'name: recaulk-tests' "$w" || { echo "the build job must hand the guest its build tree, as artifact recaulk-tests"; exit 1; }
+om="$(sed -n '/^  on-mavericks:$/,/^  [a-z-]*:$/p' "$w")"
+[ -n "$om" ] || { echo "no on-mavericks job"; exit 1; }
+for want in 'needs: \[build\]' 'timeout-minutes: 60' 'uses: Mavergreen/mavericks-vm@v1' 'copyback: false' \
+    'image-key: \$\{\{ secrets.MAVERICKS_VM_KEY \}\}' 'tests/guest/run-runtime-tests.sh' 'RECAULK_BUILD='; do
+  printf '%s\n' "$om" | grep -Eq "$want" || { echo "the on-mavericks job lacks $want"; exit 1; }
+done
+sed -n '/^  publish:$/,/^  [a-z-]*:$/p' "$w" | grep -Eq 'needs: \[.*on-mavericks.*\]' \
+  || { echo "publish must wait for on-mavericks"; exit 1; }
 echo "workflow OK"
