@@ -505,3 +505,35 @@ file, and the errors, on every macOS against whichever implementation runs.
 194 symbols:
 
     nm -gU libSystemWrapper.dylib | awk '{print $3}' | LC_ALL=C sort -u
+
+## pselect
+
+READ: 10.9's Libc-997.90.3 `gen/FreeBSD/pselect.c` is `__pthread_sigmask(SIG_SETMASK, mask)`, `select`,
+then the old mask again; xnu has no `pselect` syscall before xnu-3248 (10.11). OpenSSH's `ppoll` compat
+sits on it, and every binary of Mavergreen's OpenSSH 10.6p1-mavericks.3 imported `_pselect$1050`:
+mavericks-vm run 42299349324 hung three hours with packer's `scp` a zombie its `sshd-session` never reaped.
+
+READ: xnu-2422 `bsd/kern/kern_sig.c` `psignal_internal` calls `proc_knote(NOTE_SIGNAL)` for a
+process-directed signal before its mask and ignore checks (line 1771), then takes `P_LINSIGNAL` (1775) and
+only later sets the chosen thread's `uu_siglist`, which `sigpending` reads. A child's exit posts its
+parent's SIGCHLD that way (`kern_exit.c`, `psignal(pp, SIGCHLD)`). So a kqueue `EVFILT_SIGNAL` knote sees
+every post made after it attaches, and a post already past `proc_knote` when it attaches is seen by
+neither it nor `sigpending` until `uu_siglist` is set.
+
+MEASURED 2026-11-06 on a 10.9.5 guest, 2 vCPUs: a program that blocks SIGCHLD, lets a child exit, waits
+for it to be pending, then calls `pselect` unblocking it, gets libc's `pselect` sleeping its whole 5 s
+timeout with the handler run, on all five symbols. A probe with the child exiting 0-400 us after the
+fork, and `pselect` called 0-400 us after that, lost 81-92 of each 3000 waits with libc's. A kqueue
+registered at each call lost 5 or 6 of 3000, every one with the handler run at the unmask and no knote
+recorded: the post under way at registration. A kqueue registered once per thread, as now, lost 0 of
+27000. `tests/c/pselect_signal.c` holds the cases, among them the fork and new-thread ones; builds
+missing the plain-path drain or the fork's re-registration each fail it.
+
+MEASURED 2026-11-06, the same guest: a program that closes every descriptor above stderr and opens
+`/dev/null`, as sshd does with `closefrom(3)`, took over the number of a kqueue cached without a check;
+each wait then slept its whole timeout with the handler run (the readable `/dev/null` read as a post
+whose drain failed), and with the number left closed every wait failed with `EBADF`. With the
+`EVFILT_USER` marker checked before each use, both pass.
+
+The legacy `_pselect` symbol does not hold `nfds` to `FD_SETSIZE` on 10.9 (MEASURED), unlike `$1050` and
+`$NOCANCEL`; Recaulk's does as 10.9's does.
