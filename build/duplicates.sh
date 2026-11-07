@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm reads Mach-O archives
+# platform: host-agnostic
 # platform: Apple clang 6 on 10.9 emits a <sym>.eh beside each function; the pair is one definition
 duplicate_report() {
   for _dr_a in "$@"; do

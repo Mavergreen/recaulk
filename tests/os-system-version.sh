@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- links x86_64 Mach-O against librecaulk.a and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- links x86_64 Mach-O against librecaulk.a and reads it with nm; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -12,21 +12,21 @@ field() { printf '%s\n' "$1" | sed -n "s/^$2: //p"; }
 libs="-framework CoreFoundation -framework Security -framework CoreServices -lobjc"
 
 if compiling; then
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$(tbin osv)" tests/c/os_system_version.c \
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$(tbin osv)" tests/c/os_system_version.c \
     "$T/lib/librecaulk.a" $libs \
     || { echo "FAIL: a program that includes <os/system_version.h> and calls os_system_version_get_current_version does not compile and link plainly with librecaulk.a"; exit 1; }
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$(tbin osv-impl)" tests/c/os_system_version_impl.c \
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$(tbin osv-impl)" tests/c/os_system_version_impl.c \
     "$T/lib/librecaulk.a" $libs \
     || { echo "FAIL: the os_system_version back-fill's seam does not link from librecaulk.a"; exit 1; }
   check_loads "$(tbin osv)" "$(tbin osv-impl)"
-  nm -m "$T/lib/librecaulk.a" > "$D/archive.nm" || { echo "FAIL: nm -m could not read librecaulk.a"; exit 1; }
+  "$NM" -m "$T/lib/librecaulk.a" > "$D/archive.nm" || { echo "FAIL: nm -m could not read librecaulk.a"; exit 1; }
   seam="$(awk '$NF == "___recaulk_os_system_version_read"' "$D/archive.nm")"
   case "$seam" in
     *"private external"*) ;;
     *) bad "librecaulk.a's ___recaulk_os_system_version_read is not private external, so a consumer would export the test seam: ${seam:-(absent)}" ;;
   esac
   dylib="$T/lib/libRecaulkSystem.dylib"
-  nm -gU "$dylib" > "$D/dylib.nm" || { echo "FAIL: nm -gU could not read $dylib"; exit 1; }
+  "$NM" -gU "$dylib" > "$D/dylib.nm" || { echo "FAIL: nm -gU could not read $dylib"; exit 1; }
   awk '{ print $NF }' "$D/dylib.nm" | grep -qx _os_system_version_get_current_version \
     || bad "libRecaulkSystem.dylib does not export _os_system_version_get_current_version"
   if awk '{ print $NF }' "$D/dylib.nm" | grep -q '^___recaulk_os_system_version'; then

@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds x86_64 Mach-O with drydock and the forwarding generator; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds x86_64 Mach-O with drydock and the forwarding generator; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -9,7 +9,7 @@ trap 'rm -rf "$D"' EXIT
 if compiling; then
   DRYDOCK="$B/drydock/drydock-macho-rewrite"
   [ -x "$DRYDOCK" ] || { echo "FAIL: $DRYDOCK is not executable: sh build/build-lib.sh fetches it"; exit 1; }
-  xcc() { /usr/bin/clang $FLAGS -arch x86_64 -Os "$@"; }
+  xcc() { "$CC" $FLAGS -arch x86_64 -Os "$@"; }
   xcc -c tests/c/forward_floor_impl.c -o "$D/impl.o"
   xcc -dynamiclib -install_name @executable_path/libmgsys.dylib -o "$(tbin libmgsys.dylib)" tests/c/forward_floor_sys.c
   printf '%s\n' _mgfl_value > "$D/symbols"
@@ -17,11 +17,11 @@ if compiling; then
   SDK="$SDK" sh build/gen-trampolines.sh "$D/symbols" "$D/fwd"
   {
     printf 'symbol rename _dlsym _mgfl_counting_dlsym\n'
-    ! nm -u "$D/fwd/fwd-resolve.o" | grep -qx _sysctl || printf 'symbol rename _sysctl _mgfl_sysctl\n'
+    ! "$NM" -u "$D/fwd/fwd-resolve.o" | grep -qx _sysctl || printf 'symbol rename _sysctl _mgfl_sysctl\n'
   } | "$DRYDOCK" "$D/fwd/fwd-resolve.o" "$D/fwd/fwd-resolve.stand-ins.o" >/dev/null 2>&1 \
     || { echo "FAIL: could not point fwd-resolve.o's dlsym and sysctl at the stand-ins"; exit 1; }
   mv -f "$D/fwd/fwd-resolve.stand-ins.o" "$D/fwd/fwd-resolve.o"
-  /usr/bin/libtool -static -o "$D/libfl.a" "$D/impl.o" "$D"/fwd/fwd-*.o
+  recaulk_archive "$D/libfl.a" "$D/impl.o" "$D"/fwd/fwd-*.o
   xcc -o "$(tbin impl-path)" tests/c/forward_floor.c "$D/libfl.a"
   xcc -o "$(tbin forward-path)" tests/c/forward_floor.c "$D/libfl.a" "$(tbin libmgsys.dylib)"
   check_loads "$(tbin impl-path)" "$(tbin forward-path)" "$(tbin libmgsys.dylib)"

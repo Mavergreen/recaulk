@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm reads Mach-O symbol tables
+# platform: host-agnostic -- nm reads Mach-O symbol tables
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -13,7 +13,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 
 have="$(mktemp "${TMPDIR:-/tmp}/parity.XXXXXX")"
 trap 'rm -f "$have"' EXIT
-nm -gU "$dylib" | awk '{print $3}' | LC_ALL=C sort -u > "$have"
+"$NM" -gU "$dylib" | awk '{print $3}' | LC_ALL=C sort -u > "$have"
 missing="$(LC_ALL=C comm -23 "$fixture" "$have")"
 [ -z "$missing" ] || bad "libRecaulkSystem must export everything Wowfunhappy's libSystemWrapper does (spec, Product 1, parity); missing $(printf '%s\n' "$missing" | wc -l | tr -d ' '): $(printf '%s\n' "$missing" | tr '\n' ' ')"
 leaked="$(grep '^___recaulk_' "$have" | tr '\n' ' ' || true)"

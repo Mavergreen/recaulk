@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm of Mach-O archives
+# platform: host-agnostic
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
 . "$SELF/sdk-exports.sh"

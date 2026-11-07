@@ -39,7 +39,7 @@ EOF
 
 phase() {  # phase UNAME_R [VAR=VALUE...]: run the fake test, print its output
   _u="$1"; shift
-  (cd "$F" && env RECAULK_BUILD="$BT" RECAULK_FAKE_UNAME_R="$_u" SDK=/nonexistent "$@" sh tests/fake.sh 2>&1)
+  (cd "$F" && env RECAULK_BUILD="$BT" RECAULK_FAKE_UNAME_R="$_u" SDK=/nonexistent CL=/nonexistent "$@" sh tests/fake.sh 2>&1)
 }
 
 # spec: README.md "Tests" -- a modern Mac builds and never runs (no Rosetta): the build half passes, the run half is skipped
@@ -120,6 +120,34 @@ out="$(cd "$F" && env RECAULK_BUILD="$BT" RECAULK_TEST_PHASE= sh tests/guest/run
   || bad "default_list_is_runtime_tests: runner failed: $out"
 case "$out" in *"ok tests/fake.sh"*) ;; *) bad "default_list_is_runtime_tests: fake.sh not run: $out" ;; esac
 case "$out" in *passes.sh*|*hangs.sh*|*mentions.sh*|*exits124.sh*) bad "default_list_is_runtime_tests: ran a test that is not a runtime test: $out" ;; esac
+
+# spec: README.md "Tests" -- on the guest the tests run against the installed product, which must be the
+#       build tree's: a runtime test sees RECAULK_INSTALLED as T, and an installed library that differs fails
+IN="$D/installed"
+mkdir -p "$IN/lib"
+for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib; do
+  printf '%s\n' "$f" > "$BT/stage/usr/local/mavergreen/recaulk/lib/$f"
+  cp "$BT/stage/usr/local/mavergreen/recaulk/lib/$f" "$IN/lib/$f"
+done
+cat > "$F/tests/where.sh" <<'EOF'
+#!/bin/sh
+# platform: macOS-only -- a fake; runs on 10.9 (RECAULK_TEST_PHASE)
+set -eu
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+runtime_half
+echo "T=$T"
+EOF
+out="$(cd "$F" && env RECAULK_BUILD="$BT" RECAULK_INSTALLED="$IN" sh tests/guest/run-runtime-tests.sh tests/where.sh 2>&1)" \
+  || bad "installed_product_is_t: runner failed: $out"
+out="$(cd "$F" && env RECAULK_BUILD="$BT" RECAULK_INSTALLED="$IN" RECAULK_TEST_PHASE=run sh tests/where.sh 2>&1)"
+[ "$out" = "T=$IN" ] || bad "installed_product_is_t: a runtime test's T is not the installed product: $out"
+printf 'stale\n' > "$IN/lib/libRecaulkSystem.dylib"
+out="$(cd "$F" && env RECAULK_BUILD="$BT" RECAULK_INSTALLED="$IN" sh tests/guest/run-runtime-tests.sh tests/where.sh 2>&1)" \
+  && bad "installed_must_be_the_build: runner passed with a stale installed libRecaulkSystem.dylib: $out"
+case "$out" in *"libRecaulkSystem.dylib"*) ;; *) bad "installed_must_be_the_build: the stale library is not named: $out" ;; esac
+case "$out" in *"ok tests/where.sh"*) bad "installed_must_be_the_build: ran the tests against a stale install: $out" ;; esac
+rm -f "$F/tests/where.sh"
 
 # spec: README.md "Tests" -- a program that needs a library stock 10.9 lacks fails the build half, by name
 cat > "$D/otool" <<'EOF'

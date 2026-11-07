@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- reads Mach-O stubs (.dylib/framework on 10.9, .tbd on a modern host) with nm
+# platform: host-agnostic
 
 # platform: a .dylib or framework binary on 10.9 and a .tbd on a modern host are the same library; nm reads both
 sdk_stub_exports() {

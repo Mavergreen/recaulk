@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- links an x86_64 program against librecaulk.a; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- links an x86_64 program against librecaulk.a; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -11,7 +11,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 want=tests/fixtures/ksec-values.txt
 if compiling; then
   cut -f1 "$want" | LC_ALL=C sort > "$D/names"
-  nm -gU "$T/lib/librecaulk.a" | awk 'NF == 3 && $2 != "T" && $3 ~ /^_kSec/ { print substr($3, 2) }' | LC_ALL=C sort -u > "$D/defined"
+  "$NM" -gU "$T/lib/librecaulk.a" | awk 'NF == 3 && $2 != "T" && $3 ~ /^_kSec/ { print substr($3, 2) }' | LC_ALL=C sort -u > "$D/defined"
   if ! diff "$D/names" "$D/defined" > "$D/names.diff"; then
     bad "$want must pin every kSec constant librecaulk.a defines (< pinned but not defined, > defined but not pinned):"
     sed -n 's/^\([<>]\)/  \1/p' "$D/names.diff"
@@ -31,7 +31,7 @@ if compiling; then
     echo '  return 0;'
     echo '}'
   } > "$D/ksec.c"
-  /usr/bin/clang $FLAGS -arch x86_64 -o "$(tbin ksec)" "$D/ksec.c" "$T/lib/librecaulk.a" -framework CoreFoundation \
+  "$CC" $FLAGS -arch x86_64 -o "$(tbin ksec)" "$D/ksec.c" "$T/lib/librecaulk.a" -framework CoreFoundation \
     || { echo "FAIL: a program reading the kSec constants does not link with librecaulk.a"; exit 1; }
   check_loads "$(tbin ksec)"
   [ "$fail" = 0 ] || exit 1

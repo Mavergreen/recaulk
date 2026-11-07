@@ -1,6 +1,6 @@
 #!/bin/sh
-# platform: macOS-only -- reads what build-lib.sh built and compiles x86_64 Mach-O
-# spec: README.md "Tests" -- a runtime test builds on a Mac and runs on 10.9; RECAULK_TEST_PHASE says
+# platform: host-agnostic
+# spec: README.md "Tests" -- a runtime test builds on any host and runs on 10.9; RECAULK_TEST_PHASE says
 #       which half (build, run, both) this run does. Unset, both on Darwin 13 and build elsewhere.
 if [ -z "${RECAULK_TEST_PHASE:-}" ]; then
   _rel="${RECAULK_FAKE_UNAME_R:-$(uname -r)}"
@@ -23,14 +23,21 @@ else
   . build/lib.sh
   B="$(recaulk_build_dir)"
 fi
-T="$B/stage/usr/local/mavergreen/recaulk"
 W="$B/work"
+if [ "$RECAULK_TEST_PHASE" = run ] && [ -n "${RECAULK_INSTALLED:-}" ]; then
+  T="$RECAULK_INSTALLED"
+else
+  T="$B/stage/usr/local/mavergreen/recaulk"
+fi
 [ -f "$T/lib/librecaulk.a" ] || { echo "not built: run sh build/build-lib.sh first"; exit 77; }
 if [ "$RECAULK_TEST_PHASE" != run ]; then
   if [ -z "${SDK:-}" ]; then
     SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
   fi
-  FLAGS="-isysroot $SDK -mmacosx-version-min=10.9"
+  recaulk_tools
+  FLAGS="$TARGET_FLAGS -isysroot $SDK"
+  # platform: the make on a Mac's PATH may be a wrapper (pkgsrc's bmake); MacPorts' Makefile needs GNU make
+  if [ "$(uname -s)" = Darwin ]; then MAKE=/usr/bin/make; else MAKE=make; fi
 fi
 
 compiling() {

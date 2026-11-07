@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- builds x86_64 Mach-O with drydock and the forwarding generator; runs it on 10.9 (RECAULK_TEST_PHASE)
+# platform: host-agnostic -- builds x86_64 Mach-O with drydock and the forwarding generator; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -9,7 +9,7 @@ trap 'rm -rf "$D"' EXIT
 if compiling; then
   DRYDOCK="$B/drydock/drydock-macho-rewrite"
   [ -x "$DRYDOCK" ] || { echo "FAIL: $DRYDOCK is not executable: sh build/build-lib.sh fetches it"; exit 1; }
-  xcc() { /usr/bin/clang $FLAGS -arch x86_64 -Os "$@"; }
+  xcc() { "$CC" $FLAGS -arch x86_64 -Os "$@"; }
   xcc -c tests/c/forward_abi_impl.c -o "$D/impl.o"
   xcc -dynamiclib -install_name @executable_path/libmgsys.dylib -o "$(tbin libmgsys.dylib)" tests/c/forward_abi_sys.c
   printf '%s\n' _mgfwd_float _mgfwd_nop _mgfwd_varargs > "$D/symbols"
@@ -19,7 +19,7 @@ if compiling; then
     | "$DRYDOCK" "$D/fwd/fwd-resolve.o" "$D/fwd/fwd-resolve.clobbering.o" >/dev/null 2>&1 \
     || { echo "FAIL: could not point fwd-resolve.o's dlsym and sysctl at the stand-ins"; exit 1; }
   mv -f "$D/fwd/fwd-resolve.clobbering.o" "$D/fwd/fwd-resolve.o"
-  /usr/bin/libtool -static -o "$D/libabi.a" "$D/impl.o" "$D"/fwd/fwd-*.o
+  recaulk_archive "$D/libabi.a" "$D/impl.o" "$D"/fwd/fwd-*.o
   xcc -o "$(tbin impl-path)" tests/c/forward_abi.c "$D/libabi.a"
   xcc -o "$(tbin forward-path)" tests/c/forward_abi.c "$D/libabi.a" "$(tbin libmgsys.dylib)"
   check_loads "$(tbin impl-path)" "$(tbin forward-path)" "$(tbin libmgsys.dylib)"

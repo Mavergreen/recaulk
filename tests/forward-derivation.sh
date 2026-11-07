@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- nm reads Mach-O archives
+# platform: host-agnostic -- nm reads Mach-O archives
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -16,8 +16,8 @@ bf="$W/librecaulk-backfills.a"
 lib="$T/lib/librecaulk.a"
 
 sdk_exports "$SDK" > "$tmp/sdk"
-nm -gU "$mp" "$bf" > "$tmp/src.nm"
-nm -m "$mp" "$bf" | awk '/private external/ { print $NF }' | LC_ALL=C sort -u > "$tmp/src.pext"
+"$NM" -gU "$mp" "$bf" > "$tmp/src.nm"
+"$NM" -m "$mp" "$bf" | awk '/private external/ { print $NF }' | LC_ALL=C sort -u > "$tmp/src.pext"
 awk 'NF == 3 && $2 == "T" { print $3 }' "$tmp/src.nm" | LC_ALL=C sort -u | LC_ALL=C comm -23 - "$tmp/src.pext" > "$tmp/src.T"
 policy=build/forward-exclude.txt
 derive() {
@@ -39,7 +39,7 @@ cmp -s "$tmp/F" "$tmp/modern/F" \
   || bad "the forwarded set differs between 10.9's view of the SDK and a modern host's, where libobjc.A.dylib also exports __error: $(diff "$tmp/F" "$tmp/modern/F" | grep '^[<>]' | tr '\n' ' ')"
 
 # platform: nm -A prefixes each line with archive:member:, and an undefined symbol has no address column
-nm -A "$lib" | awk '
+"$NM" -A "$lib" | awk '
   { member = $1; sub(/^.*\.a:/, "", member); sub(/:$/, "", member)
     if (NF == 4) print member, $3, $4
     else if (NF == 3) print member, $2, $3 }' > "$tmp/lib.syms"
@@ -103,9 +103,9 @@ done < "$tmp/E"
 # platform: nm prints addresses in hex and otool -rv names an extern relocation's symbol last; BSD awk has no strtonum
 same_object_refs() {
   {
-    otool -l "$1" | awk '$1 == "sectname" { s = $2 } $1 == "segname" && s != "" { g = $2 } $1 == "addr" && s != "" { print "S", g "," s, $2; s = "" }'
-    nm "$1" | awk 'NF == 3 && ($2 == "T" || $2 == "t") && $3 !~ /\.eh$/ { print "Y", $1, $3 }'
-    otool -rv "$1" | awk '
+    "$OTOOL" -l "$1" | awk '$1 == "sectname" { s = $2 } $1 == "segname" && s != "" { g = $2 } $1 == "addr" && s != "" { print "S", g "," s, $2; s = "" }'
+    "$NM" "$1" | awk 'NF == 3 && ($2 == "T" || $2 == "t") && $3 !~ /\.eh$/ { print "Y", $1, $3 }'
+    "$OTOOL" -rv "$1" | awk '
       /^Relocation information/ { sec = $3; sub(/^\(/, "", sec); sub(/\)$/, "", sec); next }
       $1 ~ /^[0-9a-f]+$/ && $4 == "True" { print "R", sec, $1, $NF }'
   } | awk -v M="$(basename "$1")" '
@@ -128,7 +128,7 @@ same_object_refs() {
     }'
 }
 mkdir "$tmp/members"
-(cd "$tmp/members" && ar -x "$lib")
+(cd "$tmp/members" && "$AR" -x "$lib")
 for m in "$tmp"/members/*.o; do
   case "$(basename "$m")" in fwd-*) continue ;; esac
   same_object_refs "$m"

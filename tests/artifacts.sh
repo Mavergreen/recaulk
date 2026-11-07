@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- otool and lipo inspect the built Mach-O files
+# platform: host-agnostic -- otool and lipo inspect the built Mach-O files
 set -eu
 # platform: ls and sort order names by the locale's collation, which ignores case in macOS 26's en_US.UTF-8 and compares bytes in 10.9's
 LC_ALL=C
@@ -12,16 +12,16 @@ fail=0
 bad() { echo "FAIL: $*"; fail=1; }
 
 for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib; do
-  [ "$(lipo -info "$T/lib/$f" | sed -n 's/.*: //p' | xargs)" = x86_64 ] || bad "$f is not x86_64-only"
+  [ "$("$LIPO" -info "$T/lib/$f" | sed -n 's/.*: //p' | xargs)" = x86_64 ] || bad "$f is not x86_64-only"
 done
-otool -l "$dylib" | grep -A2 LC_VERSION_MIN_MACOSX | grep -q 'version 10.9' || bad "dylib min is not 10.9"
-[ "$(otool -D "$dylib" | sed -n 2p)" = /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib ] \
-  || bad "install name is $(otool -D "$dylib" | sed -n 2p)"
-otool -L "$dylib" | sed -n 2p | grep -q 'compatibility version 1.0.0, current version 1356.0.0' \
-  || bad "versions are not 1.0.0 / 1356.0.0: $(otool -L "$dylib" | sed -n 2p)"
-otool -l "$dylib" | grep -A2 LC_REEXPORT_DYLIB | grep -q 'name /usr/lib/libSystem.B.dylib' \
+"$OTOOL" -l "$dylib" | grep -A2 LC_VERSION_MIN_MACOSX | grep -q 'version 10.9' || bad "dylib min is not 10.9"
+[ "$("$OTOOL" -D "$dylib" | sed -n 2p)" = /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib ] \
+  || bad "install name is $("$OTOOL" -D "$dylib" | sed -n 2p)"
+"$OTOOL" -L "$dylib" | sed -n 2p | grep -q 'compatibility version 1.0.0, current version 1356.0.0' \
+  || bad "versions are not 1.0.0 / 1356.0.0: $("$OTOOL" -L "$dylib" | sed -n 2p)"
+"$OTOOL" -l "$dylib" | grep -A2 LC_REEXPORT_DYLIB | grep -q 'name /usr/lib/libSystem.B.dylib' \
   || bad "no LC_REEXPORT_DYLIB of /usr/lib/libSystem.B.dylib"
-got="$(otool -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.*/||; s|\.framework.*||' | LC_ALL=C sort | tr '\n' ' ')"
+got="$("$OTOOL" -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.*/||; s|\.framework.*||' | LC_ALL=C sort | tr '\n' ' ')"
 # spec: src/backfills/cxxabi_*.c -- the libc++abi back-fills call the system's libc++abi.dylib
 want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dylib libc++abi.dylib libobjc.A.dylib "
 [ "$got" = "$want" ] || bad "linked libraries are '$got', want '$want'"

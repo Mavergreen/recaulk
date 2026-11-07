@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- compiles against the 10.9 SDK
+# platform: host-agnostic -- compiles against the 10.9 SDK
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -18,7 +18,7 @@ layer=_recaulk_macports
   echo 'int main(void){return 0;}'
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
-/usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all.o" || bad "the headers do not compile together"
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all.o" || bad "the headers do not compile together"
 
 mp="$W/mp-headers/include/LegacySupport"
 [ -d "$mp" ] || bad "no installed MacPorts header tree at $mp to compare against"
@@ -42,7 +42,7 @@ done
 
 decls() {
   _dc_src="$1"; shift
-  /usr/bin/clang $FLAGS -arch x86_64 -isystem "$inc" -E "$@" "$_dc_src" 2>"$d/E.err" | grep -c '\baligned_alloc[[:space:]]*(' || true
+  "$CC" $FLAGS -arch x86_64 -isystem "$inc" -E "$@" "$_dc_src" 2>"$d/E.err" | grep -c '\baligned_alloc[[:space:]]*(' || true
 }
 probe() {
   _pr_name="$1"; _pr_lang="$2"; shift 2
@@ -58,7 +58,7 @@ probe cstd cpp '#include <cstdlib>' '#include <stdlib.h>' 'void *(*recaulk_probe
 probe stdc cpp '#include <stdlib.h>' '#include <cstdlib>' 'void *(*recaulk_probe)(std::size_t, std::size_t) = ::aligned_alloc;'
 for f in std mpfirst malloc wrappers; do
   for std in "" -std=c99 -std=c11 "-std=c11 -D_POSIX_C_SOURCE=200809L"; do
-    /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" $std -c "$d/$f.c" -o "$d/$f.o" \
+    "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" $std -c "$d/$f.c" -o "$d/$f.o" \
       || bad "<stdlib.h> through include/recaulk declares no usable aligned_alloc ($f.c ${std:-default})"
     n="$(decls "$d/$f.c" $std)"
     [ "$n" = 1 ] || bad "aligned_alloc is declared $n times, not once ($f.c ${std:-default})"
@@ -66,13 +66,13 @@ for f in std mpfirst malloc wrappers; do
 done
 . tests/helpers/cxx.sh
 for f in cstd stdc; do
-  /usr/bin/clang++ $FLAGS -arch x86_64 -Wall -Werror $CXX_STD -isystem "$inc" -c "$d/$f.cpp" -o "$d/$f.o" \
+  "$CXX" $FLAGS -arch x86_64 -Wall -Werror $CXX_STD -isystem "$inc" -c "$d/$f.cpp" -o "$d/$f.o" \
     || bad "C++ through include/recaulk sees no ::aligned_alloc ($f.cpp)"
   n="$(decls "$d/$f.cpp" $CXX_STD)"
   [ "$n" = 1 ] || bad "aligned_alloc is declared $n times in C++, not once ($f.cpp)"
 done
 
-/usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -c src/backfills/aligned_alloc.c -o "$d/aligned_alloc.o" \
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -c src/backfills/aligned_alloc.c -o "$d/aligned_alloc.o" \
   || bad "src/backfills/aligned_alloc.c does not agree with the staged declaration"
 
 probe strict c '#include <stdlib.h>'
@@ -81,7 +81,7 @@ n="$(decls "$d/strict.c" -std=c99 -D_POSIX_C_SOURCE=200809L)"
 
 SDK113="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch arm64)"
 probe sdk113 c '#include <stdlib.h>'
-n="$(/usr/bin/clang -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sdk113.c" | grep -c '\baligned_alloc[[:space:]]*(' || true)"
+n="$("$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sdk113.c" | grep -c '\baligned_alloc[[:space:]]*(' || true)"
 [ "$n" = 1 ] || bad "with the 11.3 SDK, which declares aligned_alloc itself, it is declared $n times, not once"
 
 sec_use='CFDataRef (*recaulk_sign)(SecKeyRef, SecKeyAlgorithm, CFDataRef, CFErrorRef *) = SecKeyCreateSignature;
@@ -91,16 +91,16 @@ const SecKeyAlgorithm *recaulk_alg = &kSecKeyAlgorithmECDSASignatureDigestX962SH
 probe sec c '#include <Security/Security.h>' '#include <Security/SecKey.h>' '#include <Security/SecTrust.h>' "$sec_use"
 probe seccpp cpp '#include <Security/Security.h>' "$sec_use"
 for std in "" -std=c99 -std=c11; do
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" $std -c "$d/sec.c" -o "$d/sec.o" \
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" $std -c "$d/sec.c" -o "$d/sec.o" \
     || bad "<Security/Security.h> through include/recaulk does not declare the signing and trust back-fills as Apple's SDK does (sec.c ${std:-default})"
 done
-/usr/bin/clang++ $FLAGS -arch x86_64 -Wall -Werror $CXX_STD -isystem "$inc" -c "$d/seccpp.cpp" -o "$d/seccpp.o" \
+"$CXX" $FLAGS -arch x86_64 -Wall -Werror $CXX_STD -isystem "$inc" -c "$d/seccpp.cpp" -o "$d/seccpp.o" \
   || bad "C++ through include/recaulk does not see the signing and trust back-fills"
 for c in security.c security_signature.c; do
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -Wno-deprecated-declarations -isystem "$inc" -c "src/backfills/$c" -o "$d/$c.o" \
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -Wno-deprecated-declarations -isystem "$inc" -c "src/backfills/$c" -o "$d/$c.o" \
     || bad "src/backfills/$c does not agree with the staged Security declarations"
 done
-/usr/bin/clang -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sec.c" > "$d/sec113.i" 2>"$d/sec113.err" \
+"$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 -isystem "$inc" -E "$d/sec.c" > "$d/sec113.i" 2>"$d/sec113.err" \
   || bad "with the 11.3 SDK, <Security/Security.h> through include/recaulk does not preprocess: $(head -3 "$d/sec113.err")"
 for decl in 'typedef CFStringRef SecKeyAlgorithm' 'SecKeyCreateSignature[[:space:]]*(' 'SecTrustEvaluateWithError[[:space:]]*(' 'SecTrustCopyCertificateChain[[:space:]]*('; do
   n="$(grep -c "$decl" "$d/sec113.i" || true)"
@@ -108,11 +108,11 @@ for decl in 'typedef CFStringRef SecKeyAlgorithm' 'SecKeyCreateSignature[[:space
 done
 
 printf '#include <stdlib.h>\n.text\n' > "$d/asm.S"
-/usr/bin/clang $FLAGS -arch x86_64 -isystem "$inc" -E -x assembler-with-cpp "$d/asm.S" > "$d/asm.i" \
+"$CC" $FLAGS -arch x86_64 -isystem "$inc" -E -x assembler-with-cpp "$d/asm.S" > "$d/asm.i" \
   || bad "assembly cannot preprocess <stdlib.h> through include/recaulk"
 ! grep -q aligned_alloc "$d/asm.i" || bad "assembly preprocessed through include/recaulk sees an aligned_alloc declaration"
 printf '.text\n.globl _recaulk_probe\n_recaulk_probe:\n  ret\n' > "$d/plain.s"
-/usr/bin/clang $FLAGS -arch x86_64 -isystem "$inc" -c "$d/plain.s" -o "$d/plain.o" \
+"$CC" $FLAGS -arch x86_64 -isystem "$inc" -c "$d/plain.s" -o "$d/plain.o" \
   || bad "a plain .s does not assemble with include/recaulk on the path"
 
 [ "$fail" = 0 ] && echo "headers OK"

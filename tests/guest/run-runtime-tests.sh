@@ -1,7 +1,8 @@
 #!/bin/sh
 # platform: host-agnostic -- POSIX sh and perl 5, both on stock 10.9; the on-mavericks job runs it there
 # spec: README.md "Tests" -- the runtime half of each runtime test (every tests/*.sh marked
-#       (RECAULK_TEST_PHASE) on line 2 with a runtime_half line, or those named) against RECAULK_BUILD,
+#       (RECAULK_TEST_PHASE) on line 2 with a runtime_half line, or those named) against RECAULK_BUILD
+#       and RECAULK_INSTALLED, the installed product, when set (its libraries must be the build tree's),
 #       each under a bound (RECAULK_GUEST_TEST_BOUND, default 300 s) that kills it and all it started,
 #       and all within a budget (RECAULK_GUEST_BUDGET, default 2700 s) past which the rest are named as
 #       not run; a hang, a failure, a skip (77) and a test not run fail by name, and the script exits 1.
@@ -18,6 +19,12 @@ if [ "$#" -eq 0 ]; then
   done
 fi
 [ "$#" -gt 0 ] || { echo "FAIL: no runtime tests found"; exit 1; }
+if [ -n "${RECAULK_INSTALLED:-}" ]; then
+  for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib; do
+    cmp -s "$RECAULK_INSTALLED/lib/$f" "$RECAULK_BUILD/stage/usr/local/mavergreen/recaulk/lib/$f" \
+      || { echo "FAIL: the installed $RECAULK_INSTALLED/lib/$f is not the build tree's, so the tests would not test it"; exit 1; }
+  done
+fi
 
 hit="$(mktemp "${TMPDIR:-/tmp}/run-runtime-tests.XXXXXX")"   # template: 10.9 BSD mktemp requires one
 trap 'rm -f "$hit"' EXIT
