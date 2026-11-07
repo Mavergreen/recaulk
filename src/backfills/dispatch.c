@@ -20,7 +20,7 @@ void dispatch_barrier_async_and_wait_f(dispatch_queue_t queue, void *ctx, void (
 }
 
 /* dispatch_set_qos_class_floor (10.14) — no-op. */
-void dispatch_set_qos_class_floor(dispatch_object_t object, int qos_class, int relpri) {
+void dispatch_set_qos_class_floor(dispatch_object_t object, dispatch_qos_class_t qos_class, int relpri) {
 	(void)object; (void)qos_class; (void)relpri;
 }
 
@@ -45,7 +45,6 @@ dispatch_queue_t dispatch_queue_create_with_target_dollarV2(const char *label, d
 }
 
 /* dispatch_workloop_* (10.14) — workloops don't exist; emulate with a serial queue. */
-typedef struct dispatch_object_s *dispatch_workloop_t;
 dispatch_workloop_t dispatch_workloop_create(const char *label) {
 	return (dispatch_workloop_t)dispatch_queue_create(label, DISPATCH_QUEUE_SERIAL);
 }

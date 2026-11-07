@@ -1,0 +1,148 @@
+# spec: README.md "Declarations" -- every public function librecaulk.a defines, and where a consumer finds
+#       its declaration: NAME HEADER, the header the 11.3 SDK (shipyard's fetch_sdk.sh --arch arm64) declares
+#       it in, or Recaulk's own where no Apple SDK has it, with c++ QUALIFIED-NAME after it for a C++-only
+#       header; or NAME - REASON, for an entry point no source built against Recaulk's headers calls by name,
+#       or a stub that only reports failure on 10.9, which a declaration would make a feature check choose.
+#       tests/declarations.sh holds this list exact and each HEADER declaring its names under -isystem
+#       include/recaulk.
+aligned_alloc stdlib.h
+CCRandomGenerateBytes CommonCrypto/CommonRandom.h
+clock_getres time.h
+clock_gettime time.h
+clock_gettime_nsec_np time.h
+clock_settime time.h
+clonefile sys/clonefile.h
+clonefileat sys/clonefile.h
+fclonefileat sys/clonefile.h
+__cxa_throw_bad_array_new_length cxxabi.h c++ abi::__cxa_throw_bad_array_new_length
+__cxa_uncaught_exceptions cxxabi.h c++ abi::__cxa_uncaught_exceptions
+__darwin_check_fd_set_overflow sys/select.h
+dispatch_activate dispatch/dispatch.h
+dispatch_async_and_wait dispatch/dispatch.h
+dispatch_async_and_wait_f dispatch/dispatch.h
+dispatch_barrier_async_and_wait dispatch/dispatch.h
+dispatch_barrier_async_and_wait_f dispatch/dispatch.h
+dispatch_block_cancel dispatch/dispatch.h
+dispatch_block_create dispatch/dispatch.h
+dispatch_block_create_with_qos_class dispatch/dispatch.h
+dispatch_block_testcancel dispatch/dispatch.h
+dispatch_queue_attr_make_with_qos_class dispatch/dispatch.h
+dispatch_set_qos_class_floor dispatch/dispatch.h
+dispatch_workloop_create dispatch/dispatch.h
+dispatch_workloop_create_inactive dispatch/dispatch.h
+faccessat unistd.h
+fchmodat sys/stat.h
+fchownat unistd.h
+fdopendir dirent.h
+fmemopen stdio.h
+open_memstream stdio.h
+fsgetpath sys/fsgetpath.h
+fstatat sys/stat.h
+futimens sys/stat.h
+getattrlistat unistd.h
+getentropy sys/random.h
+linkat unistd.h
+LSCopyDefaultApplicationURLForURL CoreServices/CoreServices.h
+mach_approximate_time mach/mach_time.h
+mach_continuous_approximate_time mach/mach_time.h
+mach_continuous_time mach/mach_time.h
+mkdirat sys/stat.h
+mkostemp unistd.h
+notify_is_valid_token notify.h
+_objc_realizeClassFromSwift objc/runtime.h
+openat fcntl.h
+OSAtomicDecrement32 libkern/OSAtomic.h
+OSAtomicDecrement32Barrier libkern/OSAtomic.h
+OSAtomicIncrement32 libkern/OSAtomic.h
+OSAtomicIncrement32Barrier libkern/OSAtomic.h
+os_log_create os/log.h
+os_log_type_enabled os/log.h
+os_release os/object.h
+os_system_version_get_current_version os/system_version.h
+os_unfair_lock_assert_owner os/lock.h
+os_unfair_lock_lock os/lock.h
+os_unfair_lock_trylock os/lock.h
+os_unfair_lock_unlock os/lock.h
+posix_spawn_file_actions_addchdir_np spawn.h
+posix_spawn_file_actions_addfchdir_np spawn.h
+preadv sys/uio.h
+pwritev sys/uio.h
+pthread_attr_get_qos_class_np pthread/qos.h
+pthread_attr_set_qos_class_np pthread/qos.h
+pthread_get_qos_class_np pthread/qos.h
+pthread_override_qos_class_end_np pthread/qos.h
+pthread_override_qos_class_start_np pthread/qos.h
+pthread_set_qos_class_self_np pthread/qos.h
+qos_class_main pthread/qos.h
+qos_class_self pthread/qos.h
+pthread_get_stacksize_np pthread.h
+pthread_jit_write_protect_np pthread.h
+readlinkat unistd.h
+renameat stdio.h
+renameatx_np stdio.h
+SecKeyCreateSignature Security/Security.h
+SecTrustCopyCertificateChain Security/Security.h
+SecTrustEvaluateWithError Security/Security.h
+setattrlistat unistd.h
+strtonum stdlib.h
+symlinkat unistd.h
+sysconf unistd.h
+thread_get_register_pointer_values mach/thread_state.h
+timespec_get time.h
+timingsafe_bcmp string.h
+unlinkat unistd.h
+utimensat sys/stat.h
+_availability_version_check - clang emits the call for @available and __builtin_available
+__chk_fail - the _FORTIFY_SOURCE checkers call it, never a program
+___chkstk_darwin - clang emits the call to probe a large stack frame
+__cxa_call_terminate - clang emits the call when a noexcept function throws
+__cxa_init_primary_exception - libc++'s make_exception_ptr calls it, from inside libc++
+__extendhfsf2 - compiler-rt builtin: clang emits the call to widen a _Float16
+__truncsfhf2 - compiler-rt builtin: clang emits the call to narrow to a _Float16
+dispatch_queue_create_with_target_V2 - the symbol later SDKs bind dispatch_queue_create_with_target to by asm label
+DNSServiceGetAddrInfoEx - Apple SPI no SDK declares; Bun names it in its own declaration
+_dyld_get_shared_cache_range - dyld SPI no SDK declares; its callers declare it themselves
+_dyld_get_shared_cache_uuid - dyld SPI no SDK declares; its callers declare it themselves
+dyld_shared_cache_iterate_text - dyld SPI no SDK declares; its callers declare it themselves
+fstatat64 - MacPorts' 64-bit-inode entry point, reached through fstatat's asm label, never by this name
+objc_alloc_init - clang emits the call for [[C alloc] init]
+objc_loadClassref - Objective-C runtime ABI no SDK header declares
+objc_opt_class - clang emits the call for [obj class]
+objc_opt_isKindOfClass - clang emits the call for [obj isKindOfClass:]
+objc_opt_new - clang emits the call for [C new]
+objc_opt_respondsToSelector - clang emits the call for [obj respondsToSelector:]
+objc_opt_self - clang emits the call for [obj self]
+objc_readClassPair - Objective-C runtime ABI no SDK header declares
+objc_unsafeClaimAutoreleasedReturnValue - clang emits the call under ARC
+os_unfair_lock_lock_with_flags - no SDK up to the 11.3 reference declares it
+os_unfair_lock_lock_with_options - libplatform SPI no SDK declares; its callers declare it themselves
+pthread_chdir_np - libpthread SPI no SDK declares; its callers declare it themselves
+pthread_fchdir_np - libpthread SPI no SDK declares; its callers declare it themselves
+pthread_self_is_exiting_np - libpthread SPI no SDK declares; its callers declare it themselves
+recvmsg_x - xnu SPI no SDK declares; its callers declare it themselves
+sendmsg_x - xnu SPI no SDK declares; its callers declare it themselves
+__ulock_wait - xnu SPI no SDK declares; its callers (Zig's runtime) declare it themselves
+__ulock_wait2 - xnu SPI no SDK declares; its callers declare it themselves
+__ulock_wake - xnu SPI no SDK declares; its callers (Zig's runtime) declare it themselves
+voucher_adopt - libdispatch SPI no SDK declares; its callers declare it themselves
+voucher_copy - libdispatch SPI no SDK declares; its callers declare it themselves
+_os_log_impl - a later SDK's os_log macros call it; Recaulk's os/log.h makes them no-ops
+_os_log_error_impl - a later SDK's os_log_error macro calls it; Recaulk's os/log.h makes it a no-op
+_os_signpost_emit_with_name_impl - a later SDK's os_signpost macros call it; Recaulk ships no os/signpost.h, whose macros need the os_log format machinery its os/log.h replaces
+os_signpost_enabled - Recaulk ships no os/signpost.h, whose macros need the os_log format machinery its os/log.h replaces; code built against a later SDK calls it
+sec_protocol_metadata_access_ocsp_response - Network-framework-era API on sec_protocol_metadata_t, a type 10.9's Security lacks; code built against a later SDK calls it
+sec_trust_copy_ref - Network-framework-era API on sec_trust_t, a type 10.9's Security lacks; code built against a later SDK calls it
+CMSDecoderCopySignerTimestampWithPolicy - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecCertificateCopyKey - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCopyAttributes - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCopyExternalRepresentation - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCopyKeyExchangeResult - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCopyPublicKey - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCreateDecryptedData - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCreateEncryptedData - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCreateRandomKey - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyCreateWithData - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecKeyVerifySignature - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SecTrustSetSignedCertificateTimestamps - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SSLCopyALPNProtocols - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SSLSetALPNProtocols - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
