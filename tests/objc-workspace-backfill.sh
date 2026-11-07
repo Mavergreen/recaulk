@@ -103,7 +103,8 @@ for c in i386-reuse worker async-caller-exit ls-mixed; do
   rc=0; wait "$child" || rc=$?; child=
   printf '%s\n' "$rc" > "$R/controller.exit"
   /usr/bin/shasum -a 256 -c "$R/input-sha256.txt" > "$R/input-verification.log"
-  echo "floor $c: exit$rc"; [ "$rc" = 0 ] || status=1
+  echo "floor $c: exit$rc"
+  if [ "$rc" != 0 ]; then status=1; sed "s/^/  $c: /" "$R/controller.log" | tail -15; fi
 done
 echo 'Floor controls separate from native21; no quiescence or callback-order guarantee.'
 exit "$status"

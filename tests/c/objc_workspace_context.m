@@ -228,7 +228,7 @@ static void actorUnitTests(NSString *base) {
         demand([[NSFileManager defaultManager] copyItemAtPath:[[[NSProcessInfo processInfo] arguments] objectAtIndex:0] toPath:at(app,@"Contents/MacOS/Actor") error:NULL],@"cannot copy unit actor");
         NSDictionary *plist=@{@"CFBundleIdentifier":[@"org.mavergreen.unit.actor." stringByAppendingString:[NSProcessInfo processInfo].globallyUniqueString],@"CFBundleExecutable":@"Actor",@"CFBundlePackageType":@"APPL",@"NSPrincipalClass":@"NSApplication",@"WorkspaceUnitDirectory":dir,@"WorkspaceUnitMode":mode};
         demand([plist writeToFile:at(app,@"Contents/Info.plist") atomically:YES],@"unit actor plist failed");
-        if ([[NSProcessInfo processInfo] respondsToSelector:@selector(operatingSystemVersion)]) { NSTask *sign=[NSTask new]; sign.launchPath=@"/usr/bin/codesign"; sign.arguments=@[@"--force",@"--sign",@"-",app]; [sign launch];[sign waitUntilExit]; demand(sign.terminationStatus==0,@"unit actor signature failed");[sign release]; }
+        if (floor(NSAppKitVersionNumber) > 1265 /* 10.9 */) { NSTask *sign=[NSTask new]; sign.launchPath=@"/usr/bin/codesign"; sign.arguments=@[@"--force",@"--sign",@"-",app]; [sign launch];[sign waitUntilExit]; demand(sign.terminationStatus==0,@"unit actor signature failed");[sign release]; }
         NSURL *url=[NSURL fileURLWithPath:app];
         NSRunningApplication *actor=[[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance|NSWorkspaceLaunchWithoutActivation configuration:@{} error:NULL];
         @try {
