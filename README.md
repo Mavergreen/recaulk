@@ -108,3 +108,19 @@ the system's. Newer macOS uses its own chdir actions.
 `preadv` and `pwritev` read and write at an offset without moving the file offset, as on macOS 11 and
 later, which use their own. On 10.9, a transfer of several buffers over 1 MiB is not atomic: another
 writer to the same range can interleave with it.
+
+## Tests
+
+`sh build/build-lib.sh` builds Recaulk, and `sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh"` runs its tests.
+A test that runs an x86_64 program has two halves, and `RECAULK_TEST_PHASE` says which a run does:
+
+- `build`: compile the programs into the build tree's `test-bin/` and check them (`nm`, `otool`, and
+  that each loads only what stock 10.9 has), then stop. A modern Mac does this, and never runs an
+  x86_64 program: Rosetta is not a test platform.
+- `run`: on 10.9, with no compiler, shipyard or SDK, run the programs `build` made and judge them.
+  `RECAULK_BUILD` names the build tree. `tests/guest/run-runtime-tests.sh` runs every such test this
+  way, each bounded at 300 s; a hang, a failure or a skip fails.
+- `both`: both halves in one run, natively on a 10.9 machine with the Command Line Tools.
+
+Unset, it is `both` on 10.9 and `build` elsewhere. CI builds on macOS and runs the `run` half on a real
+10.9.5 guest through [mavericks-vm](https://github.com/Mavergreen/mavericks-vm).
