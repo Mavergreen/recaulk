@@ -1,16 +1,15 @@
 #!/bin/sh
-# platform: macOS-only -- file URL referents may differ lexically after Launch Services delivery
+# platform: host-agnostic -- builds the reference harness's URL matcher for x86_64; runs it on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/README.objc-workspace.md -- file URL referents may differ lexically after Launch Services delivery;
+#       the real matcher accepts the same file by another path and nothing else
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-: "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
-T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-file-url.XXXXXX")
-trap 'rm -rf "$T"' EXIT
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-# Include the real matcher. No replacement system API, fixture launch or Recaulk.
-printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$ROOT" > "$T/match.m"
-cat >> "$T/match.m" <<'SOURCE'
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+
+if compiling; then
+  D="$(dirname "$(tbin x)")"
+  printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$(pwd -P)" > "$D/match.m"
+  cat >> "$D/match.m" <<'SOURCE'
 int main(int argc, char **argv) {
  NSAutoreleasePool *pool = [NSAutoreleasePool new];
  NSString *dir = [NSString stringWithUTF8String:argv[1]];
@@ -29,5 +28,10 @@ int main(int argc, char **argv) {
  return equivalent && !wrongFile && exact && !wrongNonfile && !wrongKind ? 0 : 1;
 }
 SOURCE
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$T/match.m" -o "$T/match" -framework AppKit -framework Carbon
-"$T/match" "$T"
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations "$D/match.m" -o "$(tbin match)" -framework AppKit -framework Carbon
+  check_loads "$(tbin match)"
+fi
+runtime_half
+S="$(mktemp -d "${TMPDIR:-/tmp}/workspace-file-url.XXXXXX")"
+trap 'rm -rf "$S"' EXIT
+"$(tbin match)" "$S"

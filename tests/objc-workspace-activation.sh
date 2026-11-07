@@ -48,8 +48,8 @@ if compiling; then
     check_loads "$(tbin "$mode-unrooted")" "$(tbin "$mode-rooted")" || fail=1
   done
   "$CC" $FLAGS "$D/consumer.o" "$A" -Wl,-u,___recaulk_objc_activate -weak_framework AppKit -framework Carbon \
-    -o "$D/weak-owner"
-  if strong_frameworks "$D/weak-owner"; then bad "a weak AppKit owner passed the strong-link check"; fi
+    -o "$(tbin weak-owner)"
+  if strong_frameworks "$(tbin weak-owner)"; then bad "a weak AppKit owner passed the strong-link check"; fi
 
   printf '%s\n' '#include <mach-o/dyld.h>' '#include <string.h>' \
     'int main(void){for(unsigned i=0;i<_dyld_image_count();i++)if(strstr(_dyld_get_image_name(i),"/AppKit.framework/"))return 1;return 0;}' \

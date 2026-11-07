@@ -1,7 +1,7 @@
 #!/bin/sh
-# platform: macOS-only -- oracle report paths must not overwrite or follow symlinks
+# platform: macOS-only -- objc-workspace-reference.sh refuses any host but Darwin before the prerequisite step a fresh report must reach; its shipyard scripts are stubs here, so nothing compiles
+# spec: tests/objc-workspace-reference.sh claim_report -- a report path must not overwrite or follow symlinks; a fresh one is private
 set -eu
-# Exercise direct report claiming independently of a configured app-hosted run.
 unset RECAULK_WORKSPACE_CONTEXT
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-report-safety.XXXXXX")
@@ -10,6 +10,7 @@ trap 'rm -rf "$T"' EXIT
 mkdir "$T/scripts" "$T/existing" "$T/target"
 printf 'unrelated\n' > "$T/existing/build-identity.txt"
 printf '#!/bin/sh\n: > "$SAFETY_PREREQUISITE_CALLED"\nexit 1\n' > "$T/scripts/fetch_sdk.sh"
+printf ': > "$SAFETY_PREREQUISITE_CALLED"\nexit 1\n' > "$T/scripts/lib.sh"
 ln -s "$T/target" "$T/link"
 export SAFETY_PREREQUISITE_CALLED="$T/called"
 for path in "$T/existing" "$T/link" "$T/link/new"; do
@@ -20,7 +21,6 @@ for path in "$T/existing" "$T/link" "$T/link/new"; do
 done
 [ "$(/usr/bin/stat -f %z "$T/existing/build-identity.txt")" = 10 ] || exit 1
 [ ! -e "$T/target/new" ] || exit 1
-# A fresh output directory is permitted, but the fake prerequisite must fail.
 rc=0
 SHIPYARD_SCRIPTS="$T/scripts" sh "$ROOT/tests/objc-workspace-reference.sh" --report "$T/private report" > "$T/log" 2>&1 || rc=$?
 [ "$rc" = 1 ] && [ -e "$T/called" ] && [ -d "$T/private report" ] || exit 1

@@ -1,5 +1,18 @@
 #!/bin/sh
-# platform: macOS-only -- stable-runner unit/archiving controls; no app/permission request
+# platform: host-agnostic -- builds the stable runner's unit controls with clang22; runs them on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/c/objc_workspace_context.m selfTest -- locks, stale isolation, archives, missing and partial
+#       reports, actor exit and interruption; no app or permission request
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-sh "$ROOT/tests/helpers/workspace-context.sh" --self-test
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+driver="$(tbin driver)"
+if compiling; then
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations -DWORKSPACE_CONTEXT_UNIT_TESTS \
+    -DCONTEXT_SOURCE_ID='"unit-controls"' tests/c/objc_workspace_context.m -o "$driver" -framework AppKit -framework Carbon
+  check_loads "$driver"
+fi
+runtime_half
+X=$(mktemp -d "${TMPDIR:-/tmp}/workspace-context-test.XXXXXX")
+X=$(cd "$X" && pwd -P)
+trap 'rm -rf "$X"' EXIT
+"$driver" self-test "$X"

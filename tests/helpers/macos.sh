@@ -11,3 +11,7 @@ version_below() {
   _vb_y="$(printf '%s\n' "$2" | sed -n 's/^[0-9]*\.\([0-9]*\).*$/\1/p')"
   [ "$_vb_a" -lt "$_vb_x" ] || { [ "$_vb_a" = "$_vb_x" ] && [ "${_vb_b:-0}" -lt "${_vb_y:-0}" ]; }
 }
+
+plist_buddy() { /usr/libexec/PlistBuddy "$@"; }
+plist_util() { /usr/bin/plutil "$@"; }
+code_sign() { /usr/bin/codesign "$@"; }

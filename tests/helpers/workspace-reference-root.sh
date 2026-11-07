@@ -12,8 +12,7 @@ physical=$(CDPATH= cd -- "$F" && pwd -P) || fail 'root inaccessible'
 F=$physical
 [ "$F" != "$ROOT" ] || fail 'self-recursion'
 [ "$(git -C "$F" rev-parse HEAD)" = 409f9589d9586955265779fb7d814bfe6e0dc945 ] || fail 'wrong source commit'
-# All six original fingerprint inputs, including the original verifier/entry,
-# must be actual files with no symlink component. Never run a modified launcher.
+# spec: tests/fixtures/workspace-reference-source.sha256 -- the six pinned inputs are real files, never symlinks
 for file in tests/c/objc_workspace_reference.m tests/c/objc_workspace_context.m tests/c/objc_workspace_probe_app.m tests/fixtures/workspace-probe-Info.plist.in tests/helpers/workspace-context.sh tests/objc-workspace-reference.sh; do
  p=$F/$file
  [ -f "$p" ] || fail 'input missing'

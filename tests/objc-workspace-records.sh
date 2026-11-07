@@ -1,22 +1,22 @@
 #!/bin/sh
-# platform: macOS-only -- completed JSONL records need schema validation; partial tails stay incomplete
+# platform: host-agnostic -- builds the launch oracle's record reader with clang22; runs it on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/c/objc_workspace_reference.m recordSnapshot -- completed JSONL records need schema validation;
+#       a partial tail stays incomplete; a linked log is refused
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-: "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
-T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-records.XXXXXX")
-trap 'rm -rf "$T"' EXIT
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$ROOT" > "$T/records.m"
-cat >> "$T/records.m" <<'SOURCE'
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+prog="$(tbin records)"
+if compiling; then
+  src="$(dirname "$prog")/records.m"
+  printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$(pwd -P)" > "$src"
+  cat >> "$src" <<'SOURCE'
 static void put(NSString *p, NSString *s) {
  if (![s writeToFile:p atomically:YES encoding:NSUTF8StringEncoding error:NULL]) [NSException raise:@"TestIO" format:@"write failed"];
 }
 int main(int argc, char **argv) {
  NSAutoreleasePool *pool = [NSAutoreleasePool new];
  NSString *dir = [NSString stringWithUTF8String:argv[1]];
- pid_t pid = 2147480000; /* synthetic exited-process evidence; never used for cleanup */
+ pid_t pid = 2147480000;
  NSString *p = [dir stringByAppendingPathComponent:@"2147480000.jsonl"];
  NSString *startup = @"{\"kind\":\"startup\",\"pid\":2147480000,\"sequence\":0,\"argv\":[\"fixture\"],\"sentinel\":null,\"architecture\":\"arm64\"}\n";
  put(p,[startup stringByAppendingString:@"{\"kind\":"]);
@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
   @try { recordSnapshot(dir,pid); } @catch (NSException *e) { raised = [e.name isEqual:@"WorkspaceEvidenceError"]; }
   ok &= raised;
  }
- // A schema-valid record must still not be read through a symlink/hardlink.
  NSString *source = [dir stringByAppendingPathComponent:@"unrelated-records"];
  put(source,startup);
  [[NSFileManager defaultManager] removeItemAtPath:p error:NULL];
@@ -48,5 +47,10 @@ int main(int argc, char **argv) {
  [pool drain]; return ok ? 0 : 1;
 }
 SOURCE
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$T/records.m" -o "$T/records" -framework AppKit -framework Carbon
-"$T/records" "$T"
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations "$src" -o "$prog" -framework AppKit -framework Carbon
+  check_loads "$prog"
+fi
+runtime_half
+X=$(mktemp -d "${TMPDIR:-/tmp}/workspace-records.XXXXXX")
+trap 'rm -rf "$X"' EXIT
+"$prog" "$X"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS-only -- additional private-fixture native launch observations; no consent requests
+# platform: macOS-only -- additional private-fixture observations of the native launch method, which 10.9 lacks; no consent requests
 set -eu
 umask 077
 START=$(pwd -P)
@@ -7,9 +7,9 @@ cd "$(dirname "$0")/.."
 mode=
 keep=0
 case "${1:-}" in --native) mode=native; shift ;; --self-test) mode=self; shift ;; esac
-# Native mode launches private fixture apps, and its default/files cases add
-# fixture documents and the probe app to the user's Recent Items on purpose
-# (the positive control for without-recents). Never do that unasked.
+# spec: tests/README.objc-workspace.md "Additional native option measurements (not provider acceptance)" -- native
+#       mode is opt-in: it launches private fixture apps, and its default, files, interleaved and print
+#       cases add the probe app and fixture documents to Recent Items, the positive control for without-recents
 if [ -z "$mode" ]; then
   [ "$#" -gt 0 ] || [ "${RECAULK_WORKSPACE_OPTIONS_NATIVE:-0}" = 1 ] || {
     echo 'SKIP: native options launches (fixture apps, Recent Items) are opt-in: --native or RECAULK_WORKSPACE_OPTIONS_NATIVE=1; not measured'
@@ -47,15 +47,16 @@ for source in tests/c/objc_workspace_options_reference.m tests/c/objc_workspace_
   [ -f "$source" ] || { echo "FAIL: missing options prerequisite $source" >&2; exit 1; }
 done
 : "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to pinned shipyard scripts}"
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
+MAVERICKS_ROOT=$(pwd -P)
+. build/lib.sh
+recaulk_tools
+. "$MAVERICKS_ROOT/tests/helpers/native-arch.sh"
 unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
 printf 'arch=%s\nsdk=%s\nsource_head=%s\n' "$arch" "$SDK" "$(git rev-parse HEAD)" > "$D/build-identity.txt"
-/usr/bin/clang --version >> "$D/build-identity.txt"
+"$CC" --version >> "$D/build-identity.txt"
 shasum -a 256 tests/objc-workspace-options.sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" tests/c/objc_workspace_options_reference.m tests/c/objc_workspace_reference.m tests/c/objc_workspace_probe_app.m tests/fixtures/workspace-probe-Info.plist.in > "$D/source-sha256.txt"
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations tests/c/objc_workspace_options_reference.m -o "$D/options-reference" -framework AppKit -framework Carbon
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc tests/c/objc_workspace_probe_app.m -o "$D/probe" -framework AppKit -framework Carbon
+"$CC" $OFLAGS -Wno-deprecated-declarations tests/c/objc_workspace_options_reference.m -o "$D/options-reference" -framework AppKit -framework Carbon
+"$CC" $OFLAGS tests/c/objc_workspace_probe_app.m -o "$D/probe" -framework AppKit -framework Carbon
 fixture() {
   R="$D/$1"
   mkdir -p "$R/Probe.app/Contents/MacOS" "$R/events"
@@ -63,7 +64,8 @@ fixture() {
   /usr/bin/plutil -convert xml1 -o "$R/Probe.app/Contents/Info.plist" tests/fixtures/workspace-probe-Info.plist.in
   /usr/libexec/PlistBuddy -c "Set :WorkspaceProbeReportDirectory $R/events" "$R/Probe.app/Contents/Info.plist"
   /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.mavergreen.workspace-options.$(basename "$D" | tr -cd 'a-zA-Z0-9').$1" "$R/Probe.app/Contents/Info.plist"
-  # Sign only this newly created private fixture, never the approved stable pair.
+  # spec: tests/README.objc-workspace.md "Additional native option measurements (not provider acceptance)" -- ad-hoc
+  #       signing applies only to the fresh private fixture, never the approved stable pair
   /usr/bin/codesign --force --sign - "$R/Probe.app" > "$R/codesign.log" 2>&1
   shasum -a 256 "$R/Probe.app/Contents/MacOS/WorkspaceProbe" "$R/Probe.app/Contents/Info.plist" > "$R/input-sha256.txt"
 }
@@ -76,7 +78,8 @@ run_case() {
   shasum -a 256 -c "$R/input-sha256.txt" > "$R/input-verification.log"
 }
 if [ "$mode" = self ]; then
-  # Every input below must fail before any native call, even on a modern host.
+  # spec: tests/README.objc-workspace.md "Additional native option measurements (not provider acceptance)" -- every
+  #       unsafe input below fails before the launch call or absence handling, even on a modern host
   fixture unknown
   run_case not-a-case "$R/Probe.app"
   [ "$rc" = 1 ] || { echo 'FAIL: unknown case accepted'; exit 1; }
@@ -117,7 +120,8 @@ for c in default files interleaved print hide without-activation without-recents
   fixture "$c"
   run_case "$c" "$R/Probe.app"
   echo "$c: exit $rc"
-  # Method absence (77) is all-or-nothing, but never let it hide an earlier failure.
+  # spec: tests/README.objc-workspace.md "Additional native option measurements (not provider acceptance)" -- a
+  #       Mavericks exit 77 is only API absence, which must never hide an earlier failure
   [ "$rc" != 77 ] || { [ "$status" = 0 ] || exit 1; exit 77; }
   [ "$rc" = 0 ] || status=1
 done

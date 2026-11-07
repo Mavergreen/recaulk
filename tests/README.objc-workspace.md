@@ -205,16 +205,19 @@ identity lookup then only decides what is returned. Launch Services has no
 architecture parameter, so a request naming an architecture launches the app
 with the first URL and sends the rest to its PID after the lookup.
 
-On Mavericks, explicitly run `sh tests/objc-workspace-backfill.sh --prefix PREFIX
---report NEW_ABSOLUTE_DIR` for the original 21 plus the floor controls. With no
-arguments on Mavericks (the default suite) it builds this tree's companion and
+It is a runtime test: the build half links its controllers with clang22 against the
+build's `lib/librecaulk-objc.a` on any host, and the run half runs on 10.9 (the
+guest, or a Mavericks box). On Mavericks, explicitly run
+`sh tests/objc-workspace-backfill.sh --report NEW_ABSOLUTE_DIR` for the original 21
+plus the floor controls. With no arguments (the default suite, and the guest) it
 runs only the floor controls, which launch private fixtures and so add them to
-Recent Applications. Which path each takes: the three i386 controls name an
-architecture, so they exercise the launch-then-send path; `worker` and
+Recent Applications. Which path each takes: the i386 controls report "not measured",
+because lld cannot link an i386 slice, so the default suite no longer covers the
+launch-then-send path; the original-21 `architecture` case still does. `worker` and
 `async-caller-exit` (two URLs) and `ls-mixed` (a document plus two URLs, opened
 WithoutAddingToRecents) exercise Launch Services. Zero URLs, print, custom
 events and reuse on the Launch Services path are measured only by the explicit
-original-21 run. Elsewhere it is SKIP77. PREFIX's
+original-21 run. The build's
 `share/recaulk/objc-providers.json` must show the archive was built from this
 tree: its source receipt is checked against the current files and its archive
 hash against `lib/librecaulk-objc.a`, so a stale prefix fails. The original
@@ -222,8 +225,8 @@ hash against `lib/librecaulk-objc.a`, so a stale prefix fails. The original
 document to the user's Recent Documents. The real
 companion is linked through its named root; an unrooted/no-body negative control
 must report actual method absence77. The unchanged original21 assertions run
-with fifteen normative cases and six retained observations. Separate dual-slice
-x86_64/i386 controls verify i386 selection, reuse, distinct new instance, worker
+with fifteen normative cases and six retained observations. Separate x86_64
+floor controls verify reuse, worker
 calls with no caller-created loop, and delivery of BOTH URLs after the actual
 asynchronous caller process exits. No printer/browser/default handler is used.
 
@@ -259,13 +262,16 @@ Codex-local workaround. Real native and Mavericks evidence remain mandatory.
 
 ## Separate archive and activation gate
 
-`SDK=TARGET_SDK HOST_SDK=NATIVE_SDK sh build/build-objc.sh ABSOLUTE_STAGE ABSOLUTE_WORK`
-stages only `lib/librecaulk-objc.a`, `share/recaulk/objc-providers.json` and, for a
-shipping stage, `share/recaulk/objc-source.receipt`: shipyard's source receipt of the
+`sh build/build-objc.sh ABSOLUTE_STAGE ABSOLUTE_WORK` compiles with clang22 on any
+host (Linux, a modern Mac, 10.9); `build/objc-provider-manifest.sh` checks the
+declaration and the encoding clang22 compiles for it, and writes the header and
+metadata. It stages only `lib/librecaulk-objc.a`, `share/recaulk/objc-providers.json` and, for a
+shipping stage built with a shipyard that has `objc-source-inventory.sh`,
+`share/recaulk/objc-source.receipt`: shipyard's source receipt of the
 prepared provider source (`tests/objc-source-receipt.sh`), through which a consumer's
 analysis closes the provider body's own sends.
 Default output is SHIPPING x86_64/10.9, including on an arm64 build host.
-A third `--native-test` argument explicitly creates a host-native TEST-ONLY
+A third `--native-test` argument, on a Mac only, explicitly creates a host-native TEST-ONLY
 archive; metadata records `artifact_role=native-test-only`. It is not a product
 slice or a shipping-provider attestation.
 

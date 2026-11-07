@@ -1,15 +1,15 @@
 #!/bin/sh
-# platform: macOS-only -- startup sentinels require exact argument sequence and environment
+# platform: host-agnostic -- builds the oracle's sentinel matchers with clang22 for 10.9; runs them on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/README.objc-workspace.md "Contract and permission boundary" -- a custom event must carry the
+#       exact payload; startup must carry the exact sentinel argv and environment
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-: "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
-T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-sentinels.XXXXXX")
-trap 'rm -rf "$T"' EXIT
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$ROOT" > "$T/sentinels.m"
-cat >> "$T/sentinels.m" <<'SOURCE'
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+
+if compiling; then
+  S="$(tbin sentinels.m)"
+  printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$(pwd -P)" > "$S"
+  cat >> "$S" <<'SOURCE'
 int main(void) {
  NSAutoreleasePool *pool = [NSAutoreleasePool new];
  NSArray *wanted = @[@"--workspace-sentinel", @"argv exact value"];
@@ -27,5 +27,8 @@ int main(void) {
  printf("exact sentinels and payload: %d\n",ok); [pool drain]; return ok ? 0 : 1;
 }
 SOURCE
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$T/sentinels.m" -o "$T/sentinels" -framework AppKit -framework Carbon
-"$T/sentinels"
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations "$S" -o "$(tbin sentinels)" -framework AppKit -framework Carbon
+  check_loads "$(tbin sentinels)"
+fi
+runtime_half
+"$(tbin sentinels)"

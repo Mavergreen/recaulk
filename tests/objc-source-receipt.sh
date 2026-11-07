@@ -18,11 +18,9 @@ R="$D/stage/share/recaulk/objc-source.receipt"
 [ -f "$R" ] || fail 'the stage has no share/recaulk/objc-source.receipt'
 [ "$(sed -n 1p "$R")" = '# objc-source-receipt 1' ] || fail "the receipt's first line is $(sed -n 1p "$R")"
 grep '^profile	recaulk-objc-x86_64-10.9$' "$R" >/dev/null || fail 'the receipt is not for the x86_64 10.9 profile'
-# Every prepared input the archive's declaration lists is an input of the receipt, with the same digest.
 while read -r sha label; do
   grep -Fx "$(printf 'input\t%s\t%s' "$label" "$sha")" "$R" >/dev/null || fail "the receipt does not record $label at $sha"
 done < "$D/work/source-inputs.txt"
-# A native-test stage is never shipped, so it carries no receipt.
 if [ "$(uname -s)" = Darwin ]; then
   sh "$ROOT/build/build-objc.sh" "$D/native" "$D/native-work" --native-test > "$D/native.log" 2>&1 || fail 'native-test build'
   [ ! -e "$D/native/share/recaulk/objc-source.receipt" ] || fail 'a native-test stage carries a receipt'

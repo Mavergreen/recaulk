@@ -1,25 +1,37 @@
 #!/bin/sh
-# platform: macOS-only -- recording boundary; never edits shared history/preferences
+# platform: host-agnostic -- builds the Recents decision checks for x86_64; runs them on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/README.objc-workspace.md -- recording boundaries only; never edits shared history or preferences;
+#       a copy whose zero-limit guard is broken must fail, so the disabled-preference assertion is effective
+#   usage: objc-workspace-recent-decisions.sh [--mutation-check]
 set -eu
 umask 077
-ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
-: "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to pinned shipyard scripts}"
-D=$(mktemp -d "${TMPDIR:-/tmp}/workspace-recent-decisions.XXXXXX")
-trap 'rm -rf "$D"' EXIT
-case "$(uname -m)" in arm64) arch=arm64; floor=11.0 ;; x86_64) arch=x86_64; floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-source="$ROOT/tests/c/objc_workspace_recent_decisions.m"
+cd "$(dirname "$0")/.."
 case "${1:-}" in
- '') [ "$#" = 0 ] || exit 2 ;;
- --mutation-check)
-  [ "$#" = 1 ] || exit 2
-  cp "$source" "$D/"
-  # Real helper, deliberately broken ONLY in a temporary copy. The recording
-  # boundary prevents any mutation run from touching shared lists.
-  awk '{sub(/if \(ok \&\& maximum > 0\)/,"if (ok)"); print}' "$ROOT/tests/c/objc_workspace_note_recents.h" > "$D/objc_workspace_note_recents.h"
-  source="$D/objc_workspace_recent_decisions.m" ;;
- *) exit 2 ;;
+  '') [ "$#" = 0 ] || exit 2 ;;
+  --mutation-check) [ "$#" = 1 ] || exit 2 ;;
+  *) exit 2 ;;
 esac
-unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$source" -o "$D/decisions" -framework AppKit -framework Carbon
-"$D/decisions"
+. tests/helpers/built.sh
+
+if compiling; then
+  M="$(dirname "$(tbin x)")/mutant-src"
+  rm -rf "$M"; mkdir -p "$M"
+  cp tests/c/objc_workspace_recent_decisions.m "$M/"
+  awk '{sub(/if \(ok \&\& maximum > 0\)/,"if (ok)"); print}' tests/c/objc_workspace_note_recents.h > "$M/objc_workspace_note_recents.h"
+  cmp -s tests/c/objc_workspace_note_recents.h "$M/objc_workspace_note_recents.h" \
+    && { echo "FAIL: the mutation no longer applies to objc_workspace_note_recents.h"; exit 1; }
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations tests/c/objc_workspace_recent_decisions.m \
+    -o "$(tbin decisions)" -framework AppKit -framework Carbon
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations "$M/objc_workspace_recent_decisions.m" \
+    -o "$(tbin mutant)" -framework AppKit -framework Carbon
+  check_loads "$(tbin decisions)" "$(tbin mutant)"
+fi
+runtime_half
+if [ "${1:-}" = --mutation-check ]; then
+  "$(tbin mutant)"
+  exit
+fi
+"$(tbin decisions)"
+rc=0; "$(tbin mutant)" > /dev/null 2>&1 || rc=$?
+[ "$rc" != 0 ] || { echo "FAIL: a broken zero-limit guard still passed, so the disabled-preference check guards nothing"; exit 1; }
+echo "objc-workspace-recent-decisions OK"

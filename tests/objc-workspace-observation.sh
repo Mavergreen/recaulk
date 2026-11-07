@@ -1,15 +1,16 @@
 #!/bin/sh
-# platform: macOS-only -- actual child exit and concurrent writes must retain bounded incomplete evidence
+# platform: host-agnostic -- builds the oracle's record observer with clang22 for 10.9; runs it on 10.9 (RECAULK_TEST_PHASE)
+# spec: tests/README.objc-workspace.md "Contract and permission boundary" -- bounded observation
+#       deadlines and partial JSONL states are not quiescence proofs, so an actual child's exit and
+#       concurrent writes must retain bounded incomplete evidence
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-: "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
-T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-observation.XXXXXX")
-trap 'rm -rf "$T"' EXIT
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$ROOT" > "$T/observation.m"
-cat >> "$T/observation.m" <<'SOURCE'
+cd "$(dirname "$0")/.."
+. tests/helpers/built.sh
+
+if compiling; then
+  S="$(tbin observation.m)"
+  printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$(pwd -P)" > "$S"
+  cat >> "$S" <<'SOURCE'
 #include <fcntl.h>
 #include <limits.h>
 #include <string.h>
@@ -64,5 +65,10 @@ int main(int argc, char **argv) {
  [task release]; [pool drain]; return ok ? 0 : 1;
 }
 SOURCE
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$T/observation.m" -o "$T/observation" -framework AppKit -framework Carbon
-"$T/observation" "$T"
+  "$CC" $FLAGS -fno-objc-arc -Wno-deprecated-declarations "$S" -o "$(tbin observation)" -framework AppKit -framework Carbon
+  check_loads "$(tbin observation)"
+fi
+runtime_half
+R="$(mktemp -d "${TMPDIR:-/tmp}/workspace-observation.XXXXXX")"
+trap 'rm -rf "$R"' EXIT
+"$(tbin observation)" "$R"

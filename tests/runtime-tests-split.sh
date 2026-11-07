@@ -10,8 +10,9 @@ bad() { echo "FAIL: $*"; fail=1; }
 self=tests/runtime-tests-split.sh
 
 for f in tests/*.sh tests/helpers/*.sh tests/guest/*.sh; do
-  # spec: tests/workflow.sh -- it and this script name Rosetta's probes to forbid them
-  case "$f" in "$self"|tests/workflow.sh) continue ;; esac
+  # spec: tests/workflow.sh -- it and this script name Rosetta's probes to forbid them;
+  #       tests/helpers/native-arch.sh -- the one place a modern-Mac oracle reads the hardware's arch
+  case "$f" in "$self"|tests/workflow.sh|tests/helpers/native-arch.sh) continue ;; esac
   if grep -n -i -E 'x86_64_runs|arch -x86_64|install-rosetta|hw\.optional\.arm64|[_-]rosetta|rosetta[=_]' "$f" > /dev/null; then
     bad "$f relies on Rosetta or probes for it: $(grep -n -i -E 'x86_64_runs|arch -x86_64|install-rosetta|hw\.optional\.arm64|[_-]rosetta|rosetta[=_]' "$f" | head -1)"
   fi

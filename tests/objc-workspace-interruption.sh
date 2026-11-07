@@ -1,8 +1,10 @@
 #!/bin/sh
-# platform: macOS-only -- interrupt only owned controller/shell children; require fixture cleanup
+# platform: macOS-only -- interrupts the native launch oracle (the method 10.9 lacks) mid-launch; requires fixture cleanup
+# spec: tests/README.objc-workspace.md "Native NSWorkspace reference tests (partial foundation)" -- each signal
+#       after fixture startup, through both the controller and the shell entry point, interrupts only owned
+#       children and still cleans up the fixture
 set -eu
 umask 077
-# This regression intentionally exercises the legacy shell/controller boundary.
 unset RECAULK_WORKSPACE_CONTEXT
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 : "${SHIPYARD_SCRIPTS:?set SHIPYARD_SCRIPTS to the pinned shipyard scripts directory}"
@@ -15,11 +17,12 @@ finish() {
  rm -rf "$T"
 }
 trap finish EXIT
-arch=$(uname -m)
-case "$arch" in arm64) floor=11.0 ;; x86_64) floor=10.9 ;; *) exit 1 ;; esac
-SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch "$arch")
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$ROOT/tests/c/objc_workspace_reference.m" -o "$T/reference" -framework AppKit -framework Carbon
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc "$ROOT/tests/c/objc_workspace_probe_app.m" -o "$T/probe" -framework AppKit -framework Carbon
+MAVERICKS_ROOT=$ROOT
+. "$ROOT/build/lib.sh"
+recaulk_tools
+. "$ROOT/tests/helpers/native-arch.sh"
+"$CC" $OFLAGS -Wno-deprecated-declarations "$ROOT/tests/c/objc_workspace_reference.m" -o "$T/reference" -framework AppKit -framework Carbon
+"$CC" $OFLAGS "$ROOT/tests/c/objc_workspace_probe_app.m" -o "$T/probe" -framework AppKit -framework Carbon
 printf '#define main unused_oracle_main\n#include "%s/tests/c/objc_workspace_reference.m"\n#undef main\n' "$ROOT" > "$T/cleanup.m"
 cat >> "$T/cleanup.m" <<'SOURCE'
 int main(int argc, char **argv) {
@@ -35,7 +38,7 @@ int main(int argc, char **argv) {
  [pool drain]; return found ? 1 : 0;
 }
 SOURCE
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations "$T/cleanup.m" -o "$T/cleanup" -framework AppKit -framework Carbon
+"$CC" $OFLAGS -Wno-deprecated-declarations "$T/cleanup.m" -o "$T/cleanup" -framework AppKit -framework Carbon
 for mode in controller shell; do
  for sig in INT TERM HUP; do
   R="$T/$mode-$sig"
@@ -49,8 +52,8 @@ for mode in controller shell; do
    "$T/reference" stopped "$R/Probe.app" "$R" > "$T/run.log" 2>&1 & child=$!
    caseDir=$R; expected=1
   else
-   # A background job inherits ignored SIGINT from a POSIX shell. Restore the
-   # terminal's ordinary dispositions before exec, as the repository runner does.
+   # platform: a POSIX shell starts a background job with SIGINT ignored, and a trap cannot catch an
+   #           ignored signal, so restore the terminal's dispositions before exec, as the suite runner does
    /usr/bin/perl -e '$SIG{INT} = $SIG{QUIT} = "DEFAULT"; exec @ARGV or die $!' sh "$ROOT/tests/objc-workspace-reference.sh" --report "$R" > "$T/run.log" 2>&1 & child=$!
    caseDir="$R/stopped"; expected=130
   fi

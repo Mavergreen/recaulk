@@ -1,5 +1,7 @@
 #!/bin/sh
-# platform: macOS-only -- real frozen-source dispatch, no app or consent operation
+# platform: macOS-only -- the frozen verifier it dispatches to (409f958, pinned by hash) reads sw_vers and gives macOS-only refusals; nothing compiles or launches
+# spec: tests/README.objc-workspace.md "Actual-method delivery and immutable reference routing" -- only the exact
+#       frozen clone takes context runs; verification stays local and configured discovery is routed too
 set -eu
 umask 077
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
@@ -18,7 +20,6 @@ run() {
 }
 run exact "$D/frozen" --context "$D/no-context" --report "$D/report"
 grep -q 'verified frozen source; delegating context run' "$D/exact.log"
-# Real ORIGINAL helper must reject the nonexistent context; not a mock launcher.
 grep -Eq 'stable Automation context requires macOS|context must be caller-owned/private' "$D/exact.log"
 run self "$ROOT" --context "$D/no-context" --report "$D/report"
 grep -q 'FAIL: frozen reference' "$D/self.log"
@@ -34,10 +35,8 @@ git -C "$D/frozen" checkout -- tests/c/objc_workspace_probe_app.m
 git -C "$D/frozen" -c user.name=Fixture -c user.email=fixture@invalid commit --allow-empty -m 'Private wrong-HEAD fixture' > "$D/commit.log"
 run wrong-head "$D/frozen" --context "$D/no-context" --report "$D/report"
 grep -q 'FAIL: frozen reference' "$D/wrong-head.log"
-# Verification operation remains local even with a bogus delegation root.
 run verify-local "$D/no-source" --verify-context "$D/no-context"
-! grep -q 'FAIL: frozen reference' "$D/verify-local.log"
-# Configured no-argument discovery is routed too, never auto-authorized.
+if grep -q 'FAIL: frozen reference' "$D/verify-local.log"; then echo 'FAIL: verify-local was refused as a frozen reference'; exit 1; fi
 rc=0
 RECAULK_WORKSPACE_CONTEXT="$D/no-context" RECAULK_WORKSPACE_REFERENCE_ROOT="$ROOT" sh "$ROOT/tests/objc-workspace-reference.sh" > "$D/discovery.log" 2>&1 || rc=$?
 [ "$rc" = 1 ] && grep -q 'FAIL: frozen reference' "$D/discovery.log"

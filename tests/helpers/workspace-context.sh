@@ -26,7 +26,9 @@ fingerprint() {
 }
 source_id=$(fingerprint)
 commit=$(git -C "$ROOT" rev-parse HEAD)
-arch=$(uname -m)
+. "$ROOT/build/lib.sh"
+recaulk_tools
+. "$ROOT/tests/helpers/native-arch.sh"
 case "$arch" in
  arm64) floor=11.0; sdk_arch=arm64 ;;
  x86_64)
@@ -34,8 +36,7 @@ case "$arch" in
   if [ "$operation" != --self-test ]; then
    version=$(sw_vers -productVersion); major=${version%%.*}; rest=${version#*.}; minor=${rest%%.*}
    if [ "$major" -gt 10 ] || { [ "$major" = 10 ] && [ "$minor" -ge 14 ]; }; then
-    # Reference SDK 11.3 is explicitly selected for the modern sender's public
-    # no-prompt API, while emitting a native x86_64 binary. Not a floor build.
+    # platform: the no-prompt Automation API the sender needs is declared only in the 11.3 SDK
     floor=10.14; sdk_arch=arm64
    else echo 'stable Automation context requires macOS >=10.14' >&2; exit 1; fi
   fi ;;
@@ -45,7 +46,6 @@ T=$(mktemp -d "${TMPDIR:-/tmp}/workspace-context-build.XXXXXX")
 T=$(cd "$T" && pwd -P)
 trap 'rm -rf "$T"' EXIT
 manifest() {
- # Known signed roots only; never interpret paths supplied by a checksum file.
  [ -d "$C/Sender.app" ] && [ -d "$C/Probe.app" ] || return 1
  [ -z "$(find "$C/Sender.app" "$C/Probe.app" -type l -print)" ] || return 1
  find "$C/Sender.app" "$C/Probe.app" -type f -print | LC_ALL=C sort | while IFS= read -r f; do /usr/bin/shasum -a 256 "$f"; done
@@ -58,7 +58,7 @@ verify() {
  cmp "$T/sdk.sha256" "$C/sdk.sha256" || return 1
  /usr/bin/shasum -a 256 "$SHIPYARD_SCRIPTS/fetch_sdk.sh" > "$T/sdk-fetch.sha256"
  cmp "$T/sdk-fetch.sha256" "$C/sdk-fetch.sha256" || return 1
- /usr/bin/clang --version > "$T/compiler.txt"
+ "$CC" --version > "$T/compiler.txt"
  cmp "$T/compiler.txt" "$C/compiler.txt" || return 1
  manifest > "$T/apps.sha256"
  cmp "$T/apps.sha256" "$C/apps.sha256" || { echo 'signed context inputs changed' >&2; return 1; }
@@ -71,14 +71,14 @@ if [ "$operation" = --verify-context ]; then verify; exit; fi
 if [ "$operation" != --prepare-context ] && [ "$operation" != --self-test ]; then verify; fi
 unit_flag=''
 [ "$operation" != --self-test ] || unit_flag=-DWORKSPACE_CONTEXT_UNIT_TESTS
-/usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc -Wno-deprecated-declarations $unit_flag -DCONTEXT_SOURCE_ID="\"$source_id\"" "$ROOT/tests/c/objc_workspace_context.m" -o "$T/driver" -framework AppKit -framework Carbon
+"$CC" --no-default-config --target="$arch-apple-macos$floor" -mmacosx-version-min="$floor" -isysroot "$SDK" -fno-objc-arc -Wno-deprecated-declarations $unit_flag -DCONTEXT_SOURCE_ID="\"$source_id\"" "$ROOT/tests/c/objc_workspace_context.m" -o "$T/driver" -framework AppKit -framework Carbon
 if [ "$operation" = --self-test ]; then "$T/driver" self-test "$T"; exit; fi
 if [ "$operation" = --prepare-context ]; then
  mkdir -m 700 "$C" || { echo 'context must be new' >&2; exit 1; }
  token=$(/usr/bin/uuidgen | tr 'A-Z' 'a-z')
  mkdir -p "$C/Sender.app/Contents/MacOS" "$C/Probe.app/Contents/MacOS" "$C/events"
  cp "$T/driver" "$C/Sender.app/Contents/MacOS/WorkspaceSender"
- /usr/bin/clang -arch "$arch" -isysroot "$SDK" -mmacosx-version-min="$floor" -fno-objc-arc "$ROOT/tests/c/objc_workspace_probe_app.m" -o "$C/Probe.app/Contents/MacOS/WorkspaceProbe" -framework AppKit -framework Carbon
+ "$CC" --no-default-config --target="$arch-apple-macos$floor" -mmacosx-version-min="$floor" -isysroot "$SDK" -fno-objc-arc "$ROOT/tests/c/objc_workspace_probe_app.m" -o "$C/Probe.app/Contents/MacOS/WorkspaceProbe" -framework AppKit -framework Carbon
  cp "$ROOT/tests/fixtures/workspace-probe-Info.plist.in" "$C/Probe.app/Contents/Info.plist"
  /usr/libexec/PlistBuddy -c "Set :WorkspaceProbeReportDirectory $C/events" "$C/Probe.app/Contents/Info.plist"
  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.mavergreen.workspace.context.probe.$token" "$C/Probe.app/Contents/Info.plist"
@@ -96,7 +96,7 @@ if [ "$operation" = --prepare-context ]; then
  printf '%s\n' "$commit" > "$C/source.commit"; printf '%s\n' "$arch" > "$C/architecture"
  printf '%s\n' "$SDK" > "$C/sdk.path"
  /usr/bin/shasum -a 256 "$SDK/SDKSettings.plist" > "$C/sdk.sha256"
- /usr/bin/clang --version > "$C/compiler.txt"
+ "$CC" --version > "$C/compiler.txt"
  /usr/bin/shasum -a 256 "$SHIPYARD_SCRIPTS/fetch_sdk.sh" > "$C/sdk-fetch.sha256"
  manifest > "$C/apps.sha256"
  /usr/bin/codesign -dvv "$C/Sender.app" 2> "$C/sender-signature.txt"
