@@ -14,6 +14,7 @@ printf '%s\n' "$declared" | grep -q '^UPSTREAM_VERSION$' || bad "the declared st
 pins="components/clang22/version components/clang22/linux-sha256"
 set -f
 for d in $declared; do
+  d="${d%%:*}"
   for pin in $pins; do
     case "$pin" in $d) bad "the declared state names $d, which holds $pin: a clang22 bump would cut a Recaulk release, which clang-22 repackages on, forever" ;; esac
   done
