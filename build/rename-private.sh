@@ -2,27 +2,38 @@
 # platform: host-agnostic
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
-[ $# -ge 2 ] || { echo "usage: sh build/rename-private.sh DRYDOCK OBJ... -- in each OBJ, renames to ___recaulk_<name> every name build/forward-exclude.txt classes private, and every private external it defines that build/image-local-shadows.txt does not list, in place" >&2; exit 2; }
+[ $# -ge 2 ] || { echo "usage: sh build/rename-private.sh DRYDOCK OBJ... -- in each OBJ, renames to ___recaulk_<name> every name build/forward-exclude.txt classes private, and every private external any OBJ defines that build/image-local-shadows.txt does not list for its definer, where OBJ defines or references it, in place" >&2; exit 2; }
 drydock="$1"; shift
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/rename-private.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
 awk '$3 == "private" { print $1, $2 }' "$SELF/forward-exclude.txt" > "$tmp/private"
 awk '!/^#/ && NF >= 2 { print $1, $2 }' "$SELF/image-local-shadows.txt" > "$tmp/shadows"
 
+i=0
 for obj in "$@"; do
-  "${NM:-nm}" -m "$obj" > "$tmp/nm" || { echo "rename-private: ${NM:-nm} -m failed on $obj" >&2; exit 1; }
-  awk -v M="$(basename "$obj")" -v P="$tmp/private" -v S="$tmp/shadows" '
+  i=$((i + 1))
+  "${NM:-nm}" -m "$obj" > "$tmp/nm.$i" || { echo "rename-private: ${NM:-nm} -m failed on $obj" >&2; exit 1; }
+  awk -v M="$(basename "$obj")" -v S="$tmp/shadows" '
+    BEGIN { while ((getline l < S) > 0) { split(l, f, " "); if (f[1] == M) shadow[f[2]] = 1 } }
+    / non-external / || /\(undefined\)/ || !/private external/ { next }
+    { n = $NF; if (n !~ /\.eh$/ && n !~ /^___recaulk_/ && !(n in shadow)) print n }' "$tmp/nm.$i"
+done | LC_ALL=C sort -u > "$tmp/hidden"
+
+i=0
+for obj in "$@"; do
+  i=$((i + 1))
+  cp "$tmp/nm.$i" "$tmp/nm"
+  awk -v P="$tmp/private" -v H="$tmp/hidden" '
     BEGIN {
       while ((getline l < P) > 0) { split(l, f, " "); if (f[1] == "prefix") pre[++np] = f[2]; else ex[f[2]] = 1 }
-      while ((getline l < S) > 0) { split(l, f, " "); if (f[1] == M) shadow[f[2]] = 1 }
+      while ((getline l < H) > 0) hidden[l] = 1
     }
     / non-external / { next }
     {
       n = $NF
       if (n ~ /\.eh$/ || n ~ /^___recaulk_/) next
-      priv = (n in ex); for (i = 1; i <= np; i++) if (index(n, pre[i]) == 1) priv = 1
-      hidden = !/\(undefined\)/ && /private external/ && !(n in shadow)
-      if (priv || hidden) print n
+      priv = (n in ex) || (n in hidden); for (i = 1; i <= np; i++) if (index(n, pre[i]) == 1) priv = 1
+      if (priv) print n
     }' "$tmp/nm" | LC_ALL=C sort -u > "$tmp/names"
   [ -s "$tmp/names" ] || continue
   script="$obj.private.drydock"
