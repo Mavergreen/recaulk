@@ -51,6 +51,13 @@ run unlisted "$v"
 [ "$rc" = 1 ] || bad "an unlisted Linux archive exited $rc, want 1"
 case "$err" in *"not listed"*) ;; *) bad "an unlisted Linux archive does not say 'not listed': $err" ;; esac
 
+head -c 100 "$D/rel/v$v/drydock-$v-linux-x86_64.tar.gz" > "$D/rel/v$v/cut.tar.gz"
+mv "$D/rel/v$v/cut.tar.gz" "$D/rel/v$v/drydock-$v-linux-x86_64.tar.gz"
+printf '%s  drydock-%s-linux-x86_64.tar.gz\n' "$(sha256 "$D/rel/v$v/drydock-$v-linux-x86_64.tar.gz")" "$v" > "$D/rel/v$v/SHA256SUMS"
+run truncated "$v"
+[ "$rc" = 1 ] || bad "a truncated Linux archive exited $rc, want 1"
+case "$err" in *"tar:"*) ;; *) bad "a truncated Linux archive does not pass on tar's own reason: $err" ;; esac
+
 run old 0.2.2
 [ "$rc" = 1 ] || bad "drydock 0.2.2 on a Linux host exited $rc, want 1"
 case "$err" in *"0.3.0"*) ;; *) bad "the refusal of drydock 0.2.2 on Linux does not name 0.3.0, the first release with a Linux archive: $err" ;; esac

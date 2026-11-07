@@ -11,19 +11,19 @@ fail=0
 bad() { echo "FAIL: $*"; fail=1; }
 
 if compiling; then
-  CC=""$CC" $FLAGS -arch x86_64"
+  xcc="$CC $FLAGS -arch x86_64"
   STATIC_LIBS="-framework CoreFoundation -framework Security -framework CoreServices -lobjc"
-  $CC -isystem "$T/include/recaulk" -o "$(tbin test_polyfills)" tests/c/test_polyfills.c "$T/lib/librecaulk.a" $STATIC_LIBS \
+  $xcc -isystem "$T/include/recaulk" -o "$(tbin test_polyfills)" tests/c/test_polyfills.c "$T/lib/librecaulk.a" $STATIC_LIBS \
     || { echo "FAIL: test_polyfills does not link plainly with librecaulk.a"; exit 1; }
   adapted() {
-    $CC -isystem "$T/include/recaulk" -o "$(tbin "$1")" "tests/c/$1.c" -L"$T/lib" -lRecaulkSystem \
+    $xcc -isystem "$T/include/recaulk" -o "$(tbin "$1")" "tests/c/$1.c" -L"$T/lib" -lRecaulkSystem \
       || { echo "FAIL: $1 does not link against libRecaulkSystem.dylib"; exit 1; }
     "$NM" -m "$(tbin "$1")" | grep "external $2 (from libRecaulkSystem)" >/dev/null \
       || bad "$1: an adapted binary must bind the override, not the re-exported libSystem's ($2)"
   }
   adapted kevent64_error_events _kevent64
   adapted dnssd_getaddrinfo_ex _DNSServiceGetAddrInfoEx
-  $CC -o "$(tbin ccrandom_zero)" tests/c/ccrandom_zero.c "$T/lib/librecaulk.a" \
+  $xcc -o "$(tbin ccrandom_zero)" tests/c/ccrandom_zero.c "$T/lib/librecaulk.a" \
     || { echo "FAIL: ccrandom_zero does not link plainly with librecaulk.a"; exit 1; }
   check_loads "$(tbin test_polyfills)" "$(tbin kevent64_error_events)" "$(tbin dnssd_getaddrinfo_ex)" "$(tbin ccrandom_zero)" || fail=1
   [ "$fail" = 0 ] || exit 1

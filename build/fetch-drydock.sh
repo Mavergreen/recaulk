@@ -51,7 +51,7 @@ fi
 mkdir "$tmp/p"
 if [ "$host" = linux ]; then
   want="drydock-$ver/bin/drydock-macho-rewrite"
-  (cd "$tmp/p" && tar -xzf "$got" "$want") 2>/dev/null || { echo "$asset does not carry $want" >&2; exit 1; }
+  (cd "$tmp/p" && tar -xzf "$got" "$want") || { echo "could not extract $want from $asset (tar's reason above)" >&2; exit 1; }
 else
   want=usr/local/mavergreen/drydock/bin/drydock-macho-rewrite
   # platform: guarded macOS-only call -- host is mac only on Darwin or when DRYDOCK_HOST says so

@@ -110,7 +110,7 @@ for want in 'needs: \[build\]' 'timeout-minutes: 60' 'uses: Mavergreen/mavericks
     '/usr/local/bin/mavergreen check' \
     'RECAULK_BUILD="\$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk sh tests/guest/run-runtime-tests.sh' \
     'sh build/launch-updater.sh'; do
-  printf '%s\n' "$om" | grep -Eq "^ *(- )?$want" || { echo "the on-mavericks job lacks a line $want"; exit 1; }
+  printf '%s\n' "$om" | grep -Eq "^ *(- )?$want\$" || { echo "the on-mavericks job lacks a line $want"; exit 1; }
 done
 [ "$(printf '%s\n' "$om" | grep -c '^    if:')" -eq 1 ] \
   && printf '%s\n' "$om" | grep -qxF "    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository" \
