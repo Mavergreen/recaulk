@@ -41,8 +41,10 @@ The source headers also adapt two Mavericks API defects: numeric port-zero
 `getaddrinfo` requests no longer crash with `AI_NUMERICSERV`, and `fdopendir`
 accepts already-open readable directories without requiring search permission.
 MacPorts headers remain intact. Where Recaulk wraps a header MacPorts also
-provides, MacPorts' copy is staged unmodified under `_recaulk_macports/`, and
-Recaulk's header includes it before adding its own declarations.
+provides, MacPorts' copy is staged unmodified beside it as `_recaulk_macports_<name>`, and
+Recaulk's header includes it before adding its own declarations. Beside, not in a subdirectory, so its
+`#include_next` is in a file directly in a search directory, which is the only place `zig translate-c`'s
+C front end continues one from.
 The directory repair uses libc-owned stream state for both inode ABIs and retains
 the original failure for union mounts, whose duplicate filtering needs a separate
 implementation. Modern systems still use the forwarded native `fdopendir` first.

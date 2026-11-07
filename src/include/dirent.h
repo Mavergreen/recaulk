@@ -1,4 +1,4 @@
-#include <_recaulk_macports/dirent.h>
+#include <_recaulk_macports_dirent.h>
 #ifndef RECAULK_FDOPENDIR_H
 #define RECAULK_FDOPENDIR_H
 #if __DARWIN_C_LEVEL >= 200809L

@@ -1,4 +1,4 @@
-#include <_recaulk_macports/netdb.h>
+#include <_recaulk_macports_netdb.h>
 #ifndef RECAULK_NETDB_H
 #define RECAULK_NETDB_H
 #include <string.h>

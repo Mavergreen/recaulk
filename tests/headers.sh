@@ -22,19 +22,24 @@ layer=_recaulk_macports
 
 mp="$W/mp-headers/include/LegacySupport"
 [ -d "$mp" ] || bad "no installed MacPorts header tree at $mp to compare against"
-[ ! -e "src/include/$layer" ] || bad "src/include/$layer is the staged MacPorts layer's name; Recaulk's own headers cannot live there"
+beside() { _bs_d="$(dirname "$1")"; [ "$_bs_d" = . ] && _bs_d= || _bs_d="$_bs_d/"; printf '%s%s_%s\n' "$_bs_d" "$layer" "$(basename "$1")"; }
+[ -z "$(cd src/include && find . -name "$layer*")" ] || bad "src/include holds a $layer name, the staged MacPorts layer's; Recaulk's own headers cannot use it"
+# spec: README.md "How to use" -- a wrapped MacPorts header sits beside its wrapper, so its #include_next is in a
+#       file directly in a search directory: zig translate-c's aro continues an #include_next only from there
+[ ! -e "$inc/$layer" ] || bad "include/recaulk/$layer/ exists: a MacPorts header there does #include_next from a directory no search path names"
 for h in $(cd "$mp" && find . -type f | sed 's|^\./||'); do
   if [ -f "src/include/$h" ]; then
-    cmp -s "$mp/$h" "$inc/$layer/$h" || bad "MacPorts' $h is not staged unmodified at include/recaulk/$layer/$h"
+    staged="$(beside "$h")"
+    cmp -s "$mp/$h" "$inc/$staged" || bad "MacPorts' $h is not staged unmodified at include/recaulk/$staged"
     first="$(grep -m 1 '^[[:space:]]*#' "src/include/$h" | tr -s ' \t' ' ' | sed 's/^ //; s/# /#/')"
-    [ "$first" = "#include <$layer/$h>" ] || bad "src/include/$h wraps MacPorts' header, so its first directive must be #include <$layer/$h>, not: $first"
+    [ "$first" = "#include <$staged>" ] || bad "src/include/$h wraps MacPorts' header, so its first directive must be #include <$staged>, not: $first"
   else
     cmp -s "$mp/$h" "$inc/$h" || bad "MacPorts' $h is not staged unmodified at include/recaulk/$h"
-    [ ! -e "$inc/$layer/$h" ] || bad "include/recaulk/$layer/$h is staged, but Recaulk does not wrap $h"
   fi
 done
-for h in $(cd "$inc/$layer" 2>/dev/null && find . -type f | sed 's|^\./||'); do
-  [ -f "$mp/$h" ] || bad "include/recaulk/$layer/$h is not one of MacPorts' headers"
+for f in $(cd "$inc" && find . -type f -name "$layer*" | sed 's|^\./||'); do
+  fd="$(dirname "$f")"; [ "$fd" = . ] && h="${f#"$layer"_}" || h="$fd/$(basename "$f" | sed "s/^${layer}_//")"
+  [ -f "src/include/$h" ] && [ -f "$mp/$h" ] || bad "include/recaulk/$f is staged, but it is not MacPorts' copy of a header Recaulk wraps"
 done
 for h in $(cd src/include && find . -type f | sed 's|^\./||'); do
   cmp -s "src/include/$h" "$inc/$h" || bad "src/include/$h is not staged at include/recaulk/$h"

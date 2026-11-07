@@ -43,8 +43,7 @@ rm -rf "$W/own-include"
 cp -R "$MAVERICKS_ROOT/src/include" "$W/own-include"
 for h in $(cd "$MAVERICKS_ROOT/src/include" && find . -type f | sed 's|^\./||'); do
   [ -f "$mp/$h" ] || continue
-  mkdir -p "$T/include/recaulk/_recaulk_macports/$(dirname "$h")"
-  mv "$T/include/recaulk/$h" "$T/include/recaulk/_recaulk_macports/$h"
+  mv "$T/include/recaulk/$h" "$T/include/recaulk/$(dirname "$h")/_recaulk_macports_$(basename "$h")"
   rm "$W/own-include/$h"
 done
 cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
