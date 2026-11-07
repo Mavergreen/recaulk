@@ -28,7 +28,7 @@ defined_in_archive() {
     }'
 }
 
-# spec: rule 1's one exception, exact and declared: build/image-local-shadows.txt lists each hidden
+# spec: README "Fixes to functions 10.9 has", exact and declared: build/image-local-shadows.txt lists each hidden
 #       definition allowed to shadow a 10.9 export inside the linking image, with its reason.
 grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $1, $2 }' > "$tmp/shadows"
 defined_in_archive "$W/librecaulk-backfills.a" > "$tmp/defined"
@@ -36,7 +36,7 @@ while read -r member sym vis; do
   grep -qxF -- "$sym" "$tmp/sdk" || continue
   if [ "$vis" = hidden ] && grep -qxF -- "$member $sym" "$tmp/shadows"; then continue; fi
   if [ "$vis" = hidden ]; then
-    echo "$member defines $sym hidden, which 10.9 already exports, and build/image-local-shadows.txt does not list it: list it with its reason, or move its source to src/overrides/ (spec rule 1)"
+    echo "$member defines $sym hidden, which 10.9 already exports, and build/image-local-shadows.txt does not list it: a fix to a function 10.9 has reaches both products (README, \"Fixes to functions 10.9 has\"), so list it with its reason, or move its source to src/overrides/ (spec rule 1)"
   else
     echo "$member defines $sym, which 10.9 already exports: it is an override; move its source to src/overrides/ (spec rule 1)"
   fi
