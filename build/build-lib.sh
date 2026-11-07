@@ -16,6 +16,7 @@ if [ "$(uname -s)" = Darwin ]; then MAKE=/usr/bin/make; else MAKE=make; fi
 
 rm -rf "$B/stage"
 mkdir -p "$T/lib" "$T/include/recaulk" "$W"
+sh "$SELF/stage-sdk-metadata.sh" "$MAVERICKS_ROOT/sdk-metadata" "$T/share/sdk-metadata"
 src="$(sh "$SELF/fetch-macports.sh" "$W")"
 
 mp_slib() {

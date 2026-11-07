@@ -202,6 +202,29 @@ starting `#` are comments. Each release attaches the same file as `recaulk-notic
 that links `librecaulk.a` can take the members its link pulls in (ld64's `-why_load`, or the
 `__recaulk_apsl` strings in its output) and assemble its own NOTICE from those lines.
 
+## SDK declaration metadata
+
+`share/sdk-metadata/recipes.json` is data, not code: recipes that let an Objective-C target built
+against the pinned 10.9 SDK see declarations a later SDK added, without changing the SDK. Recaulk owns
+what each recipe means; shipyard's `MavericksSDKMetadata.cmake` checks a recipe against the SDK's bytes,
+writes the edited headers to a scratch overlay, and opts one target into it. Nothing here is linked.
+
+The file is one JSON object, schema 1:
+
+- `schema` (`1`), `sdk` (`MacOSX10.9`) and `sdk_archive_sha256`, the SHA-256 of the SDK archive the
+  recipes were written against.
+- `recipes`, each with a unique `id` (lowercase letters, digits, `.` and `-`; a changed recipe takes a new
+  id), the SDK-relative `header` and its exact `sha256`, `aliases` (other SDK-relative paths that reach the
+  same header, such as a framework's `Headers` link) and `replacements`, `{old, new}` pairs of literal text.
+  Each `old` must occur exactly once in the header; shipyard refuses the recipe otherwise.
+
+`foundation-array-generics-v1` gives `NSArray` and `NSMutableArray` their lightweight generic
+parameters, so `NSArray<NSString *> *` compiles against the 10.9 SDK. It adds no method signatures and
+no other classes.
+
+`build/stage-sdk-metadata.sh` validates the file (`build/sdk-metadata-validate.cmake`, through
+`shipyard-cmake -P`) and stages it alone; malformed data stages nothing.
+
 ## Tests
 
 `sh build/build-lib.sh` builds Recaulk with clang22 (`components/clang22/version`, fetched by

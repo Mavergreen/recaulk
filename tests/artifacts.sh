@@ -26,6 +26,8 @@ got="$("$OTOOL" -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.
 want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dylib libc++abi.dylib libobjc.A.dylib "
 [ "$got" = "$want" ] || bad "linked libraries are '$got', want '$want'"
 [ -f "$T/include/recaulk/MacportsLegacySupport.h" ] || bad "include/recaulk/MacportsLegacySupport.h missing"
+cmp -s sdk-metadata/recipes.json "$T/share/sdk-metadata/recipes.json" || bad "share/sdk-metadata/recipes.json is not the committed sdk-metadata/recipes.json"
+[ "$(ls "$T/share/sdk-metadata" | tr "\n" " ")" = "recipes.json " ] || bad "share/sdk-metadata holds: $(ls "$T/share/sdk-metadata" | tr "\n" " ")"
 [ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
 stray="$(cd "$B/stage" && find . -mindepth 1 -not -path ./usr -not -path ./usr/local -not -path ./usr/local/mavergreen \
   -not -path ./usr/local/mavergreen/recaulk -not -path './usr/local/mavergreen/recaulk/*' | head -5)"

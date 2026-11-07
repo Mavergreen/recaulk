@@ -51,6 +51,7 @@ need() { printf '%s\n' "$FILES" | grep -qx "$1" || { echo "the payload lacks $1"
 need 'usr/local/mavergreen/recaulk/lib/librecaulk.a'
 need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
+need 'usr/local/mavergreen/recaulk/share/sdk-metadata/recipes.json'
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
 need 'usr/local/mavergreen/recaulk/share/recaulk/notices.tsv'
 need 'Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns'
