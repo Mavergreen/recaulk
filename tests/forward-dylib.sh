@@ -1,10 +1,9 @@
 #!/bin/sh
-# platform: macOS-only -- links and runs x86_64 Mach-O against a dylib built from librecaulk.a's members
+# platform: macOS-only -- links x86_64 Mach-O against a dylib built from librecaulk.a's members; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 . tests/helpers/macos.sh
-x86_64_runs || { echo "SKIP: this host cannot run x86_64 programs"; exit 77; }
 D="$(mktemp -d "${TMPDIR:-/tmp}/forward-dylib.XXXXXX")"
 D="$(cd "$D" && pwd -P)"
 trap 'rm -rf "$D"' EXIT
@@ -13,6 +12,74 @@ bad() { echo "FAIL: $*"; fail=1; }
 field() { printf '%s\n' "$1" | sed -n "s/^$2: //p"; }
 names="os_system_version_get_current_version qos_class_self"
 
+
+if compiling; then
+  nm -A "$T/lib/librecaulk.a" > "$D/archive.nm" || { echo "FAIL: nm -A could not read librecaulk.a"; exit 1; }
+  want="___recaulk_resolve"
+  for n in $names; do want="$want _$n ___recaulk_impl_$n"; done
+  mkdir "$D/members"
+  for s in $want; do
+    m="$(awk -v s="$s" '$NF == s && $(NF-1) == "T" { sub(/^.*\.a:/, "", $1); sub(/:$/, "", $1); print $1 }' "$D/archive.nm")"
+    [ "$(printf '%s\n' "$m" | grep -c .)" = 1 ] || { echo "FAIL: librecaulk.a defines $s in ${m:-no member} (want exactly one)"; exit 1; }
+    (cd "$D/members" && ar -x "$T/lib/librecaulk.a" "$m")
+  done
+  ar rcs "$D/librecaulk-subset.a" "$D"/members/*.o
+  echo "subset archive: $(cd "$D/members" && ls | tr '\n' ' ')"
+
+  hide_api=""
+  for n in $names; do hide_api="$hide_api -Wl,-unexported_symbol,_$n"; done
+  for shape in hidden exported; do
+    lib="$(tbin "libforward-$shape.dylib")"
+    extra=""
+    [ "$shape" = exported ] || extra="$hide_api"
+    /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -dynamiclib \
+      -install_name "@executable_path/libforward-$shape.dylib" -o "$lib" tests/c/forward_dylib.c "$D/librecaulk-subset.a" \
+      -Wl,-unexported_symbol,'___recaulk_*' $extra \
+      || { echo "FAIL: a dylib calling $names does not link from librecaulk.a's members alone"; exit 1; }
+    nm -gU "$lib" | awk '{ print $NF }' | LC_ALL=C sort > "$D/$shape.exports"
+    case "$shape" in
+      hidden) printf '%s\n' _forward_dylib_probe ;;
+      exported) printf '%s\n' _forward_dylib_probe _os_system_version_get_current_version _qos_class_self ;;
+    esac | LC_ALL=C sort > "$D/$shape.want"
+    cmp -s "$D/$shape.exports" "$D/$shape.want" \
+      || bad "the $shape dylib exports $(tr '\n' ' ' < "$D/$shape.exports")but should export only $(tr '\n' ' ' < "$D/$shape.want")(no ___recaulk_ name, and an API name only where the link leaves it exported)"
+    for n in $names; do
+      nm -u "$lib" | awk "{ print \$NF }" | grep -qx "_$n" && bad "the $shape dylib imports _$n instead of carrying Recaulk's trampoline"
+      nm "$lib" | awk -v s="_$n" '$NF == s && ($2 == "t" || $2 == "T") { f = 1 } END { exit !f }' \
+        || bad "the $shape dylib does not define _$n"
+    done
+  done
+
+  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$(tbin main-dlopen)" tests/c/forward_dylib_main.c \
+    || { echo "FAIL: the dlopen test program does not link"; exit 1; }
+  for shape in hidden exported; do
+    lib="$(tbin "libforward-$shape.dylib")"
+    /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -DLINKED -isystem "$T/include/recaulk" -o "$(tbin "main-$shape-system-first")" \
+      tests/c/forward_dylib_main.c -lSystem -lobjc "$lib" \
+      || { echo "FAIL: a program listing libSystem and libobjc before the $shape dylib does not link"; exit 1; }
+    /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -DLINKED -isystem "$T/include/recaulk" -o "$(tbin "main-$shape-dylib-first")" \
+      tests/c/forward_dylib_main.c "$lib" -lobjc \
+      || { echo "FAIL: a program listing the $shape dylib before libobjc and libSystem does not link"; exit 1; }
+  done
+
+  order() { otool -L "$1" | awk 'NR > 1 { sub(/.*\//, "", $1); printf "%s ", $1 }'; }
+  for prog in "$(dirname "$(tbin main-dlopen)")"/main-*; do
+    nm "$prog" | grep -q '___recaulk_' && bad "$(basename "$prog") carries Recaulk symbols itself, so it does not prove the dylib's forwarding"
+  done
+  first="$(order "$(tbin main-hidden-system-first)")"
+  case "$first" in
+    libSystem.B.dylib\ libobjc.A.dylib\ libforward-hidden.dylib\ *) ;;
+    *) bad "main-hidden-system-first loads $first, want libSystem, libobjc, then the dylib" ;;
+  esac
+  first="$(order "$(tbin main-hidden-dylib-first)")"
+  case "$first" in
+    libforward-hidden.dylib\ *) ;;
+    *) bad "main-hidden-dylib-first loads $first, want the dylib first" ;;
+  esac
+  check_loads "$(dirname "$(tbin main-dlopen)")"/main-* "$(dirname "$(tbin main-dlopen)")"/libforward-*.dylib || fail=1
+  [ "$fail" = 0 ] || exit 1
+fi
+runtime_half
 ver="$(macos_version)"
 case "$ver" in
   *.*.*) ver3="$ver" ;;
@@ -27,69 +94,6 @@ else
 fi
 echo "era: $era ($ver)"
 
-nm -A "$T/lib/librecaulk.a" > "$D/archive.nm" || { echo "FAIL: nm -A could not read librecaulk.a"; exit 1; }
-want="___recaulk_resolve"
-for n in $names; do want="$want _$n ___recaulk_impl_$n"; done
-mkdir "$D/members"
-for s in $want; do
-  m="$(awk -v s="$s" '$NF == s && $(NF-1) == "T" { sub(/^.*\.a:/, "", $1); sub(/:$/, "", $1); print $1 }' "$D/archive.nm")"
-  [ "$(printf '%s\n' "$m" | grep -c .)" = 1 ] || { echo "FAIL: librecaulk.a defines $s in ${m:-no member} (want exactly one)"; exit 1; }
-  (cd "$D/members" && ar -x "$T/lib/librecaulk.a" "$m")
-done
-ar rcs "$D/librecaulk-subset.a" "$D"/members/*.o
-echo "subset archive: $(cd "$D/members" && ls | tr '\n' ' ')"
-
-hide_api=""
-for n in $names; do hide_api="$hide_api -Wl,-unexported_symbol,_$n"; done
-for shape in hidden exported; do
-  lib="$D/libforward-$shape.dylib"
-  extra=""
-  [ "$shape" = exported ] || extra="$hide_api"
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -dynamiclib \
-    -install_name "$lib" -o "$lib" tests/c/forward_dylib.c "$D/librecaulk-subset.a" \
-    -Wl,-unexported_symbol,'___recaulk_*' $extra \
-    || { echo "FAIL: a dylib calling $names does not link from librecaulk.a's members alone"; exit 1; }
-  nm -gU "$lib" | awk '{ print $NF }' | LC_ALL=C sort > "$D/$shape.exports"
-  case "$shape" in
-    hidden) printf '%s\n' _forward_dylib_probe ;;
-    exported) printf '%s\n' _forward_dylib_probe _os_system_version_get_current_version _qos_class_self ;;
-  esac | LC_ALL=C sort > "$D/$shape.want"
-  cmp -s "$D/$shape.exports" "$D/$shape.want" \
-    || bad "the $shape dylib exports $(tr '\n' ' ' < "$D/$shape.exports")but should export only $(tr '\n' ' ' < "$D/$shape.want")(no ___recaulk_ name, and an API name only where the link leaves it exported)"
-  for n in $names; do
-    nm -u "$lib" | awk "{ print \$NF }" | grep -qx "_$n" && bad "the $shape dylib imports _$n instead of carrying Recaulk's trampoline"
-    nm "$lib" | awk -v s="_$n" '$NF == s && ($2 == "t" || $2 == "T") { f = 1 } END { exit !f }' \
-      || bad "the $shape dylib does not define _$n"
-  done
-done
-
-/usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -isystem "$T/include/recaulk" -o "$D/main-dlopen" tests/c/forward_dylib_main.c \
-  || { echo "FAIL: the dlopen test program does not link"; exit 1; }
-for shape in hidden exported; do
-  lib="$D/libforward-$shape.dylib"
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -DLINKED -isystem "$T/include/recaulk" -o "$D/main-$shape-system-first" \
-    tests/c/forward_dylib_main.c -lSystem -lobjc "$lib" \
-    || { echo "FAIL: a program listing libSystem and libobjc before the $shape dylib does not link"; exit 1; }
-  /usr/bin/clang $FLAGS -arch x86_64 -Wall -Werror -DLINKED -isystem "$T/include/recaulk" -o "$D/main-$shape-dylib-first" \
-    tests/c/forward_dylib_main.c "$lib" -lobjc \
-    || { echo "FAIL: a program listing the $shape dylib before libobjc and libSystem does not link"; exit 1; }
-done
-
-order() { otool -L "$1" | awk 'NR > 1 { sub(/.*\//, "", $1); printf "%s ", $1 }'; }
-for prog in "$D"/main-*; do
-  nm "$prog" | grep -q '___recaulk_' && bad "$(basename "$prog") carries Recaulk symbols itself, so it does not prove the dylib's forwarding"
-done
-first="$(order "$D/main-hidden-system-first")"
-case "$first" in
-  libSystem.B.dylib\ libobjc.A.dylib\ libforward-hidden.dylib\ *) ;;
-  *) bad "main-hidden-system-first loads $first, want libSystem, libobjc, then the dylib" ;;
-esac
-first="$(order "$D/main-hidden-dylib-first")"
-case "$first" in
-  libforward-hidden.dylib\ *) ;;
-  *) bad "main-hidden-dylib-first loads $first, want the dylib first" ;;
-esac
-
 bounded() {
   "$@" > "$D/out" 2>&1 &
   bpid=$!
@@ -103,7 +107,7 @@ bounded() {
 judge() {
   label="$1"; shape="$2"; order="$3"; out="$4"
   self="$(field "$out" self)"
-  [ "$self" = "$D/libforward-$shape.dylib" ] || { bad "$label: the probe ran from ${self:-nowhere}, not the dylib"; return; }
+  [ "$self" = "$(tbin "libforward-$shape.dylib")" ] || { bad "$label: the probe ran from ${self:-nowhere}, not the dylib"; return; }
   for n in osv qos; do
     [ "$(field "$out" "$n-slot-before")" = "(none)" ] \
       || bad "$label: the dylib's $n slot was already resolved before its first call, so the dylib was not the first to reach the forwarding layer"
@@ -157,9 +161,9 @@ for shape in hidden exported; do
   for order in system-first dylib-first dlopen; do
     label="$shape dylib, $order"
     if [ "$order" = dlopen ]; then
-      set -- "$D/main-dlopen" "$D/libforward-$shape.dylib"
+      set -- "$(tbin main-dlopen)" "$(tbin "libforward-$shape.dylib")"
     else
-      set -- "$D/main-$shape-$order"
+      set -- "$(tbin "main-$shape-$order")"
     fi
     bounded "$@" && rc=0 || rc=$?
     out="$(cat "$D/out")"

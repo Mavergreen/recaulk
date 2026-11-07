@@ -1,14 +1,15 @@
 #!/bin/sh
-# platform: macOS-only -- runs an x86_64 program built against the staged headers and librecaulk.a
+# platform: macOS-only -- builds an x86_64 program against the staged headers and librecaulk.a; runs it on 10.9 (RECAULK_TEST_PHASE)
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
-x86_64_runs || { echo 'SKIP: this host cannot run x86_64 programs'; exit 77; }
-work="$(mktemp -d "${TMPDIR:-/tmp}/aligned-alloc.XXXXXX")"
-trap 'rm -rf "$work"' EXIT
-/usr/bin/clang $FLAGS -arch x86_64 -std=c11 -Wall -Werror -isystem "$T/include/recaulk" \
-  tests/c/aligned_alloc_contract.c "$T/lib/librecaulk.a" -o "$work/static"
-"$work/static"
-/usr/bin/clang $FLAGS -arch x86_64 -std=c11 -Wall -Werror -isystem "$T/include/recaulk" \
-  tests/c/aligned_alloc_contract.c -L"$T/lib" -lRecaulkSystem -o "$work/dylib"
-DYLD_LIBRARY_PATH="$T/lib" "$work/dylib"
+if compiling; then
+  /usr/bin/clang $FLAGS -arch x86_64 -std=c11 -Wall -Werror -isystem "$T/include/recaulk" \
+    tests/c/aligned_alloc_contract.c "$T/lib/librecaulk.a" -o "$(tbin static)"
+  /usr/bin/clang $FLAGS -arch x86_64 -std=c11 -Wall -Werror -isystem "$T/include/recaulk" \
+    tests/c/aligned_alloc_contract.c -L"$T/lib" -lRecaulkSystem -o "$(tbin dylib)"
+  check_loads "$(tbin static)" "$(tbin dylib)"
+fi
+runtime_half
+"$(tbin static)"
+DYLD_LIBRARY_PATH="$T/lib" "$(tbin dylib)"
