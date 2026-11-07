@@ -38,6 +38,12 @@ int main(int argc, char **argv) {
     dispatch_queue_t global = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 
     if (!strcmp(c, "main-on-main-thread")) assert_queue(dispatch_get_main_queue());
+    else if (!strcmp(c, "serial-on-main-thread")) assert_queue(q1);
+    else if (!strcmp(c, "global-on-main-thread")) assert_queue(global);
+    else if (!strcmp(c, "serial-in-main-block")) {
+        dispatch_async(dispatch_get_main_queue(), ^{ assert_queue(q1); exit(0); });
+        dispatch_main();
+    }
     else if (!strcmp(c, "main-in-main-block")) {
         dispatch_async(dispatch_get_main_queue(), ^{ assert_queue(dispatch_get_main_queue()); exit(0); });
         dispatch_main();

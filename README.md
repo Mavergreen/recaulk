@@ -141,19 +141,28 @@ puts it; after libSystem, libSystem's `pselect` binds instead.
 
 `dispatch_assert_queue`, as the `dispatch_assert_queue$V2` a modern SDK binds (Swift's
 `MainActor.assumeIsolated` and `preconditionIsolated` call it), is the system's on 10.12 and later. On
-10.9 to 10.11 it returns when the calling thread is running a block for the queue or for a queue that
-targets it, and for the main queue whenever it is called on the main thread. It traps, with libdispatch's
-message, when the thread is provably off the queue: it is running no dispatch block at all (a thread of
-its own), or the queue is the main queue, the thread is not the main thread, and the main thread is
-still running, so the main queue can only run there.
+10.9 to 10.11 Recaulk's returns when the calling thread is running a block for the queue or for a queue
+that targets it, and for the main queue whenever it is called on the main thread. It traps, with
+libdispatch's message, only when the thread is provably off the queue:
 
-10.9's libdispatch shows a thread only the innermost queue it is running a block for. The queue that
-called `dispatch_sync` or `dispatch_apply` is hidden, and the newer system counts it as one the thread
-is on. So a thread running a block for some other queue may still be on the asserted one, and there
-Recaulk returns rather than trap falsely: asserting a queue from a block of an unrelated queue does not
-trap on 10.9, and neither does asserting the main queue off the main thread once `dispatch_main` has
-ended the main thread. To see a queue's place in a thread's queues, Recaulk sets one queue-specific
-value of its own on each queue it is asked about and on the default overcommit root queue.
+- a thread other than the main thread that is running no dispatch block at all (a thread of its own); or
+- the queue is the main queue, the thread is not the main thread, and the main thread is still running,
+  so the main queue can only run there.
+
+Everywhere else it returns. 10.9's libdispatch shows a thread only the innermost queue it is running a
+block for. The queue that called `dispatch_sync` or `dispatch_apply` is hidden, and the newer system counts
+it as one the thread is on. So a thread running a block for some other queue may still be on the asserted
+one, and Recaulk returns rather than trap falsely. That covers:
+
+- the main thread asserting any queue but the main queue, inside a main-queue block or outside any block:
+  10.9 reports the main queue as the main thread's current queue in both, so it cannot tell either from a
+  main-queue block running inside a `dispatch_sync` to the asserted queue;
+- any other thread asserting a queue while it runs a block of an unrelated queue;
+- asserting the main queue off the main thread once `dispatch_main` has ended the main thread.
+
+10.12 and later trap in each of these when the thread is in fact off the queue. To see a queue's place in a
+thread's queues, Recaulk sets one queue-specific value of its own on each queue it is asked about and on
+the default overcommit root queue.
 
 ## Licences
 

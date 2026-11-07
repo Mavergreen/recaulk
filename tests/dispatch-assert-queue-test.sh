@@ -17,7 +17,8 @@ if compiling; then
 fi
 runtime_half
 returns='main-on-main-thread main-in-main-block main-in-sync-from-main-thread serial-in-sync serial-in-async
-  target-in-block global-in-block outer-in-nested-sync main-outer-in-nested-sync-after-dispatch-main other-queue-block'
+  target-in-block global-in-block outer-in-nested-sync main-outer-in-nested-sync-after-dispatch-main other-queue-block
+  serial-on-main-thread global-on-main-thread serial-in-main-block'
 traps='serial-off-on-pthread main-off-on-pthread global-off-on-pthread main-off-in-worker target-off-after-block null'
 err="$(mktemp "${TMPDIR:-/tmp}/dispatch-assert-queue.XXXXXX")"
 trap 'rm -f "$err"' EXIT
