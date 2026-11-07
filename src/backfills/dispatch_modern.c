@@ -26,7 +26,7 @@
  * from dispatch_block_wait would deadlock or race the caller. */
 static const char kCancelFlagKey;
 
-dispatch_block_t dispatch_block_create(unsigned long flags, dispatch_block_t block) {
+dispatch_block_t dispatch_block_create(dispatch_block_flags_t flags, dispatch_block_t block) {
     (void)flags;
     if (!block) return NULL;
 
@@ -62,7 +62,7 @@ void dispatch_block_cancel(dispatch_block_t block) {
     if (flag) __sync_lock_test_and_set(flag, 1);
 }
 
-long dispatch_block_testcancel(dispatch_block_t block) {
+intptr_t dispatch_block_testcancel(dispatch_block_t block) {
     volatile int *flag = cancel_flag_for(block);
     return flag && *flag ? 1 : 0;
 }
@@ -71,8 +71,8 @@ long dispatch_block_testcancel(dispatch_block_t block) {
  * quality-of-service classes, so the class and relative priority are dropped;
  * what the caller actually depends on -- a block it can cancel -- is
  * unaffected, and scheduling falls back to the single priority this OS has. */
-dispatch_block_t dispatch_block_create_with_qos_class(unsigned long flags,
-                                                      int qos_class,
+dispatch_block_t dispatch_block_create_with_qos_class(dispatch_block_flags_t flags,
+                                                      dispatch_qos_class_t qos_class,
                                                       int relative_priority,
                                                       dispatch_block_t block) {
     (void)qos_class;
@@ -80,16 +80,8 @@ dispatch_block_t dispatch_block_create_with_qos_class(unsigned long flags,
     return dispatch_block_create(flags, block);
 }
 
-/* This library's own <dispatch/dispatch.h> defines dispatch_activate as a
- * macro for dispatch_resume, which is what a consumer compiled against it
- * gets. A prebuilt binary binds the symbol instead, so the function has to
- * exist too -- and must agree with the macro, or the same call would mean
- * different things depending on how the caller was built.
- *
- * Undefining the macro first is essential: without it this definition compiles
- * as dispatch_resume, and the library would export a dispatch_resume that
- * shadows libdispatch's own for anything binding through the wrapper. */
-#undef dispatch_activate
+/* Before 10.12 a dispatch_resume started an object created inactive, so dispatch_activate is one.
+ * <dispatch/dispatch.h> declares it (README.md "Declarations"). */
 void dispatch_activate(dispatch_object_t object) {
     dispatch_resume(object);
 }
@@ -99,7 +91,7 @@ void dispatch_activate(dispatch_object_t object) {
  * correctness; only the scheduling hint is lost. */
 dispatch_queue_attr_t
 dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_t attr,
-                                        int qos_class, int relative_priority) {
+                                        dispatch_qos_class_t qos_class, int relative_priority) {
     (void)qos_class;
     (void)relative_priority;
     return attr;

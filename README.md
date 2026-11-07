@@ -68,6 +68,18 @@ listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backf
 holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect` and its `fma`,
 `fmal` and `truncl` are fixes of this kind.
 
+## Declarations
+
+Every public function `librecaulk.a` defines is declared by Recaulk's headers, in the header and under
+the condition the 11.3 SDK (shipyard's `fetch_sdk.sh --arch arm64`) declares it, or in a header of
+Recaulk's own where no Apple SDK has it. A definition without a declaration is a trap: an autoconf link
+test finds the function, the program drops its own fallback, and a C99 compiler then refuses the call
+(LibreSSL's `timingsafe_bcmp`). Two kinds stay undeclared, each listed with its reason: an entry point no
+source calls by name (one the compiler emits, an SPI its callers declare themselves, a call a later SDK's
+macro makes), and a stub that only reports failure on 10.9, such as `SecKeyCreateRandomKey`, which a
+declaration would make a feature check choose over the 10.9 path that works. `build/declarations.txt`
+lists every one, and `tests/declarations.sh` holds that list exact and each header declaring its names.
+
 ## C++ exceptions
 
 C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on

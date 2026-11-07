@@ -10,15 +10,19 @@ d="$(mktemp -d "${TMPDIR:-/tmp}/headers.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
 inc="$T/include/recaulk"
 layer=_recaulk_macports
+cxx_only=cxxabi.h
 {
   echo '#include <MacportsLegacySupport.h>'
   echo '#include <os/lock.h>'
   echo '#include <time.h>'
-  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | sed 's|.*|#include <&>|'
+  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx "$cxx_only" | sed 's|.*|#include <&>|'
   echo 'int main(void){return 0;}'
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all.o" || bad "the headers do not compile together"
+# platform: the 10.9 SDK's cxxabi.h, which Recaulk's wraps, is C++ only
+printf '#include <%s>\nint main() { return 0; }\n' $cxx_only > "$d/cxx.cpp"
+"$CXX" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/cxx.cpp" -o "$d/cxx.o" || bad "the C++-only headers ($cxx_only) do not compile"
 
 mp="$W/mp-headers/include/LegacySupport"
 [ -d "$mp" ] || bad "no installed MacPorts header tree at $mp to compare against"
@@ -31,8 +35,12 @@ for h in $(cd "$mp" && find . -type f | sed 's|^\./||'); do
   if [ -f "src/include/$h" ]; then
     staged="$(beside "$h")"
     cmp -s "$mp/$h" "$inc/$staged" || bad "MacPorts' $h is not staged unmodified at include/recaulk/$staged"
-    first="$(grep -m 1 '^[[:space:]]*#' "src/include/$h" | tr -s ' \t' ' ' | sed 's/^ //; s/# /#/')"
-    [ "$first" = "#include <$staged>" ] || bad "src/include/$h wraps MacPorts' header, so its first directive must be #include <$staged>, not: $first"
+    # platform: MacPorts' sys/clonefile.h, sys/fsgetpath.h and sys/random.h use what they never include, so the
+    #           directives before it may only #include the headers MacPorts' copy needs.
+    lead="$(grep '^[[:space:]]*#' "src/include/$h" | tr -s ' \t' ' ' | sed 's/^ //; s/# /#/' \
+      | awk -v s="#include <$staged>" '$0 == s { found = 1; exit } { print } END { if (!found) print "(no " s ")" }')"
+    other="$(printf '%s\n' "$lead" | grep -v '^#include <[^>]*>$' | head -n 1)"
+    [ -z "$other" ] || bad "src/include/$h wraps MacPorts' header, so its first directive other than an #include of a header it needs must be #include <$staged>, not: $other"
   else
     cmp -s "$mp/$h" "$inc/$h" || bad "MacPorts' $h is not staged unmodified at include/recaulk/$h"
   fi
