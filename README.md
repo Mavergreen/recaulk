@@ -68,6 +68,19 @@ listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backf
 holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect` and its `fma`,
 `fmal` and `truncl` are fixes of this kind.
 
+A hidden definition in an archive binds only when nothing earlier in the link defines the name, and
+`-lm`, `-ldl`, `-lpthread` and `-lc` each name libSystem itself. So a program built from source against
+Recaulk's headers reaches each C fix by a name of Recaulk's own, whatever its link order: `math.h` and
+`spawn.h` declare the 10.9 names first with Recaulk's symbol as their asm label, and `sys/select.h`
+renames `pselect`, whose 10.9 declaration picks one of five labelled variants, so the label it picks is
+the same variant of Recaulk's. `libRecaulkSystem.dylib` exports those names too, the only `___recaulk_` names
+it exports (`build/header-entries.txt`), so the same program linked against it finds them.
+`tests/shadow-renames.sh` holds each listed C function to that. Two cases
+still depend on link order: code compiled against Apple's headers (a prebuilt object), and C++ that
+reaches `fmal` or `truncl` through libc++'s `long double` overloads, which call the compiler builtin and
+so the plain name. The C++ exception rules are vtables the compiler references, which no header can
+rename.
+
 ## Declarations
 
 Every public function `librecaulk.a` defines is declared by Recaulk's headers, in the header and under

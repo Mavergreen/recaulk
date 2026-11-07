@@ -1,3 +1,4 @@
+#include <recaulk/_names_spawn.h>
 #include_next <spawn.h>
 #ifndef RECAULK_SPAWN_H
 #define RECAULK_SPAWN_H
