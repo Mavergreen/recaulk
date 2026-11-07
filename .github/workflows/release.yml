@@ -77,6 +77,26 @@ jobs:
       - name: Build the library
         run: sh build/build-lib.sh
 
+      # spec: tests/helpers/built.sh -- runtime tests build here and run on a 10.9 guest (on-mavericks),
+      #       against the installed pkg; nothing x86_64 runs on this runner
+      - name: Every host-agnostic test runs, and none skips
+        env:
+          RECAULK_TEST_PHASE: build
+        run: sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh" --strict-host
+
+      # platform: upload-artifact drops the executable bit, so the build tree travels as a tarball
+      - name: The build tree the guest runs the tests from
+        run: |
+          set -eu
+          B="$MAVERICKS_BUILD_ROOT/$(basename "$PWD")"
+          (cd "$B" && tar -czf "$RUNNER_TEMP/recaulk-tests.tgz" stage test-bin work/macports-legacy-support-*)
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: recaulk-tests
+          if-no-files-found: error
+          path: ${{ runner.temp }}/recaulk-tests.tgz
+
       - name: Build the Sparkle updater
         env:
           VER: ${{ steps.ver.outputs.ver }}
@@ -122,26 +142,6 @@ jobs:
           set -- dist/*.pkg
           [ $# -eq 1 ] && [ "$1" = "dist/recaulk-$VER.pkg" ] \
             || { echo "::error::dist must hold exactly dist/recaulk-$VER.pkg, got: $*"; exit 1; }
-
-      # spec: tests/helpers/built.sh -- runtime tests build here and run on a 10.9 guest (on-mavericks),
-      #       against the installed pkg; nothing x86_64 runs on this runner
-      - name: Every host-agnostic test runs, and none skips
-        env:
-          RECAULK_TEST_PHASE: build
-        run: sh "$SHIPYARD_SCRIPTS/run-repo-tests.sh" --strict-host
-
-      # platform: upload-artifact drops the executable bit, so the build tree travels as a tarball
-      - name: The build tree the guest runs the tests from
-        run: |
-          set -eu
-          B="$MAVERICKS_BUILD_ROOT/$(basename "$PWD")"
-          (cd "$B" && tar -czf "$RUNNER_TEMP/recaulk-tests.tgz" stage test-bin work/macports-legacy-support-*)
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: recaulk-tests
-          if-no-files-found: error
-          path: ${{ runner.temp }}/recaulk-tests.tgz
 
       - name: The ingredient pins are declared consistently
         run: sh "$SHIPYARD_SCRIPTS/check-ingredient-pins.sh"
