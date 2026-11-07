@@ -11,7 +11,8 @@ bad() { echo "FAIL: $*"; fail=1; }
 d="$(mktemp -d "${TMPDIR:-/tmp}/shadow-renames.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
 
-# The C functions the list fixes: its symbols, less C++'s and less the $-variants of one function.
+# spec: build/image-local-shadows.txt -- the C functions it fixes: its symbols, less C++'s and less the
+#       $-variants of one function.
 grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $2 }' | grep -v '^__Z' | sed 's/^_//; s/\$.*//' \
   | LC_ALL=C sort -u > "$d/fixed"
 [ -s "$d/fixed" ] || bad "build/image-local-shadows.txt lists no C function"
@@ -44,7 +45,8 @@ for libs in "-lm -ldl -lpthread -lc" ""; do
     fi
   done
 done
-# The same program linked against libRecaulkSystem.dylib, which exports what Recaulk's headers name.
+# spec: build/header-entries.txt -- the same program links against libRecaulkSystem.dylib, which exports
+#       what Recaulk's headers name.
 # shellcheck disable=SC2086 # FLAGS is a word list
 "$CC" $FLAGS -arch x86_64 -isystem "$T/include/recaulk" "$d/calls.c" -L"$T/lib" -lRecaulkSystem -o "$d/calls-dylib" \
   || bad "a program taking each fixed function's address does not link against libRecaulkSystem.dylib"

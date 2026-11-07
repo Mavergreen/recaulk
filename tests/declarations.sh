@@ -13,8 +13,9 @@ d="$(mktemp -d "${TMPDIR:-/tmp}/declarations.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
 list=build/declarations.txt
 
-# Public: an external (not private external) text symbol, not Recaulk's internal ___recaulk_ name, not a
-# $-variant of a function 10.9 has (README.md "Fixes to functions 10.9 has"), and not C++.
+# spec: README.md "How to use" and "Fixes to functions 10.9 has" -- public is an external (not private
+#       external) text symbol: not Recaulk's internal ___recaulk_ name, not a $-variant of a function 10.9
+#       has, and not C++.
 "$NM" -m --defined-only "$T/lib/librecaulk.a" > "$d/nm" || { echo "FAIL: $NM cannot read librecaulk.a"; exit 1; }
 grep ' external ' "$d/nm" | grep -v 'private external' | grep '(__TEXT,__text)' | awk '{ print $NF }' \
   | sed 's/^_//' | grep -v -e '^__recaulk_' -e '\$' -e '^_Z' | LC_ALL=C sort -u > "$d/defined"
@@ -27,8 +28,8 @@ for n in $(LC_ALL=C comm -13 "$d/defined" "$d/listed"); do bad "$list lists $n, 
 grep -v -e '^#' -e '^[[:space:]]*$' "$list" | awk '$2 == "-" && NF < 3 { print "FAIL: " $1 " is ABI-only with no reason" }' > "$d/noreason"
 [ ! -s "$d/noreason" ] || { cat "$d/noreason"; fail=1; }
 
-# One translation unit per header (and language), taking each listed name's address, so an undeclared
-# one is clang's "use of undeclared identifier".
+# platform: clang reports a name no header declares as "use of undeclared identifier", so one translation
+#           unit per header (and language) takes each listed name's address.
 grep -v -e '^#' -e '^[[:space:]]*$' "$list" | awk '$2 != "-" { print $2, ($3 == "c++" ? "cpp" : "c"), ($3 == "c++" ? $4 : $1) }' \
   | LC_ALL=C sort > "$d/byheader"
 for hl in $(awk '{ print $1 "|" $2 }' "$d/byheader" | uniq); do
