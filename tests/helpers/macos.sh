@@ -14,4 +14,9 @@ version_below() {
 
 plist_buddy() { /usr/libexec/PlistBuddy "$@"; }
 plist_util() { /usr/bin/plutil "$@"; }
-code_sign() { /usr/bin/codesign "$@"; }
+# platform: 10.9 launches an unsigned app, and its codesign needs the Command Line Tools' codesign_allocate,
+#           which stock 10.9 lacks, so a fixture's ad-hoc signature is made only on 10.10 and later
+code_sign() {
+  if version_below "$(macos_version)" 10.10; then return 0; fi
+  /usr/bin/codesign "$@"
+}
