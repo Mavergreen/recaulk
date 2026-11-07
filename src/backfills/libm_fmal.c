@@ -9,7 +9,8 @@ long double __recaulk_fmal(long double a, long double b, long double c);
 
 long double __recaulk_fmal(long double a, long double b, long double c) {
     if (!__builtin_isfinite(a) || !__builtin_isfinite(b) || !__builtin_isfinite(c)) {
-        if (__builtin_isfinite(a) && __builtin_isfinite(b)) return c + c;
+        if (__builtin_isnan(a) || __builtin_isnan(b)) return a * b + c;
+        if (__builtin_isnan(c) || (__builtin_isfinite(a) && __builtin_isfinite(b))) return c + c;
         return a * b + c;
     }
     if (a == 0 || b == 0) return a * b + c;

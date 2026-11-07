@@ -587,9 +587,12 @@ and read with the x87's. So `fma` uses it when CPUID leaf 1 reports FMA, AVX and
 SSE and YMM state bits, checked once. MEASURED by the review of the first round, on this Ivy Bridge: the
 software path took 48.2 ns a call, 10.9's own 11.1 ns. `tests/c/libm_fixes.c`, linked to `librecaulk.a`,
 runs every case through `fma`, through `___recaulk_fma_software` and, where the CPU has FMA, through
-`___recaulk_fma_hardware`, and prints which it ran. Intel's `vfmadd` raises invalid for infinity times
-zero plus a quiet NaN (Annex F allows either); the software path and `fmal` do the same, and the test
-holds all three to it.
+`___recaulk_fma_hardware`, and prints which it ran. IEEE 754-2008 7.2(c) leaves it to the implementation
+whether infinity times zero plus a quiet NaN signals invalid. MEASURED 2026-11-07 in the 10.9.5 guest
+under KVM on a Coffee Lake host, the first run of the hardware path: `vfmadd` returns the NaN and signals
+nothing, as 10.9's `fmaf` does. So the software path and `fmal` do the same (the x87 has no fused
+operation to follow, and one rule for both keeps `fma` and `fmal` alike); a signalling NaN still signals
+invalid on every path, and the test holds all three to both.
 
 `fmal` judges tininess after rounding, as the x87 does and so as `fma`'s final conversion does: IEEE 754
 asks one convention of all operations. `fmal(0x1.0000000000000008p-16382, 0x1.fffffffffffffffcp-1,

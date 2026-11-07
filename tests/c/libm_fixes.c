@@ -135,7 +135,7 @@ static void vectors(void) {
 
 static void fma_specials(fma_fn *volatile f, const char *fn) {
     char line[640], name[160];
-    const double inf = INFINITY, nan = NAN;
+    const double inf = INFINITY, nan = NAN, snan = f64(0x7ff0000000000001ULL);
     for (unsigned m = 0; m < 4; m++) {
         const int down = modes[m] == FE_DOWNWARD, up = modes[m] == FE_UPWARD;
         const int to_inf = modes[m] == FE_TONEAREST || up;
@@ -145,7 +145,10 @@ static void fma_specials(fma_fn *volatile f, const char *fn) {
         snprintf(name, sizeof name, "%s(%s, %s, %s)", fn, #a, #b, #c);                                    \
         EXPECT(name, f(a, b, c), want, flags);                                                            \
     } while (0)
-        FMA(inf, 0, nan, nan, FE_INVALID);
+        FMA(inf, 0, nan, nan, 0);
+        FMA(0, -inf, nan, nan, 0);
+        FMA(inf, 0, snan, nan, FE_INVALID);
+        FMA(1, 1, snan, nan, FE_INVALID);
         FMA(inf, 0, 1, nan, FE_INVALID);
         FMA(inf, 1, -inf, nan, FE_INVALID);
         FMA(nan, 1, 1, nan, 0);
@@ -173,6 +176,7 @@ static void fma_specials(fma_fn *volatile f, const char *fn) {
 static void specials(void) {
     char line[640];
     const long double infl = INFINITY;
+    const long double snanl = f80((struct ld_bits){0x8000000000000001ULL, 0x7fff});
     for (unsigned j = 0; j < nfmas; j++) fma_specials(fmas[j].fn, fmas[j].name);
     for (unsigned m = 0; m < 4; m++) {
         const int down = modes[m] == FE_DOWNWARD, up = modes[m] == FE_UPWARD;
@@ -188,7 +192,10 @@ static void specials(void) {
         EXPECT("fmaf(0x1p-80, 0x1p-80, 0x1p-149)", fmaf_p(0x1p-80f, 0x1p-80f, 0x1p-149f),
                up ? 0x1p-148f : 0x1p-149f, FE_UNDERFLOW | FE_INEXACT);
 
-        EXPECT("fmal(inf, 0, nan)", fmal_p(infl, 0, NAN), (long double)NAN, FE_INVALID);
+        EXPECT("fmal(inf, 0, nan)", fmal_p(infl, 0, NAN), (long double)NAN, 0);
+        EXPECT("fmal(0, -inf, nan)", fmal_p(0, -infl, NAN), (long double)NAN, 0);
+        EXPECT("fmal(inf, 0, snan)", fmal_p(infl, 0, snanl), (long double)NAN, FE_INVALID);
+        EXPECT("fmal(1, 1, snan)", fmal_p(1, 1, snanl), (long double)NAN, FE_INVALID);
         EXPECT("fmal(inf, 0, 1)", fmal_p(infl, 0, 1), (long double)NAN, FE_INVALID);
         EXPECT("fmal(inf, 1, -inf)", fmal_p(infl, 1, -infl), (long double)NAN, FE_INVALID);
         EXPECT("fmal(1, 1, nan)", fmal_p(1, 1, NAN), (long double)NAN, 0);

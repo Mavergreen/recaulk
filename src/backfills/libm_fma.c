@@ -14,7 +14,8 @@ int __recaulk_fma_has_hardware(void);
  * to odd", IEEE Trans. Computers 57(4), 2008: rounded to odd at 64 bits, then to 53. */
 double __recaulk_fma_software(double a, double b, double c) {
     if (!__builtin_isfinite(a) || !__builtin_isfinite(b) || !__builtin_isfinite(c)) {
-        if (__builtin_isfinite(a) && __builtin_isfinite(b)) return c + c;
+        if (__builtin_isnan(a) || __builtin_isnan(b)) return a * b + c;
+        if (__builtin_isnan(c) || (__builtin_isfinite(a) && __builtin_isfinite(b))) return c + c;
         return a * b + c;
     }
     if (a == 0 || b == 0) return a * b + c;
