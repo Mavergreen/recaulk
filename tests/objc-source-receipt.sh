@@ -7,14 +7,18 @@ set -eu
 umask 077
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
 . "$ROOT/build/msc.sh"
-[ -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ] \
-  || { echo "SKIP: the pinned shipyard has no objc-source-inventory.sh, so no stage carries a receipt yet"; exit 77; }
 fail() { echo "FAIL: $*"; exit 1; }
 D=$(mktemp -d "${TMPDIR:-/tmp}/objc-source-receipt.XXXXXX")
 D=$(cd "$D" && pwd -P)
 trap 'rm -rf "$D"' EXIT
 sh "$ROOT/build/build-objc.sh" "$D/stage" "$D/work" > "$D/builder.log" 2>&1 || { tail -20 "$D/builder.log"; fail 'companion build'; }
 R="$D/stage/share/recaulk/objc-source.receipt"
+if [ ! -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ]; then
+  [ ! -e "$R" ] || fail 'the stage carries a receipt, but the pinned shipyard has no objc-source-inventory.sh to write one'
+  [ -f "$D/stage/share/recaulk/objc-providers.json" ] || fail 'the stage has no share/recaulk/objc-providers.json'
+  echo 'objc-source-receipt: the pinned shipyard has no objc-source-inventory.sh, and the stage carries no receipt'
+  exit 0
+fi
 [ -f "$R" ] || fail 'the stage has no share/recaulk/objc-source.receipt'
 [ "$(sed -n 1p "$R")" = '# objc-source-receipt 1' ] || fail "the receipt's first line is $(sed -n 1p "$R")"
 grep '^profile	recaulk-objc-x86_64-10.9$' "$R" >/dev/null || fail 'the receipt is not for the x86_64 10.9 profile'
