@@ -71,10 +71,11 @@ if [ "$role" = shipping ] && [ "${RECAULK_OBJC_RECEIPT:-0}" = 1 ]; then
     --unit src/objc/workspace-recents.m --unit src/objc/register.m --include generated \
     --output "$W/objc-source.receipt"
 fi
+# spec: tests/objc-provider-symbols.sh -- a declared implementation the analyzer could not resolve fails the build,
+#       before anything reaches the stage
+sh "$SELF/check-objc-impls.sh" "$W/objc-providers.json" "$W/librecaulk-objc.a"
 cp "$W/librecaulk-objc.a" "$T/lib/librecaulk-objc.a"
 cp "$W/objc-providers.json" "$T/share/recaulk/objc-providers.json"
 if [ -f "$W/objc-source.receipt" ]; then cp "$W/objc-source.receipt" "$T/share/recaulk/objc-source.receipt"
 else rm -f "$T/share/recaulk/objc-source.receipt"; fi
-# spec: tests/objc-provider-symbols.sh -- a declared implementation the analyzer could not resolve fails the build
-sh "$SELF/check-objc-impls.sh" "$T"
 printf '%s\n' "$T"
