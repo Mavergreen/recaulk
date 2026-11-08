@@ -8,16 +8,11 @@ int mgfl_value(void);
 
 static int lookups;
 
-/* platform: stands in for the kernel's kern.osrelease, so one host can play 10.9 (Darwin 13) and a
-   newer macOS: MGFL_OSRELEASE names the release */
-int mgfl_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp, size_t newlen) {
-  const char *rel = getenv("MGFL_OSRELEASE");
-  size_t n = strlen(rel) + 1;
-  (void)name; (void)namelen; (void)newp; (void)newlen;
-  if (oldp == 0 || *oldlenp < n) return -1;
-  memcpy(oldp, rel, n);
-  *oldlenp = n;
-  return 0;
+/* platform: stands in for dyld's answer for libsystem_kernel's version, which is xnu's (src/xnu_version.h),
+   so one host can play 10.9 (xnu-2422) and a newer macOS: MGFL_XNU names xnu's major version */
+int mgfl_nsversion(const char *library) {
+  if (strcmp(library, "system_kernel") != 0) return -1;
+  return atoi(getenv("MGFL_XNU")) << 16;
 }
 
 /* platform: counts lookups; on 10.9 a dlsym that finds nothing allocates, which is unsafe from

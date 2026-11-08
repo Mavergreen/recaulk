@@ -41,10 +41,11 @@
 #include <string.h>
 #include <sys/event.h>
 #include <sys/select.h>
-#include <sys/sysctl.h>
 #include <sys/time.h>
+#include <sys/types.h> /* fd_mask, NFDBITS */
 #include <unistd.h>
 #include <pthread.h>
+#include "../xnu_version.h"
 
 #define RECAULK_PSELECT_EXTSN 1    /* $DARWIN_EXTSN: nfds unlimited */
 #define RECAULK_PSELECT_NOCANCEL 2 /* $NOCANCEL: not a cancellation point */
@@ -58,18 +59,13 @@ extern select_fn select_unlimited_nocancel __asm("_select$DARWIN_EXTSN$NOCANCEL"
 int __recaulk_pselect(int variant, int nfds, fd_set *r, fd_set *w, fd_set *e,
                       const struct timespec *timeout, const sigset_t *mask);
 
-/* platform: Darwin 15 (10.11) is the first with a pselect syscall; sysctl by MIB allocates nothing */
+/* platform: xnu-3248 (Darwin 15, 10.11) is the first with a pselect syscall; src/xnu_version.h says why
+ * the version comes from dyld and not a sysctl, which a sandbox may deny */
 static int atomic_pselect(void) {
     static int known = -1;
     int k = __atomic_load_n(&known, __ATOMIC_RELAXED);
     if (k < 0) {
-        int mib[2] = {CTL_KERN, KERN_OSRELEASE}, major = 0;
-        char rel[32];
-        size_t n = sizeof rel;
-        if (sysctl(mib, 2, rel, &n, 0, 0) == 0)
-            for (const char *p = rel; p < rel + n && *p >= '0' && *p <= '9'; p++)
-                major = major * 10 + (*p - '0');
-        k = major >= 15;
+        k = recaulk_xnu_major() >= 3248;
         __atomic_store_n(&known, k, __ATOMIC_RELAXED);
     }
     return k;

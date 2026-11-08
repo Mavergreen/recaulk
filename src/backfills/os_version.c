@@ -21,11 +21,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <sys/sysctl.h>
+#include "../xnu_version.h"
 
 static int cached_major = 0, cached_minor = 0, cached_patch = 0;
 
 static void ensure_os_version(void) {
 	if (cached_major) return;
+	/* platform: 10.9 has no kern.osproductversion, and inside a (deny default) sandbox asking for it
+	   starts sandboxd (src/xnu_version.h), so below xnu-2782 (10.10) the floor is the answer unasked */
+	int xnu = recaulk_xnu_major();
+	if (xnu > 0 && xnu < 2782) {
+		cached_major = 10; cached_minor = 9; cached_patch = 5;
+		return;
+	}
 	char str[64];
 	size_t len = sizeof(str);
 	if (sysctlbyname("kern.osproductversion", str, &len, NULL, 0) == 0) {
