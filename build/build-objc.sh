@@ -2,8 +2,8 @@
 # platform: host-agnostic
 #   usage: build-objc.sh STAGE_PREFIX WORK_DIR [--native-test]
 #          builds the separate Objective-C provider archive with clang22 and stages lib/librecaulk-objc.a and
-#          share/recaulk/objc-providers.json, plus share/recaulk/objc-source.receipt for a shipping stage when
-#          RECAULK_OBJC_RECEIPT=1. --native-test builds for this Mac's own arch instead.
+#          share/recaulk/objc-providers.json, plus share/recaulk/objc-source.receipt for a shipping stage.
+#          --native-test builds for this Mac's own arch instead.
 set -eu
 umask 022
 SELF=$(CDPATH= cd -- "$(dirname "$0")" && pwd -P)
@@ -52,21 +52,14 @@ sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else sh
 sh "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" \
   "$SDK/SDKSettings.plist" "$W/compiler.txt" "$W/source-inputs.txt"
 rm -f "$W/objc-source.receipt"
-# platform: shipyard's objc-source-inventory.sh is macOS-only (it builds with /usr/bin/clang) and the release
-#   builds on Linux, so the receipt is opt-in until the tool runs there; a stage's contents never follow the host.
-if [ "$role" = shipping ] && [ "${RECAULK_OBJC_RECEIPT:-0}" = 1 ]; then
-  RCLANG=${MAVERICKS_OBJC_CLANG_PREFIX:-}
-  if [ -z "$RCLANG" ]; then
-    version=$(tr -d '[:space:]' < "$SHIPYARD_SCRIPTS/../components/objc-reference-clang/version")
-    case "$(uname -s):$(uname -m)" in
-      Darwin:x86_64) short=clang22; flavor=native ;;
-      Darwin:*) short=clang22-cross; flavor=cross ;;
-      *) echo "build-objc: no clang22 $version for this host to write the source receipt; set MAVERICKS_OBJC_CLANG_PREFIX" >&2; exit 1 ;;
-    esac
-    RCLANG=$(sh "$SHIPYARD_SCRIPTS/fetch_product_pkg.sh" --asset "mavericks-clang-22-$flavor-$version.pkg" \
-      "$short" "$version" "$W/objc-reference-$short-$version")
-  fi
-  sh "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" --clang-prefix "$RCLANG" --inputs "$W/source-inputs.txt" \
+# spec: tests/objc-source-receipt.sh -- every shipping stage carries the receipt. shipyard's objc-source-inventory.sh
+#   (v1.0.727 and later) runs on Linux and a Mac and fetches its own pinned clang22 unless given one.
+if [ "$role" = shipping ]; then
+  [ -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ] ||
+    { echo "build-objc: $SHIPYARD_SCRIPTS has no objc-source-inventory.sh to write the source receipt (shipyard v1.0.727+)" >&2; exit 1; }
+  set --
+  [ -z "${MAVERICKS_OBJC_CLANG_PREFIX:-}" ] || set -- --clang-prefix "$MAVERICKS_OBJC_CLANG_PREFIX"
+  sh "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" "$@" --inputs "$W/source-inputs.txt" \
     --root "$ROOT" --root "$W" --unit src/objc/workspace.m --unit src/objc/workspace-events.m \
     --unit src/objc/workspace-recents.m --unit src/objc/register.m --include generated \
     --output "$W/objc-source.receipt"
