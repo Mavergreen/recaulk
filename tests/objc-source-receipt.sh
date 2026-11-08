@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-# spec: build/build-objc.sh header -- a shipping stage carries share/recaulk/objc-source.receipt beside
+# spec: build/build-objc.sh header -- with RECAULK_OBJC_RECEIPT=1 a shipping stage carries share/recaulk/objc-source.receipt beside
 #       objc-providers.json: shipyard's objc-source-inventory.sh receipt of exactly the prepared source the
 #       archive was built from, so a consumer's analysis can close the provider body's own sends.
 set -eu
@@ -13,10 +13,10 @@ D=$(cd "$D" && pwd -P)
 trap 'rm -rf "$D"' EXIT
 sh "$ROOT/build/build-objc.sh" "$D/stage" "$D/work" > "$D/builder.log" 2>&1 || { tail -20 "$D/builder.log"; fail 'companion build'; }
 R="$D/stage/share/recaulk/objc-source.receipt"
-if [ ! -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ]; then
-  [ ! -e "$R" ] || fail 'the stage carries a receipt, but the pinned shipyard has no objc-source-inventory.sh to write one'
+if [ "${RECAULK_OBJC_RECEIPT:-0}" != 1 ]; then
+  [ ! -e "$R" ] || fail 'the stage carries a receipt, but RECAULK_OBJC_RECEIPT is not 1'
   [ -f "$D/stage/share/recaulk/objc-providers.json" ] || fail 'the stage has no share/recaulk/objc-providers.json'
-  echo 'objc-source-receipt: the pinned shipyard has no objc-source-inventory.sh, and the stage carries no receipt'
+  echo 'objc-source-receipt: RECAULK_OBJC_RECEIPT is not 1, and the stage carries no receipt'
   exit 0
 fi
 [ -f "$R" ] || fail 'the stage has no share/recaulk/objc-source.receipt'

@@ -266,10 +266,12 @@ Codex-local workaround. Real native and Mavericks evidence remain mandatory.
 host (Linux, a modern Mac, 10.9); `build/objc-provider-manifest.sh` checks the
 declaration and the encoding clang22 compiles for it, and writes the header and
 metadata. It stages only `lib/librecaulk-objc.a`, `share/recaulk/objc-providers.json` and, for a
-shipping stage built with a shipyard that has `objc-source-inventory.sh`,
+shipping stage built with `RECAULK_OBJC_RECEIPT=1`,
 `share/recaulk/objc-source.receipt`: shipyard's source receipt of the
 prepared provider source (`tests/objc-source-receipt.sh`), through which a consumer's
-analysis closes the provider body's own sends.
+analysis closes the provider body's own sends. It is opt-in because shipyard's
+`objc-source-inventory.sh` runs only on a Mac with `/usr/bin/clang`, and the release
+builds on Linux; a stage's contents never depend on which host built it.
 Default output is SHIPPING x86_64/10.9, including on an arm64 build host.
 A third `--native-test` argument, on a Mac only, explicitly creates a host-native TEST-ONLY
 archive; metadata records `artifact_role=native-test-only`. It is not a product

@@ -2,8 +2,8 @@
 # platform: host-agnostic
 #   usage: build-objc.sh STAGE_PREFIX WORK_DIR [--native-test]
 #          builds the separate Objective-C provider archive with clang22 and stages lib/librecaulk-objc.a and
-#          share/recaulk/objc-providers.json, plus share/recaulk/objc-source.receipt for a shipping stage when the
-#          pinned shipyard has objc-source-inventory.sh. --native-test builds for this Mac's own arch instead.
+#          share/recaulk/objc-providers.json, plus share/recaulk/objc-source.receipt for a shipping stage when
+#          RECAULK_OBJC_RECEIPT=1. --native-test builds for this Mac's own arch instead.
 set -eu
 umask 022
 SELF=$(CDPATH= cd -- "$(dirname "$0")" && pwd -P)
@@ -47,7 +47,9 @@ sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else sh
 sh "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" \
   "$SDK/SDKSettings.plist" "$W/compiler.txt" "$W/source-inputs.txt"
 rm -f "$W/objc-source.receipt"
-if [ "$role" = shipping ] && [ -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ]; then
+# platform: shipyard's objc-source-inventory.sh is macOS-only (it builds with /usr/bin/clang) and the release
+#   builds on Linux, so the receipt is opt-in until the tool runs there; a stage's contents never follow the host.
+if [ "$role" = shipping ] && [ "${RECAULK_OBJC_RECEIPT:-0}" = 1 ]; then
   RCLANG=${MAVERICKS_OBJC_CLANG_PREFIX:-}
   if [ -z "$RCLANG" ]; then
     version=$(tr -d '[:space:]' < "$SHIPYARD_SCRIPTS/../components/objc-reference-clang/version")

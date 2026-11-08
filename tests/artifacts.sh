@@ -30,7 +30,7 @@ cmp -s sdk-metadata/recipes.json "$T/share/sdk-metadata/recipes.json" || bad "sh
 [ "$(ls "$T/share/sdk-metadata" | tr "\n" " ")" = "recipes.json " ] || bad "share/sdk-metadata holds: $(ls "$T/share/sdk-metadata" | tr "\n" " ")"
 [ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
 [ -f "$T/share/recaulk/objc-providers.json" ] || bad "separate Objective-C provider metadata missing"
-[ ! -f "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" ] || [ -f "$T/share/recaulk/objc-source.receipt" ] || bad "the Objective-C provider's source receipt is missing"
+[ "${RECAULK_OBJC_RECEIPT:-0}" != 1 ] || [ -f "$T/share/recaulk/objc-source.receipt" ] || bad "the Objective-C provider's source receipt is missing"
 stray="$(cd "$B/stage" && find . -mindepth 1 -not -path ./usr -not -path ./usr/local -not -path ./usr/local/mavergreen \
   -not -path ./usr/local/mavergreen/recaulk -not -path './usr/local/mavergreen/recaulk/*' | head -5)"
 [ -z "$stray" ] || bad "stage holds files outside usr/local/mavergreen/recaulk: $stray"
