@@ -10,15 +10,10 @@ int mgfwd_regs_probe(void);
 extern void *__recaulk_slot_mgfwd_varargs;
 
 /* platform: on 10.9 the resolver takes the back-fill without a lookup (src/forward/resolve.c);
-   reporting a newer kern.osrelease keeps the lookup, and the trampoline around it, under test on
-   every host */
-int mgfwd_modern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
-                        size_t newlen) {
-  (void)name; (void)namelen; (void)newp; (void)newlen;
-  if (oldp == 0 || *oldlenp < sizeof "25.0.0") return -1;
-  memcpy(oldp, "25.0.0", sizeof "25.0.0");
-  *oldlenp = sizeof "25.0.0";
-  return 0;
+   reporting a newer xnu (src/xnu_version.h) keeps the lookup, and the trampoline around it, under
+   test on every host */
+int mgfwd_modern_nsversion(const char *library) {
+  return strcmp(library, "system_kernel") == 0 ? 12377 << 16 : -1;
 }
 
 /* platform: the System V x86_64 ABI lets a callee overwrite every argument register; this stands

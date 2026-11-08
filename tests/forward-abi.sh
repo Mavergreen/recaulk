@@ -15,9 +15,9 @@ if compiling; then
   printf '%s\n' _mgfwd_float _mgfwd_nop _mgfwd_varargs > "$D/symbols"
   sh build/rename-impls.sh "$DRYDOCK" "$D/symbols" "$D/impl.o"
   SDK="$SDK" sh build/gen-trampolines.sh "$D/symbols" "$D/fwd"
-  printf 'symbol rename _dlsym _mgfwd_clobbering_dlsym\nsymbol rename _sysctl _mgfwd_modern_sysctl\n' \
+  printf 'symbol rename _dlsym _mgfwd_clobbering_dlsym\nsymbol rename _NSVersionOfRunTimeLibrary _mgfwd_modern_nsversion\n' \
     | "$DRYDOCK" "$D/fwd/fwd-resolve.o" "$D/fwd/fwd-resolve.clobbering.o" >/dev/null 2>&1 \
-    || { echo "FAIL: could not point fwd-resolve.o's dlsym and sysctl at the stand-ins"; exit 1; }
+    || { echo "FAIL: could not point fwd-resolve.o's dlsym and NSVersionOfRunTimeLibrary at the stand-ins"; exit 1; }
   mv -f "$D/fwd/fwd-resolve.clobbering.o" "$D/fwd/fwd-resolve.o"
   recaulk_archive "$D/libabi.a" "$D/impl.o" "$D"/fwd/fwd-*.o
   xcc -o "$(tbin impl-path)" tests/c/forward_abi.c "$D/libabi.a"
