@@ -362,6 +362,20 @@
           "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10: callers check that the function is present first. */\nextern CFURLRef LSCopyDefaultApplicationURLForURL(CFURLRef inURL, LSRolesMask inRoleMask, CFErrorRef *outError) __attribute__((availability(macosx,introduced=10.10)));\n\n#pragma pack(pop)"
         }
       ]
+    },
+    {
+      "id": "launchservices-default-app-v2",
+      "header": "System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Versions/A/Headers/LSInfo.h",
+      "sha256": "713906f8cbce353a1e5ee7a6fee0584dccabb3655b9787bb834f704764ee01f6",
+      "aliases": [
+        "System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Headers/LSInfo.h"
+      ],
+      "replacements": [
+        {
+          "old": "#pragma pack(pop)",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; Recaulk back-fills it on 10.9 (librecaulk.a), so callers need no presence check. */\nextern CFURLRef LSCopyDefaultApplicationURLForURL(CFURLRef inURL, LSRolesMask inRoleMask, CFErrorRef *outError);\n\n#pragma pack(pop)"
+        }
+      ]
     }
   ]
 }

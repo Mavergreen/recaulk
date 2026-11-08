@@ -297,6 +297,11 @@ run time (`webkit-wkwebview-v1`), and `LSCopyDefaultApplicationURLForURL`
 (`launchservices-default-app-v1`). Linking such a reference needs the linker told that the symbol may
 stay undefined, since 10.9's frameworks do not export it.
 
+`launchservices-default-app-v2` declares `LSCopyDefaultApplicationURLForURL` plainly instead, with no
+availability: Recaulk back-fills it in `librecaulk.a`, which clang22 links into every program, so callers
+need no presence check and the reference is an ordinary one. v1's comment told callers to check first;
+v1 stays for the consumers that pinned it, and new ones use v2.
+
 `tests/sdk-metadata-compile.sh` proves each recipe with its probe in `tests/fixtures/sdk-probes/<id>.m`:
 the probe compiles with `-Werror` through the recipe's overlay, made by shipyard's own module, and fails
 to compile without it. A probe's `// weak:` symbols must be weak references in its object file.
