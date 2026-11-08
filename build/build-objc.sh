@@ -30,11 +30,16 @@ export CC TARGET_FLAGS SDK LIPO
 unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH OBJC_INCLUDE_PATH SDKROOT MACOSX_DEPLOYMENT_TARGET CCC_OVERRIDE_OPTIONS
 mkdir -p "$W/objects" "$W/generated" "$T/lib" "$T/share/recaulk"
 "$CC" --version > "$W/compiler.txt"
+printf 'SDK=%s\n' "$SDK" > "$W/sdk.txt"
 G="$SELF/objc-provider-manifest.sh"; D="$ROOT/src/objc/providers.json"
 sh "$G" header "$D" "$W/generated/providers-generated.h"
+# spec: tests/objc-archive-reproducible.sh -- the prefix maps make every checkout and work directory build the same
+#       bytes, and name each source by the relative label source-inputs.txt records (the receipt's labels)
 # spec: tests/objc-source-receipt.sh -- -g keeps each member's line table, which the source receipt maps sends through
 for f in workspace workspace-events workspace-recents register; do
   "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations \
+    -ffile-prefix-map="$ROOT/"= -ffile-prefix-map="$W/"= \
+    -ffile-prefix-map="$SDK"="$(basename "$SDK")" -fdebug-compilation-dir=. \
     -I"$W/generated" -c "$ROOT/src/objc/$f.m" -o "$W/objects/$f.o"
 done
 recaulk_archive "$W/librecaulk-objc.a" "$W/objects/workspace.o" "$W/objects/workspace-events.o" \
@@ -70,4 +75,6 @@ cp "$W/librecaulk-objc.a" "$T/lib/librecaulk-objc.a"
 cp "$W/objc-providers.json" "$T/share/recaulk/objc-providers.json"
 if [ -f "$W/objc-source.receipt" ]; then cp "$W/objc-source.receipt" "$T/share/recaulk/objc-source.receipt"
 else rm -f "$T/share/recaulk/objc-source.receipt"; fi
+# spec: tests/objc-provider-symbols.sh -- a declared implementation the analyzer could not resolve fails the build
+sh "$SELF/check-objc-impls.sh" "$T"
 printf '%s\n' "$T"
