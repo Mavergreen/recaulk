@@ -109,7 +109,8 @@ for want in 'needs: \[build\]' 'timeout-minutes: 60' 'uses: Mavergreen/mavericks
     'RECAULK_VERSION: \$\{\{ needs.build.outputs.ver \}\}' \
     'got="\$\(/usr/libexec/PlistBuddy -c .Print :version. /usr/local/mavergreen/recaulk/mavergreen.plist\)"' \
     '/usr/local/bin/mavergreen check' \
-    'RECAULK_BUILD="\$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk sh tests/guest/run-runtime-tests.sh' \
+    'aqua-session: true' \
+    'RECAULK_BUILD="\$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk /usr/local/bin/guest-macosx-aqua sh tests/guest/run-runtime-tests.sh' \
     'sh build/launch-updater.sh'; do
   printf '%s\n' "$om" | grep -Eq "^ *(- )?$want\$" || { echo "the on-mavericks job lacks a line $want"; exit 1; }
 done

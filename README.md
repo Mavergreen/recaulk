@@ -329,8 +329,8 @@ Unset, it is `both` on 10.9 and `build` elsewhere. CI builds on Linux, installs 
 guest through [mavericks-vm](https://github.com/Mavergreen/mavericks-vm), and runs the `run` half there
 against the installed Recaulk.
 
-The guest runs its tests over ssh, with no one logged in at its desktop, and Launch Services launches
-apps only in a logged-in (Aqua) session. So a test that launches apps through it
-(`objc-workspace-backfill.sh`, the Objective-C provider's real delivery, and `objc-workspace-context-test.sh`)
-is `macOS-only` rather than marked for the guest: it builds like the others, and its `run` half runs on a
-10.9 Mac's desktop, skipping (77) anywhere without one.
+Launch Services launches apps only in a logged-in (Aqua) session, which `objc-workspace-backfill.sh` (the
+Objective-C provider's real delivery) and `objc-workspace-context-test.sh` need. The guest job asks
+mavericks-vm for one (`aqua-session: true`) and runs the tests through its `guest-macosx-aqua`, so they
+run in that session. Run anywhere without one, those two skip (77), and the guest runner counts a skip
+as a failure.

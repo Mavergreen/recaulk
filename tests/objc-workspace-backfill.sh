@@ -1,6 +1,6 @@
 #!/bin/sh
-# platform: macOS-only -- drives REAL Launch Services delivery on 10.9, which needs a logged-in GUI (Aqua) session;
-#           the 10.9 guest runs its tests over ssh, with none, so this runs on a Mavericks box's desktop
+# platform: host-agnostic -- links a controller to librecaulk-objc.a with clang22; drives REAL Launch Services delivery on 10.9 (RECAULK_TEST_PHASE)
+#           in a logged-in GUI (Aqua) session, which the guest gives its tests through guest-macosx-aqua
 # spec: tests/README.objc-workspace.md "Actual-method delivery and immutable reference routing" -- private fixture
 #       apps only, no Automation requests; with no arguments only the floor controls run
 #   usage: objc-workspace-backfill.sh [--report NEW_ABSOLUTE_DIR [--floor-controls-only]]
@@ -38,7 +38,8 @@ if compiling; then
   check_loads "$(tbin controller)" "$(tbin negative-controller)" "$(tbin probe)"
 fi
 runtime_half
-[ "$(launchctl managername)" = Aqua ] || { echo "SKIP: no GUI session here, and Launch Services launches apps only in one"; exit 77; }
+# platform: guarded macOS-only call -- launchctl runs only once uname -s says Darwin
+if [ "$(uname -s)" = Darwin ] && [ "$(launchctl managername)" = Aqua ]; then :; else echo "SKIP: no GUI session here, and Launch Services launches apps only in one"; exit 77; fi
 case "$(macos_version)" in
   10.9.*) ;;
   *) [ -z "$RPT" ] || { echo 'FAIL: actual Mavericks required'; exit 1; }

@@ -248,6 +248,8 @@ jobs:
           envs: RECAULK_VERSION
           copyback: false
           debug-on-error: true
+          # spec: README.md "Tests" -- the provider's real-delivery tests launch apps, which needs an Aqua session
+          aqua-session: true
           run: |
             set -eu
             sw_vers
@@ -261,7 +263,8 @@ jobs:
             /usr/local/bin/mavergreen check
             got="$(/usr/libexec/PlistBuddy -c 'Print :version' /usr/local/mavergreen/recaulk/mavergreen.plist)"
             [ "$got" = "$RECAULK_VERSION" ] || { echo "the installed Recaulk is $got, not this run's $RECAULK_VERSION"; exit 1; }
-            RECAULK_BUILD="$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk sh tests/guest/run-runtime-tests.sh
+            # platform: 10.9's ssh PATH lacks /usr/local/bin; the helper runs its command as this user inside Aqua (sudo -E)
+            RECAULK_BUILD="$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk /usr/local/bin/guest-macosx-aqua sh tests/guest/run-runtime-tests.sh
             sh build/launch-updater.sh
 
   scan:
