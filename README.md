@@ -84,8 +84,8 @@ products. `libRecaulkSystem.dylib` exports it publicly (its source is in `src/ov
 `librecaulk.a` carries it weak and hidden (`src/backfills/`), so it binds only inside the program or
 dylib that links the archive and yields to the dylib's in the one link that has both. Each such name is
 listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backfills-add-only.sh`
-holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect` and its `fma`,
-`fmal` and `truncl` are fixes of this kind.
+holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect`, its `close` and
+`dup2`, and its `fma`, `fmal` and `truncl` are fixes of this kind.
 
 A hidden definition in an archive binds only when nothing earlier in the link defines the name, and
 `-lm`, `-ldl`, `-lpthread` and `-lc` each name libSystem itself. So a program built from source against
@@ -95,7 +95,8 @@ renames `pselect`, whose 10.9 declaration picks one of five labelled variants, s
 the same variant of Recaulk's. `libRecaulkSystem.dylib` exports those names too, the only `___recaulk_` names
 it exports (`build/header-entries.txt`), so the same program linked against it finds them.
 `tests/shadow-renames.sh` holds each listed C function to that. Two cases
-still depend on link order: code compiled against Apple's headers (a prebuilt object), and C++ that
+still depend on link order, besides `close` and `dup2` (see Closing a socket): code compiled against Apple's
+headers (a prebuilt object), and C++ that
 reaches `fmal` or `truncl` through libc++'s `long double` overloads, which call the compiler builtin and
 so the plain name. The C++ exception rules are vtables the compiler references, which no header can
 rename.
@@ -180,6 +181,21 @@ memory exhausted), a wait falls back to 10.9's own `pselect` rather than fail. A
 kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and registers another. Callers
 already loop on `EINTR`. `librecaulk.a` must come before libSystem in the link, as clang
 puts it; after libSystem, libSystem's `pselect` binds instead.
+
+## Closing a socket
+
+`close` and `dup2` never hang on a socket another thread is entering a `read`, `accept` or `recv` on.
+10.9's can wait for seconds, or for ever: closing a descriptor in use wakes its users and waits for them to
+leave, and a thread that took the descriptor but had not yet gone to sleep misses that wakeup. Its kernel
+looks again only when some other descriptor in the process is released. So while a close or `dup2` of a socket
+is under way, Recaulk keeps a helper thread releasing a descriptor of its own (it makes and closes a kqueue)
+every 200 microseconds after the first millisecond, and after a second every 10 ms, until the close returns.
+The helper starts at the first such close, which should not be one in a signal handler. Any other descriptor
+costs one `fstat`. This applies on every macOS: macOS 11's `accept` has the same window.
+
+No header renames `close` or `dup2` (a macro would rename C++'s `stream.close()` too), so a program reaches
+Recaulk's by link order: `librecaulk.a` ahead of libSystem, as clang22 links. `tests/socket-close-race.sh`
+holds both products to this.
 
 ## Floating point
 

@@ -28,7 +28,7 @@ wait_for() {
   done
 }
 for p in sbxq-static sbxq-dylib; do
-  for c in none pselect forwarded available; do
+  for c in none pselect forwarded available socketclose; do
     # platform: SIP strips DYLD_* from protected binaries such as /bin/sh, so it is set where the program is exec'd
     out=$(DYLD_LIBRARY_PATH="$T/lib" "$(tbin $p)" "$c") || { echo "FAIL: $p $c exited $?"; fail=1; continue; }
     pid=${out%% *}

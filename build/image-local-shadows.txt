@@ -22,3 +22,6 @@ recaulk-pselect.o _pselect$NOCANCEL waits without losing a signal 10.9's mask-th
 recaulk-libm_fma.o _fma rounds a*b+c once, as 10.9's fma does not (its sign is wrong when a*b and c cancel), weak so libRecaulkSystem.dylib's public override wins there
 recaulk-libm_fmal.o _fmal rounds a*b+c once, as 10.9's fmal does not (it overflows when only a*b would, and drops tiny products), weak for the same reason
 recaulk-libm_truncl.o _truncl keeps the sign of a zero result, which 10.9's truncl takes from a register it never set, weak for the same reason
+recaulk-socket_close.o _close closes a socket without hanging when another thread is entering a read on it, which 10.9's close can, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-socket_close.o _close$NOCANCEL closes a socket without hanging when another thread is entering a read on it, weak for the same reason
+recaulk-socket_close.o _dup2 replaces a socket without hanging when another thread is entering a read on it, weak for the same reason

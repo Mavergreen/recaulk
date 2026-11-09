@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <time.h>
 #include <unistd.h>
@@ -25,6 +26,11 @@ int main(int argc, char **argv) {
         r = clock_gettime(CLOCK_REALTIME, &ts);
     } else if (strcmp(c, "available") == 0) {
         if (__builtin_available(macOS 10.12, *)) r = 1;
+    } else if (strcmp(c, "socketclose") == 0) {
+        int sv[2];
+        r = socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+        if (r == 0) r = close(sv[0]) | close(sv[1]);
+        usleep(20000); /* the helper Recaulk's close starts has started */
     } else if (strcmp(c, "denied") == 0) {
         int mib[2] = {CTL_KERN, KERN_OSRELEASE};
         char rel[32];

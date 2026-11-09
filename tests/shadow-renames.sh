@@ -13,8 +13,10 @@ trap 'rm -rf "$d"' EXIT
 
 # spec: build/image-local-shadows.txt -- the C functions it fixes: its symbols, less C++'s and less the
 #       $-variants of one function.
+# spec: README.md "Closing a socket" -- close and dup2 are reached by link order alone: a macro named close would
+#       rename C++'s stream.close(), and the SDK's own declaration of close carries an asm label of its own.
 grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $2 }' | grep -v '^__Z' | sed 's/^_//; s/\$.*//' \
-  | LC_ALL=C sort -u > "$d/fixed"
+  | grep -vx -e close -e dup2 | LC_ALL=C sort -u > "$d/fixed"
 [ -s "$d/fixed" ] || bad "build/image-local-shadows.txt lists no C function"
 header_of() {
   case "$1" in
