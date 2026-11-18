@@ -146,6 +146,14 @@ returns `NULL` for a chain without certificates. Through `include/recaulk`, `<Se
 declares these and the signing constants where the SDK does not. Newer macOS uses its own
 implementations.
 
+## Core Graphics
+
+`CGColorCreateSRGB` makes its color in the named `kCGColorSpaceSRGB` space, which 10.9 has, with
+`CGColorCreate`. That space is not extended-range, so on 10.9 each component is kept within 0 to 1; whether
+newer macOS's own `CGColorCreateSRGB` keeps an out-of-range component is not yet measured. Through
+`include/recaulk`, `<CoreGraphics/CGColor.h>` declares it where the SDK does not. Newer macOS uses its
+own implementation.
+
 ## Child processes
 
 `posix_spawn_file_actions_addchdir_np` and `posix_spawn_file_actions_addfchdir_np` work on 10.9: the

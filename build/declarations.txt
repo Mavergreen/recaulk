@@ -7,6 +7,7 @@
 #       include/recaulk.
 aligned_alloc stdlib.h
 CCRandomGenerateBytes CommonCrypto/CommonRandom.h
+CGColorCreateSRGB CoreGraphics/CGColor.h
 clock_getres time.h
 clock_gettime time.h
 clock_gettime_nsec_np time.h
