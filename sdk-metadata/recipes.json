@@ -390,6 +390,24 @@
           "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12; librecaulk-objc.a's Foundation root provides them on 10.9. */\n@interface NSLocale (RecaulkLocaleCodes)\n@property (readonly, copy) NSString *languageCode __attribute__((availability(macosx,introduced=10.12)));\n@property (readonly, copy) NSString *countryCode __attribute__((availability(macosx,introduced=10.12)));\n@end\n\n@interface NSLocale (NSLocaleCreation)"
         }
       ]
+    },
+    {
+      "id": "foundation-processinfo-version-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProcessInfo.h",
+      "sha256": "28b2985b8971edfd25b7aa21d582a46e19cfd774f5469d96f94b5c8f003304cd",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSProcessInfo.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSProcessInfo : NSObject {",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef struct {\n    NSInteger majorVersion;\n    NSInteger minorVersion;\n    NSInteger patchVersion;\n} NSOperatingSystemVersion;\n\n@interface NSProcessInfo : NSObject {"
+        },
+        {
+          "old": "- (NSString *)operatingSystemVersionString;",
+          "new": "- (NSString *)operatingSystemVersionString;\n/* Recaulk: the 10.10 SDK declares these; 10.9.5's Foundation already implements them. */\n- (NSOperatingSystemVersion)operatingSystemVersion;\n- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;"
+        }
+      ]
     }
   ]
 }

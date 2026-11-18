@@ -345,6 +345,11 @@ stay undefined, since 10.9's frameworks do not export it.
 `foundation-locale-codes-v1` declares `NSLocale`'s `languageCode` and `countryCode` with their 10.12
 availability; `librecaulk-objc.a`'s Foundation root provides them on 10.9 (see Objective-C methods).
 
+`foundation-processinfo-version-v1` declares `NSOperatingSystemVersion`, `-[NSProcessInfo
+operatingSystemVersion]` and `-isOperatingSystemAtLeastVersion:` plainly, with no availability and no
+back-fill: the 10.10 SDK was the first to declare them, but 10.9.5's Foundation already implements both,
+which `tests/foundation-os-version-test.sh` holds it to.
+
 `launchservices-default-app-v2` declares `LSCopyDefaultApplicationURLForURL` plainly instead, with no
 availability: Recaulk back-fills it in `librecaulk.a`, which clang22 links into every program, so callers
 need no presence check and the reference is an ordinary one. v1's comment told callers to check first;
