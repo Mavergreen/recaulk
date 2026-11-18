@@ -38,8 +38,14 @@ for id in $ids; do
   # shellcheck disable=SC2086
   "$CLANG22" $flags -ivfsoverlay "$ov" "$probe" >"$d/$id.with" 2>&1 \
     || { bad "$id: its probe does not compile through the overlay"; sed 's/^/    /' "$d/$id.with" | head -8; }
+  # platform: clang22's default config puts Recaulk's own headers on the path, and they declare what
+  #   librecaulk.a back-fills (LSCopyDefaultApplicationURLForURL, say); a recipe edits the SDK, so it is
+  #   proved against the SDK alone: it must suffice there, and be needed there.
   # shellcheck disable=SC2086
-  "$CLANG22" $flags "$probe" >"$d/$id.without" 2>&1 && bad "$id: its probe compiles without the recipe (a no-op recipe)"
+  "$CLANG22" --no-default-config $flags -ivfsoverlay "$ov" "$probe" >"$d/$id.with-sdk" 2>&1 \
+    || { bad "$id: its probe does not compile through the overlay on the SDK alone"; sed 's/^/    /' "$d/$id.with-sdk" | head -8; }
+  # shellcheck disable=SC2086
+  "$CLANG22" --no-default-config $flags "$probe" >"$d/$id.without" 2>&1 && bad "$id: its probe compiles on the SDK alone without the recipe (a no-op recipe)"
   weak=$(sed -n 's|^// weak: ||p' "$probe")
   if [ -n "$weak" ]; then
     # shellcheck disable=SC2086
