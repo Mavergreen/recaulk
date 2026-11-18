@@ -36,17 +36,20 @@ sh "$G" header "$D" "$W/generated/providers-generated.h"
 # spec: tests/objc-archive-reproducible.sh -- the prefix maps make every checkout and work directory build the same
 #       bytes, and name each source by the relative label source-inputs.txt records (the receipt's labels)
 # spec: tests/objc-source-receipt.sh -- -g keeps each member's line table, which the source receipt maps sends through
-for f in workspace workspace-events workspace-recents register; do
+for f in workspace workspace-events workspace-recents register register-common locale register-foundation; do
   "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations \
     -ffile-prefix-map="$ROOT/"= -ffile-prefix-map="$W/"= \
     -ffile-prefix-map="$SDK"="$(basename "$SDK")" -fdebug-compilation-dir=. \
     -I"$W/generated" -c "$ROOT/src/objc/$f.m" -o "$W/objects/$f.o"
 done
 recaulk_archive "$W/librecaulk-objc.a" "$W/objects/workspace.o" "$W/objects/workspace-events.o" \
-  "$W/objects/workspace-recents.o" "$W/objects/register.o"
+  "$W/objects/workspace-recents.o" "$W/objects/register.o" "$W/objects/register-common.o" \
+  "$W/objects/locale.o" "$W/objects/register-foundation.o"
 sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else shasum -a 256 "$@"; fi; }
 (cd "$ROOT" && sha256 src/objc/workspace.m src/objc/workspace-events.m src/objc/workspace-recents.m \
-  src/objc/register.m src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
+  src/objc/register.m src/objc/register-common.m src/objc/register-common.h src/objc/locale.m \
+  src/objc/register-foundation.m src/objc/foundation-private.h \
+  src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
   build/objc-provider-manifest.sh) > "$W/source-inputs.txt"
 (cd "$W" && sha256 generated/providers-generated.h) >> "$W/source-inputs.txt"
 sh "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" \
@@ -61,7 +64,8 @@ if [ "$role" = shipping ]; then
   [ -z "${MAVERICKS_OBJC_CLANG_PREFIX:-}" ] || set -- --clang-prefix "$MAVERICKS_OBJC_CLANG_PREFIX"
   sh "$SHIPYARD_SCRIPTS/objc-source-inventory.sh" "$@" --inputs "$W/source-inputs.txt" \
     --root "$ROOT" --root "$W" --unit src/objc/workspace.m --unit src/objc/workspace-events.m \
-    --unit src/objc/workspace-recents.m --unit src/objc/register.m --include generated \
+    --unit src/objc/workspace-recents.m --unit src/objc/register.m --unit src/objc/register-common.m \
+    --unit src/objc/locale.m --unit src/objc/register-foundation.m --include generated \
     --output "$W/objc-source.receipt"
 fi
 # spec: tests/objc-provider-symbols.sh -- a declared implementation the analyzer could not resolve fails the build,

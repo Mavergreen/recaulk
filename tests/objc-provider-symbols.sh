@@ -36,7 +36,9 @@ grep -F 'defined external' "$D/out" > /dev/null || fail "the refusal does not sa
 echo 'objc-provider-symbols: a renamed or file-local implementation is refused'
 
 # spec: build/check-objc-impls.sh header -- a hidden-visibility IMP is external (N_EXT|N_PEXT), so it passes
-printf '__attribute__((visibility("hidden"))) void __recaulk_objc_workspace_open_urls(void) {}\n' > "$D/hidden.c"
+sed -n 's/^[[:space:]]*"implementation_symbol"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$D/stage/share/recaulk/objc-providers.json" |
+  while read -r s; do printf '__attribute__((visibility("hidden"))) void %s(void) {}\n' "$s"; done > "$D/hidden.c"
+[ -s "$D/hidden.c" ] || fail "the staged declaration names no implementation_symbol to hide"
 "$CC" --no-default-config --target=x86_64-apple-macos10.9 -c "$D/hidden.c" -o "$D/hidden.o"
 cp -R "$D/stage" "$D/hidden"
 rm -f "$D/hidden/lib/librecaulk-objc.a"

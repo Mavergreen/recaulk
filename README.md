@@ -44,6 +44,21 @@ cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
    -Wl,-u,___recaulk_objc_activate -framework AppKit -framework Carbon
 ```
 
+Foundation's methods have a root of their own, which needs Foundation alone:
+`NSLocale`'s `languageCode` and `countryCode` (10.12), the answers
+`objectForKey:` gives for `NSLocaleLanguageCode` and `NSLocaleCountryCode`, except
+that `languageCode`, which Apple declares non-null, is `@""` where 10.9 has no
+language (`""`, `_US`).
+
+```sh
+cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
+   -Wl,-u,___recaulk_objc_activate_foundation -framework Foundation
+```
+
+shipyard's `objc-provider-link-args.sh` prints the roots and frameworks of every
+provider the declaration lists, so a link made with it activates both roots and
+links AppKit and Carbon; link by hand, as above, to take Foundation's root alone.
+
 Don't use `-force_load`; `-u` is enough, and survives `-dead_strip` and LTO. At
 load, each method is added only where the class doesn't already have it, so a
 native or inherited implementation on newer macOS is left alone.
@@ -326,6 +341,9 @@ and a binary using them still loads on 10.9. A caller must check that they exist
 run time (`webkit-wkwebview-v1`), and `LSCopyDefaultApplicationURLForURL`
 (`launchservices-default-app-v1`). Linking such a reference needs the linker told that the symbol may
 stay undefined, since 10.9's frameworks do not export it.
+
+`foundation-locale-codes-v1` declares `NSLocale`'s `languageCode` and `countryCode` with their 10.12
+availability; `librecaulk-objc.a`'s Foundation root provides them on 10.9 (see Objective-C methods).
 
 `launchservices-default-app-v2` declares `LSCopyDefaultApplicationURLForURL` plainly instead, with no
 availability: Recaulk back-fills it in `librecaulk.a`, which clang22 links into every program, so callers

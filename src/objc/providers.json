@@ -11,6 +11,28 @@
       "activation_root": "__recaulk_objc_activate",
       "required_frameworks": ["AppKit", "Carbon"],
       "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nslocale.language-code.v1",
+      "class": "NSLocale",
+      "method_kind": "-",
+      "selector": "languageCode",
+      "encoding": "@16@0:8",
+      "implementation_symbol": "__recaulk_objc_locale_language_code",
+      "activation_root": "__recaulk_objc_activate_foundation",
+      "required_frameworks": ["Foundation"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nslocale.country-code.v1",
+      "class": "NSLocale",
+      "method_kind": "-",
+      "selector": "countryCode",
+      "encoding": "@16@0:8",
+      "implementation_symbol": "__recaulk_objc_locale_country_code",
+      "activation_root": "__recaulk_objc_activate_foundation",
+      "required_frameworks": ["Foundation"],
+      "framework_policy": "strong-linked-before-root"
     }
   ]
 }

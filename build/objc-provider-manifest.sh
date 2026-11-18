@@ -17,7 +17,11 @@ providers() {
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
     WORKSPACE recaulk.nsworkspace.open-urls.v1 NSWorkspace - \
     'openURLs:withApplicationAtURL:options:configuration:error:' '@56@0:8@16@24Q32@40^@48' \
-    __recaulk_objc_workspace_open_urls __recaulk_objc_activate AppKit,Carbon
+    __recaulk_objc_workspace_open_urls __recaulk_objc_activate AppKit,Carbon \
+    LOCALE_LANGUAGE_CODE recaulk.nslocale.language-code.v1 NSLocale - languageCode '@16@0:8' \
+    __recaulk_objc_locale_language_code __recaulk_objc_activate_foundation Foundation \
+    LOCALE_COUNTRY_CODE recaulk.nslocale.country-code.v1 NSLocale - countryCode '@16@0:8' \
+    __recaulk_objc_locale_country_code __recaulk_objc_activate_foundation Foundation
 }
 # spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for it
 probe_source() {
@@ -30,6 +34,26 @@ probe_source() {
 @end
 @implementation RecaulkProviderEncoding
 - (NSRunningApplication *)openURLs:(NSArray *)u withApplicationAtURL:(NSURL *)a options:(NSUInteger)o configuration:(NSDictionary *)c error:(NSError **)e { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nslocale.language-code.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)languageCode;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)languageCode { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nslocale.country-code.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)countryCode;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)countryCode { return nil; }
 @end
 EOF
     ;;

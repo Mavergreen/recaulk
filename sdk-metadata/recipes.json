@@ -376,6 +376,20 @@
           "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; Recaulk back-fills it on 10.9 (librecaulk.a), so callers need no presence check. */\nextern CFURLRef LSCopyDefaultApplicationURLForURL(CFURLRef inURL, LSRolesMask inRoleMask, CFErrorRef *outError);\n\n#pragma pack(pop)"
         }
       ]
+    },
+    {
+      "id": "foundation-locale-codes-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLocale.h",
+      "sha256": "210094c81b5862fe74eaf7b1414ad3fa727257c794bbb1f26b8954284d7db05e",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSLocale.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSLocale (NSLocaleCreation)",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12; librecaulk-objc.a's Foundation root provides them on 10.9. */\n@interface NSLocale (RecaulkLocaleCodes)\n@property (readonly, copy) NSString *languageCode __attribute__((availability(macosx,introduced=10.12)));\n@property (readonly, copy) NSString *countryCode __attribute__((availability(macosx,introduced=10.12)));\n@end\n\n@interface NSLocale (NSLocaleCreation)"
+        }
+      ]
     }
   ]
 }
