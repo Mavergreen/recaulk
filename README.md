@@ -143,8 +143,10 @@ other algorithm, with `errSecParam`, as Apple's does for an algorithm a key does
 `SecTrustEvaluateWithError` reports a failure as Apple's does, in `kCFErrorDomainOSStatus` with
 codes such as `errSecNotTrusted` and `errSecCertificateExpired`, and `SecTrustCopyCertificateChain`
 returns `NULL` for a chain without certificates. Through `include/recaulk`, `<Security/Security.h>`
-declares these and the signing constants where the SDK does not. Newer macOS uses its own
-implementations.
+declares these and the signing constants where the SDK does not. `SSLSetSessionTicketsEnabled`
+succeeds in turning session tickets off, which 10.9's SecureTransport never uses, and reports
+`errSecUnimplemented` for a request to turn them on, leaving the context unchanged; it is exported
+but not declared, like the ALPN stubs. Newer macOS uses its own implementations.
 
 ## Core Graphics
 

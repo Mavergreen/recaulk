@@ -171,6 +171,16 @@ OSStatus SSLSetALPNProtocols(void *context, CFArrayRef protocols) {
 }
 
 /*
+ * SSLSetSessionTicketsEnabled (added 10.13). 10.9's SecureTransport never uses
+ * session tickets, so turning them off is already true and succeeds, and
+ * turning them on cannot be honoured: errSecUnimplemented, context unchanged.
+ */
+OSStatus SSLSetSessionTicketsEnabled(SSLContextRef context, Boolean enabled) {
+	if (!context) return errSecParam;
+	return enabled ? STUB_UNIMPLEMENTED : noErr;
+}
+
+/*
  * ── Later Security.framework entry points ──
  *
  * These name facilities 10.9 has no implementation of at all: Certificate

@@ -147,3 +147,4 @@ SecKeyVerifySignature - a stub that only reports failure on 10.9; declared, it w
 SecTrustSetSignedCertificateTimestamps - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
 SSLCopyALPNProtocols - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
 SSLSetALPNProtocols - a stub that only reports failure on 10.9; declared, it would steer a feature check off the 10.9 path that works
+SSLSetSessionTicketsEnabled - only turns tickets off on 10.9, and enabling reports errSecUnimplemented; declared, it would steer a feature check off the 10.9 path that works
