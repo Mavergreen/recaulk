@@ -3,3 +3,9 @@
    10.9 SDK lacks. */
 #include <MacportsLegacySupport.h>
 #include <sys/_recaulk_macports_clonefile.h>
+
+/* spec: README.md "Declarations" -- the 10.13 SDK's sys/clonefile.h value; MacPorts' clonefile family
+   fails with ENOTSUP on 10.9 whatever the flags, so naming the flag changes no behaviour. */
+#ifndef CLONE_NOOWNERCOPY
+#define CLONE_NOOWNERCOPY 0x0002
+#endif

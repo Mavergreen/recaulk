@@ -128,5 +128,12 @@ printf '.text\n.globl _recaulk_probe\n_recaulk_probe:\n  ret\n' > "$d/plain.s"
 "$CC" $FLAGS -arch x86_64 -isystem "$inc" -c "$d/plain.s" -o "$d/plain.o" \
   || bad "a plain .s does not assemble with include/recaulk on the path"
 
+probe noownercopy c '#include <sys/clonefile.h>' '_Static_assert(CLONE_NOOWNERCOPY == 0x0002, "the 10.13 SDK value");'
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -c "$d/noownercopy.c" -o "$d/noownercopy.o" \
+  || bad "<sys/clonefile.h> through include/recaulk does not define CLONE_NOOWNERCOPY as 0x0002"
+"$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+  -Wall -Werror -isystem "$inc" -c "$d/noownercopy.c" -o "$d/noownercopy113.o" \
+  || bad "with the 11.3 SDK, which defines CLONE_NOOWNERCOPY itself, <sys/clonefile.h> through include/recaulk does not compile"
+
 [ "$fail" = 0 ] && echo "headers OK"
 exit $fail

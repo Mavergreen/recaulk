@@ -113,6 +113,10 @@ macro makes), and a stub that only reports failure on 10.9, such as `SecKeyCreat
 declaration would make a feature check choose over the 10.9 path that works. `build/declarations.txt`
 lists every one, and `tests/declarations.sh` holds that list exact and each header declaring its names.
 
+Constants a later SDK names for a function 10.9 has are defined the same way: `<sys/clonefile.h>`
+defines `CLONE_NOOWNERCOPY` (0x0002, from the 10.13 SDK), which changes nothing on 10.9, where the
+`clonefile` family fails with `ENOTSUP` whatever the flags.
+
 ## C++ exceptions
 
 C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on
