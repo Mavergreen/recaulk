@@ -298,7 +298,8 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
 - `dispatch_get_global_queue` given a QoS class returns the global queue of the priority 10.10's `queue.h` pairs it
   with: user-interactive and user-initiated the high-priority queue, default the default one, utility the
   low-priority one, background the background one. 10.9's returns NULL for a class. It is a fix to a function 10.9
-  has, so in `librecaulk.a` it binds only inside the image that links it, and `libRecaulkSystem.dylib` exports it.
+  has (see "Fixes to functions 10.9 has"): `<dispatch/dispatch.h>` binds a program built from source to it by asm
+  label, whatever its link order, and `libRecaulkSystem.dylib` exports it for a program relinked onto it.
 - `dispatch_queue_get_qos_class` reports `QOS_CLASS_UNSPECIFIED` and a relative priority of 0 for every queue.
 - `dispatch_queue_attr_make_with_autorelease_frequency` returns the attribute it is given: 10.9's queues drain no
   autorelease pool of their own.
@@ -307,6 +308,13 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
   where 10.9 cannot tell, the converse of `dispatch_assert_queue` (see "Queue assertions").
 - `dispatch_assert_queue_barrier` is `dispatch_assert_queue`: 10.9 cannot tell a barrier block of a concurrent
   queue from any other.
+- `dispatch_block_wait` and `dispatch_block_notify` work on a block `dispatch_block_create` made: a wait returns 0
+  once the block has finished and non-zero when its timeout passes first; a notification is submitted once it has
+  finished, at once if it already has. A cancelled block that has not begun does nothing when it runs, and
+  finishes then. A block released without running never notifies, as with libdispatch.
+- A block's cancelled and finished state is shared by every copy of Recaulk in the process -- a program's own and
+  one a library such as Swift's Dispatch links -- from release 20261120 on: a copy from before then sees only
+  the blocks it made.
 
 `<dispatch/dispatch.h>` declares them, `dispatch_queue_create_with_target` and the assertions with the `$V2` labels
 the 11.3 SDK gives them, and `dispatch_block_flags_t` as its flag enum.

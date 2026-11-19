@@ -404,6 +404,7 @@ instead. As far as availability can be judged:
 | `mp-time.o` | `clock_gettime_nsec_np` -> `mach_continuous_approximate_time` | acceptable: both arrived in 10.12 |
 | `mp-time.o` | `clock_gettime_nsec_np` -> `mach_continuous_time` | acceptable: both arrived in 10.12 |
 | `mp-time.o` | `timespec_get` -> `clock_gettime` | acceptable: on 10.12-10.14 (`timespec_get` is 10.15) MacPorts' `clock_gettime(CLOCK_REALTIME)` runs instead of the system's; it reads the same wall clock and shares no state with it |
+| `recaulk-dispatch_assert_queue.o` | `dispatch_assert_queue_barrier` -> `dispatch_assert_queue$V2` | acceptable: both arrived in 10.12 |
 | `recaulk-dispatch_modern.o` | `dispatch_block_create_with_qos_class` -> `dispatch_block_create` | acceptable: both arrived in 10.10 |
 | `recaulk-ulock.o` | `__ulock_wait` -> `__ulock_wait2` | acceptable: the callee (11.0) is newer than the caller (10.12), so wherever our caller runs the system lacks the callee too |
 

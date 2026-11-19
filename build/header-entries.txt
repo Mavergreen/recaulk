@@ -1,6 +1,7 @@
 # spec: README.md "Fixes to functions 10.9 has" -- the symbols Recaulk's headers give the 10.9 names of its fixes,
 #       which a program built against them references. libRecaulkSystem.dylib exports exactly these of its
 #       ___recaulk_ names; tests/shadow-renames.sh links such a program against it.
+___recaulk_dispatch_get_global_queue
 ___recaulk_fma
 ___recaulk_fmal
 ___recaulk_truncl

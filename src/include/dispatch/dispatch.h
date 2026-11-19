@@ -64,6 +64,13 @@ __RECAULK_SWIFT_INIT_UNAVAILABLE
    accepted and dropped, and a workloop is a serial queue. */
 #include <sys/cdefs.h>
 __BEGIN_DECLS
+/* spec: README.md "Fixes to functions 10.9 has" -- a program built from source gets a global queue for a QoS class
+   whatever its link order (a -lc ahead of librecaulk.a names libSystem, whose copy returns NULL for one). An asm
+   label, not a macro, so Swift's importer still sees dispatch_get_global_queue; its type is the SDK's own. Not inside Recaulk, whose own
+   sources define the 10.9 name. */
+#ifndef __RECAULK_SOURCE__
+__typeof__(dispatch_get_global_queue) dispatch_get_global_queue __asm("___recaulk_dispatch_get_global_queue");
+#endif
 /* spec: README.md "Declarations" -- each group only where the SDK in use lacks it, so a newer SDK
    compiles through this wrapper: QoS and dispatch blocks are 10.10, dispatch_activate 10.12,
    the and_wait calls and workloops 10.14. */
@@ -97,6 +104,8 @@ dispatch_block_t dispatch_block_create_with_qos_class(dispatch_block_flags_t fla
     dispatch_qos_class_t qos_class, int relative_priority, dispatch_block_t block);
 void dispatch_block_cancel(dispatch_block_t block);
 intptr_t dispatch_block_testcancel(dispatch_block_t block);
+intptr_t dispatch_block_wait(dispatch_block_t block, dispatch_time_t timeout);
+void dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue, dispatch_block_t notification_block);
 #endif
 #endif
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
