@@ -19,6 +19,7 @@ __cxa_throw_bad_array_new_length cxxabi.h c++ abi::__cxa_throw_bad_array_new_len
 __cxa_uncaught_exceptions cxxabi.h c++ abi::__cxa_uncaught_exceptions
 __darwin_check_fd_set_overflow sys/select.h
 dispatch_activate dispatch/dispatch.h
+dispatch_assert_queue_barrier dispatch/dispatch.h
 dispatch_async_and_wait dispatch/dispatch.h
 dispatch_async_and_wait_f dispatch/dispatch.h
 dispatch_barrier_async_and_wait dispatch/dispatch.h
@@ -27,7 +28,9 @@ dispatch_block_cancel dispatch/dispatch.h
 dispatch_block_create dispatch/dispatch.h
 dispatch_block_create_with_qos_class dispatch/dispatch.h
 dispatch_block_testcancel dispatch/dispatch.h
+dispatch_queue_attr_make_with_autorelease_frequency dispatch/dispatch.h
 dispatch_queue_attr_make_with_qos_class dispatch/dispatch.h
+dispatch_queue_get_qos_class dispatch/dispatch.h
 dispatch_set_qos_class_floor dispatch/dispatch.h
 dispatch_workloop_create dispatch/dispatch.h
 dispatch_workloop_create_inactive dispatch/dispatch.h

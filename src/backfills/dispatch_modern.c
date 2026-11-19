@@ -97,6 +97,22 @@ dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_t attr,
     return attr;
 }
 
+/* dispatch_queue_get_qos_class (10.10): 10.9's queues have no QoS class, so every queue reports
+ * QOS_CLASS_UNSPECIFIED and a relative priority of 0, as Recaulk's pthread QoS calls answer. */
+dispatch_qos_class_t dispatch_queue_get_qos_class(dispatch_queue_t queue, int *relative_priority_ptr) {
+    (void)queue;
+    if (relative_priority_ptr) *relative_priority_ptr = 0;
+    return QOS_CLASS_UNSPECIFIED;
+}
+
+/* dispatch_queue_attr_make_with_autorelease_frequency (10.12): 10.9's queues drain no autorelease pool of
+ * their own, so the frequency is dropped and the attribute keeps its serial or concurrent nature. */
+dispatch_queue_attr_t dispatch_queue_attr_make_with_autorelease_frequency(dispatch_queue_attr_t attr,
+                                                                          dispatch_autorelease_frequency_t frequency) {
+    (void)frequency;
+    return attr;
+}
+
 /* Vouchers (activity tracing identities) do not exist on 10.9. The real API
  * returns NULL for "no voucher", and adopting NULL yields the previous
  * voucher, which is also NULL. */

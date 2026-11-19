@@ -291,6 +291,26 @@ one, and Recaulk returns rather than trap falsely. That covers:
 thread's queues, Recaulk sets one queue-specific value of its own on each queue it is asked about and on
 the default overcommit root queue.
 
+## Dispatch on 10.9
+
+The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the system's own on a later macOS):
+
+- `dispatch_get_global_queue` given a QoS class returns the global queue of the priority 10.10's `queue.h` pairs it
+  with: user-interactive and user-initiated the high-priority queue, default the default one, utility the
+  low-priority one, background the background one. 10.9's returns NULL for a class. It is a fix to a function 10.9
+  has, so in `librecaulk.a` it binds only inside the image that links it, and `libRecaulkSystem.dylib` exports it.
+- `dispatch_queue_get_qos_class` reports `QOS_CLASS_UNSPECIFIED` and a relative priority of 0 for every queue.
+- `dispatch_queue_attr_make_with_autorelease_frequency` returns the attribute it is given: 10.9's queues drain no
+  autorelease pool of their own.
+- `dispatch_assert_queue_not` traps, with libdispatch's message, only where the thread is provably on the queue
+  (running a block for it or for a queue that targets it, or on the main thread for the main queue), and returns
+  where 10.9 cannot tell, the converse of `dispatch_assert_queue` (see "Queue assertions").
+- `dispatch_assert_queue_barrier` is `dispatch_assert_queue`: 10.9 cannot tell a barrier block of a concurrent
+  queue from any other.
+
+`<dispatch/dispatch.h>` declares them, `dispatch_queue_create_with_target` and the assertions with the `$V2` labels
+the 11.3 SDK gives them, and `dispatch_block_flags_t` as its flag enum.
+
 ## Swift's Dispatch
 
 Swift's Dispatch overlay wants dispatch's objects as classes (`DispatchQueue`, `DispatchGroup` and the rest), and

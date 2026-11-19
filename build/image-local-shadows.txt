@@ -25,3 +25,4 @@ recaulk-libm_truncl.o _truncl keeps the sign of a zero result, which 10.9's trun
 recaulk-socket_close.o _close closes a socket without hanging when another thread is entering a read on it, which 10.9's close can, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-socket_close.o _close$NOCANCEL closes a socket without hanging when another thread is entering a read on it, weak for the same reason
 recaulk-socket_close.o _dup2 replaces a socket without hanging when another thread is entering a read on it, weak for the same reason
+recaulk-dispatch_global_qos.o _dispatch_get_global_queue gives a QoS class a global queue, which 10.9's answers with NULL, weak so libRecaulkSystem.dylib's public override wins there

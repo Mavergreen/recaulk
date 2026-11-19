@@ -69,19 +69,29 @@ __BEGIN_DECLS
    the and_wait calls and workloops 10.14. */
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101000
 typedef qos_class_t dispatch_qos_class_t;
+dispatch_qos_class_t dispatch_queue_get_qos_class(dispatch_queue_t queue, int *relative_priority_ptr);
 void dispatch_set_qos_class_floor(dispatch_object_t object, dispatch_qos_class_t qos_class, int relative_priority);
 dispatch_queue_attr_t dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_t attr,
     dispatch_qos_class_t qos_class, int relative_priority);
 #ifdef __BLOCKS__
-typedef unsigned long dispatch_block_flags_t;
+/* spec: the 11.3 SDK's DISPATCH_OPTIONS -- a fixed, flag enum, so Swift imports the flags as an OptionSet */
+#if __has_feature(objc_fixed_enum)
+typedef enum : unsigned long {
+#else
 enum {
+#endif
     DISPATCH_BLOCK_BARRIER = 0x1ul,
     DISPATCH_BLOCK_DETACHED = 0x2ul,
     DISPATCH_BLOCK_ASSIGN_CURRENT = 0x4ul,
     DISPATCH_BLOCK_NO_QOS_CLASS = 0x8ul,
     DISPATCH_BLOCK_INHERIT_QOS_CLASS = 0x10ul,
     DISPATCH_BLOCK_ENFORCE_QOS_CLASS = 0x20ul,
+#if __has_feature(objc_fixed_enum)
+} __attribute__((flag_enum)) dispatch_block_flags_t;
+#else
 };
+typedef unsigned long dispatch_block_flags_t;
+#endif
 dispatch_block_t dispatch_block_create(dispatch_block_flags_t flags, dispatch_block_t block);
 dispatch_block_t dispatch_block_create_with_qos_class(dispatch_block_flags_t flags,
     dispatch_qos_class_t qos_class, int relative_priority, dispatch_block_t block);
@@ -92,6 +102,28 @@ intptr_t dispatch_block_testcancel(dispatch_block_t block);
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
 /* dispatch_activate resumes the object: before 10.12 a dispatch_resume started an inactive one. */
 void dispatch_activate(dispatch_object_t object);
+/* spec: the 11.3 SDK's queue.h, with its DISPATCH_ALIAS_V2 labels: the $V2 names are the ones Recaulk defines */
+dispatch_queue_t dispatch_queue_create_with_target(const char *label, dispatch_queue_attr_t attr,
+    dispatch_queue_t target) __asm__("_dispatch_queue_create_with_target$V2");
+void dispatch_assert_queue(dispatch_queue_t queue) __asm__("_dispatch_assert_queue$V2");
+void dispatch_assert_queue_barrier(dispatch_queue_t queue);
+void dispatch_assert_queue_not(dispatch_queue_t queue) __asm__("_dispatch_assert_queue_not$V2");
+#if __has_feature(objc_fixed_enum)
+typedef enum : unsigned long {
+#else
+enum {
+#endif
+    DISPATCH_AUTORELEASE_FREQUENCY_INHERIT = 0,
+    DISPATCH_AUTORELEASE_FREQUENCY_WORK_ITEM = 1,
+    DISPATCH_AUTORELEASE_FREQUENCY_NEVER = 2,
+#if __has_feature(objc_fixed_enum)
+} dispatch_autorelease_frequency_t;
+#else
+};
+typedef unsigned long dispatch_autorelease_frequency_t;
+#endif
+dispatch_queue_attr_t dispatch_queue_attr_make_with_autorelease_frequency(dispatch_queue_attr_t attr,
+    dispatch_autorelease_frequency_t frequency);
 #endif
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101400
 void dispatch_async_and_wait_f(dispatch_queue_t queue, void *context, dispatch_function_t work);
