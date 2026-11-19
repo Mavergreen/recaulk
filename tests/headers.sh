@@ -11,11 +11,12 @@ trap 'rm -rf "$d"' EXIT
 inc="$T/include/recaulk"
 layer=_recaulk_macports
 cxx_only=cxxabi.h
+objc_only=AppKit/NSPasteboard.h
 {
   echo '#include <MacportsLegacySupport.h>'
   echo '#include <os/lock.h>'
   echo '#include <time.h>'
-  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx "$cxx_only" | sed 's|.*|#include <&>|'
+  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx -e "$cxx_only" -e "$objc_only" | sed 's|.*|#include <&>|'
   echo 'int main(void){return 0;}'
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
@@ -23,6 +24,9 @@ cxx_only=cxxabi.h
 # platform: the 10.9 SDK's cxxabi.h, which Recaulk's wraps, is C++ only
 printf '#include <%s>\nint main() { return 0; }\n' $cxx_only > "$d/cxx.cpp"
 "$CXX" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/cxx.cpp" -o "$d/cxx.o" || bad "the C++-only headers ($cxx_only) do not compile"
+# platform: the 10.9 SDK's AppKit headers, which Recaulk's wrap, are Objective-C only
+printf '#include <%s>\nint main(void) { return 0; }\n' $objc_only > "$d/objc.m"
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/objc.m" -o "$d/objc.o" || bad "the Objective-C-only headers ($objc_only) do not compile"
 
 mp="$W/mp-headers/include/LegacySupport"
 [ -d "$mp" ] || bad "no installed MacPorts header tree at $mp to compare against"
@@ -152,6 +156,13 @@ for h in $(cd src/include && find . -name '*.h' | sed 's|^\./||' | LC_ALL=C sort
     -Wall -Werror -isystem "$inc" -fsyntax-only "$d/newsdk.m" > "$d/newsdk.out" 2>&1 \
     || { bad "with the 11.3 SDK, <$h> through include/recaulk does not compile:"; grep 'error:' "$d/newsdk.out" | head -3 | sed 's/^/    /'; }
 done
+
+probe pbfileurl m '#import <AppKit/AppKit.h>' 'NSString *recaulk_probe(void) { return NSPasteboardTypeFileURL; }'
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/pbfileurl.m" \
+  || bad "<AppKit/NSPasteboard.h> through include/recaulk does not declare NSPasteboardTypeFileURL"
+"$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+  -Wall -Werror -isystem "$inc" -fsyntax-only "$d/pbfileurl.m" \
+  || bad "with the 11.3 SDK, which declares NSPasteboardTypeFileURL itself, <AppKit/AppKit.h> through include/recaulk does not compile"
 
 [ "$fail" = 0 ] && echo "headers OK"
 exit $fail

@@ -167,6 +167,14 @@ succeeds in turning session tickets off, which 10.9's SecureTransport never uses
 `errSecUnimplemented` for a request to turn them on, leaving the context unchanged; it is exported
 but not declared, like the ALPN stubs. Newer macOS uses its own implementations.
 
+## AppKit data
+
+`librecaulk.a` defines `NSPasteboardTypeFileURL` (AppKit, 10.13) as `"public.file-url"`, the string
+`kUTTypeFileURL` names on 10.9, using CoreFoundation only: linking it never loads AppKit. It is a data
+symbol, so it is not forwarded: on 10.13 and later a program still gets Recaulk's copy, an equal string at
+a different address from AppKit's. Compare it with `isEqual:` (or `CFEqual`), never `==`. Through
+`include/recaulk`, `<AppKit/NSPasteboard.h>` declares it where the SDK does not.
+
 ## Core Graphics
 
 `CGColorCreateSRGB` makes its color in the named `kCGColorSpaceSRGB` space, which 10.9 has, with
