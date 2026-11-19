@@ -6,6 +6,11 @@
 #ifndef _MAVERICKS_PTHREAD_QOS_H_
 #define _MAVERICKS_PTHREAD_QOS_H_
 
+/* spec: README.md "Declarations" -- QoS classes are 10.10; a newer SDK's own header is the declaration. */
+#if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 101000
+#include_next <pthread/qos.h>
+#else
+
 #include <pthread.h>
 
 #ifdef __cplusplus
@@ -39,4 +44,5 @@ int  pthread_override_qos_class_end_np(pthread_override_t __override);
 }
 #endif
 
+#endif
 #endif /* _MAVERICKS_PTHREAD_QOS_H_ */

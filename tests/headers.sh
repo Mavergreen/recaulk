@@ -135,5 +135,23 @@ probe noownercopy c '#include <sys/clonefile.h>' '_Static_assert(CLONE_NOOWNERCO
   -Wall -Werror -isystem "$inc" -c "$d/noownercopy.c" -o "$d/noownercopy113.o" \
   || bad "with the 11.3 SDK, which defines CLONE_NOOWNERCOPY itself, <sys/clonefile.h> through include/recaulk does not compile"
 
+# spec: README.md "Declarations" -- Recaulk's wrappers declare only what the SDK in use lacks, so a newer SDK compiles
+#       through them; Foundation reaches <dispatch/dispatch.h>
+probe dispatchsdk m '#import <Foundation/Foundation.h>' '#include <dispatch/dispatch.h>' \
+  'void recaulk_probe(dispatch_queue_t q) { dispatch_activate(q); dispatch_async_and_wait(q, ^{}); (void)dispatch_block_create(DISPATCH_BLOCK_BARRIER, ^{}); }'
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/dispatchsdk.m" \
+  || bad "<dispatch/dispatch.h> through include/recaulk does not declare the dispatch back-fills"
+"$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+  -Wall -Werror -isystem "$inc" -fsyntax-only "$d/dispatchsdk.m" \
+  || bad "with the 11.3 SDK, which declares the dispatch back-fills itself, <dispatch/dispatch.h> through include/recaulk does not compile"
+
+# spec: README.md "Declarations" -- every header Recaulk itself writes (src/include) compiles with the 11.3 SDK
+for h in $(cd src/include && find . -name '*.h' | sed 's|^\./||' | LC_ALL=C sort); do
+  printf '#import <Foundation/Foundation.h>\n#include <%s>\n' "$h" > "$d/newsdk.m"
+  "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+    -Wall -Werror -isystem "$inc" -fsyntax-only "$d/newsdk.m" > "$d/newsdk.out" 2>&1 \
+    || { bad "with the 11.3 SDK, <$h> through include/recaulk does not compile:"; grep 'error:' "$d/newsdk.out" | head -3 | sed 's/^/    /'; }
+done
+
 [ "$fail" = 0 ] && echo "headers OK"
 exit $fail
