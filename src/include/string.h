@@ -3,6 +3,7 @@
 #define RECAULK_STRING_H
 #ifndef __ASSEMBLER__
 /* spec: the 11.3 SDK's string.h declares timingsafe_bcmp under exactly this condition. */
+#include <sys/cdefs.h>
 #if __DARWIN_C_LEVEL >= __DARWIN_C_FULL
 __BEGIN_DECLS
 int timingsafe_bcmp(const void *__b1, const void *__b2, size_t __len);

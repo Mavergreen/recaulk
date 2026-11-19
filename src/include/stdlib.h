@@ -4,6 +4,7 @@
 #ifndef __ASSEMBLER__
 #include <_macports_extras/sdkversion.h>
 /* BSD bounded decimal conversion, missing from the Mavericks SDK. */
+#include <sys/cdefs.h>
 __BEGIN_DECLS
 long long strtonum(const char *, long long, long long, const char **);
 __END_DECLS

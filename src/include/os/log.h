@@ -34,6 +34,7 @@
   see https://developer.apple.com/documentation/os/logging
 */
 
+#include <sys/cdefs.h>
 __MP__BEGIN_DECLS
 
 typedef struct os_log_s *os_log_t;

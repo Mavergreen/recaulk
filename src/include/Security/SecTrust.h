@@ -6,6 +6,7 @@
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 120000
 
 #include <stdbool.h>
+#include <CoreFoundation/CFError.h>
 
 #ifdef __cplusplus
 extern "C" {

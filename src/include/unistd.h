@@ -3,6 +3,7 @@
 #define RECAULK_UNISTD_H
 #ifndef __ASSEMBLER__
 /* spec: the 11.3 SDK's unistd.h declares mkostemp under exactly this condition. */
+#include <sys/cdefs.h>
 #if __DARWIN_C_LEVEL >= __DARWIN_C_FULL
 __BEGIN_DECLS
 int mkostemp(char *path, int oflags);

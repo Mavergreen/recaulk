@@ -2,6 +2,7 @@
 #ifndef RECAULK_SYS_STDIO_H
 #define RECAULK_SYS_STDIO_H
 #ifndef __ASSEMBLER__
+#include <sys/cdefs.h>
 /* spec: the 11.3 SDK's sys/stdio.h declares renameatx_np under exactly this condition (inside __DARWIN_C_LEVEL >= 200809L, which it implies). */
 #if __DARWIN_C_LEVEL >= __DARWIN_C_FULL
 __BEGIN_DECLS

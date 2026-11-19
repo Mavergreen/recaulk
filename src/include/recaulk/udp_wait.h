@@ -7,6 +7,7 @@ struct recaulk_udp_reader { int fd; void *udata; };
 /* Initialize to zero; owned by one event-loop consumer. No descriptors retained. */
 struct recaulk_udp_wait_state { size_t next; unsigned prefer_udp; };
 
+#include <sys/cdefs.h>
 __BEGIN_DECLS
 /* Source adapter for Mavericks' missing empty-datagram kqueue notifications.
  * Submit changes to kqueue normally, then pass a snapshot of its enabled,

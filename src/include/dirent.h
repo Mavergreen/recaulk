@@ -1,6 +1,7 @@
 #include <_recaulk_macports_dirent.h>
 #ifndef RECAULK_FDOPENDIR_H
 #define RECAULK_FDOPENDIR_H
+#include <sys/cdefs.h>
 #if __DARWIN_C_LEVEL >= 200809L
 __BEGIN_DECLS
 DIR *__recaulk_fdopendir(int) __DARWIN_ALIAS_I(__recaulk_fdopendir);

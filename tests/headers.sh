@@ -21,6 +21,17 @@ objc_only=AppKit/NSPasteboard.h
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all.o" || bad "the headers do not compile together"
+# spec: README.md "How to use" -- a wrapper names <sys/cdefs.h> itself: under -fmodules (swiftc's importer, an
+#       Objective-C @import) a macro reaches a header only from a module it imports, never through another header
+# platform: the 10.9 SDK names its module maps module.map, which clang22 calls deprecated
+# platform: one header per file: together, MacPorts' dirent.h reaches a module and the file both, and its static
+#           inline functions are then defined twice (an upstream MacPorts matter, not a wrapper's)
+for h in $( (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx "$cxx_only"); do
+  printf '#include <%s>\nint main(void) { return 0; }\n' "$h" > "$d/mod.m"
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -Wno-deprecated-module-dot-map -fmodules -fmodules-cache-path="$d/mc" -I"$inc" \
+    -fsyntax-only "$d/mod.m" > "$d/modules.log" 2>&1 \
+    || bad "<$h> does not compile under -fmodules: $(grep -m1 'error:' "$d/modules.log" | sed 's|.*/include/recaulk/||')"
+done
 # platform: the 10.9 SDK's cxxabi.h, which Recaulk's wraps, is C++ only
 printf '#include <%s>\nint main() { return 0; }\n' $cxx_only > "$d/cxx.cpp"
 "$CXX" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/cxx.cpp" -o "$d/cxx.o" || bad "the C++-only headers ($cxx_only) do not compile"
