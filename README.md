@@ -291,6 +291,20 @@ one, and Recaulk returns rather than trap falsely. That covers:
 thread's queues, Recaulk sets one queue-specific value of its own on each queue it is asked about and on
 the default overcommit root queue.
 
+## Swift's Dispatch
+
+Swift's Dispatch overlay wants dispatch's objects as classes (`DispatchQueue`, `DispatchGroup` and the rest), and
+the 10.9 SDK declares them as protocol types. So under `__swift__` (Swift's importer, never C or Objective-C),
+`<dispatch/dispatch.h>` declares them as the 11.3 SDK does under `OS_OBJECT_SWIFT3`: `OS_object : NSObject`,
+`OS_dispatch_object : OS_object`, each dispatch type a subclass of `OS_dispatch_object` except `OS_dispatch_data`,
+an `NSObject`. They are `objc_runtime_visible` declarations of the classes 10.9's libdispatch already registers,
+whose ancestry matches (`tests/dispatch-swift-classes.sh` checks it on 10.9); nothing new is defined.
+`dispatch_retain` and `dispatch_release` stay functions, as 11.3 has them for Swift. The source class adopts
+11.3's per-type protocols (`OS_dispatch_source_timer` and the rest) in the declarations only: 10.9's runtime has
+none of them, so in Swift a static upcast to `DispatchSourceTimer` works and a dynamic `as?` does not.
+
+With a newer SDK, which declares the classes itself, nothing is added.
+
 ## Licences
 
 Recaulk's own code is under the ISC licence in `LICENSE`. Some MacPorts members of `librecaulk.a` are

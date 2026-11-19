@@ -14,6 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* spec: README.md "Swift's Dispatch" -- for Swift's importer only, the 11.3 SDK's OS_OBJECT_SWIFT3 classes: Dispatch's
+   API notes make DispatchQueue and the rest from classes, and 10.9's headers declare protocol types. They must be
+   declared through OS_OBJECT_DECL before the SDK's dispatch headers use it, so before the #include_next below.
+   platform: measured on 10.9.5, its libdispatch registers each class with 11.3's superclass: OS_object : NSObject,
+   OS_dispatch_object : OS_object, the rest : OS_dispatch_object, except OS_dispatch_data : NSObject. */
+#ifdef __swift__
+#include <os/object.h>
+#if OS_OBJECT_USE_OBJC && !defined(OS_OBJECT_SWIFT3)
+#define RECAULK_DISPATCH_SWIFT_CLASSES 1
+#define __RECAULK_SWIFT_INIT_UNAVAILABLE \
+    - (instancetype)init __attribute__((availability(swift, unavailable, message="Unavailable in Swift")));
+__attribute__((objc_runtime_visible)) __attribute__((visibility("default")))
+@interface OS_object : NSObject
+__RECAULK_SWIFT_INIT_UNAVAILABLE
+@end
+#define __RECAULK_SWIFT_CLASS(name, super) \
+    __attribute__((objc_runtime_visible)) __attribute__((visibility("default"))) \
+    @interface OS_OBJECT_CLASS(name) : super \
+    __RECAULK_SWIFT_INIT_UNAVAILABLE \
+    @end \
+    typedef OS_OBJECT_CLASS(name) *name##_t
+/* OS_dispatch_data's superclass is NSObject: __RECAULK_SWIFT_SUPER(name, default) picks it by name. */
+#define __RECAULK_SWIFT_SECOND(a, b, ...) b
+#define __RECAULK_SWIFT_PICK(...) __RECAULK_SWIFT_SECOND(__VA_ARGS__)
+#define __RECAULK_SWIFT_SUPER_dispatch_data ~, NSObject
+#define __RECAULK_SWIFT_SUPER(name, dflt) __RECAULK_SWIFT_PICK(__RECAULK_SWIFT_SUPER_##name, dflt, ~)
+/* spec: the 11.3 SDK's os/object.h -- OS_OBJECT_USE_OBJC_RETAIN_RELEASE is 0 under OS_OBJECT_SWIFT3, so
+   dispatch_retain and dispatch_release stay functions. */
+#undef OS_OBJECT_USE_OBJC_RETAIN_RELEASE
+#define OS_OBJECT_USE_OBJC_RETAIN_RELEASE 0
+#undef OS_OBJECT_DECL
+#undef OS_OBJECT_DECL_SUBCLASS
+#define OS_OBJECT_DECL(name, ...) __RECAULK_SWIFT_CLASS(name, OS_object)
+#define OS_OBJECT_DECL_SUBCLASS(name, super) \
+    __RECAULK_SWIFT_CLASS(name, __RECAULK_SWIFT_SUPER(name, OS_OBJECT_CLASS(super)))
+#endif
+#endif
+
 /* Include the primary system dispatch/dispatch.h */
 #include_next <dispatch/dispatch.h>
 
@@ -24,6 +62,7 @@
 /* spec: the 11.3 SDK's dispatch/object.h, queue.h, block.h and workloop.h declare these; Recaulk defines
    them (README.md "Declarations"). 10.9 has no quality-of-service classes or workloops: the classes are
    accepted and dropped, and a workloop is a serial queue. */
+#include <sys/cdefs.h>
 __BEGIN_DECLS
 /* spec: README.md "Declarations" -- each group only where the SDK in use lacks it, so a newer SDK
    compiles through this wrapper: QoS and dispatch blocks are 10.10, dispatch_activate 10.12,
@@ -68,4 +107,25 @@ void dispatch_barrier_async_and_wait(dispatch_queue_t queue, dispatch_block_t bl
 #endif
 #endif
 __END_DECLS
+#endif
+#ifdef RECAULK_DISPATCH_SWIFT_CLASSES
+#ifndef RECAULK_DISPATCH_SWIFT_SOURCES
+#define RECAULK_DISPATCH_SWIFT_SOURCES
+/* spec: the 11.3 SDK's DISPATCH_SOURCE_DECL and DISPATCH_SOURCE_TYPE_DECL -- the protocols the source class adopts,
+   one per source type. platform: 10.9's runtime has none of them, so in Swift a static upcast to
+   DispatchSourceTimer and the rest works but a dynamic `as?` fails. */
+@protocol OS_dispatch_source <NSObject>
+@end
+@interface OS_dispatch_source () <OS_dispatch_source>
+@end
+#define __RECAULK_SWIFT_SOURCE(t) \
+    @protocol OS_dispatch_source_##t <OS_dispatch_source> \
+    @end \
+    @interface OS_dispatch_source () <OS_dispatch_source_##t> \
+    @end
+__RECAULK_SWIFT_SOURCE(data_add) __RECAULK_SWIFT_SOURCE(data_or) __RECAULK_SWIFT_SOURCE(mach_send)
+__RECAULK_SWIFT_SOURCE(mach_recv) __RECAULK_SWIFT_SOURCE(memorypressure) __RECAULK_SWIFT_SOURCE(proc)
+__RECAULK_SWIFT_SOURCE(read) __RECAULK_SWIFT_SOURCE(signal) __RECAULK_SWIFT_SOURCE(timer)
+__RECAULK_SWIFT_SOURCE(vnode) __RECAULK_SWIFT_SOURCE(write)
+#endif
 #endif
