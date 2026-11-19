@@ -251,6 +251,13 @@ it needs; elsewhere, 10.9's own Macs among them, it computes in software. `fmal`
 software everywhere. `fma` and `fmal` raise inexact, underflow (a tiny result, judged after rounding, as
 x86 does), overflow and invalid as IEEE 754 does; `truncl` raises nothing.
 
+## Compiler builtins
+
+`__extendhfsf2` and `__truncsfhf2`, which clang calls to widen and narrow a `_Float16`, convert exactly,
+rounding to nearest, ties to even. They are compiler-rt's, which 10.9's libSystem predates. Recaulk's are
+weak and not forwarded, so a program that brings its own compiler-rt (Zig's `compiler_rt.c.o`) links with
+`librecaulk.a` in either order, and its own win.
+
 ## Queue assertions
 
 `dispatch_assert_queue`, as the `dispatch_assert_queue$V2` a modern SDK binds (Swift's

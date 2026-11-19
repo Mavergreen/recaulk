@@ -5,6 +5,9 @@
  * compiler-rt, which 10.9's libSystem predates. Both are exact: every half has
  * an exact float representation, and the narrowing direction rounds to nearest,
  * ties to even, as the hardware instruction does.
+ *
+ * spec: README.md "Compiler builtins" -- weak and not forwarded (build/forward-exclude.txt, abi): a program
+ * that brings its own compiler-rt (Zig's) defines them too, and its own win in any link order.
  */
 
 #include <stdint.h>
@@ -22,7 +25,7 @@ static uint32_t float_to_bits(float f) {
     return bits;
 }
 
-float __extendhfsf2(uint16_t half) {
+__attribute__((weak)) float __extendhfsf2(uint16_t half) {
     uint32_t sign = (uint32_t)(half & 0x8000u) << 16;
     uint32_t exp = (half >> 10) & 0x1Fu;
     uint32_t mant = half & 0x3FFu;
@@ -40,7 +43,7 @@ float __extendhfsf2(uint16_t half) {
     return bits_to_float(sign | ((exp - 15 + 127) << 23) | (mant << 13));
 }
 
-uint16_t __truncsfhf2(float value) {
+__attribute__((weak)) uint16_t __truncsfhf2(float value) {
     uint32_t bits = float_to_bits(value);
     uint16_t sign = (uint16_t)((bits >> 16) & 0x8000u);
     int32_t exp = (int32_t)((bits >> 23) & 0xFFu) - 127 + 15;
