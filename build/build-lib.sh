@@ -49,13 +49,22 @@ for h in $(cd "$MAVERICKS_ROOT/src/include" && find . -type f | sed 's|^\./||');
 done
 cp -R "$MAVERICKS_ROOT/src/include/." "$T/include/recaulk/"
 
+NM="$NM" sh "$SELF/member-link-options.sh" map "$SDK" > "$W/link-options.map"
+mkdir -p "$W/link-options"
 for dir in backfills overrides; do
   mkdir -p "$W/$dir"
   rm -f "$W/$dir"/*.o "$W/librecaulk-$dir.a"
   for c in "$MAVERICKS_ROOT/src/$dir"/*.c; do
-    "$CC" $flags -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations -D__RECAULK_SOURCE__ \
-      -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$src/include" \
-      -c "$c" -o "$W/$dir/recaulk-$(basename "$c" .c).o"
+    o="$W/$dir/recaulk-$(basename "$c" .c).o"
+    set -- -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations -D__RECAULK_SOURCE__ \
+      -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$src/include" -c "$c" -o "$o"
+    "$CC" $flags "$@"
+    # spec: README.md "How to use" -- a member carries the frameworks and libraries it needs; measured from the
+    #       compiled object, then compiled again with them
+    [ "$dir" = backfills ] || continue
+    h="$W/link-options/$(basename "$c" .c).h"
+    NM="$NM" sh "$SELF/member-link-options.sh" header "$W/link-options.map" "$o" > "$h"
+    [ -s "$h" ] && "$CC" $flags "$@" -include "$h"
   done
   recaulk_archive "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
 done

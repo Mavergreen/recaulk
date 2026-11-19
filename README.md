@@ -18,9 +18,13 @@ Given source code:
 
 ```sh
 cc -isystem /usr/local/mavergreen/recaulk/include/recaulk \
-   myprogram.c /usr/local/mavergreen/recaulk/lib/librecaulk.a \
-   -framework CoreFoundation -framework Security -framework CoreServices -framework IOKit -lobjc
+   myprogram.c /usr/local/mavergreen/recaulk/lib/librecaulk.a
 ```
+
+Each member of `librecaulk.a` names the frameworks and libraries it needs (CoreFoundation, Security,
+CoreServices, CoreGraphics, `-lobjc`, `-lc++abi`) in its own object file, and the linker adds them when it uses
+that member. So the link needs no flags for Recaulk's sake: a program gains only what the members it uses need,
+and one that force-loads the whole archive (`-Wl,-force_load`) gets everything any member needs.
 
 (When you're building a dylib, also pass `-Wl,-unexported_symbol,___recaulk_*` to keep Recaulk's internals private.)
 
@@ -30,7 +34,7 @@ starts `___recaulk_`, so a consumer can pick members by the names it asks for. M
 helpers are renamed `___recaulk_<name>` in the archive. `libRecaulkSystem.dylib` still exports MacPorts'
 names unrenamed, as libSystemWrapper.dylib did.
 
-(For C++ built against the system's libc++abi, as clang-22's libc++ is, also pass `-lc++abi`: Recaulk fills in the C++ runtime entry points 10.9's libc++abi lacks, and they call the rest of it.)
+(Recaulk fills in the C++ runtime entry points 10.9's libc++abi lacks; those members bring `-lc++abi` with them, since they call the rest of it.)
 
 ### Objective-C methods
 
