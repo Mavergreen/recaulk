@@ -18,6 +18,8 @@ NSArray *__recaulk_workspace_url_events(NSArray *, NSWorkspaceLaunchOptions, NSE
 BOOL __recaulk_workspace_note_recent_files(NSArray *, NSWorkspaceLaunchOptions, NSError **);
 NSRunningApplication *__recaulk_workspace_open_urls_with_ops(NSWorkspace *, NSArray *, NSURL *, NSWorkspaceLaunchOptions, NSDictionary *, NSError **, const RecaulkWorkspaceOps *);
 NSRunningApplication *__recaulk_objc_workspace_open_urls(id, SEL, NSArray *, NSURL *, NSWorkspaceLaunchOptions, NSDictionary *, NSError **);
+BOOL __recaulk_objc_voiceover_enabled_in(CFStringRef);
+BOOL __recaulk_objc_workspace_is_voiceover_enabled(id, SEL);
 void __recaulk_objc_activate(void);
 void __recaulk_objc_register_workspace_class(Class);
 #endif

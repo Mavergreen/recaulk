@@ -13,6 +13,17 @@
       "framework_policy": "strong-linked-before-root"
     },
     {
+      "provider_id": "recaulk.nsworkspace.is-voiceover-enabled.v1",
+      "class": "NSWorkspace",
+      "method_kind": "-",
+      "selector": "isVoiceOverEnabled",
+      "encoding": "c16@0:8",
+      "implementation_symbol": "__recaulk_objc_workspace_is_voiceover_enabled",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
       "provider_id": "recaulk.nslocale.language-code.v1",
       "class": "NSLocale",
       "method_kind": "-",

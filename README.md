@@ -35,7 +35,9 @@ names unrenamed, as libSystemWrapper.dylib did.
 ### Objective-C methods
 
 `librecaulk-objc.a` adds framework methods 10.9 lacks, such as NSWorkspace's
-`openURLs:withApplicationAtURL:options:configuration:error:`. It is separate from
+`openURLs:withApplicationAtURL:options:configuration:error:` and `isVoiceOverEnabled`. The latter reads the
+state VoiceOver records (`voiceOverOnOffKey` in `com.apple.universalaccess`) each time it is asked; unlike
+Apple's 10.13 property, it posts no key-value observing change when VoiceOver turns on or off. It is separate from
 `librecaulk.a` and does nothing unless you ask for it: link it and keep its
 activation root, and AppKit and Carbon strong-linked:
 
