@@ -26,7 +26,11 @@ CoreServices, CoreGraphics, `-lobjc`, `-lc++abi`) in its own object file, and th
 that member. So the link needs no flags for Recaulk's sake: a program gains only what the members it uses need,
 and one that force-loads the whole archive (`-Wl,-force_load`) gets everything any member needs.
 
-(When you're building a dylib, also pass `-Wl,-unexported_symbol,___recaulk_*` to keep Recaulk's internals private.)
+(When you're building a dylib, also pass
+`-Wl,-unexported_symbols_list,/usr/local/mavergreen/recaulk/share/recaulk/unexported-symbols.txt`. It names
+every global `librecaulk.a` defines, the `___recaulk_` internals and the back-fills alike, so your dylib doesn't
+export `clock_gettime` or `aligned_alloc` to its own clients. It also hides a function of your own by one of
+those names.)
 
 Every global `librecaulk.a` and `librecaulk-cxxabi-exports.a` define, as `nm` lists them, is a named API or
 starts `___recaulk_`, so a consumer can pick members by the names it asks for. MacPorts' private helpers

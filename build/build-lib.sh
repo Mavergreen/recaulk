@@ -119,6 +119,8 @@ grep -v '^#' "$MAVERICKS_ROOT/build/header-entries.txt" | awk 'NF' | LC_ALL=C so
   -framework CoreGraphics -framework CoreServices -lobjc -lc++abi
 
 mkdir -p "$T/share/recaulk"
+# spec: README.md "How to use" -- every global librecaulk.a defines, for a dylib's -Wl,-unexported_symbols_list
+"$NM" -gU "$T/lib/librecaulk.a" | awk 'NF >= 3 { print $NF }' | LC_ALL=C sort -u > "$T/share/recaulk/unexported-symbols.txt"
 {
   printf '# artifact\tmember\tlicence\tcovered-files\tcopyright\tsource-urls\tnotice\n'
   for a in librecaulk.a libRecaulkSystem.dylib; do
