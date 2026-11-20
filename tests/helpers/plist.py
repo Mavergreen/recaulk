@@ -1,4 +1,4 @@
-# platform: python 2.7 (10.9) and python 3 (Linux, modern Mac) alike
+# platform: host-agnostic -- python 2.7 (10.9) and python 3 (Linux, modern Mac) alike
 # usage: plist.py FILE get KEY[.KEY...]   prints the value (a dict prints its keys, one per line); exit 2 if absent
 #        plist.py FILE keys                prints the top-level keys
 import plistlib, sys

@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: 10.9 only -- reads the running system's KPI symbol-set kexts; run once by hand, then commit the result
+# platform: macOS-only -- 10.9 only: reads the running system's KPI symbol-set kexts (PlistBuddy); run once by hand, then commit the result
 # spec: tests/fixtures/kpi-10.9/PROVENANCE.md -- the public KPI export lists RecaulkKPI.kext may import from,
 #       one file per library bundle id, one symbol per line, sorted
 set -eu
