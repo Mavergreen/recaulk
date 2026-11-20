@@ -138,6 +138,10 @@ Constants a later SDK names for a function 10.9 has are defined the same way: `<
 defines `CLONE_NOOWNERCOPY` (0x0002, from the 10.13 SDK), which changes nothing on 10.9, where the
 `clonefile` family fails with `ENOTSUP` whatever the flags.
 
+`<sys/mman.h>` names `MAP_ANONYMOUS` (10.11's name for `MAP_ANON`) exactly where 10.9 names `MAP_ANON`: by
+default, or with `_DARWIN_C_SOURCE`. Under a bare `_POSIX_C_SOURCE` neither is defined, so a strict-POSIX
+`#ifdef MAP_ANONYMOUS` takes its other branch rather than one that names an undeclared `MAP_ANON`.
+
 ## C++ exceptions
 
 C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on
