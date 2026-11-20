@@ -153,7 +153,8 @@ probe noownercopy c '#include <sys/clonefile.h>' '_Static_assert(CLONE_NOOWNERCO
 # spec: README.md "Declarations" -- Recaulk's wrappers declare only what the SDK in use lacks, so a newer SDK compiles
 #       through them; Foundation reaches <dispatch/dispatch.h>
 probe dispatchsdk m '#import <Foundation/Foundation.h>' '#include <dispatch/dispatch.h>' \
-  'void recaulk_probe(dispatch_queue_t q) { dispatch_activate(q); dispatch_async_and_wait(q, ^{}); (void)dispatch_block_create(DISPATCH_BLOCK_BARRIER, ^{}); }'
+  'void recaulk_probe(dispatch_queue_t q) { dispatch_activate(q); dispatch_async_and_wait(q, ^{}); (void)dispatch_block_create(DISPATCH_BLOCK_BARRIER, ^{});' \
+  '  dispatch_queue_global_t g = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0); (void)g; dispatch_apply(2, DISPATCH_APPLY_AUTO, ^(size_t i) { (void)i; }); }'
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/dispatchsdk.m" \
   || bad "<dispatch/dispatch.h> through include/recaulk does not declare the dispatch back-fills"
 "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \

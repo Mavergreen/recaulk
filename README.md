@@ -308,6 +308,9 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
   low-priority one, background the background one. 10.9's returns NULL for a class. It is a fix to a function 10.9
   has (see "Fixes to functions 10.9 has"): `<dispatch/dispatch.h>` binds a program built from source to it by asm
   label, whatever its link order, and `libRecaulkSystem.dylib` exports it for a program relinked onto it.
+- `DISPATCH_APPLY_AUTO` (10.12) names the default-priority global queue, since 10.9's `dispatch_apply` needs a
+  real queue; 10.12's chooses one by the caller's QoS. `dispatch_queue_global_t` (10.12) is `dispatch_queue_t`.
+  Both are header-only.
 - `dispatch_queue_attr_make_initially_inactive` gives an attribute with which `dispatch_queue_create` (and
   `dispatch_queue_create_with_target`, `dispatch_workloop_create_inactive`) creates the queue suspended.
   `dispatch_activate` starts such a queue, and a source, once; a second call, or a call on any other object,

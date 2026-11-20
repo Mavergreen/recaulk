@@ -79,6 +79,14 @@ int main(int argc, char **argv) {
     dispatch_set_target_queue(inner, q1);
 
     if (!strcmp(c, "global-qos")) return global_qos();
+    if (!strcmp(c, "apply-auto")) {
+        /* DISPATCH_APPLY_AUTO (10.12) names a global queue on 10.9, whose dispatch_apply needs a real one */
+        __block long sum = 0;
+        dispatch_queue_global_t g = DISPATCH_APPLY_AUTO;
+        dispatch_apply(100, DISPATCH_APPLY_AUTO, ^(size_t i) { __sync_fetch_and_add(&sum, (long)i); });
+        if (sum != 4950 || g == NULL) { printf("FAIL: dispatch_apply over DISPATCH_APPLY_AUTO summed %ld, want 4950\n", sum); return 1; }
+        return 0;
+    }
     if (!strcmp(c, "queue-qos-class")) {
         int rp = 7;
         dispatch_qos_class_t k = dispatch_queue_get_qos_class(q1, &rp);

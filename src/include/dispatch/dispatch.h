@@ -114,6 +114,13 @@ void dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue, dispa
 #endif
 #endif
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
+/* The 10.12 SDK's type for a global queue; on 10.9 every queue is a dispatch_queue_t. */
+typedef dispatch_queue_t dispatch_queue_global_t;
+/* dispatch_apply's "pick a queue" (10.12). 10.9's dispatch_apply needs a real queue, so it names the default
+   global queue, where 10.12's libdispatch would choose one by the caller's QoS. */
+#ifndef DISPATCH_APPLY_AUTO
+#define DISPATCH_APPLY_AUTO dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+#endif
 /* dispatch_activate starts a queue made inactive, and a source, once; any other object it leaves alone. */
 void dispatch_activate(dispatch_object_t object);
 dispatch_queue_attr_t dispatch_queue_attr_make_initially_inactive(dispatch_queue_attr_t attr);
