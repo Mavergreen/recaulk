@@ -65,13 +65,16 @@ __RECAULK_SWIFT_INIT_UNAVAILABLE
 #include <sys/cdefs.h>
 __BEGIN_DECLS
 /* spec: README.md "Fixes to functions 10.9 has" -- a program built from source gets a global queue for a QoS class,
-   and an inactive queue for an initially inactive attribute, whatever its link order (a -lc ahead of
-   librecaulk.a names libSystem, whose copies return NULL for a class and an active queue). An asm
+   an inactive queue for an initially inactive attribute, and a resume that
+   counts as an activation, whatever its link order (a -lc ahead of
+   librecaulk.a names libSystem, whose copies return NULL for a class and an active queue, and leave a later
+   dispatch_activate to over-resume). An asm
    label, not a macro, so Swift's importer still sees dispatch_get_global_queue; its type is the SDK's own. Not inside Recaulk, whose own
    sources define the 10.9 name. */
 #ifndef __RECAULK_SOURCE__
 __typeof__(dispatch_get_global_queue) dispatch_get_global_queue __asm("___recaulk_dispatch_get_global_queue");
 __typeof__(dispatch_queue_create) dispatch_queue_create __asm("___recaulk_dispatch_queue_create");
+__typeof__(dispatch_resume) dispatch_resume __asm("___recaulk_dispatch_resume");
 #endif
 /* spec: README.md "Declarations" -- each group only where the SDK in use lacks it, so a newer SDK
    compiles through this wrapper: QoS and dispatch blocks are 10.10, dispatch_activate 10.12,

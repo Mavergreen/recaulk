@@ -303,7 +303,10 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
 - `dispatch_queue_attr_make_initially_inactive` gives an attribute with which `dispatch_queue_create` (and
   `dispatch_queue_create_with_target`, `dispatch_workloop_create_inactive`) creates the queue suspended.
   `dispatch_activate` starts such a queue, and a source, once; a second call, or a call on any other object,
-  does nothing. `dispatch_queue_create` is a fix to a function 10.9 has, bound as `dispatch_get_global_queue` is.
+  does nothing, as on 10.12. A `dispatch_resume` of such a queue or source is its activation, so a
+  `dispatch_activate` after it does nothing too. A source suspended and resumed before it ever started counts as
+  started: 10.9 cannot tell the two apart. `dispatch_queue_create` and `dispatch_resume` are fixes to functions
+  10.9 has, bound as `dispatch_get_global_queue` is.
 - `dispatch_queue_create_with_target` sets the target queue it is given.
 - `dispatch_queue_get_qos_class` reports `QOS_CLASS_UNSPECIFIED` and a relative priority of 0 for every queue.
 - `dispatch_queue_attr_make_with_autorelease_frequency` returns the attribute it is given: 10.9's queues drain no

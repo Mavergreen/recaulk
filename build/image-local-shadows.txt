@@ -27,3 +27,4 @@ recaulk-socket_close.o _close$NOCANCEL closes a socket without hanging when anot
 recaulk-socket_close.o _dup2 replaces a socket without hanging when another thread is entering a read on it, weak for the same reason
 recaulk-dispatch_global_qos.o _dispatch_get_global_queue gives a QoS class a global queue, which 10.9's answers with NULL, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-dispatch_inactive.o _dispatch_queue_create creates a queue suspended for an initially inactive attribute, which 10.9's has none of, weak so libRecaulkSystem.dylib's public override wins there
+recaulk-dispatch_inactive.o _dispatch_resume counts the first resume of an inactive queue or a source as its activation, so a dispatch_activate after it does not over-resume, weak for the same reason

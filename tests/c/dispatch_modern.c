@@ -132,6 +132,23 @@ int main(int argc, char **argv) {
         if (dispatch_semaphore_wait(fired, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC))) { puts("FAIL: an activated source never fired"); return 1; }
         return 0;
     }
+    if (!strcmp(c, "resumed-source-then-activate")) {
+        dispatch_source_t s = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, q1);
+        dispatch_semaphore_t fired = dispatch_semaphore_create(0);
+        dispatch_source_set_event_handler(s, ^{ dispatch_semaphore_signal(fired); });
+        dispatch_resume(s);
+        dispatch_activate(s);
+        dispatch_source_merge_data(s, 1);
+        if (dispatch_semaphore_wait(fired, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC))) { puts("FAIL: a resumed source never fired"); return 1; }
+        return 0;
+    }
+    if (!strcmp(c, "resumed-inactive-then-activate")) {
+        dispatch_queue_t q = dispatch_queue_create("recaulk.ri", dispatch_queue_attr_make_initially_inactive(NULL));
+        dispatch_resume(q);
+        dispatch_activate(q);
+        if (!runs_within(q, 2000)) { puts("FAIL: an inactive queue resumed then activated ran no block"); return 1; }
+        return 0;
+    }
     if (!strcmp(c, "assert-in-sync")) { dispatch_sync(q1, ^{ dispatch_assert_queue(q1); }); return 0; }
     if (!strcmp(c, "not-off-on-pthread")) { on_pthread(not_on_pthread, q1); return 0; }
     if (!strcmp(c, "not-other-queue-block")) { dispatch_sync(q2, ^{ dispatch_assert_queue_not(q1); }); return 0; }

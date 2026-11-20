@@ -3,6 +3,7 @@
 #       ___recaulk_ names; tests/shadow-renames.sh links such a program against it.
 ___recaulk_dispatch_get_global_queue
 ___recaulk_dispatch_queue_create
+___recaulk_dispatch_resume
 ___recaulk_fma
 ___recaulk_fmal
 ___recaulk_truncl

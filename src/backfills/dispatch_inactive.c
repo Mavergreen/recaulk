@@ -5,16 +5,18 @@
  * concurrent, and dispatch_queue_create given one creates the queue suspended and marks it. dispatch_activate
  * resumes a marked queue once, and a source once (10.9's sources start suspended, as 10.12's start inactive);
  * on any other object it does nothing, as 10.12's does on an active one. A second dispatch_activate changes
- * nothing, where a second dispatch_resume would trap.
+ * nothing, where a second dispatch_resume would trap. A dispatch_resume of either is its activation, as on 10.12,
+ * so a dispatch_activate after it does nothing too. A source suspended and resumed before it ever started counts
+ * as started, which 10.9 cannot tell apart.
  *
  * Every copy of Recaulk in a process agrees on both: the attributes are told apart by a magic number, not by
  * address, and the marks are associated objects keyed by a selector, one pointer per name process-wide, as
  * dispatch_modern.c's block state is. platform: measured on 10.9.5, a queue or source releases its associated
  * objects when it is freed, so a new object at a freed one's address starts unmarked.
  *
- * dispatch_queue_create is a 10.9 export, so here it is weak and hidden (build/image-local-shadows.txt): it binds
+ * dispatch_queue_create and dispatch_resume are 10.9 exports, so here they are weak and hidden (build/image-local-shadows.txt): it binds
  * only inside the image that links librecaulk.a, and yields to the public one src/overrides/dispatch_inactive_export.c
- * gives libRecaulkSystem.dylib. Given any attribute but Recaulk's it is the system's.
+ * gives libRecaulkSystem.dylib. Given any attribute but Recaulk's, dispatch_queue_create is the system's.
  */
 #include <dispatch/dispatch.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -23,6 +25,7 @@
 #include <stdint.h>
 
 dispatch_queue_t __recaulk_dispatch_queue_create(const char *label, dispatch_queue_attr_t attr);
+void __recaulk_dispatch_resume(dispatch_object_t object);
 dispatch_queue_t __recaulk_dispatch_queue_create_targeted(const char *label, dispatch_queue_attr_t attr,
                                                           dispatch_queue_t target);
 int objc_sync_enter(id);
@@ -102,18 +105,47 @@ static int is_source(id object) {
     return 0;
 }
 
-void dispatch_activate(dispatch_object_t object) {
-    id o = (id)object._do;
-    if (!o) return;
-    int resume = 0;
+/* Takes the object's one activation: 1 when it was a queue made inactive or a source not yet started. */
+static int take_activation(id o) {
+    int taken = 0;
     objc_sync_enter(o);
     if (objc_getAssociatedObject(o, suspended_key())) {
         objc_setAssociatedObject(o, suspended_key(), nil, OBJC_ASSOCIATION_RETAIN);
-        resume = 1;
+        taken = 1;
     } else if (is_source(o) && !objc_getAssociatedObject(o, activated_key())) {
         objc_setAssociatedObject(o, activated_key(), (id)kCFBooleanTrue, OBJC_ASSOCIATION_RETAIN);
-        resume = 1;
+        taken = 1;
     }
     objc_sync_exit(o);
-    if (resume) dispatch_resume(object);
+    return taken;
+}
+
+typedef void resume_fn(dispatch_object_t);
+
+static void system_resume(dispatch_object_t object) {
+    static resume_fn *system;
+    resume_fn *f = __atomic_load_n(&system, __ATOMIC_ACQUIRE);
+    if (!f) {
+        f = (resume_fn *)dlsym(RTLD_NEXT, "dispatch_resume");
+        __atomic_store_n(&system, f, __ATOMIC_RELEASE);
+    }
+    f(object);
+}
+
+void dispatch_activate(dispatch_object_t object) {
+    id o = (id)object._do;
+    if (o && take_activation(o)) system_resume(object);
+}
+
+/* A dispatch_resume of a queue made inactive or of a source not yet started is its activation, as on 10.12, so a
+ * dispatch_activate after it does nothing; any other resume is the system's alone. */
+void __recaulk_dispatch_resume(dispatch_object_t object) {
+    id o = (id)object._do;
+    if (o) (void)take_activation(o);
+    system_resume(object);
+}
+
+__attribute__((weak, visibility("hidden"))) void recaulk_dispatch_resume(dispatch_object_t) __asm("_dispatch_resume");
+__attribute__((weak, visibility("hidden"))) void recaulk_dispatch_resume(dispatch_object_t object) {
+    __recaulk_dispatch_resume(object);
 }

@@ -23,7 +23,7 @@ header_of() {
     pselect) echo sys/select.h ;;
     posix_spawn*) echo spawn.h ;;
     fma|fmal|truncl) echo math.h ;;
-    dispatch_get_global_queue|dispatch_queue_create) echo dispatch/dispatch.h ;;
+    dispatch_get_global_queue|dispatch_queue_create|dispatch_resume) echo dispatch/dispatch.h ;;
     *) return 1 ;;
   esac
 }
