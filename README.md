@@ -119,6 +119,12 @@ listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backf
 holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect`, its `close` and
 `dup2`, and its `fma`, `fmal` and `truncl` are fixes of this kind.
 
+`/usr/local/mavergreen/recaulk/share/recaulk/system-overrides.txt` lists, one `<member> <symbol>` per line
+(`#` comments), every name `librecaulk.a` defines that 10.9 already exports: those fixes, and MacPorts' public
+`pthread_get_stacksize_np` and `sysconf`. Each takes effect only where it binds before the system's copy, so a
+binary that imports one of these names from a system library has missed Recaulk's fix, usually through link order
+(an explicit `-lSystem` ahead of `librecaulk.a`). A product's conformance check can read the list to catch that.
+
 A hidden definition in an archive binds only when nothing earlier in the link defines the name, and
 `-lm`, `-ldl`, `-lpthread` and `-lc` each name libSystem itself. So a program built from source against
 Recaulk's headers reaches each C fix by a name of Recaulk's own, whatever its link order: `math.h` and

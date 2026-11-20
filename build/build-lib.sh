@@ -124,6 +124,16 @@ mkdir -p "$T/share/recaulk"
 # spec: README.md "How to use" -- the system exports a member shadows inside its image, for a consumer that
 #       links a subset of the archive
 cp "$SELF/image-local-shadows.txt" "$T/share/recaulk/image-local-shadows.txt"
+# spec: README.md "Fixes to functions 10.9 has" -- every global librecaulk.a defines that 10.9 already exports, for a
+#       product's check that no binary imports one from the system instead
+. "$SELF/sdk-exports.sh"
+sdk_exports "$SDK" > "$W/sdk-exports.txt"
+{
+  echo '# <member> <symbol>: librecaulk.a defines <symbol>, which 10.9 already exports'
+  "$NM" -gU -m -A "$T/lib/librecaulk.a" \
+    | awk '$NF !~ /\.eh$/ { m = $1; sub(/^.*\.a:/, "", m); sub(/:$/, "", m); print m, $NF }' \
+    | while read -r m s; do grep -qxF -- "$s" "$W/sdk-exports.txt" && echo "$m $s"; done | LC_ALL=C sort -u
+} > "$T/share/recaulk/system-overrides.txt"
 {
   printf '# artifact\tmember\tlicence\tcovered-files\tcopyright\tsource-urls\tnotice\n'
   for a in librecaulk.a libRecaulkSystem.dylib; do
