@@ -349,6 +349,40 @@ none of them, so in Swift a static upcast to `DispatchSourceTimer` works and a d
 
 With a newer SDK, which declares the classes itself, nothing is added.
 
+## The kernel back-fill kext
+
+`RecaulkKPI.kext` (`dev.mavergreen.recaulk.kpi`) is a library kext for 10.9. It supplies the 7 kernel
+functions macFUSE 5.5.0's kext imports and 10.9's public KPIs lack:
+
+- `__memcpy_chk` and `__strncpy_chk`: panic when the copy is longer than its destination, as macOS 12 does.
+- `ubc_upl_map_range`, `buf_map_range` and `buf_unmap_range`, over 10.9's `ubc_upl_map`, `buf_map` and
+  `buf_unmap`. Each returns the address of the same byte as on macOS 12. Two deviations: `ubc_upl_map_range` maps
+  the whole UPL, ignoring `size`, and always maps it read-write, ignoring `prot`.
+- `vfs_get_notify_attributes`, reimplemented.
+- `vnode_notify`. 10.9's kernel has it, but exports it only to Apple's kexts. Recaulk's forwards to the
+  kernel's own function. On its first call, once root is mounted, it finds that function in `/mach_kernel`'s
+  symbol table. It accepts the result only when three other symbols agree on the KASLR slide, and the running
+  kernel's UUID matches the file's. If any check fails, it delivers nothing and returns 0, so kqueue and
+  FSEvents see no change.
+
+Its log lines, through the kernel's `printf`, begin `RecaulkKPI: `. A consumer may test for them:
+
+- `vnode_notify: forwarding to kernel ...` once the first call has resolved the kernel's function;
+- `vnode_notify: FALLBACK, delivering nothing (<reason>, error <n>)` when it could not;
+- `not starting: this kernel is Darwin <n> ...` on anything but 10.9.
+
+The kext starts only on Darwin 13 (10.9). Elsewhere it refuses to start, because macOS 12 and later export these
+functions themselves. `debug.recaulk_kpi.vnode_notify_forwarded` counts forwarded calls.
+
+What a consumer relies on is the bundle id, `OSBundleCompatibleVersion` 1.0.0 (kept while the 7 signatures
+hold) and its dependence only on `com.apple.kpi.bsd` and `com.apple.kpi.libkern` 13.0.0. `CFBundleVersion`
+is the release, as `YYMM.DD.N`: `OSKext` parses at most 4, 2 and 2 digits, and that order matches the releases'.
+
+`sh build/build-kext.sh OUT` compiles it with clang22 on any host. The kernel's loader on 10.9 accepts only
+`MH_KEXT_BUNDLE`, which needs ld64's `-kext`: clang22's lld writes no such file. So the build links only when
+`RECAULK_KEXT_LD` names such a linker, and Recaulk's pkg does not carry the kext until the family's cctools
+ships one.
+
 ## Licences
 
 Recaulk's own code is under the ISC licence in `LICENSE`. Some MacPorts members of `librecaulk.a` are
