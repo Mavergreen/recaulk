@@ -31,10 +31,12 @@ void dispatch_set_qos_class_floor(dispatch_object_t object, dispatch_qos_class_t
  * '.set' absolute alias, which the 10.9 assembler leaves undefined).  We also
  * keep the plain '_V2' symbol for completeness.
  */
+dispatch_queue_t __recaulk_dispatch_queue_create(const char *label, dispatch_queue_attr_t attr);
+dispatch_queue_t __recaulk_dispatch_queue_create_targeted(const char *label, dispatch_queue_attr_t attr,
+                                                          dispatch_queue_t target);
 static dispatch_queue_t mpls_dqcwt(const char *label, dispatch_queue_attr_t attr,
                                    dispatch_queue_t target) {
-	(void)target;
-	return dispatch_queue_create(label, attr);
+	return __recaulk_dispatch_queue_create_targeted(label, attr, target);
 }
 dispatch_queue_t dispatch_queue_create_with_target_V2(const char *label, dispatch_queue_attr_t attr, dispatch_queue_t target) {
 	return mpls_dqcwt(label, attr, target);
@@ -49,5 +51,6 @@ dispatch_workloop_t dispatch_workloop_create(const char *label) {
 	return (dispatch_workloop_t)dispatch_queue_create(label, DISPATCH_QUEUE_SERIAL);
 }
 dispatch_workloop_t dispatch_workloop_create_inactive(const char *label) {
-	return (dispatch_workloop_t)dispatch_queue_create(label, DISPATCH_QUEUE_SERIAL);
+	return (dispatch_workloop_t)__recaulk_dispatch_queue_create(label,
+		dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_SERIAL));
 }

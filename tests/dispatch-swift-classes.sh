@@ -18,7 +18,7 @@ if compiling; then
   #           setup (a VFS map putting this header in module Dispatch) is swift's to test; this is the plain one.
   "$CC" $FLAGS -arch x86_64 -Wall -Werror -Wno-deprecated-module-dot-map -fmodules -fmodules-cache-path="$D/mc" -I"$inc" \
     -fsyntax-only "$src" > "$D/objc-modules.log" 2>&1 || { bad "an Objective-C client with -fmodules does not parse:"; head -8 "$D/objc-modules.log"; }
-  "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" "$src" -framework Foundation -o "$(tbin classes)" \
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" "$src" -framework Foundation "$T/lib/librecaulk.a" -o "$(tbin classes)" \
     > "$D/objc.log" 2>&1 || { bad "an Objective-C client does not build:"; head -8 "$D/objc.log"; }
   SDK113="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch arm64)"
   "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \

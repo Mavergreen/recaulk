@@ -202,12 +202,6 @@ dispatch_block_t dispatch_block_create_with_qos_class(dispatch_block_flags_t fla
     return dispatch_block_create(flags, block);
 }
 
-/* Before 10.12 a dispatch_resume started an object created inactive, so dispatch_activate is one.
- * <dispatch/dispatch.h> declares it (README.md "Declarations"). */
-void dispatch_activate(dispatch_object_t object) {
-    dispatch_resume(object);
-}
-
 /* 10.9 has no quality-of-service classes. Returning the attribute unchanged
  * keeps the queue's serial/concurrent nature, which is the part that affects
  * correctness; only the scheduling hint is lost. */

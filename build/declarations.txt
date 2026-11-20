@@ -30,6 +30,7 @@ dispatch_block_create_with_qos_class dispatch/dispatch.h
 dispatch_block_notify dispatch/dispatch.h
 dispatch_block_testcancel dispatch/dispatch.h
 dispatch_block_wait dispatch/dispatch.h
+dispatch_queue_attr_make_initially_inactive dispatch/dispatch.h
 dispatch_queue_attr_make_with_autorelease_frequency dispatch/dispatch.h
 dispatch_queue_attr_make_with_qos_class dispatch/dispatch.h
 dispatch_queue_get_qos_class dispatch/dispatch.h

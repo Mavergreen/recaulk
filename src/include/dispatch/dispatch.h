@@ -64,12 +64,14 @@ __RECAULK_SWIFT_INIT_UNAVAILABLE
    accepted and dropped, and a workloop is a serial queue. */
 #include <sys/cdefs.h>
 __BEGIN_DECLS
-/* spec: README.md "Fixes to functions 10.9 has" -- a program built from source gets a global queue for a QoS class
-   whatever its link order (a -lc ahead of librecaulk.a names libSystem, whose copy returns NULL for one). An asm
+/* spec: README.md "Fixes to functions 10.9 has" -- a program built from source gets a global queue for a QoS class,
+   and an inactive queue for an initially inactive attribute, whatever its link order (a -lc ahead of
+   librecaulk.a names libSystem, whose copies return NULL for a class and an active queue). An asm
    label, not a macro, so Swift's importer still sees dispatch_get_global_queue; its type is the SDK's own. Not inside Recaulk, whose own
    sources define the 10.9 name. */
 #ifndef __RECAULK_SOURCE__
 __typeof__(dispatch_get_global_queue) dispatch_get_global_queue __asm("___recaulk_dispatch_get_global_queue");
+__typeof__(dispatch_queue_create) dispatch_queue_create __asm("___recaulk_dispatch_queue_create");
 #endif
 /* spec: README.md "Declarations" -- each group only where the SDK in use lacks it, so a newer SDK
    compiles through this wrapper: QoS and dispatch blocks are 10.10, dispatch_activate 10.12,
@@ -109,8 +111,9 @@ void dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue, dispa
 #endif
 #endif
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
-/* dispatch_activate resumes the object: before 10.12 a dispatch_resume started an inactive one. */
+/* dispatch_activate starts a queue made inactive, and a source, once; any other object it leaves alone. */
 void dispatch_activate(dispatch_object_t object);
+dispatch_queue_attr_t dispatch_queue_attr_make_initially_inactive(dispatch_queue_attr_t attr);
 /* spec: the 11.3 SDK's queue.h, with its DISPATCH_ALIAS_V2 labels: the $V2 names are the ones Recaulk defines */
 dispatch_queue_t dispatch_queue_create_with_target(const char *label, dispatch_queue_attr_t attr,
     dispatch_queue_t target) __asm__("_dispatch_queue_create_with_target$V2");

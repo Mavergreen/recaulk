@@ -2,7 +2,7 @@
 # platform: host-agnostic -- builds the staged static archive and dylib's x86_64 programs; runs them on 10.9 (RECAULK_TEST_PHASE)
 # spec: README.md "Dispatch on 10.9" -- through Recaulk's declarations, a program linking librecaulk.a and one relinked
 #       onto libRecaulkSystem.dylib: global queues by QoS class, the queue QoS query, the autorelease-frequency
-#       attribute, the targeted queue, and the not and barrier assertions (on the queue returns or traps as named).
+#       attribute, initially inactive queues and dispatch_activate, the targeted queue, and the not and barrier assertions (on the queue returns or traps as named).
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -13,7 +13,8 @@ if compiling; then
 fi
 runtime_half
 returns='global-qos queue-qos-class autorelease-frequency create-with-target assert-in-sync not-off-on-pthread
-  not-other-queue-block barrier-in-sync'
+  not-other-queue-block barrier-in-sync inactive-serial inactive-concurrent inactive-with-qos inactive-with-target
+  activate-active-queue activate-source'
 traps_not='not-in-sync not-target-in-block not-main-on-main-thread not-null'
 traps_on='barrier-off-on-pthread'
 err="$(mktemp "${TMPDIR:-/tmp}/dispatch-modern.XXXXXX")"

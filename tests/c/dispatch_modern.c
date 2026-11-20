@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 static dispatch_queue_t q1, q2, inner;
 
@@ -50,6 +51,25 @@ static int runs_concurrently(dispatch_queue_t q) {
     return ta == 0 && tb == 0;
 }
 
+/* A block submitted to q runs within ms milliseconds. */
+static int runs_within(dispatch_queue_t q, long ms) {
+    dispatch_semaphore_t ran = dispatch_semaphore_create(0);
+    dispatch_async(q, ^{ dispatch_semaphore_signal(ran); });
+    return dispatch_semaphore_wait(ran, dispatch_time(DISPATCH_TIME_NOW, ms * (long)NSEC_PER_MSEC)) == 0;
+}
+
+/* Inactive until dispatch_activate: a block waits, then runs; a second activate changes nothing. */
+static int starts_inactive(dispatch_queue_t q, const char *what) {
+    __block volatile int ran = 0;
+    dispatch_async(q, ^{ ran = 1; });
+    usleep(200000);
+    if (ran) { printf("FAIL: %s ran a block before dispatch_activate\n", what); return 1; }
+    dispatch_activate(q);
+    dispatch_activate(q);
+    if (!runs_within(q, 2000) || !ran) { printf("FAIL: %s ran no block after dispatch_activate\n", what); return 1; }
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) { fprintf(stderr, "usage: %s CASE\n", argv[0]); return 2; }
     const char *c = argv[1];
@@ -73,9 +93,44 @@ int main(int argc, char **argv) {
     }
     if (!strcmp(c, "create-with-target")) {
         dispatch_queue_t t = dispatch_queue_create_with_target("recaulk.cwt", DISPATCH_QUEUE_SERIAL, q1);
-        __block int ran = 0;
-        dispatch_sync(t, ^{ ran = 1; });
+        __block volatile int ran = 0;
+        dispatch_suspend(q1);
+        dispatch_async(t, ^{ ran = 1; });
+        usleep(200000);
+        if (ran) { puts("FAIL: a block ran while the target queue was suspended"); return 1; }
+        dispatch_resume(q1);
+        dispatch_sync(t, ^{});
         return !ran;
+    }
+    if (!strcmp(c, "inactive-serial"))
+        return starts_inactive(dispatch_queue_create("recaulk.in", dispatch_queue_attr_make_initially_inactive(NULL)), "a serial queue");
+    if (!strcmp(c, "inactive-concurrent")) {
+        dispatch_queue_t q = dispatch_queue_create("recaulk.inc", dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_CONCURRENT));
+        if (starts_inactive(q, "a concurrent queue")) return 1;
+        if (!runs_concurrently(q)) { puts("FAIL: the inactive attribute lost the concurrent one"); return 1; }
+        return 0;
+    }
+    if (!strcmp(c, "inactive-with-qos"))
+        return starts_inactive(dispatch_queue_create("recaulk.inq", dispatch_queue_attr_make_with_qos_class(
+            dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_SERIAL), QOS_CLASS_UTILITY, 0)), "a QoS queue");
+    if (!strcmp(c, "inactive-with-target"))
+        return starts_inactive(dispatch_queue_create_with_target("recaulk.int",
+            dispatch_queue_attr_make_initially_inactive(NULL), q1), "a targeted queue");
+    if (!strcmp(c, "activate-active-queue")) {
+        dispatch_activate(q1);
+        dispatch_activate(q1);
+        if (!runs_within(q1, 2000)) { puts("FAIL: an active queue stopped after dispatch_activate"); return 1; }
+        return 0;
+    }
+    if (!strcmp(c, "activate-source")) {
+        dispatch_source_t s = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, q1);
+        dispatch_semaphore_t fired = dispatch_semaphore_create(0);
+        dispatch_source_set_event_handler(s, ^{ dispatch_semaphore_signal(fired); });
+        dispatch_activate(s);
+        dispatch_activate(s);
+        dispatch_source_merge_data(s, 1);
+        if (dispatch_semaphore_wait(fired, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC))) { puts("FAIL: an activated source never fired"); return 1; }
+        return 0;
     }
     if (!strcmp(c, "assert-in-sync")) { dispatch_sync(q1, ^{ dispatch_assert_queue(q1); }); return 0; }
     if (!strcmp(c, "not-off-on-pthread")) { on_pthread(not_on_pthread, q1); return 0; }
