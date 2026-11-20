@@ -59,6 +59,7 @@ modes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'share/sdk-metadata'
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
 need 'usr/local/mavergreen/recaulk/share/recaulk/notices.tsv'
 need 'usr/local/mavergreen/recaulk/share/recaulk/unexported-symbols.txt'
+need 'usr/local/mavergreen/recaulk/share/recaulk/image-local-shadows.txt'
 need 'Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns'
 need 'Library/LaunchAgents/dev.mavergreen.recaulk-updatecheck.plist'
 ! printf '%s\n' "$FILES" | grep -Eq 'usr/local/mavergreen/legacysupport|usr/local/lib' || { echo "the payload carries the old layout or /usr/local/lib"; exit 1; }

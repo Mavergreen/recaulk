@@ -32,6 +32,13 @@ every global `librecaulk.a` defines, the `___recaulk_` internals and the back-fi
 export `clock_gettime` or `aligned_alloc` to its own clients. It also hides a function of your own by one of
 those names.)
 
+If you link only some members of `librecaulk.a`, refusing ones that define names 10.9 already exports, allow
+the pairs `/usr/local/mavergreen/recaulk/share/recaulk/image-local-shadows.txt` lists (`<member> <symbol>
+<reason>`, `#` comments). Each is a deliberate, hidden fix to a 10.9 function that binds only inside your image,
+and some come with the member that needs them: `dispatch_activate` is correct only when the same image's
+`dispatch_resume` and `dispatch_queue_create` are Recaulk's too. The list is exact; no other member defines a
+10.9 export.
+
 Every global `librecaulk.a` and `librecaulk-cxxabi-exports.a` define, as `nm` lists them, is a named API or
 starts `___recaulk_`, so a consumer can pick members by the names it asks for. MacPorts' private helpers
 (the names `build/forward-exclude.txt` classes private, such as `___mpls_best_fchdir`) and clang's block

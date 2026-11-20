@@ -121,6 +121,9 @@ grep -v '^#' "$MAVERICKS_ROOT/build/header-entries.txt" | awk 'NF' | LC_ALL=C so
 mkdir -p "$T/share/recaulk"
 # spec: README.md "How to use" -- every global librecaulk.a defines, for a dylib's -Wl,-unexported_symbols_list
 "$NM" -gU "$T/lib/librecaulk.a" | awk 'NF >= 3 { print $NF }' | LC_ALL=C sort -u > "$T/share/recaulk/unexported-symbols.txt"
+# spec: README.md "How to use" -- the system exports a member shadows inside its image, for a consumer that
+#       links a subset of the archive
+cp "$SELF/image-local-shadows.txt" "$T/share/recaulk/image-local-shadows.txt"
 {
   printf '# artifact\tmember\tlicence\tcovered-files\tcopyright\tsource-urls\tnotice\n'
   for a in librecaulk.a libRecaulkSystem.dylib; do
