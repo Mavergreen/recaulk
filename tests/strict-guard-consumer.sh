@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: macOS -- Drydock's strict Objective-C analyzer (drydock-objc analyze) runs on macOS only; elsewhere this skips
+# platform: macOS-only -- Drydock's strict Objective-C analyzer (drydock-objc analyze) runs on macOS only; elsewhere this skips
 # spec: README.md "Dispatch on 10.9" -- a product that links librecaulk.a's dispatch calls passes shipyard's strict
 #       compat guard, which refuses a sel_registerName argument it cannot read as one literal (fuse-gg's MFMount,
 #       libfuse 2 and macFUSE.framework, Recaulk 20261121.7: attr_key's ternary between two key names)
