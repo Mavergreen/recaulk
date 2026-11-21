@@ -6,9 +6,9 @@
 #   OUT/obj/*.o                         the objects
 #   OUT/RecaulkKPI.kext/Contents/Info.plist
 #   OUT/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI
-# RECAULK_KEXT_LD names another ld64 to link with; unset, components/cctools/version's is fetched into OUT/tools.
-# For the tests: KEXT_SRC (default src/kext) and KEXT_NAME (default RecaulkKPI) build another kext the same way,
-# and KEXT_CFLAGS adds defines (the 10.9 tests' gate and kernel-file variants).
+#   RECAULK_KEXT_LD names another ld64 to link with; unset, components/cctools/version's is fetched into OUT/tools.
+#   For the tests: KEXT_SRC (default src/kext) and KEXT_NAME (default RecaulkKPI) build another kext the same way,
+#   and KEXT_CFLAGS adds defines (the 10.9 tests' gate and kernel-file variants).
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
 . "$SELF/lib.sh"
