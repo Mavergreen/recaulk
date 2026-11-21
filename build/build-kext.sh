@@ -1,11 +1,12 @@
 #!/bin/sh
-# platform: host-agnostic -- compiles with clang22 against the 10.9 SDK's Kernel.framework on any host; links
-#           only with an ld64 that writes MH_KEXT_BUNDLE (RECAULK_KEXT_LD), which no family toolchain ships yet
+# platform: host-agnostic -- compiles with clang22 against the 10.9 SDK's Kernel.framework, and links with Mavergreen
+#           cctools' ld64 -kext (the one family linker that writes MH_KEXT_BUNDLE), on any host
 # spec: README.md "The kernel back-fill kext"
 # usage: VERSION=YYYYMMDD.N sh build/build-kext.sh OUT
 #   OUT/obj/*.o                         the objects
 #   OUT/RecaulkKPI.kext/Contents/Info.plist
-#   OUT/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI   only when RECAULK_KEXT_LD names a linker
+#   OUT/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI
+# RECAULK_KEXT_LD names another ld64 to link with; unset, components/cctools/version's is fetched into OUT/tools
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
 . "$SELF/lib.sh"
@@ -33,11 +34,11 @@ for c in "$SRC"/*.c; do
     -Wall -Wextra -Werror -O2 -c "$c" -o "$OUT/obj/$(basename "$c" .c).o"
 done
 sed -e "s/@RELEASE@/$VERSION/" -e "s/@BUNDLE_VERSION@/$bundle_version/" "$SRC/Info.plist.in" > "$K/Contents/Info.plist"
-if [ -z "${RECAULK_KEXT_LD:-}" ]; then
-  rmdir "$K/Contents/MacOS"
-  echo "build-kext: compiled $OUT/obj; not linked: no family linker writes MH_KEXT_BUNDLE yet (Mavergreen cctools);" \
-    "set RECAULK_KEXT_LD to an ld64 with -kext to link" >&2
-  exit 0
+LD="${RECAULK_KEXT_LD:-}"
+if [ -z "$LD" ]; then
+  LD="$(sh "$SELF/fetch-cctools.sh" "$OUT/tools")/bin/ld"
 fi
-"$RECAULK_KEXT_LD" -arch x86_64 -macosx_version_min 10.9 -kext -L"$SDK/usr/lib" "$OUT"/obj/*.o -lkmod \
-  -o "$K/Contents/MacOS/RecaulkKPI"
+# spec: README.md "The kernel back-fill kext" -- ld64 -kext writes MH_KEXT_BUNDLE, which 10.9's kxld loads; ld64.lld
+#       cannot. -nostdlib keeps libSystem out; libkmod supplies _kmod_info's start and stop glue.
+"$CC" $TARGET_FLAGS -isysroot "$SDK" -nostdlib -fuse-ld=ld --ld-path="$LD" -Wl,-kext -L"$SDK/usr/lib" \
+  "$OUT"/obj/*.o -lkmod -o "$K/Contents/MacOS/RecaulkKPI"

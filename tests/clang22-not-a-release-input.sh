@@ -2,7 +2,7 @@
 # platform: host-agnostic
 # spec: INGREDIENTS.md "clang22" -- clang-22 repackages on every Recaulk release, so a clang22 pin that cut a Recaulk
 #       release would make the two repos release each other forever; a clang22 bump reaches Recaulk's bytes at its
-#       next release for another reason
+#       next release for another reason. cctools takes Recaulk through clang22, so its pin is held the same way.
 set -eu
 cd "$(dirname "$0")/.."
 fail=0
@@ -11,7 +11,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 declared="$(awk '/^## / { on = ($0 == "## Declared state"); next } on && /^- [^:]+:/ { sub(/^- [^:]+: */, ""); print }' INGREDIENTS.md)"
 [ -n "$declared" ] || bad "INGREDIENTS.md declares no state, so this test cannot tell what releases Recaulk"
 printf '%s\n' "$declared" | grep -q '^UPSTREAM_VERSION$' || bad "the declared state lost its upstream entry, so this test is not reading it: $declared"
-pins="components/clang22/version components/clang22/linux-sha256"
+pins="components/clang22/version components/clang22/linux-sha256 components/cctools/version"
 set -f
 for d in $declared; do
   d="${d%%:*}"

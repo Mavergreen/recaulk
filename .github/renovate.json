@@ -22,6 +22,15 @@
     },
     {
       "customType": "regex",
+      "description": "Mavergreen cctools, whose ld64 -kext links RecaulkKPI.kext: a Mavergreen/cctools release tag, bare. Not a release input (INGREDIENTS.md, release-input).",
+      "managerFilePatterns": ["/^components/cctools/version$/"],
+      "matchStrings": ["^(?<currentValue>\\S+)\\s*$"],
+      "depNameTemplate": "Mavergreen/cctools",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-mavericks\\.(?<build>\\d+)$"
+    },
+    {
+      "customType": "regex",
       "description": "The clang22 toolchain that builds Recaulk: a Mavergreen/clang-22 release tag, bare. Not a release input (INGREDIENTS.md, release-input).",
       "managerFilePatterns": ["/^components/clang22/version$/"],
       "matchStrings": ["^(?<currentValue>\\S+)\\s*$"],
