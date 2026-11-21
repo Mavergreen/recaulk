@@ -13,7 +13,7 @@ if compiling; then
 fi
 runtime_half
 returns='global-qos queue-qos-class autorelease-frequency create-with-target assert-in-sync not-off-on-pthread
-  not-other-queue-block barrier-in-sync inactive-serial inactive-concurrent inactive-attr-retained inactive-attr-earlier inactive-with-qos inactive-with-target
+  not-other-queue-block barrier-in-sync inactive-serial inactive-concurrent inactive-attr-retained inactive-attr-earlier qos-kept qos-inactive-concurrent inactive-with-qos inactive-with-target
   activate-active-queue activate-source resumed-source-then-activate resumed-inactive-then-activate apply-auto'
 traps_not='not-in-sync not-target-in-block not-main-on-main-thread not-null'
 traps_on='barrier-off-on-pthread'

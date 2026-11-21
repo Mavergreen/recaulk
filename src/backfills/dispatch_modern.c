@@ -202,24 +202,8 @@ dispatch_block_t dispatch_block_create_with_qos_class(dispatch_block_flags_t fla
     return dispatch_block_create(flags, block);
 }
 
-/* 10.9 has no quality-of-service classes. Returning the attribute unchanged
- * keeps the queue's serial/concurrent nature, which is the part that affects
- * correctness; only the scheduling hint is lost. */
-dispatch_queue_attr_t
-dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_t attr,
-                                        dispatch_qos_class_t qos_class, int relative_priority) {
-    (void)qos_class;
-    (void)relative_priority;
-    return attr;
-}
-
-/* dispatch_queue_get_qos_class (10.10): 10.9's queues have no QoS class, so every queue reports
- * QOS_CLASS_UNSPECIFIED and a relative priority of 0, as Recaulk's pthread QoS calls answer. */
-dispatch_qos_class_t dispatch_queue_get_qos_class(dispatch_queue_t queue, int *relative_priority_ptr) {
-    (void)queue;
-    if (relative_priority_ptr) *relative_priority_ptr = 0;
-    return QOS_CLASS_UNSPECIFIED;
-}
+/* dispatch_queue_attr_make_with_qos_class and dispatch_queue_get_qos_class: src/backfills/dispatch_inactive.c, which
+   keeps the class on the attribute and the queue. */
 
 /* dispatch_queue_attr_make_with_autorelease_frequency (10.12): 10.9's queues drain no autorelease pool of
  * their own, so the frequency is dropped and the attribute keeps its serial or concurrent nature. */

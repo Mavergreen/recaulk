@@ -161,6 +161,35 @@ int main(int argc, char **argv) {
         }
         return 0;
     }
+    /* swift-gg 2026-11-20: a queue keeps the QoS class its attribute names, which 10.9's attributes had nowhere to
+       keep, alone and with inactivity and concurrency in either order */
+    if (!strcmp(c, "qos-kept")) {
+        int rp = 7;
+        dispatch_queue_t q = dispatch_queue_create("recaulk.qk",
+            dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, -4));
+        dispatch_qos_class_t k = dispatch_queue_get_qos_class(q, &rp);
+        if (k != QOS_CLASS_UTILITY || rp != -4) { printf("FAIL: the queue reports class %#x, priority %d\n", k, rp); return 1; }
+        if (!runs_within(q, 2000)) { puts("FAIL: a QoS queue ran nothing"); return 1; }
+        return 0;
+    }
+    if (!strcmp(c, "qos-inactive-concurrent")) {
+        dispatch_queue_attr_t orders[] = {
+            dispatch_queue_attr_make_with_qos_class(dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_CONCURRENT),
+                QOS_CLASS_USER_INITIATED, -2),
+            dispatch_queue_attr_make_initially_inactive(dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT,
+                QOS_CLASS_USER_INITIATED, -2)),
+        };
+        for (int i = 0; i < 2; i++) {
+            int rp = 7;
+            dispatch_queue_t q = dispatch_queue_create("recaulk.qic", orders[i]);
+            dispatch_qos_class_t k = dispatch_queue_get_qos_class(q, &rp);
+            if (k != QOS_CLASS_USER_INITIATED || rp != -2) { printf("FAIL: order %d: class %#x, priority %d\n", i, k, rp); return 1; }
+            if (starts_inactive(q, i ? "an inactive concurrent queue made after its QoS" : "a QoS queue made after its inactivity")) return 1;
+            if (!runs_concurrently(q)) { printf("FAIL: order %d lost the concurrent attribute\n", i); return 1; }
+        }
+        if (orders[0] != orders[1]) { puts("FAIL: the same attribute made in two orders is two objects"); return 1; }
+        return 0;
+    }
     if (!strcmp(c, "inactive-with-qos"))
         return starts_inactive(dispatch_queue_create("recaulk.inq", dispatch_queue_attr_make_with_qos_class(
             dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_SERIAL), QOS_CLASS_UTILITY, 0)), "a QoS queue");

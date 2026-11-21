@@ -30,7 +30,9 @@
 #include <dlfcn.h>
 #include <objc/runtime.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 dispatch_queue_t __recaulk_dispatch_queue_create(const char *label, dispatch_queue_attr_t attr);
 void __recaulk_dispatch_resume(dispatch_object_t object);
@@ -42,7 +44,12 @@ int objc_sync_exit(id);
 #define RECAULK_INACTIVE_MAGIC_V1 0x52434931u /* 'RCI1': an 8-byte struct, Recaulk 20261120.4 and earlier */
 #define RECAULK_INACTIVE_MAGIC_V2 0x52434932u /* 'RCI2': the extra bytes of a RECAULK_INACTIVE_CLASS_V2 object */
 #define RECAULK_INACTIVE_CLASS_V2 "__RecaulkDispatchInactiveQueueAttribute_v2"
+#define RECAULK_ATTR_MAGIC_V4 0x52434934u     /* 'RCI4': the bytes of an attribute record, below */
 struct inactive_attr { uint32_t magic; uint32_t concurrent; };
+
+/* An attribute of Recaulk's: inactivity and a QoS class over a base, the system attribute the queue is made from,
+   which carries its concurrency (and, on 10.10 and 10.11, the system's own QoS attribute). */
+struct attr_v4 { uint32_t magic; int32_t inactive; int32_t qos; int32_t relpri; uintptr_t base; };
 
 static const void *key(const char *name, SEL *cache) {
     SEL k = __atomic_load_n(cache, __ATOMIC_ACQUIRE);
@@ -58,49 +65,152 @@ static const void *attr_key(uint32_t concurrent) {
                &k[concurrent]);
 }
 
-/* The process's serial or concurrent attribute, or NULL when no copy has made it. Every copy publishes it under the
-   one lock of NSObject's class object, which they share, and it is never freed: retains and releases stay balanced. */
-static id attr_published(uint32_t concurrent, int create) {
-    static id cached[2];
-    id a = __atomic_load_n(&cached[concurrent], __ATOMIC_ACQUIRE);
-    if (a) return a;
+/* 20261121.7's serial or concurrent inactive attribute, a one-byte dispatch_data_t, when some copy made one. */
+static id attr_published(uint32_t concurrent) {
     id holder = (id)objc_getClass("NSObject");
     objc_sync_enter(holder);
-    if (!(a = objc_getAssociatedObject(holder, attr_key(concurrent))) && create) {
-        uint8_t byte = (uint8_t)concurrent;
-        a = (id)dispatch_data_create(&byte, 1, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-        if (!a) abort();
-        objc_setAssociatedObject(holder, attr_key(concurrent), a, OBJC_ASSOCIATION_RETAIN);
-        dispatch_release((dispatch_object_t)(dispatch_data_t)a);
-    }
+    id a = objc_getAssociatedObject(holder, attr_key(concurrent));
     objc_sync_exit(holder);
-    if (a) __atomic_store_n(&cached[concurrent], a, __ATOMIC_RELEASE);
     return a;
 }
 
-/* 1 for an attribute that makes a serial inactive queue, 2 for a concurrent one, 0 for any other.
-   platform: 10.9's queue attributes are NULL (serial) and DISPATCH_QUEUE_CONCURRENT, an object; a later system's are
-   objects too, whose first word is an isa, never the old magic, and whose class is never Recaulk's. */
-static int inactive(dispatch_queue_attr_t attr) {
-    if (!attr || attr == DISPATCH_QUEUE_CONCURRENT) return 0;
-    if ((id)attr == attr_published(0, 0)) return 1;
-    if ((id)attr == attr_published(1, 0)) return 2;
-    const struct inactive_attr *v1 = (const struct inactive_attr *)(const void *)attr;
-    if (v1->magic == RECAULK_INACTIVE_MAGIC_V1) return v1->concurrent ? 2 : 1;
-    /* platform: a RECAULK_INACTIVE_CLASS_V2 object is an NSObject subclass with no ivars, so its extra bytes follow
-       the isa, where object_getIndexedIvars found them; the class is only looked up, never made */
-    Class v2 = objc_getClass(RECAULK_INACTIVE_CLASS_V2);
-    if (v2 && object_getClass((id)attr) == v2) {
-        const struct inactive_attr *a = (const struct inactive_attr *)(const void *)((const char *)(const void *)attr + sizeof(void *));
-        if (a->magic == RECAULK_INACTIVE_MAGIC_V2) return a->concurrent ? 2 : 1;
-    }
+static int is_kind(id object, const char *name, Class *cache) {
+    Class k = __atomic_load_n(cache, __ATOMIC_ACQUIRE);
+    if (!k) { k = objc_getClass(name); __atomic_store_n(cache, k, __ATOMIC_RELEASE); }
+    for (Class c = object_getClass(object); k && c; c = class_getSuperclass(c))
+        if (c == k) return 1;
     return 0;
 }
 
+/* The one record object per value, process-wide: every copy publishes it on NSObject's class object, under a selector
+   named for the value, and under the one lock of that class object, which they share. Never freed. */
+static id intern(const struct attr_v4 *a, int create) {
+    char name[96];
+    snprintf(name, sizeof name, "__recaulk_dispatch_attr_v4_%d_%d_%d_%lx", a->inactive, a->qos, a->relpri,
+             (unsigned long)a->base);
+    const void *k = (const void *)sel_registerName(name);
+    id holder = (id)objc_getClass("NSObject");
+    objc_sync_enter(holder);
+    id o = objc_getAssociatedObject(holder, k);
+    if (!o && create) {
+        if (!(o = (id)dispatch_data_create(a, sizeof *a, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT))) abort();
+        objc_setAssociatedObject(holder, k, o, OBJC_ASSOCIATION_RETAIN);
+        dispatch_release((dispatch_object_t)(dispatch_data_t)o);
+    }
+    objc_sync_exit(holder);
+    return o;
+}
+
+/* A record object is a dispatch_data_t of its bytes that intern() gives back for those bytes. */
+static int read_v4(id o, struct attr_v4 *out) {
+    static Class data;
+    if (!is_kind(o, "OS_dispatch_data", &data)) return 0;
+    dispatch_data_t d = (dispatch_data_t)o;
+    if (dispatch_data_get_size(d) != sizeof *out) return 0;
+    const void *p = NULL;
+    size_t n = 0;
+    dispatch_data_t m = dispatch_data_create_map(d, &p, &n);
+    if (!m) return 0;
+    int ok = n == sizeof *out;
+    if (ok) memcpy(out, p, sizeof *out);
+    dispatch_release(m);
+    return ok && out->magic == RECAULK_ATTR_MAGIC_V4 && intern(out, 0) == o;
+}
+
+/* Fills *a for any attribute and returns 1 when it is Recaulk's; a system's becomes the base of an empty record.
+   platform: 10.9's queue attributes are NULL (serial) and DISPATCH_QUEUE_CONCURRENT, an object; a later system's are
+   objects too, whose first word is an isa, never the old magic, and whose class is never Recaulk's. */
+static int parse(dispatch_queue_attr_t attr, struct attr_v4 *a) {
+    memset(a, 0, sizeof *a);
+    a->magic = RECAULK_ATTR_MAGIC_V4;
+    a->base = (uintptr_t)attr;
+    if (!attr || attr == DISPATCH_QUEUE_CONCURRENT) return 0;
+    int concurrent = -1;
+    /* the 20261120.4 struct is no object, so it is told apart before anything asks for a class */
+    const struct inactive_attr *v1 = (const struct inactive_attr *)(const void *)attr;
+    if (v1->magic == RECAULK_INACTIVE_MAGIC_V1) concurrent = v1->concurrent != 0;
+    else if (read_v4((id)attr, a)) return 1;
+    else {
+        a->magic = RECAULK_ATTR_MAGIC_V4;
+        a->base = (uintptr_t)attr;
+        if ((id)attr == attr_published(0)) concurrent = 0;
+        else if ((id)attr == attr_published(1)) concurrent = 1;
+        else {
+            /* platform: a RECAULK_INACTIVE_CLASS_V2 object is an NSObject subclass with no ivars, so its extra bytes
+               follow the isa, where object_getIndexedIvars found them; the class is only looked up, never made */
+            Class v2 = objc_getClass(RECAULK_INACTIVE_CLASS_V2);
+            if (v2 && object_getClass((id)attr) == v2) {
+                const struct inactive_attr *x =
+                    (const struct inactive_attr *)(const void *)((const char *)(const void *)attr + sizeof(void *));
+                if (x->magic == RECAULK_INACTIVE_MAGIC_V2) concurrent = x->concurrent != 0;
+            }
+        }
+    }
+    if (concurrent < 0) return 0;
+    memset(a, 0, sizeof *a);
+    a->magic = RECAULK_ATTR_MAGIC_V4;
+    a->inactive = 1;
+    a->base = concurrent ? (uintptr_t)DISPATCH_QUEUE_CONCURRENT : 0;
+    return 1;
+}
+
+/* A record that adds nothing to its base is the base itself. */
+static dispatch_queue_attr_t finish(const struct attr_v4 *a) {
+    if (!a->inactive && !a->qos && !a->relpri) return (dispatch_queue_attr_t)a->base;
+    return (dispatch_queue_attr_t)intern(a, 1);
+}
+
+/* platform: the system libdispatch's own copy of a call it may lack (10.9 lacks both of these), looked up there
+   rather than by RTLD_NEXT, which would find another copy of Recaulk */
+static void *system_dispatch(const char *name) {
+    void *h = dlopen("/usr/lib/system/libdispatch.dylib", RTLD_LAZY | RTLD_NOLOAD);
+    return h ? dlsym(h, name) : NULL;
+}
+
 dispatch_queue_attr_t dispatch_queue_attr_make_initially_inactive(dispatch_queue_attr_t attr) {
-    int a = inactive(attr);
-    uint32_t concurrent = a ? (a == 2) : (attr == DISPATCH_QUEUE_CONCURRENT);
-    return (dispatch_queue_attr_t)attr_published(concurrent, 1);
+    struct attr_v4 a;
+    (void)parse(attr, &a);
+    a.inactive = 1;
+    return finish(&a);
+}
+
+/* dispatch_queue_attr_make_with_qos_class's work (src/backfills/dispatch_attr_qos.c, its own member): given a system
+   attribute, the system's call where there is one; given Recaulk's, the system's call, where there is one, applied
+   to the base, and the record keeps the class too, so a queue made from it on 10.9 reports it (swift-gg, 2026-11-20). */
+__attribute__((visibility("hidden"))) dispatch_queue_attr_t __recaulk_dispatch_attr_with_qos(dispatch_queue_attr_t attr,
+    dispatch_qos_class_t qos_class, int relative_priority);
+__attribute__((visibility("hidden"))) dispatch_queue_attr_t __recaulk_dispatch_attr_with_qos(dispatch_queue_attr_t attr,
+    dispatch_qos_class_t qos_class, int relative_priority) {
+    typedef dispatch_queue_attr_t make_qos_fn(dispatch_queue_attr_t, dispatch_qos_class_t, int);
+    static make_qos_fn *system;
+    static int looked;
+    if (!__atomic_load_n(&looked, __ATOMIC_ACQUIRE)) {
+        __atomic_store_n(&system, (make_qos_fn *)system_dispatch("dispatch_queue_attr_make_with_qos_class"), __ATOMIC_RELEASE);
+        __atomic_store_n(&looked, 1, __ATOMIC_RELEASE);
+    }
+    make_qos_fn *f = __atomic_load_n(&system, __ATOMIC_ACQUIRE);
+    struct attr_v4 a;
+    if (!parse(attr, &a)) {
+        if (f) return f(attr, qos_class, relative_priority);
+    } else if (f) {
+        a.base = (uintptr_t)f((dispatch_queue_attr_t)a.base, qos_class, relative_priority);
+    }
+    a.qos = (int32_t)qos_class;
+    a.relpri = relative_priority;
+    return finish(&a);
+}
+
+static const void *qos_key(void) { static SEL k; return key("__recaulk_dispatch_qos_v4", &k); }
+
+/* dispatch_queue_get_qos_class (10.10), forwarded to the system's where there is one: on 10.9, the class and relative
+   priority the queue's attribute named, kept on the queue, else QOS_CLASS_UNSPECIFIED and 0, as Recaulk's pthread
+   QoS calls answer. */
+dispatch_qos_class_t dispatch_queue_get_qos_class(dispatch_queue_t queue, int *relative_priority_ptr) {
+    CFNumberRef n = queue ? (CFNumberRef)objc_getAssociatedObject((id)queue, qos_key()) : NULL;
+    int64_t v = 0;
+    if (n) CFNumberGetValue(n, kCFNumberSInt64Type, &v);
+    if (relative_priority_ptr) *relative_priority_ptr = n ? (int)(v & 0xff) - 128 : 0;
+    return n ? (dispatch_qos_class_t)(v >> 8) : QOS_CLASS_UNSPECIFIED;
 }
 
 typedef dispatch_queue_t queue_create_fn(const char *, dispatch_queue_attr_t);
@@ -117,17 +227,24 @@ static dispatch_queue_t system_create(const char *label, dispatch_queue_attr_t a
 
 dispatch_queue_t __recaulk_dispatch_queue_create_targeted(const char *label, dispatch_queue_attr_t attr,
                                                           dispatch_queue_t target) {
-    int a = inactive(attr);
-    if (!a) {
+    struct attr_v4 a;
+    if (!parse(attr, &a)) {
         dispatch_queue_t q = system_create(label, attr);
         if (q && target) dispatch_set_target_queue(q, target);
         return q;
     }
-    dispatch_queue_t q = system_create(label, a == 2 ? DISPATCH_QUEUE_CONCURRENT : DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t q = system_create(label, (dispatch_queue_attr_t)a.base);
     if (!q) return q;
     if (target) dispatch_set_target_queue(q, target);
-    dispatch_suspend(q);
-    objc_setAssociatedObject((id)q, suspended_key(), (id)kCFBooleanTrue, OBJC_ASSOCIATION_RETAIN);
+    if (a.qos || a.relpri) {
+        int64_t v = ((int64_t)a.qos << 8) | (int64_t)((a.relpri + 128) & 0xff);
+        CFNumberRef n = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt64Type, &v);
+        if (n) { objc_setAssociatedObject((id)q, qos_key(), (id)n, OBJC_ASSOCIATION_RETAIN); CFRelease(n); }
+    }
+    if (a.inactive) {
+        dispatch_suspend(q);
+        objc_setAssociatedObject((id)q, suspended_key(), (id)kCFBooleanTrue, OBJC_ASSOCIATION_RETAIN);
+    }
     return q;
 }
 

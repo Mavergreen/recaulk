@@ -347,7 +347,12 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
   started: 10.9 cannot tell the two apart. `dispatch_queue_create` and `dispatch_resume` are fixes to functions
   10.9 has, bound as `dispatch_get_global_queue` is.
 - `dispatch_queue_create_with_target` sets the target queue it is given.
-- `dispatch_queue_get_qos_class` reports `QOS_CLASS_UNSPECIFIED` and a relative priority of 0 for every queue.
+- `dispatch_queue_attr_make_with_qos_class` keeps the class and relative priority on the attribute, with its
+  inactivity and concurrency in either order, and `dispatch_queue_get_qos_class` reports them for a queue made from
+  it; any other queue reports `QOS_CLASS_UNSPECIFIED` and 0. On 10.9 the class schedules nothing: 10.9 has none.
+  On 10.10 and 10.11, where the system has QoS but not inactivity, `dispatch_queue_attr_make_with_qos_class` is
+  Recaulk's, applying the system's to the attribute the queue is made from, so each keeps what the other set.
+  Recaulk's attributes are interned: the same settings give the same object, in every copy of Recaulk.
 - `dispatch_queue_attr_make_with_autorelease_frequency` returns the attribute it is given: 10.9's queues drain no
   autorelease pool of their own.
 - `dispatch_assert_queue_not` traps, with libdispatch's message, only where the thread is provably on the queue

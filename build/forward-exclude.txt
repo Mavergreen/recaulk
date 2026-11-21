@@ -10,3 +10,4 @@ name __os_signpost_emit_with_name_impl data
 name _os_signpost_enabled data
 name ___extendhfsf2 abi
 name ___truncsfhf2 abi
+name _dispatch_queue_attr_make_with_qos_class self

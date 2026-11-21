@@ -16,8 +16,8 @@ awk 'NF == 3 && $2 == "T" { print $3 }' "$tmp/nm" | LC_ALL=C sort -u | LC_ALL=C 
 LC_ALL=C comm -23 "$tmp/T" "$tmp/sdk" | awk '!/\.eh$/ && !/^___recaulk_/' > "$tmp/F0"
 awk '
   NR == FNR {
-    if (NF != 3 || ($3 != "private" && $3 != "abi" && $3 != "data")) {
-      print "forward-set: " FILENAME ": not \"prefix P WHY\" or \"name N WHY\" (WHY: private, abi or data): " $0 > "/dev/stderr"; bad = 1; exit 1
+    if (NF != 3 || ($3 != "private" && $3 != "abi" && $3 != "data" && $3 != "self")) {
+      print "forward-set: " FILENAME ": not \"prefix P WHY\" or \"name N WHY\" (WHY: private, abi, data or self): " $0 > "/dev/stderr"; bad = 1; exit 1
     }
     if ($1 == "prefix") pre[++np] = $2
     else if ($1 == "name") ex[$2] = 1
