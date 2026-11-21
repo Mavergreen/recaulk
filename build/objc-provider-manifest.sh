@@ -20,6 +20,9 @@ providers() {
     __recaulk_objc_workspace_open_urls __recaulk_objc_activate AppKit,Carbon \
     WORKSPACE_VOICEOVER recaulk.nsworkspace.is-voiceover-enabled.v1 NSWorkspace - isVoiceOverEnabled 'c16@0:8' \
     __recaulk_objc_workspace_is_voiceover_enabled __recaulk_objc_activate AppKit,Carbon \
+    WORKSPACE_REDUCE_MOTION recaulk.nsworkspace.should-reduce-motion.v1 NSWorkspace - \
+    accessibilityDisplayShouldReduceMotion 'c16@0:8' \
+    __recaulk_objc_workspace_should_reduce_motion __recaulk_objc_activate AppKit,Carbon \
     LOCALE_LANGUAGE_CODE recaulk.nslocale.language-code.v1 NSLocale - languageCode '@16@0:8' \
     __recaulk_objc_locale_language_code __recaulk_objc_activate_foundation Foundation \
     LOCALE_COUNTRY_CODE recaulk.nslocale.country-code.v1 NSLocale - countryCode '@16@0:8' \
@@ -46,6 +49,16 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 - (BOOL)isVoiceOverEnabled { return NO; }
+@end
+EOF
+    ;;
+    recaulk.nsworkspace.should-reduce-motion.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (BOOL)accessibilityDisplayShouldReduceMotion;
+@end
+@implementation RecaulkProviderEncoding
+- (BOOL)accessibilityDisplayShouldReduceMotion { return NO; }
 @end
 EOF
     ;;

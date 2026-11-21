@@ -52,7 +52,8 @@ names unrenamed, as libSystemWrapper.dylib did.
 `librecaulk-objc.a` adds framework methods 10.9 lacks, such as NSWorkspace's
 `openURLs:withApplicationAtURL:options:configuration:error:` and `isVoiceOverEnabled`. The latter reads the
 state VoiceOver records (`voiceOverOnOffKey` in `com.apple.universalaccess`) each time it is asked; unlike
-Apple's 10.13 property, it posts no key-value observing change when VoiceOver turns on or off. It is separate from
+Apple's 10.13 property, it posts no key-value observing change when VoiceOver turns on or off.
+`accessibilityDisplayShouldReduceMotion` answers NO: 10.9 has no reduce-motion setting (it arrived in 10.12). It is separate from
 `librecaulk.a` and does nothing unless you ask for it: link it and keep its
 activation root, and AppKit and Carbon strong-linked:
 
