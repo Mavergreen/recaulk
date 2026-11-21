@@ -67,8 +67,9 @@ need 'Library/LaunchAgents/dev.mavergreen.recaulk-updatecheck.plist'
 #       root-owned and writable only by root (kextd refuses anything else), with this release as CFBundleVersion
 need 'Library/Extensions/RecaulkKPI.kext/Contents/Info.plist'
 need 'Library/Extensions/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI'
-kmodes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'Library/Extensions/RecaulkKPI.kext' | awk '{ print $1, $3, $4, $NF }' | LC_ALL=C sort -k4)"
-printf '%s\n' "$kmodes" | awk '$2 != "root" || ($3 != "wheel" && $3 != "0") { bad = 1 } END { exit bad }' \
+# platform: -n prints ids, since Linux's group database names gid 0 root where 10.9's names it wheel
+kmodes="$(cpio -itvn < "$tmp/payload.cpio" 2>/dev/null | grep 'Library/Extensions/RecaulkKPI.kext' | awk '{ print $1, $3, $4, $NF }' | LC_ALL=C sort -k4)"
+printf '%s\n' "$kmodes" | awk '$2 != "0" || $3 != "0" { bad = 1 } END { exit bad }' \
   || { echo "FAIL: the kext is not root:wheel in the payload: $kmodes"; exit 1; }
 printf '%s\n' "$kmodes" | awk '$1 ~ /^.....w/ || $1 ~ /^........w/ { bad = 1 } END { exit bad }' \
   || { echo "FAIL: the kext has a group- or world-writable entry in the payload: $kmodes"; exit 1; }
