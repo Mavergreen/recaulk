@@ -4,21 +4,29 @@
 #       a cold load through a dependent kext, twice (the second after kextcache -system-caches); vnode_notify
 #       forwarded and delivered to kqueue (decision E's reconciliation, 50 trials); the *_range calls read the
 #       file's bytes; the _chk copies; unload in dependency order; a build gated to Darwin 14 refuses with its
-#       line; a build pointed at a file that is not the kernel logs FALLBACK, still loads, and delivers nothing.
+#       line; a build pointed at a file that is not the kernel logs FALLBACK, still loads, and delivers nothing, and
+#       so does one pointed at /mach_kernel with its UUID changed (an update awaiting reboot). The cold round's first
+#       vnode_notify comes from a process the sandbox denies /mach_kernel: resolution is the kernel's, not the caller's.
 #       Loading kexts needs RECAULK_KEXT_LOAD=1, which only the on-mavericks job's disposable guest sets.
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 . tests/helpers/kext.sh
 O="$(dirname "$(tbin x)")"
+# spec: README.md "The kernel back-fill kext" -- the variants share the installed kext's bundle id, so they carry a
+#       version above any release's (9912.31.99), which kextload prefers over /Library/Extensions' copy
+V=20991231.99
+UK=/private/var/tmp/recaulk-kpi-uuid-kernel
 if compiling; then
-  rm -rf "$O/probe" "$O/gate14" "$O/fallback"
-  VERSION=20261121.7 KEXT_SRC=tests/kext/probe KEXT_NAME=RecaulkKPIProbe sh build/build-kext.sh "$O/probe" > "$O/probe.log" 2>&1 \
+  rm -rf "$O/probe" "$O/gate14" "$O/fallback" "$O/uuid"
+  VERSION=$V KEXT_SRC=tests/kext/probe KEXT_NAME=RecaulkKPIProbe sh build/build-kext.sh "$O/probe" > "$O/probe.log" 2>&1 \
     || { echo "FAIL: the probe kext did not build:"; sed 's/^/    | /' "$O/probe.log"; exit 1; }
-  VERSION=20261121.7 KEXT_CFLAGS=-DRECAULK_KPI_DARWIN_MAJOR=14 sh build/build-kext.sh "$O/gate14" > "$O/gate14.log" 2>&1 \
+  VERSION=$V KEXT_CFLAGS=-DRECAULK_KPI_DARWIN_MAJOR=14 sh build/build-kext.sh "$O/gate14" > "$O/gate14.log" 2>&1 \
     || { echo "FAIL: the Darwin 14 variant did not build:"; sed 's/^/    | /' "$O/gate14.log"; exit 1; }
-  VERSION=20261121.7 KEXT_CFLAGS='-DRECAULK_KPI_KERNEL_PATH="/usr/lib/dyld"' sh build/build-kext.sh "$O/fallback" > "$O/fallback.log" 2>&1 \
+  VERSION=$V KEXT_CFLAGS='-DRECAULK_KPI_KERNEL_PATH="/usr/lib/dyld"' sh build/build-kext.sh "$O/fallback" > "$O/fallback.log" 2>&1 \
     || { echo "FAIL: the fallback variant did not build:"; sed 's/^/    | /' "$O/fallback.log"; exit 1; }
+  VERSION=$V KEXT_CFLAGS="-DRECAULK_KPI_KERNEL_PATH=\"$UK\"" sh build/build-kext.sh "$O/uuid" > "$O/uuid.log" 2>&1 \
+    || { echo "FAIL: the changed-UUID variant did not build:"; sed 's/^/    | /' "$O/uuid.log"; exit 1; }
   "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror tests/c/kext_notify_watch.c -o "$(tbin watch)"
   check_loads "$(tbin watch)"
 fi
@@ -31,7 +39,7 @@ K=/Library/Extensions/RecaulkKPI.kext
 [ -d "$K" ] || { echo "FAIL: the pkg installed no $K"; exit 1; }
 d="$(mktemp -d "${TMPDIR:-/tmp}/kext-runtime.XXXXXX")"
 # platform: kextd refuses a kext not owned by root, so each loose kext is copied root:wheel first
-for k in probe/RecaulkKPIProbe gate14/RecaulkKPI fallback/RecaulkKPI; do
+for k in probe/RecaulkKPIProbe gate14/RecaulkKPI fallback/RecaulkKPI uuid/RecaulkKPI; do
   mkdir -p "$d/${k%/*}"
   sudo -n cp -R "$O/$k.kext" "$d/${k%/*}/"
   sudo -n chown -R root:wheel "$d/$k.kext"
@@ -40,12 +48,15 @@ P="$d/probe/RecaulkKPIProbe.kext"
 cleanup() {
   sudo -n kextunload -b dev.mavergreen.recaulk.test.kpi-probe >/dev/null 2>&1 || :
   sudo -n kextunload -b dev.mavergreen.recaulk.kpi >/dev/null 2>&1 || :
-  sudo -n rm -rf "$d"
+  sudo -n rm -rf "$d" "$UK"
 }
 trap cleanup EXIT
 loaded() { kextstat -l -b "$1" | grep -q "$1"; }
-mark() { sudo -n dmesg | wc -l | tr -d ' '; }
-since() { sudo -n dmesg | sed -n "$(( $1 + 1 )),\$p"; }
+# platform: dmesg's buffer wraps, so a line count cannot mark a place in it: a mark saves the buffer, and since
+#           prints the lines that copy does not hold
+n=0
+mark() { n=$((n + 1)); sudo -n dmesg > "$d/dmesg.$n"; echo "$n"; }
+since() { sudo -n dmesg | awk -v f="$d/dmesg.$1" 'BEGIN { while ((getline l < f) > 0) seen[l]++ } { if (seen[$0] > 0) seen[$0]--; else print }'; }
 printf 'recaulk-probe-0123456789\n' > "$d/file"
 sync
 
@@ -56,7 +67,13 @@ for round in cold cached; do
   sudo -n kextload "$P" > "$d/load.log" 2>&1 || { bad "$round: kextload of the probe failed: $(cat "$d/load.log")"; break; }
   loaded dev.mavergreen.recaulk.kpi || bad "$round: loading the probe did not load RecaulkKPI from /Library/Extensions"
   loaded dev.mavergreen.recaulk.test.kpi-probe || bad "$round: the probe is not loaded"
-  out="$(sudo -n "$(tbin watch)" "$d/file" 50)" || bad "$round: the reconciler failed: $out"
+  # platform: sandbox-exec's profile denies /mach_kernel to the process whose sysctl makes the first call
+  if [ "$round" = cold ]; then
+    out="$(sudo -n sandbox-exec -p '(version 1) (allow default) (deny file-read* (literal "/mach_kernel"))' "$(tbin watch)" "$d/file" 50)" \
+      || bad "$round: the sandboxed reconciler failed: $out"
+  else
+    out="$(sudo -n "$(tbin watch)" "$d/file" 50)" || bad "$round: the reconciler failed: $out"
+  fi
   echo "kext-runtime-test: $round: $(printf '%s\n' "$out" | tail -1)"
   printf '%s\n' "$out" | grep -qx 'delivered [1-9][0-9]*/50 forwarded 50/50' \
     || bad "$round: vnode_notify did not reach the kernel's on every call, or nothing was delivered: $out"
@@ -86,6 +103,21 @@ if loaded dev.mavergreen.recaulk.test.kpi-probe; then
   out="$(sudo -n "$(tbin watch)" "$d/file" 3)" || bad "fallback: the reconciler failed: $out"
   printf '%s\n' "$out" | grep -qx 'delivered 0/3 forwarded 0/3' || bad "fallback: something was delivered or forwarded: $out"
   since "$m" | grep -q 'RecaulkKPI: vnode_notify: FALLBACK, delivering nothing' || bad "fallback: no FALLBACK line"
+fi
+sudo -n kextunload -b dev.mavergreen.recaulk.test.kpi-probe >/dev/null 2>&1 || :
+sudo -n kextunload -b dev.mavergreen.recaulk.kpi >/dev/null 2>&1 || :
+
+# platform: LC_UUID's 16 bytes follow its cmd and cmdsize; changing one leaves every symbol agreeing on the slide
+sudo -n perl -e 'local $/; open(my $f, "<", "/mach_kernel") or die; my $k = <$f>; my $i = index($k, pack("V2", 0x1b, 24));
+  $i > 0 or die "no LC_UUID"; substr($k, $i + 8, 1) = chr(ord(substr($k, $i + 8, 1)) ^ 0xff);
+  open(my $o, ">", $ARGV[0]) or die; print $o $k' "$UK" || bad "could not write the changed-UUID kernel"
+m="$(mark)"
+sudo -n kextload -d "$d/uuid/RecaulkKPI.kext" "$P" > "$d/uuid.log" 2>&1 || bad "the changed-UUID build, or the probe on it, did not load: $(cat "$d/uuid.log")"
+if loaded dev.mavergreen.recaulk.test.kpi-probe; then
+  out="$(sudo -n "$(tbin watch)" "$d/file" 3)" || bad "uuid: the reconciler failed: $out"
+  printf '%s\n' "$out" | grep -qx 'delivered 0/3 forwarded 0/3' || bad "uuid: something was delivered or forwarded: $out"
+  since "$m" | grep -q "RecaulkKPI: vnode_notify: FALLBACK, delivering nothing (the running kernel's UUID differs" \
+    || bad "uuid: no FALLBACK line naming the UUID: $(since "$m" | grep RecaulkKPI)"
 fi
 [ "$fail" = 0 ] && echo "kext-runtime-test OK"
 exit $fail
