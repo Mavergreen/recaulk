@@ -19,6 +19,10 @@ grep '^profile	recaulk-objc-x86_64-10.9$' "$R" >/dev/null || fail 'the receipt i
 while read -r sha label; do
   grep -Fx "$(printf 'input\t%s\t%s' "$label" "$sha")" "$R" >/dev/null || fail "the receipt does not record $label at $sha"
 done < "$D/work/source-inputs.txt"
+# platform: Drydock's strict guard closes a provider body's send to a class's method only from a concrete receiver type
+# platform: a send to id for one is "receiver not closed" in every consumer (codex 0.165.0, src/objc/locale.m, 2026-11-21)
+open="$(awk -F '\t' '$1 == "send" && $9 == "id" && $10 !~ /^</ { print $2 ":" $3 " " $7 " (declared by " $10 ")" }' "$R")"
+[ -z "$open" ] || fail "sends whose receiver is typed id, which the strict guard cannot close: $open"
 if [ "$(uname -s)" = Darwin ]; then
   sh "$ROOT/build/build-objc.sh" "$D/native" "$D/native-work" --native-test > "$D/native.log" 2>&1 || fail 'native-test build'
   [ ! -e "$D/native/share/recaulk/objc-source.receipt" ] || fail 'a native-test stage carries a receipt'
