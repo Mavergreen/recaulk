@@ -30,7 +30,6 @@
 #include <dlfcn.h>
 #include <objc/runtime.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -51,19 +50,24 @@ struct inactive_attr { uint32_t magic; uint32_t concurrent; };
    which carries its concurrency (and, on 10.10 and 10.11, the system's own QoS attribute). */
 struct attr_v4 { uint32_t magic; int32_t inactive; int32_t qos; int32_t relpri; uintptr_t base; };
 
-static const void *key(const char *name, SEL *cache) {
-    SEL k = __atomic_load_n(cache, __ATOMIC_ACQUIRE);
-    if (!k) { k = sel_registerName(name); __atomic_store_n(cache, k, __ATOMIC_RELEASE); }
-    return (const void *)k;
-}
-static const void *suspended_key(void) { static SEL k; return key("__recaulk_dispatch_inactive_v1", &k); }
-static const void *activated_key(void) { static SEL k; return key("__recaulk_dispatch_activated_v1", &k); }
+/* An association key, the selector of LITERAL, registered once. platform: Drydock's strict guard reads each
+   sel_registerName argument and refuses one it cannot see as a single literal (fuse-gg, Recaulk 20261121.7), so
+   every call site names its own literal; a helper taking the name would pass a register. */
+#define KEY(LITERAL) ({ \
+    static SEL k_; \
+    SEL s_ = __atomic_load_n(&k_, __ATOMIC_ACQUIRE); \
+    if (!s_) { s_ = sel_registerName(LITERAL); __atomic_store_n(&k_, s_, __ATOMIC_RELEASE); } \
+    (const void *)s_; })
+static const void *suspended_key(void) { return KEY("__recaulk_dispatch_inactive_v1"); }
+static const void *activated_key(void) { return KEY("__recaulk_dispatch_activated_v1"); }
 
-static const void *attr_key(uint32_t concurrent) {
-    static SEL k[2];
-    return key(concurrent ? "__recaulk_dispatch_inactive_attr_concurrent_v3" : "__recaulk_dispatch_inactive_attr_serial_v3",
-               &k[concurrent]);
+/* platform: kept out of line, each alone, so the compiler cannot merge their two sel_registerName calls into one
+   whose argument is either literal, which the strict guard reads as computed */
+__attribute__((noinline)) static const void *serial_attr_key(void) { return KEY("__recaulk_dispatch_inactive_attr_serial_v3"); }
+__attribute__((noinline)) static const void *concurrent_attr_key(void) {
+    return KEY("__recaulk_dispatch_inactive_attr_concurrent_v3");
 }
+static const void *attr_key(uint32_t concurrent) { return concurrent ? concurrent_attr_key() : serial_attr_key(); }
 
 /* 20261121.7's serial or concurrent inactive attribute, a one-byte dispatch_data_t, when some copy made one. */
 static id attr_published(uint32_t concurrent) {
@@ -82,20 +86,29 @@ static int is_kind(id object, const char *name, Class *cache) {
     return 0;
 }
 
-/* The one record object per value, process-wide: every copy publishes it on NSObject's class object, under a selector
-   named for the value, and under the one lock of that class object, which they share. Never freed. */
+/* The one record object per value, process-wide: every copy keeps them in one table, a CFMutableDictionary from the
+   record's bytes to its object, published on NSObject's class object and used under that class object's lock, which
+   all copies share. Records are never freed, so the table holds them without retaining. */
 static id intern(const struct attr_v4 *a, int create) {
-    char name[96];
-    snprintf(name, sizeof name, "__recaulk_dispatch_attr_v4_%d_%d_%d_%lx", a->inactive, a->qos, a->relpri,
-             (unsigned long)a->base);
-    const void *k = (const void *)sel_registerName(name);
     id holder = (id)objc_getClass("NSObject");
+    const void *tk = KEY("__recaulk_dispatch_attr_table_v4");
     objc_sync_enter(holder);
-    id o = objc_getAssociatedObject(holder, k);
-    if (!o && create) {
-        if (!(o = (id)dispatch_data_create(a, sizeof *a, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT))) abort();
-        objc_setAssociatedObject(holder, k, o, OBJC_ASSOCIATION_RETAIN);
-        dispatch_release((dispatch_object_t)(dispatch_data_t)o);
+    CFMutableDictionaryRef t = (CFMutableDictionaryRef)objc_getAssociatedObject(holder, tk);
+    if (!t && create) {
+        if (!(t = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, NULL))) abort();
+        objc_setAssociatedObject(holder, tk, (id)t, OBJC_ASSOCIATION_RETAIN);
+        CFRelease(t);
+    }
+    id o = nil;
+    if (t) {
+        CFDataRef bytes = CFDataCreate(kCFAllocatorDefault, (const UInt8 *)a, sizeof *a);
+        if (!bytes) abort();
+        o = (id)CFDictionaryGetValue(t, bytes);
+        if (!o && create) {
+            if (!(o = (id)dispatch_data_create(a, sizeof *a, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT))) abort();
+            CFDictionarySetValue(t, bytes, (const void *)o);
+        }
+        CFRelease(bytes);
     }
     objc_sync_exit(holder);
     return o;
@@ -200,7 +213,7 @@ __attribute__((visibility("hidden"))) dispatch_queue_attr_t __recaulk_dispatch_a
     return finish(&a);
 }
 
-static const void *qos_key(void) { static SEL k; return key("__recaulk_dispatch_qos_v4", &k); }
+static const void *qos_key(void) { return KEY("__recaulk_dispatch_qos_v4"); }
 
 /* dispatch_queue_get_qos_class (10.10), forwarded to the system's where there is one: on 10.9, the class and relative
    priority the queue's attribute named, kept on the queue, else QOS_CLASS_UNSPECIFIED and 0, as Recaulk's pthread
