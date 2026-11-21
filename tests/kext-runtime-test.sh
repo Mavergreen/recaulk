@@ -62,6 +62,8 @@ for round in cold cached; do
     || bad "$round: vnode_notify did not reach the kernel's on every call, or nothing was delivered: $out"
   since "$m" | grep -q 'RecaulkKPI: vnode_notify: forwarding to kernel' || bad "$round: no 'vnode_notify: forwarding to kernel' line"
   since "$m" | grep -q 'RecaulkKPI: vnode_notify: FALLBACK' && bad "$round: the installed kext fell back: $(since "$m" | grep FALLBACK)"
+  # platform: the UPL maps only a resident page, so the file is read into the page cache first
+  cat "$d/file" > /dev/null
   sudo -n sysctl -w debug.recaulk_kpi_probe.range="$d/file" >/dev/null || bad "$round: the range sysctl failed"
   [ "$(sysctl -n debug.recaulk_kpi_probe.error)" = 0 ] || bad "$round: the *_range calls failed, errno $(sysctl -n debug.recaulk_kpi_probe.error)"
   [ "$(sysctl -n debug.recaulk_kpi_probe.upl_bytes)" = recaulk-probe-01 ] || bad "$round: ubc_upl_map_range read '$(sysctl -n debug.recaulk_kpi_probe.upl_bytes)'"

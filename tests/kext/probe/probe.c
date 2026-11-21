@@ -1,7 +1,7 @@
 /* spec: tests/kext-runtime-test.sh -- dev.mavergreen.recaulk.test.kpi-probe imports all 7 of RecaulkKPI's names, as
    macFUSE's kext does, and calls each from a sysctl under debug.recaulk_kpi_probe on a file the test names:
      notify (write a path)  vfs_get_notify_attributes, vnode_getattr, then vnode_notify(vp, 0xe, &va)
-     range  (write a path)  ubc_upl_map_range over the file's first page, then buf_map_range on buf_bread's
+     range  (write a path)  ubc_upl_map_range over the file's first page, when it is resident (else EAGAIN), then buf_map_range on buf_bread's
                             block 0; each copies the file's first bytes into upl_bytes and buf_bytes
      chk    (read)          __memcpy_chk and __strncpy_chk within bounds: 1 when both copied right
    and error, the errno of the last write (0 for success). Never loaded outside a 10.9 test. */
@@ -91,6 +91,12 @@ do_range(vnode_t vp, vfs_context_t ctx)
 	upl_bytes[0] = buf_bytes[0] = '\0';
 	if (ubc_create_upl(vp, 0, PAGE_SIZE, &upl, &pl, UPL_FILE_IO | UPL_SET_LITE) != KERN_SUCCESS || upl == NULL) {
 		return EIO;
+	}
+	/* ubc_create_upl hands back an absent page as a fresh one, not the file's: read only a valid page
+	   (xnu-2422.115.4 osfmk/vm/vm_pageout.c, vm_object_upl_request); the test reads the file first */
+	if (!upl_valid_page(pl, 0)) {
+		ubc_upl_abort(upl, UPL_ABORT_FREE_ON_EMPTY);
+		return EAGAIN;
 	}
 	if (ubc_upl_map_range(upl, 0, PAGE_SIZE, VM_PROT_READ, &a) != KERN_SUCCESS) {
 		ubc_upl_abort(upl, UPL_ABORT_FREE_ON_EMPTY);
