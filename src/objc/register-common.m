@@ -2,9 +2,8 @@
 #import "register-common.h"
 #include <stdlib.h>
 __attribute__((visibility("hidden")))
-void __recaulk_objc_add_method(Class receiver, const char *name, IMP imp, const char *encoding) {
+void __recaulk_objc_add_method(Class receiver, SEL selector, IMP imp, const char *encoding) {
     if (!receiver) return;
-    SEL selector=sel_registerName(name);
     for (Class owner=receiver;owner;owner=class_getSuperclass(owner)) {
         unsigned count=0; Method *methods=class_copyMethodList(owner,&count);
         BOOL present=NO;

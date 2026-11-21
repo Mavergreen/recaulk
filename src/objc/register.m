@@ -4,8 +4,8 @@
 #import "register-common.h"
 #include "providers-generated.h"
 __attribute__((noinline)) void __recaulk_objc_register_workspace_class(Class receiver) {
-    __recaulk_objc_add_method(receiver,RECAULK_WORKSPACE_SELECTOR,(IMP)__recaulk_objc_workspace_open_urls,RECAULK_WORKSPACE_ENCODING);
-    __recaulk_objc_add_method(receiver,RECAULK_WORKSPACE_VOICEOVER_SELECTOR,(IMP)__recaulk_objc_workspace_is_voiceover_enabled,
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_WORKSPACE_SELECTOR),(IMP)__recaulk_objc_workspace_open_urls,RECAULK_WORKSPACE_ENCODING);
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_WORKSPACE_VOICEOVER_SELECTOR),(IMP)__recaulk_objc_workspace_is_voiceover_enabled,
         RECAULK_WORKSPACE_VOICEOVER_ENCODING);
 }
 void __recaulk_objc_activate(void) {
