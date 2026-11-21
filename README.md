@@ -120,6 +120,12 @@ listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backf
 holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect`, its `close` and
 `dup2`, and its `fma`, `fmal` and `truncl` are fixes of this kind.
 
+A back-fill that works only through such a fix is hidden in `librecaulk.a` with it
+(`build/image-local-backfills.txt`): `posix_spawn_file_actions_addchdir_np` and `addfchdir_np` record actions only
+Recaulk's `posix_spawn` and `posix_spawnp` carry out. So a dylib built from the archive exports both or neither, and
+a program that looks the builders up with `dlsym` (as Rust's standard library does) does not find them, and takes its
+own way to the directory rather than one libSystem's `posix_spawn` would silently ignore.
+
 `/usr/local/mavergreen/recaulk/share/recaulk/system-overrides.txt` lists, one `<member> <symbol>` per line
 (`#` comments), every name `librecaulk.a` defines that 10.9 already exports: those fixes, and MacPorts' public
 `pthread_get_stacksize_np` and `sysconf`. Each takes effect only where it binds before the system's copy, so a

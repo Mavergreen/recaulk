@@ -18,7 +18,10 @@ list=build/declarations.txt
 #       has, and not C++.
 "$NM" -m --defined-only "$T/lib/librecaulk.a" > "$d/nm" || { echo "FAIL: $NM cannot read librecaulk.a"; exit 1; }
 grep ' external ' "$d/nm" | grep -v 'private external' | grep '(__TEXT,__text)' | awk '{ print $NF }' \
-  | sed 's/^_//' | grep -v -e '^__recaulk_' -e '\$' -e '^_Z' | LC_ALL=C sort -u > "$d/defined"
+  | sed 's/^_//' | grep -v -e '^__recaulk_' -e '\$' -e '^_Z' > "$d/defined.public"
+# spec: build/image-local-backfills.txt -- hidden in the archive, but a program built against it calls them all the same
+grep -v '^#' build/image-local-backfills.txt | awk 'NF { print $1 }' | sed 's/^_//' | cat "$d/defined.public" - \
+  | LC_ALL=C sort -u > "$d/defined"
 [ -s "$d/defined" ] || bad "found no public functions in librecaulk.a"
 grep -v -e '^#' -e '^[[:space:]]*$' "$list" | awk '{ print $1 }' | LC_ALL=C sort > "$d/listed"
 dups="$(uniq -d "$d/listed")"

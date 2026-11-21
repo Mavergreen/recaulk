@@ -1,0 +1,8 @@
+# Back-fills of names 10.9 lacks that librecaulk.a defines HIDDEN, because each works only together with a fix in
+# build/image-local-shadows.txt, which is hidden. A dylib built from the archive then exports both or neither: a
+# consumer that finds a builder by dlsym and spawns with libSystem's posix_spawn would lose its actions (rust's
+# stage0 dylib, Command::current_dir). libRecaulkSystem.dylib exports them, with its public fixes.
+# tests/spawn-chdir-pairs.sh holds the pairs; tests/archive-globals.sh allows exactly these hidden names.
+# One per line: <symbol> <reason>.
+_posix_spawn_file_actions_addchdir_np records a chdir action only Recaulk's posix_spawn and posix_spawnp carry out
+_posix_spawn_file_actions_addfchdir_np records an fchdir action only Recaulk's posix_spawn and posix_spawnp carry out

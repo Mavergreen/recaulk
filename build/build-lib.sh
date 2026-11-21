@@ -94,7 +94,31 @@ SDK="$SDK" sh "$SELF/gen-trampolines.sh" "$F/symbols.txt" "$F"
 # spec: tests/parity.sh -- libRecaulkSystem.dylib keeps exporting MacPorts' private names, as libSystemWrapper.dylib does
 recaulk_archive "$W/librecaulk-dylib.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F"/fwd-*.o
 sh "$SELF/rename-private.sh" "$DRYDOCK" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o
-recaulk_archive "$T/lib/librecaulk.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F"/fwd-*.o
+# spec: build/image-local-backfills.txt -- in librecaulk.a those back-fills' trampolines are hidden, as the fixes they
+#       need are; gen-trampolines.sh numbered fwd-<i> by the non-empty lines of symbols.txt
+grep -v '^#' "$SELF/image-local-backfills.txt" | awk 'NF { print $1 }' > "$W/image-local-backfills"
+rm -rf "$F/static"
+mkdir -p "$F/static"
+cp "$F/fwd-resolve.o" "$F/static/"
+i=0
+while IFS= read -r sym; do
+  [ -n "$sym" ] || continue
+  i=$((i + 1))
+  if grep -qxF -- "$sym" "$W/image-local-backfills"; then
+    awk -v s="$sym" '{ print } $1 == ".globl" && $2 == "\"" s "\"" { print "\t.private_extern\t\"" s "\"" }' \
+      "$F/fwd-$i.s" > "$F/static/fwd-$i.s"
+    grep -q '\.private_extern.*"'"$sym"'"$' "$F/static/fwd-$i.s" \
+      || { echo "build-lib: fwd-$i.s does not define $sym as gen-trampolines.sh writes it" >&2; exit 1; }
+    "$CC" $flags -arch x86_64 -c "$F/static/fwd-$i.s" -o "$F/static/fwd-$i.o"
+  else
+    cp "$F/fwd-$i.o" "$F/static/"
+  fi
+done < "$F/symbols.txt"
+while IFS= read -r sym; do
+  grep -qxF -- "$sym" "$F/symbols.txt" \
+    || { echo "build-lib: build/image-local-backfills.txt lists $sym, which the forwarding layer does not carry" >&2; exit 1; }
+done < "$W/image-local-backfills"
+recaulk_archive "$T/lib/librecaulk.a" "$F/mp"/mp-*.o "$F/bf"/recaulk-*.o "$F/static"/fwd-*.o
 
 . "$SELF/duplicates.sh"
 dups="$(duplicate_report "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a")"
