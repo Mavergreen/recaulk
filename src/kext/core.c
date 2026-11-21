@@ -246,6 +246,19 @@ rk_slide(const struct rk_sym *want, const uint64_t *live, unsigned nwant, uint64
 }
 
 int
+rk_live_in_text(const struct rk_kernel *k, const uint64_t *live, unsigned nlive, uint64_t slide, const char **why)
+{
+	unsigned i;
+
+	for (i = 0; i < nlive; i++) {
+		if (live[i] != 0 && (live[i] - slide < k->text_vmaddr || live[i] - slide - k->text_vmaddr >= k->text_vmsize)) {
+			return fail(why, "a live symbol lies outside the kernel file's __TEXT moved by the slide", ESRCH);
+		}
+	}
+	return 0;
+}
+
+int
 rk_header_uuid(const void *hdr, uint8_t uuid[16])
 {
 	const struct mach_header_64 *mh = hdr;

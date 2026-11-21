@@ -391,8 +391,8 @@ functions macFUSE 5.5.0's kext imports and 10.9's public KPIs lack:
   the whole UPL, ignoring `size`, and always maps it read-write, ignoring `prot`.
 - `vfs_get_notify_attributes`, reimplemented.
 - `vnode_notify`. 10.9's kernel has it, but exports it only to Apple's kexts. Recaulk's forwards to the
-  kernel's own function. On its first call, once root is mounted, it finds that function in `/mach_kernel`'s
-  symbol table. It accepts the result only when three other symbols agree on the KASLR slide, and the running
+  kernel's own function. On its first call, once root is mounted, a kernel thread of its own finds that function
+  in `/mach_kernel`'s symbol table, so the caller's sandbox or chroot cannot decide the outcome. It accepts the result only when three other symbols agree on the KASLR slide, and the running
   kernel's UUID matches the file's. If any check fails, it delivers nothing and returns 0, so kqueue and
   FSEvents see no change.
 
@@ -406,7 +406,7 @@ The kext starts only on Darwin 13 (10.9). Elsewhere it refuses to start, because
 functions themselves. `debug.recaulk_kpi.vnode_notify_forwarded` counts forwarded calls.
 
 What a consumer relies on is the bundle id, `OSBundleCompatibleVersion` 1.0.0 (kept while the 7 signatures
-hold) and its dependence only on `com.apple.kpi.bsd` and `com.apple.kpi.libkern` 13.0.0. `CFBundleVersion`
+hold) and its dependence only on `com.apple.kpi.bsd`, `com.apple.kpi.libkern` and `com.apple.kpi.mach` 13.0.0. `CFBundleVersion`
 is the release, as `YYMM.DD.N`: `OSKext` parses at most 4, 2 and 2 digits, and that order matches the releases'.
 
 Recaulk's pkg installs it at `/Library/Extensions/RecaulkKPI.kext`, root:wheel, and its postinstall runs

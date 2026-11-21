@@ -28,6 +28,8 @@
 		<string>13.0.0</string>
 		<key>com.apple.kpi.libkern</key>
 		<string>13.0.0</string>
+		<key>com.apple.kpi.mach</key>
+		<string>13.0.0</string>
 	</dict>
 </dict>
 </plist>

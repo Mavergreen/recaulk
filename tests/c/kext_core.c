@@ -224,6 +224,20 @@ static void slide(void) {
 	CHECK(rk_slide(want, live, NNAMES, &s, &why) == ESRCH);
 }
 
+/* review M1: before the live header is read, every live symbol lies in the file's __TEXT moved by the slide, so a
+   wrong but agreeing slide never sends rk_header_uuid to an arbitrary kernel address */
+static void live_in_text(void) {
+	struct rk_kernel k; uint64_t live[NNAMES]; const char *why = NULL; unsigned i;
+	memset(&k, 0, sizeof k);
+	k.text_vmaddr = TEXT_VM; k.text_vmsize = 0x10000;
+	for (i = 0; i < NNAMES; i++) live[i] = VALUES[i] + 0x2a00000;
+	live[0] = 0;
+	CHECK(rk_live_in_text(&k, live, NNAMES, 0x2a00000, &why) == 0);
+	CHECK(rk_live_in_text(&k, live, NNAMES, 0x2b00000, &why) == ESRCH);
+	live[2] = TEXT_VM + 0x2a00000 + 0x10000;	/* one past the end */
+	CHECK(rk_live_in_text(&k, live, NNAMES, 0x2a00000, &why) == ESRCH);
+}
+
 /* A-m2: the in-memory walk stops at sizeofcmds; a guard page after the header catches any read past it. */
 static void live_header(void) {
 	long pg = sysconf(_SC_PAGESIZE);
@@ -302,6 +316,7 @@ int main(int argc, char **argv) {
 	strx_past_table();
 	not_a_kernel();
 	slide();
+	live_in_text();
 	live_header();
 	if (argc > 1) real_kernel(argv[1]);
 	if (failures) return 1;

@@ -5,6 +5,8 @@
 #include <mach/mach_types.h>
 #include <kern/debug.h>
 #include <kern/locks.h>
+#include <kern/sched_prim.h>
+#include <kern/thread.h>
 #include <libkern/OSAtomic.h>
 #include <sys/types.h>
 #include <sys/errno.h>
@@ -47,7 +49,7 @@ SYSCTL_QUAD(_debug_recaulk_kpi, OID_AUTO, vnode_notify_forwarded, CTLFLAG_RD | C
 
 /* ---- resolution, once ---- */
 typedef int (*vnode_notify_fn)(vnode_t, uint32_t, struct vnode_attr *);
-enum { UNRESOLVED, RESOLVED };
+enum { UNRESOLVED, RESOLVING, RESOLVED };
 static int state = UNRESOLVED;		/* read without the lock: acquire; written under it: release */
 static vnode_notify_fn kernel_vnode_notify;
 static lck_grp_t *grp;
@@ -139,6 +141,11 @@ resolve(vnode_notify_fn *out, uint64_t *slide_out, const char **why)
 	if ((err = rk_slide(want, live, nwant, &slide, why)) != 0) {
 		goto done;
 	}
+	/* review M1: a corrupt or foreign file can agree on a wrong slide; its __TEXT, moved, must hold the live symbols
+	   before the live header there is read */
+	if ((err = rk_live_in_text(&k, live, nwant, slide, why)) != 0) {
+		goto done;
+	}
 	if (want[0].value < k.text_vmaddr || want[0].value - k.text_vmaddr >= k.text_vmsize) {
 		*why = "_vnode_notify lies outside the kernel's __TEXT";
 		err = EINVAL;
@@ -168,16 +175,38 @@ done:
 	return err;
 }
 
+/* review I1: resolution runs on a kernel thread of its own, so the kernel's credentials and the real root open
+   /mach_kernel, never those of whichever process made macFUSE call first (chrooted, or sandboxed away from it),
+   and its reads do not deepen a filesystem call's stack. The caller waits for it, under the lock. */
+static struct {
+	int done;
+	vnode_notify_fn fn;
+	uint64_t slide;
+	const char *why;
+	int err;
+} job;
+
+static void
+resolve_thread(void *arg, wait_result_t wr)
+{
+	(void)arg;
+	(void)wr;
+	job.err = resolve(&job.fn, &job.slide, &job.why);
+	lck_mtx_lock(lock);
+	job.done = 1;
+	thread_wakeup((event_t)&job);
+	lck_mtx_unlock(lock);
+	/* Nothing after the unlock touches the kext's data, and kextd unloads it only after every kext linking it,
+	   which cannot happen before the caller this thread woke has returned. */
+}
+
 /* A-m4: resolution waits for root to be mounted (a prelinked or early load has none), runs once, under the
    lock, and is never retried after it decides. */
 static vnode_notify_fn
 kernel_fn(void)
 {
-	vnode_notify_fn fn = NULL;
-	const char *why = NULL;
-	uint64_t slide = 0;
+	thread_t t;
 	vnode_t root;
-	int err;
 
 	if (__atomic_load_n(&state, __ATOMIC_ACQUIRE) == RESOLVED) {
 		return kernel_vnode_notify;
@@ -189,16 +218,32 @@ kernel_fn(void)
 			return NULL;	/* not yet: the next call tries again */
 		}
 		vnode_put(root);
-		err = resolve(&fn, &slide, &why);
-		if (err == 0) {
-			kernel_vnode_notify = fn;
+		state = RESOLVING;
+		job.done = 0;
+		if (kernel_thread_start(resolve_thread, NULL, &t) != KERN_SUCCESS) {
+			job.err = ENOMEM;
+			job.why = "cannot start the resolving thread";
+			job.done = 1;
+		} else {
+			thread_deallocate(t);
+		}
+		while (!job.done) {
+			lck_mtx_sleep(lock, LCK_SLEEP_DEFAULT, (event_t)&job, THREAD_UNINT);
+		}
+		if (job.err == 0) {
+			kernel_vnode_notify = job.fn;
 			printf(RK_LOG "vnode_notify: forwarding to kernel %p (slide 0x%llx, " RECAULK_KPI_KERNEL_PATH
-			    " UUID matches)\n", (void *)fn, (unsigned long long)slide);
+			    " UUID matches)\n", (void *)job.fn, (unsigned long long)job.slide);
 		} else {
 			kernel_vnode_notify = NULL;
-			printf(RK_LOG "vnode_notify: FALLBACK, delivering nothing (%s, error %d)\n", why, err);
+			printf(RK_LOG "vnode_notify: FALLBACK, delivering nothing (%s, error %d)\n", job.why, job.err);
 		}
 		__atomic_store_n(&state, RESOLVED, __ATOMIC_RELEASE);
+		thread_wakeup((event_t)&state);
+	} else {
+		while (state == RESOLVING) {
+			lck_mtx_sleep(lock, LCK_SLEEP_DEFAULT, (event_t)&state, THREAD_UNINT);
+		}
 	}
 	lck_mtx_unlock(lock);
 	return kernel_vnode_notify;

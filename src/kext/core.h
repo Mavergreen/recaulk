@@ -47,4 +47,6 @@ int rk_read_kernel(const struct rk_file *f, const struct rk_mem *m, struct rk_ke
 int rk_slide(const struct rk_sym *want, const uint64_t *live, unsigned nwant, uint64_t *slide, const char **why);
 /* The UUID of an in-memory 64-bit Mach header, its load-command walk bounded by sizeofcmds; 0 if found. */
 int rk_header_uuid(const void *mh, uint8_t uuid[16]);
+/* 0 when every live[i] that is not 0 lies in k's __TEXT moved by slide; else ESRCH with *why set. */
+int rk_live_in_text(const struct rk_kernel *k, const uint64_t *live, unsigned nlive, uint64_t slide, const char **why);
 #endif
