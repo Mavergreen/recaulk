@@ -334,6 +334,8 @@ The libdispatch calls 10.10 to 10.12 added, as Recaulk gives them on 10.9 (the s
 - `dispatch_queue_attr_make_initially_inactive` gives an attribute with which `dispatch_queue_create` (and
   `dispatch_queue_create_with_target`, `dispatch_workloop_create_inactive`) creates the queue suspended.
   The attribute is an Objective-C object, as the system's are, so Swift and ARC code can retain and release it.
+  It is a dispatch object every copy of Recaulk in the process shares. Recaulk makes no class for it, so Drydock's
+  strict guard has nothing it cannot model; attributes from earlier Recaulks are still honoured.
   `dispatch_activate` starts such a queue, and a source, once; a second call, or a call on any other object,
   does nothing, as on 10.12. A `dispatch_resume` of such a queue or source is its activation, so a
   `dispatch_activate` after it does nothing too. A source suspended and resumed before it ever started counts as

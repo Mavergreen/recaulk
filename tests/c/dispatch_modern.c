@@ -2,6 +2,8 @@
    one run: tests/dispatch-modern-test.sh says which return and which trap. Compiled against Recaulk's headers,
    so the declarations are the ones a client sees. */
 #include <dispatch/dispatch.h>
+#include <objc/runtime.h>
+#include <stdint.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +13,6 @@
 /* platform: libobjc's ARC entry points, which Swift calls on every dispatch_queue_attr_t it holds */
 void *objc_retain(void *);
 void objc_release(void *);
-char *object_getClassName(void *);
 
 static dispatch_queue_t q1, q2, inner;
 
@@ -130,11 +131,33 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 2; i++) {
             void *a = objc_retain((void *)attrs[i]);
             if (a != (void *)attrs[i]) { puts("FAIL: objc_retain returned another object"); return 1; }
-            if (!object_getClassName(a)) { puts("FAIL: the attribute has no class"); return 1; }
+            if (!object_getClassName((id)a)) { puts("FAIL: the attribute has no class"); return 1; }
             dispatch_queue_t q = dispatch_queue_create("recaulk.inr", (dispatch_queue_attr_t)a);
             objc_release(a);
             if (starts_inactive(q, i ? "a concurrent queue from a retained attribute" : "a serial queue from a retained attribute")) return 1;
             if (i && !runs_concurrently(q)) { puts("FAIL: the retained inactive attribute lost the concurrent one"); return 1; }
+        }
+        return 0;
+    }
+    /* the attributes earlier Recaulks handed out, which a copy built from them may still pass in: 20261120.4 and
+       earlier's 8-byte 'RCI1' struct, and 20261121.1-.6's object of a class registered at run time with 'RCI2' and
+       the concurrency in its extra bytes; and every call gives the one process-wide attribute */
+    if (!strcmp(c, "inactive-attr-earlier")) {
+        static struct { uint32_t magic, concurrent; } v1 = { 0x52434931u, 1 };
+        dispatch_queue_t q = dispatch_queue_create("recaulk.v1", (dispatch_queue_attr_t)(void *)&v1);
+        if (starts_inactive(q, "a queue from a 20261120.4 attribute")) return 1;
+        if (!runs_concurrently(q)) { puts("FAIL: the 20261120.4 attribute lost the concurrent one"); return 1; }
+        Class k = objc_allocateClassPair(objc_getClass("NSObject"), "__RecaulkDispatchInactiveQueueAttribute_v2", 0);
+        if (!k) { puts("FAIL: this Recaulk registered 20261121.1's class itself"); return 1; }
+        objc_registerClassPair(k);
+        id v2 = class_createInstance(k, 8);
+        uint32_t *x = object_getIndexedIvars(v2);
+        x[0] = 0x52434932u; x[1] = 1;
+        q = dispatch_queue_create("recaulk.v2", (dispatch_queue_attr_t)(void *)v2);
+        if (starts_inactive(q, "a queue from a 20261121.1 attribute")) return 1;
+        if (!runs_concurrently(q)) { puts("FAIL: the 20261121.1 attribute lost the concurrent one"); return 1; }
+        if (dispatch_queue_attr_make_initially_inactive(NULL) != dispatch_queue_attr_make_initially_inactive(NULL)) {
+            puts("FAIL: two calls gave two serial attributes"); return 1;
         }
         return 0;
     }
