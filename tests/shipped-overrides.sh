@@ -18,9 +18,9 @@ sdk_exports "$SDK" > "$d/sdk"
   | while read -r m s; do grep -qxF -- "$s" "$d/sdk" && echo "$m $s"; done | LC_ALL=C sort -u > "$d/want"
 grep -v '^#' "$list" | awk 'NF' | LC_ALL=C sort -u > "$d/have"
 cmp -s "$d/want" "$d/have" || bad "the list is not exactly librecaulk.a's definitions of 10.9 exports: $(diff "$d/have" "$d/want" | grep '^[<>]' | head -5 | tr '\n' ' ')"
-# spec: the hidden fixes build/image-local-shadows.txt lists, and MacPorts' public pthread_get_stacksize_np, are among them
+# spec: the hidden fixes build/image-local-shadows.txt lists, Recaulk's pthread_get_stacksize_np among them, are in it
 grep -v '^#' build/image-local-shadows.txt | awk 'NF { print $1, $2 }' | while read -r m s; do
   grep -qxF -- "$m $s" "$d/have" || echo "FAIL: the list lacks $m $s, which build/image-local-shadows.txt lists"
 done | grep . && fail=1
-grep -qxF 'mp-pthread_get_stacksize_np.o _pthread_get_stacksize_np' "$d/have" || bad "the list lacks MacPorts' pthread_get_stacksize_np"
+grep -qxF 'recaulk-pthread_get_stacksize_np.o _pthread_get_stacksize_np' "$d/have" || bad "the list lacks Recaulk's pthread_get_stacksize_np"
 exit $fail

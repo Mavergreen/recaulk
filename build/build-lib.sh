@@ -85,6 +85,11 @@ dups="$("$AR" -t "$src/lib/libMacportsLegacySupport.a" | grep -v '^__\.SYMDEF' |
 [ -z "$dups" ] || { echo "build-lib: libMacportsLegacySupport.a has members sharing a name, which ar -x would overwrite: $dups" >&2; exit 1; }
 (cd "$F/mp" && "$AR" -x "$src/lib/libMacportsLegacySupport.a")
 rm -f "$F/mp"/__.SYMDEF*
+# spec: build/macports-superseded.txt -- members of Recaulk's own replace these; a name not in the archive is an error
+for m in $(grep -v '^#' "$SELF/macports-superseded.txt" | awk 'NF { print $1 }'); do
+  [ -f "$F/mp/$m" ] || { echo "build-lib: build/macports-superseded.txt names $m, which MacPorts' archive lacks" >&2; exit 1; }
+  rm -f "$F/mp/$m"
+done
 for m in "$F/mp"/*.o; do
   mv "$m" "$F/mp/mp-$(basename "$m")"
 done

@@ -1,0 +1,5 @@
+# MacPorts legacy-support members Recaulk leaves out of its archives, each because a member of Recaulk's own does the
+# same job better. One per line: <MacPorts member> <reason>. tests/macports-superseded.sh holds that each named member
+# exists in MacPorts' archive and that Recaulk defines every global it did. Each reason names the upstream report
+# that would let the line go (.superpowers/QUEUE.md "For the owner to file upstream").
+pthread_get_stacksize_np.o MacPorts 1.5.2 returns RLIMIT_STACK's soft limit unrounded and ignores an LC_MAIN stacksize; src/backfills/pthread_get_stacksize_np.c returns what the kernel gave

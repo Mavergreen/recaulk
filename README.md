@@ -118,7 +118,7 @@ products. `libRecaulkSystem.dylib` exports it publicly (its source is in `src/ov
 dylib that links the archive and yields to the dylib's in the one link that has both. Each such name is
 listed with its reason in `build/image-local-shadows.txt`, and `tests/rule-backfills-add-only.sh`
 holds that list exact. Recaulk's C++ exception rules, its `posix_spawn`, its `pselect`, its `close` and
-`dup2`, and its `fma`, `fmal` and `truncl` are fixes of this kind.
+`dup2`, its `pthread_get_stacksize_np`, and its `fma`, `fmal` and `truncl` are fixes of this kind.
 
 A back-fill that works only through such a fix is hidden in `librecaulk.a` with it
 (`build/image-local-backfills.txt`): `posix_spawn_file_actions_addchdir_np` and `addfchdir_np` record actions only
@@ -127,10 +127,15 @@ a program that looks the builders up with `dlsym` (as Rust's standard library do
 own way to the directory rather than one libSystem's `posix_spawn` would silently ignore.
 
 `/usr/local/mavergreen/recaulk/share/recaulk/system-overrides.txt` lists, one `<member> <symbol>` per line
-(`#` comments), every name `librecaulk.a` defines that 10.9 already exports: those fixes, and MacPorts' public
-`pthread_get_stacksize_np` and `sysconf`. Each takes effect only where it binds before the system's copy, so a
+(`#` comments), every name `librecaulk.a` defines that 10.9 already exports: those fixes, among them
+`pthread_get_stacksize_np`, and MacPorts' public `sysconf`. Each takes effect only where it binds before the system's copy, so a
 binary that imports one of these names from a system library has missed Recaulk's fix, usually through link order
 (an explicit `-lSystem` ahead of `librecaulk.a`). A product's conformance check can read the list to catch that.
+
+`pthread_get_stacksize_np` gives the main thread the stack the kernel gave it, which 10.9 reports as 512 KiB: the
+`LC_MAIN` stacksize rounded up to a page when the program carries one (Apple ld's `-stack_size`), otherwise
+`RLIMIT_STACK`'s soft limit rounded up to a page. It replaces MacPorts' fix, which returned the soft limit as is;
+`build/macports-superseded.txt` names each MacPorts member Recaulk leaves out for one of its own.
 
 A hidden definition in an archive binds only when nothing earlier in the link defines the name, and
 `-lm`, `-ldl`, `-lpthread` and `-lc` each name libSystem itself. So a program built from source against

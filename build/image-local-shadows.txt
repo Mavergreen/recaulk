@@ -28,3 +28,4 @@ recaulk-socket_close.o _dup2 replaces a socket without hanging when another thre
 recaulk-dispatch_global_qos.o _dispatch_get_global_queue gives a QoS class a global queue, which 10.9's answers with NULL, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-dispatch_inactive.o _dispatch_queue_create creates a queue suspended for an initially inactive attribute, which 10.9's has none of, weak so libRecaulkSystem.dylib's public override wins there
 recaulk-dispatch_inactive.o _dispatch_resume counts the first resume of an inactive queue or a source as its activation, so a dispatch_activate after it does not over-resume, weak for the same reason
+recaulk-pthread_get_stacksize_np.o _pthread_get_stacksize_np gives the main thread the stack the kernel gave it (round_page of LC_MAIN stacksize or RLIMIT_STACK), not 10.9's 512 KiB, weak so libRecaulkSystem.dylib's public override wins there
