@@ -6,7 +6,9 @@
 #   OUT/obj/*.o                         the objects
 #   OUT/RecaulkKPI.kext/Contents/Info.plist
 #   OUT/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI
-# RECAULK_KEXT_LD names another ld64 to link with; unset, components/cctools/version's is fetched into OUT/tools
+# RECAULK_KEXT_LD names another ld64 to link with; unset, components/cctools/version's is fetched into OUT/tools.
+# For the tests: KEXT_SRC (default src/kext) and KEXT_NAME (default RecaulkKPI) build another kext the same way,
+# and KEXT_CFLAGS adds defines (the 10.9 tests' gate and kernel-file variants).
 set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)"
 . "$SELF/lib.sh"
@@ -22,15 +24,16 @@ fi
 recaulk_tools
 KH="$SDK/System/Library/Frameworks/Kernel.framework/Headers"
 [ -d "$KH" ] || { echo "build-kext: the SDK has no Kernel.framework headers ($KH)" >&2; exit 1; }
-SRC="$MAVERICKS_ROOT/src/kext"
-K="$OUT/RecaulkKPI.kext"
+SRC="${KEXT_SRC:-$MAVERICKS_ROOT/src/kext}"
+NAME="${KEXT_NAME:-RecaulkKPI}"
+K="$OUT/$NAME.kext"
 rm -rf "$OUT/obj" "$K"
 mkdir -p "$OUT/obj" "$K/Contents/MacOS"
 # platform: --no-default-config keeps clang.cfg's userland inputs (librecaulk.a, frameworks, Recaulk's headers)
 #           out of a kext; -fvisibility=hidden leaves exported only what says so
 for c in "$SRC"/*.c; do
   "$CC" $TARGET_FLAGS -isysroot "$SDK" -mkernel -nostdinc -fno-builtin -fno-common -fvisibility=hidden \
-    -I"$KH" -DKERNEL -D__APPLE_CC__=6000 -DRECAULK_KPI_VERSION="\"$bundle_version\"" \
+    -I"$KH" -I"$MAVERICKS_ROOT/src/kext" ${KEXT_CFLAGS:-} -DKERNEL -D__APPLE_CC__=6000 -DRECAULK_KPI_VERSION="\"$bundle_version\"" \
     -Wall -Wextra -Werror -O2 -c "$c" -o "$OUT/obj/$(basename "$c" .c).o"
 done
 sed -e "s/@RELEASE@/$VERSION/" -e "s/@BUNDLE_VERSION@/$bundle_version/" "$SRC/Info.plist.in" > "$K/Contents/Info.plist"
@@ -41,4 +44,4 @@ fi
 # spec: README.md "The kernel back-fill kext" -- ld64 -kext writes MH_KEXT_BUNDLE, which 10.9's kxld loads; ld64.lld
 #       cannot. -nostdlib keeps libSystem out; libkmod supplies _kmod_info's start and stop glue.
 "$CC" $TARGET_FLAGS -isysroot "$SDK" -nostdlib -fuse-ld=ld --ld-path="$LD" -Wl,-kext -L"$SDK/usr/lib" \
-  "$OUT"/obj/*.o -lkmod -o "$K/Contents/MacOS/RecaulkKPI"
+  "$OUT"/obj/*.o -lkmod -o "$K/Contents/MacOS/$NAME"

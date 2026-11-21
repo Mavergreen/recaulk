@@ -243,9 +243,11 @@ jobs:
         uses: Mavergreen/mavericks-vm@v1
         env:
           RECAULK_VERSION: ${{ needs.build.outputs.ver }}
+          # spec: tests/kext-runtime-test.sh -- this guest is disposable, so its runtime half may load kexts
+          RECAULK_KEXT_LOAD: '1'
         with:
           image-key: ${{ secrets.MAVERICKS_VM_KEY }}
-          envs: RECAULK_VERSION
+          envs: RECAULK_VERSION RECAULK_KEXT_LOAD
           copyback: false
           debug-on-error: true
           # spec: README.md "Tests" -- the provider's real-delivery tests launch apps, which needs an Aqua session
