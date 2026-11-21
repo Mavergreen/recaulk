@@ -28,6 +28,17 @@ recaulk_tools
 
 sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/libRecaulkSystem.dylib" >&2
 
+# spec: README.md "The kernel back-fill kext" -- built here, where the release's VERSION is known, since its
+#       CFBundleVersion is the release; staged where 10.9 loads third-party kexts, so the manifest's outside list has it
+VERSION="$VERSION" sh "$SELF/build-kext.sh" "$OUT/kext" >&2
+rm -rf "$STAGE/Library/Extensions/RecaulkKPI.kext"
+mkdir -p "$STAGE/Library/Extensions"
+cp -R "$OUT/kext/RecaulkKPI.kext" "$STAGE/Library/Extensions/"
+# platform: kextd refuses a kext writable by anyone but root (kext_tools 10.9, checkFileOwnership)
+find "$STAGE/Library/Extensions/RecaulkKPI.kext" -type d -exec chmod 755 {} +
+find "$STAGE/Library/Extensions/RecaulkKPI.kext" -type f -exec chmod 644 {} +
+chmod 755 "$STAGE/Library/Extensions/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI"
+
 SCR="$OUT/pkg-scripts"; rm -rf "$SCR"
 sh "$SCRIPTS/stage_product.sh" --stage "$STAGE" --product recaulk \
   --name "Recaulk for Mavericks" --version "$VERSION" --updater-app "$UPD_APP" \
@@ -44,7 +55,7 @@ sh "$SCRIPTS/set_install_floor.sh" --identifier "$ID" --title "Recaulk for Maver
 
 pin() { tr -d ' \t\n' < "$MAVERICKS_ROOT/components/$1/version"; }
 set -- variant=release arch=x86_64 prefix=/usr/local/mavergreen/recaulk pkg="recaulk-$VERSION.pkg" identifier="$ID" \
-  clang22="$(pin clang22)" drydock="$(pin drydock)" macports-legacy-support="$(macports_pin REF)"
+  clang22="$(pin clang22)" cctools="$(pin cctools)" drydock="$(pin drydock)" macports-legacy-support="$(macports_pin REF)"
 for f in "$BUILD/build-tools.txt" "$(dirname "$UPD_APP")/build-tools.txt"; do
   while IFS= read -r l; do set -- "$@" "$l"; done < "$f"
 done

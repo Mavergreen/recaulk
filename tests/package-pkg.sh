@@ -63,11 +63,29 @@ need 'usr/local/mavergreen/recaulk/share/recaulk/image-local-shadows.txt'
 need 'usr/local/mavergreen/recaulk/share/recaulk/system-overrides.txt'
 need 'Library/Application Support/Mavergreen/recaulk-updater.app/Contents/Resources/recaulk-updater.icns'
 need 'Library/LaunchAgents/dev.mavergreen.recaulk-updatecheck.plist'
+# spec: README.md "The kernel back-fill kext" -- the pkg installs RecaulkKPI.kext where 10.9 loads third-party kexts,
+#       root-owned and writable only by root (kextd refuses anything else), with this release as CFBundleVersion
+need 'Library/Extensions/RecaulkKPI.kext/Contents/Info.plist'
+need 'Library/Extensions/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI'
+kmodes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'Library/Extensions/RecaulkKPI.kext' | awk '{ print $1, $3, $4, $NF }' | LC_ALL=C sort -k4)"
+printf '%s\n' "$kmodes" | awk '$2 != "root" || ($3 != "wheel" && $3 != "0") { bad = 1 } END { exit bad }' \
+  || { echo "FAIL: the kext is not root:wheel in the payload: $kmodes"; exit 1; }
+printf '%s\n' "$kmodes" | awk '$1 ~ /^.....w/ || $1 ~ /^........w/ { bad = 1 } END { exit bad }' \
+  || { echo "FAIL: the kext has a group- or world-writable entry in the payload: $kmodes"; exit 1; }
+kver="$(sed -n '/<key>CFBundleVersion<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' "$tmp/files/Library/Extensions/RecaulkKPI.kext/Contents/Info.plist")"
+[ "$kver" = 2610.5.1 ] || { echo "FAIL: the packaged kext's CFBundleVersion is '$kver', not 2610.5.1 (release 20261005.1)"; exit 1; }
+grep -q 'Library/Extensions/RecaulkKPI.kext' "$tmp/files/usr/local/mavergreen/recaulk/mavergreen.plist" \
+  || { echo "FAIL: the manifest's outside list lacks the kext, so uninstall would leave it"; exit 1; }
+# spec: README.md "The kernel back-fill kext" -- the postinstall rebuilds the kext caches, only on the boot volume
+post="$(cat "$tmp"/x/*.pkg/Scripts/postinstall 2>/dev/null || :)"
+[ -z "$post" ] && post="$(for s in "$tmp"/x/*.pkg/Scripts; do [ -d "$s" ] && (cd "$s" && cat postinstall 2>/dev/null); done)"
+printf '%s\n' "$post" | awk '/if \[ -z "\$ROOT" \]/ { on = 1 } on && /kextcache -system-caches/ { ok = 1 } /^fi/ { on = 0 } END { exit !ok }' \
+  || { echo "FAIL: the postinstall does not run kextcache -system-caches inside if [ -z \"\$ROOT\" ]"; exit 1; }
 ! printf '%s\n' "$FILES" | grep -Eq 'usr/local/mavergreen/legacysupport|usr/local/lib' || { echo "the payload carries the old layout or /usr/local/lib"; exit 1; }
 
 info="$(dirname "$pkg")/build-info-release.txt"
 [ -f "$info" ] || { echo "FAIL: no build-info-release.txt beside the pkg"; exit 1; }
-for k in clang22 drydock macports-legacy-support build-make updater-cmake updater-build-tool; do
+for k in clang22 cctools drydock macports-legacy-support build-make updater-cmake updater-build-tool; do
   grep -q "^$k=." "$info" || { echo "FAIL: build-info-release.txt records no $k: $(tr '\n' ' ' < "$info")"; exit 1; }
 done
 [ "$(sed -n 's/^clang22=//p' "$info")" = "$(tr -d ' \t\n' < components/clang22/version)" ] \

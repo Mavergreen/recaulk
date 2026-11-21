@@ -402,6 +402,10 @@ What a consumer relies on is the bundle id, `OSBundleCompatibleVersion` 1.0.0 (k
 hold) and its dependence only on `com.apple.kpi.bsd` and `com.apple.kpi.libkern` 13.0.0. `CFBundleVersion`
 is the release, as `YYMM.DD.N`: `OSKext` parses at most 4, 2 and 2 digits, and that order matches the releases'.
 
+Recaulk's pkg installs it at `/Library/Extensions/RecaulkKPI.kext`, root:wheel, and its postinstall runs
+`kextcache -system-caches` on the boot volume, so a consumer's first load is immediate. Uninstalling Recaulk
+removes it; a kext that depends on it then fails to load.
+
 `sh build/build-kext.sh OUT` compiles it with clang22 and links it on any host. The kernel's loader on 10.9
 accepts only `MH_KEXT_BUNDLE`, which needs ld64's `-kext`: clang22's lld writes no such file. So the link uses
 Mavergreen cctools' ld64, pinned in `components/cctools/version` and fetched into `OUT/tools`; `RECAULK_KEXT_LD`
