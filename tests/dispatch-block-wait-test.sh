@@ -1,12 +1,14 @@
 #!/bin/sh
 # platform: host-agnostic -- builds the staged static archive's x86_64 programs; runs them on 10.9 (RECAULK_TEST_PHASE)
 # spec: README.md "Dispatch on 10.9" -- dispatch_block_wait and dispatch_block_notify on a block dispatch_block_create
-#       made, and its state seen by a second copy of librecaulk.a in the process (a dylib linking its own).
+#       made, and its state seen by a second copy of librecaulk.a in the process (a dylib linking its own); an
+#       initially inactive attribute either copy makes, honoured by the other.
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 cases='wait-after-async wait-finished wait-timeout notify-after-async notify-finished cancelled-then-run
-  release-unrun-with-notify other-copy-cancels other-copy-waits'
+  release-unrun-with-notify other-copy-cancels other-copy-waits
+  other-copy-makes-inactive other-copy-honours-inactive'
 if compiling; then
   D="$(dirname "$(tbin x)")"
   "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$T/include/recaulk" -dynamiclib tests/c/dispatch_block_other.c \

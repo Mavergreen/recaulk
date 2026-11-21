@@ -8,6 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
+/* platform: libobjc's ARC entry points, which Swift calls on every dispatch_queue_attr_t it holds */
+void *objc_retain(void *);
+void objc_release(void *);
+char *object_getClassName(void *);
+
 static dispatch_queue_t q1, q2, inner;
 
 static void *not_on_pthread(void *queue) { dispatch_assert_queue_not(queue); return NULL; }
@@ -116,6 +121,21 @@ int main(int argc, char **argv) {
         dispatch_queue_t q = dispatch_queue_create("recaulk.inc", dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_CONCURRENT));
         if (starts_inactive(q, "a concurrent queue")) return 1;
         if (!runs_concurrently(q)) { puts("FAIL: the inactive attribute lost the concurrent one"); return 1; }
+        return 0;
+    }
+    /* swift-gg on 10.9.5 with 20261120.3: Swift retains the attribute, and objc_retain read 'RCI1' as an isa */
+    if (!strcmp(c, "inactive-attr-retained")) {
+        dispatch_queue_attr_t attrs[] = { dispatch_queue_attr_make_initially_inactive(NULL),
+                                          dispatch_queue_attr_make_initially_inactive(DISPATCH_QUEUE_CONCURRENT) };
+        for (int i = 0; i < 2; i++) {
+            void *a = objc_retain((void *)attrs[i]);
+            if (a != (void *)attrs[i]) { puts("FAIL: objc_retain returned another object"); return 1; }
+            if (!object_getClassName(a)) { puts("FAIL: the attribute has no class"); return 1; }
+            dispatch_queue_t q = dispatch_queue_create("recaulk.inr", (dispatch_queue_attr_t)a);
+            objc_release(a);
+            if (starts_inactive(q, i ? "a concurrent queue from a retained attribute" : "a serial queue from a retained attribute")) return 1;
+            if (i && !runs_concurrently(q)) { puts("FAIL: the retained inactive attribute lost the concurrent one"); return 1; }
+        }
         return 0;
     }
     if (!strcmp(c, "inactive-with-qos"))

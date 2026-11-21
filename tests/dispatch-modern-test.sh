@@ -7,13 +7,13 @@ set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 if compiling; then
-  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror -I"$T/include/recaulk" tests/c/dispatch_modern.c "$T/lib/librecaulk.a" -o "$(tbin static)"
-  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror -I"$T/include/recaulk" tests/c/dispatch_modern.c -L"$T/lib" -lRecaulkSystem -o "$(tbin dylib)"
+  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror -I"$T/include/recaulk" tests/c/dispatch_modern.c "$T/lib/librecaulk.a" -lobjc -o "$(tbin static)"
+  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror -I"$T/include/recaulk" tests/c/dispatch_modern.c -L"$T/lib" -lRecaulkSystem -lobjc -o "$(tbin dylib)"
   check_loads "$(tbin static)" "$(tbin dylib)"
 fi
 runtime_half
 returns='global-qos queue-qos-class autorelease-frequency create-with-target assert-in-sync not-off-on-pthread
-  not-other-queue-block barrier-in-sync inactive-serial inactive-concurrent inactive-with-qos inactive-with-target
+  not-other-queue-block barrier-in-sync inactive-serial inactive-concurrent inactive-attr-retained inactive-with-qos inactive-with-target
   activate-active-queue activate-source resumed-source-then-activate resumed-inactive-then-activate apply-auto'
 traps_not='not-in-sync not-target-in-block not-main-on-main-thread not-null'
 traps_on='barrier-off-on-pthread'

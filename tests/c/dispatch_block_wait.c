@@ -10,6 +10,19 @@
 
 void other_cancel(dispatch_block_t block);
 long other_wait(dispatch_block_t block, dispatch_time_t timeout);
+dispatch_queue_attr_t other_inactive_attr(int concurrent);
+dispatch_queue_t other_create(const char *label, dispatch_queue_attr_t attr);
+
+/* A queue made inactive runs nothing until dispatch_activate, then runs. */
+static int inactive_then_runs(dispatch_queue_t iq) {
+    __block volatile int r = 0;
+    dispatch_async(iq, ^{ r = 1; });
+    usleep(200000);
+    if (r) return 0;
+    dispatch_activate(iq);
+    for (int i = 0; i < 200 && !r; i++) usleep(10000);
+    return r;
+}
 
 #define CHECK(cond, ...) do { if (!(cond)) { printf("FAIL: " __VA_ARGS__); puts(""); return 1; } } while (0)
 
@@ -67,6 +80,16 @@ int main(int argc, char **argv) {
         dispatch_async(q, b);
         CHECK(other_wait(b, DISPATCH_TIME_FOREVER) == 0, "another copy's wait gave non-zero");
         CHECK(ran, "another copy's wait returned before the block ran");
+    } else if (!strcmp(c, "other-copy-makes-inactive")) {
+        CHECK(inactive_then_runs(dispatch_queue_create("recaulk.oi", other_inactive_attr(0))),
+              "a serial queue from another copy's inactive attribute was not inactive, or never ran");
+        CHECK(inactive_then_runs(dispatch_queue_create("recaulk.oic", other_inactive_attr(1))),
+              "a concurrent queue from another copy's inactive attribute was not inactive, or never ran");
+    } else if (!strcmp(c, "other-copy-honours-inactive")) {
+        CHECK(inactive_then_runs(other_create("recaulk.ho", dispatch_queue_attr_make_initially_inactive(NULL))),
+              "another copy made an active queue from this copy's inactive attribute");
+        CHECK(dispatch_queue_attr_make_initially_inactive(other_inactive_attr(1)) == other_inactive_attr(1),
+              "this copy did not recognise another copy's inactive attribute as one");
     } else { fprintf(stderr, "unknown case %s\n", c); return 2; }
     Block_release(b);
     return 0;
