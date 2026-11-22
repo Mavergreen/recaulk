@@ -492,6 +492,19 @@ the 10.11 SDK declares:
 `NS_ASSUME_NONNULL_BEGIN`/`END` as the 10.10 and 10.11 SDKs do. These are compile-time annotations: the
 compiler checks with them and emits the same code.
 
+`foundation-objcruntime-macros-v2` is v1 plus the annotations the 10.11 to 10.13 SDKs added to the same header:
+`NS_NOESCAPE`, `NS_SWIFT_NAME`, `NS_SWIFT_UNAVAILABLE`, `NS_REFINED_FOR_SWIFT`, `NS_SWIFT_NOTHROW`, and
+`NS_STRING_ENUM`, `NS_EXTENSIBLE_STRING_ENUM`, `NS_TYPED_ENUM` and `NS_TYPED_EXTENSIBLE_ENUM`, each the attribute
+those SDKs use where clang has it. A target selects one or the other.
+
+`corefoundation-availability-v1` adds the availability spellings later SDKs use, as attributes clang checks
+the same way: `__NSi_` and `__NSd_` for 10.10 to 10.15 and their point releases (behind
+`NS_AVAILABLE_MAC`, `NS_CLASS_AVAILABLE`, `NS_ENUM_AVAILABLE_MAC` and `NS_DEPRECATED_MAC`), and
+`API_AVAILABLE`, `API_UNAVAILABLE`, `API_DEPRECATED` and `API_DEPRECATED_WITH_REPLACEMENT` for up to six
+platforms each. Like the SDK's own, they make a use of something newer than the deployment target a warning
+(`-Wunguarded-availability`) and its reference weak; they supply nothing at run time. A file that includes
+`<os/availability.h>` itself still finds no such header on 10.9's SDK.
+
 `foundation-array-generics-v2` is `foundation-array-generics-v1` plus element-typed `objectAtIndex:`,
 `firstObject`, `lastObject` and subscripting, as the 10.11 SDK declares them, so `array.lastObject.name`
 compiles. It edits the same header, so a target selects one or the other.
