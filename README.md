@@ -556,6 +556,11 @@ Each v2 edits the same header as its v1, so a target selects one or the other.
 declare that it adopts them. They are compile-time only: 10.9's accessibility never asks through them, so a class
 must still answer through `accessibilityAttributeValue:` and its kin to be accessible on 10.9.
 
+`appkit-viewcontroller-lifecycle-v1` declares `NSViewController`'s 10.10 lifecycle methods (`viewDidLoad`,
+`viewWillAppear`, `viewDidAppear`, `viewWillDisappear`, `viewDidDisappear`, `viewWillLayout` and `viewDidLayout`)
+at their availability, so an override that calls `super` compiles. Nothing provides them on 10.9, whose AppKit
+never sends them: an override there never runs, so work it does must also be reached another way on 10.9.
+
 `foundation-filemanager-keys-v1` adds the 10.12 typedefs `NSFileAttributeKey` and `NSFileAttributeType`
 (`NSString *`). `foundation-filecoordinator-v1` adds `NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly`
 and `NSFileCoordinatorReadingForUploading` at their 10.10 availability; 10.9's `NSFileCoordinator` does not know

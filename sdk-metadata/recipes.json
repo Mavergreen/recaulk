@@ -608,6 +608,20 @@
           "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's Foundation root provides them on 10.9. */\n@interface NSString (RecaulkStringContains)\n- (BOOL)containsString:(NSString *)str __attribute__((availability(macosx,introduced=10.10)));\n- (BOOL)localizedCaseInsensitiveContainsString:(NSString *)str __attribute__((availability(macosx,introduced=10.10)));\n@end\n\n@interface NSString (NSStringExtensionMethods)"
         }
       ]
+    },
+    {
+      "id": "appkit-viewcontroller-lifecycle-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSViewController.h",
+      "sha256": "191a0a11524f025f89e643f14d73e8115d3cf97901aa8337f8f1d8fe916de0b7",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)loadView;",
+          "new": "- (void)loadView;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10. 10.9's AppKit never sends these, so an override of one never runs there, and NSViewController\n   does not implement them: [super viewWillAppear] compiles, and runs only where 10.10+ sends the method. */\n- (void)viewDidLoad __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillLayout __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidLayout __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
     }
   ]
 }
