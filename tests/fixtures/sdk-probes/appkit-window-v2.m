@@ -13,3 +13,8 @@ NSWindowStyleMask probeMask(NSWindow *w) {
         NSWindowStyleMaskDocModalWindow | NSWindowStyleMaskNonactivatingPanel | NSWindowStyleMaskHUDWindow;
     return [w styleMask] & all;
 }
+void probeTabbing(NSWindow *w) {
+    if ([w respondsToSelector:@selector(setTabbingMode:)]) w.tabbingMode = NSWindowTabbingModeDisallowed;
+    NSWindowTabbingMode m = NSWindowTabbingModeAutomatic;
+    (void)m; (void)NSWindowTabbingModePreferred;
+}

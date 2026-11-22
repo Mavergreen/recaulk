@@ -468,28 +468,6 @@
       ]
     },
     {
-      "id": "appkit-window-v2",
-      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
-      "sha256": "677557c70c2cdb6ade4ce7dd9ba642544d3661a1e774ee61226204953b4a6743",
-      "aliases": [
-        "System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h"
-      ],
-      "replacements": [
-        {
-          "old": "@interface NSWindow : NSResponder",
-          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n@class NSTitlebarAccessoryViewController;\n\n@interface NSWindow : NSResponder"
-        },
-        {
-          "old": "+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;",
-          "new": "/* Recaulk: 10.10; callers check respondsToSelector: first. */\n- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)childViewController __attribute__((availability(macosx,introduced=10.10)));\n\n+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;"
-        },
-        {
-          "old": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif",
-          "new": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values; the panel masks are NSPanel.h's (10.9's NSUtilityWindowMask and kin). */\nenum {\n    NSWindowStyleMaskBorderless = NSBorderlessWindowMask,\n    NSWindowStyleMaskTitled = NSTitledWindowMask,\n    NSWindowStyleMaskClosable = NSClosableWindowMask,\n    NSWindowStyleMaskMiniaturizable = NSMiniaturizableWindowMask,\n    NSWindowStyleMaskResizable = NSResizableWindowMask,\n    NSWindowStyleMaskTexturedBackground = NSTexturedBackgroundWindowMask,\n    NSWindowStyleMaskUnifiedTitleAndToolbar = NSUnifiedTitleAndToolbarWindowMask,\n    NSWindowStyleMaskFullScreen = NSFullScreenWindowMask,\n    NSWindowStyleMaskUtilityWindow = 1 << 4,\n    NSWindowStyleMaskDocModalWindow = 1 << 6,\n    NSWindowStyleMaskNonactivatingPanel = 1 << 7,\n    NSWindowStyleMaskHUDWindow = 1 << 13\n};"
-        }
-      ]
-    },
-    {
       "id": "appkit-cell-properties-v2",
       "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSCell.h",
       "sha256": "b44392f3a430fae14972160cc6965b96b34aa826cb732e36129271746389eb54",
@@ -550,6 +528,70 @@
         {
           "old": "    NSInlineBezelStyle NS_ENUM_AVAILABLE_MAC(10_7) = 15,",
           "new": "    NSInlineBezelStyle NS_ENUM_AVAILABLE_MAC(10_7) = 15,\n    /* Recaulk: the 10.12 names, members of the same enumeration so they keep its type. */\n    NSBezelStyleRounded = NSRoundedBezelStyle,\n    NSBezelStyleRegularSquare = NSRegularSquareBezelStyle,\n    NSBezelStyleThickSquare = NSThickSquareBezelStyle,\n    NSBezelStyleThickerSquare = NSThickerSquareBezelStyle,\n    NSBezelStyleDisclosure = NSDisclosureBezelStyle,\n    NSBezelStyleShadowlessSquare = NSShadowlessSquareBezelStyle,\n    NSBezelStyleCircular = NSCircularBezelStyle,\n    NSBezelStyleTexturedSquare = NSTexturedSquareBezelStyle,\n    NSBezelStyleHelpButton = NSHelpButtonBezelStyle,\n    NSBezelStyleSmallSquare = NSSmallSquareBezelStyle,\n    NSBezelStyleTexturedRounded = NSTexturedRoundedBezelStyle,\n    NSBezelStyleRoundRect = NSRoundRectBezelStyle,\n    NSBezelStyleRecessed = NSRecessedBezelStyle,\n    NSBezelStyleRoundedDisclosure = NSRoundedDisclosureBezelStyle,\n    NSBezelStyleInline = NSInlineBezelStyle,"
+        }
+      ]
+    },
+    {
+      "id": "appkit-accessibility-protocols-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAccessibility.h",
+      "sha256": "dd2607f8800a6ea9d900129566bf590ef070f5dd9af2b575b4817d715e5e8f38",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAccessibility.h"
+      ],
+      "replacements": [
+        {
+          "old": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);",
+          "new": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 role protocols, so a class can declare that it adopts them. They are compile-time only: 10.9's\n   accessibility asks through accessibilityAttributeValue: and friends, never through these, so a class must\n   still answer there to be accessible on 10.9. */\n@protocol NSAccessibilityElement <NSObject>\n@required\n- (NSRect)accessibilityFrame;\n- (id)accessibilityParent;\n@optional\n- (BOOL)isAccessibilityFocused;\n- (NSString *)accessibilityIdentifier;\n@end\n@protocol NSAccessibilityGroup <NSAccessibilityElement>\n@end\n@protocol NSAccessibilityButton <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityLabel;\n- (BOOL)accessibilityPerformPress;\n@end\n@protocol NSAccessibilitySwitch <NSAccessibilityButton>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (BOOL)accessibilityPerformIncrement;\n- (BOOL)accessibilityPerformDecrement;\n@end\n@protocol NSAccessibilityRadioButton <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityCheckBox <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityStaticText <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (NSAttributedString *)accessibilityAttributedStringForRange:(NSRange)range;\n- (NSRange)accessibilityVisibleCharacterRange;\n@end\n@protocol NSAccessibilityNavigableStaticText <NSAccessibilityStaticText>\n@required\n- (NSString *)accessibilityStringForRange:(NSRange)range;\n- (NSInteger)accessibilityLineForIndex:(NSInteger)index;\n- (NSRange)accessibilityRangeForLine:(NSInteger)lineNumber;\n- (NSRect)accessibilityFrameForRange:(NSRange)range;\n@end"
+        }
+      ]
+    },
+    {
+      "id": "foundation-filemanager-keys-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileManager.h",
+      "sha256": "f8012746cc99d4fb8a2dad36e070ad2fb3432385abd67ef3bbd93539bfc3e6df",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSFileManager.h"
+      ],
+      "replacements": [
+        {
+          "old": "@class NSArray, NSData, NSDate, NSDirectoryEnumerator, NSError, NSNumber;",
+          "new": "@class NSArray, NSData, NSDate, NSDirectoryEnumerator, NSError, NSNumber;\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names of the NSString keys and values of a file attributes dictionary. */\ntypedef NSString * NSFileAttributeKey;\ntypedef NSString * NSFileAttributeType;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-window-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+      "sha256": "677557c70c2cdb6ade4ce7dd9ba642544d3661a1e774ee61226204953b4a6743",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWindow : NSResponder",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n/* 10.12: callers check respondsToSelector:@selector(setTabbingMode:) first. */\ntypedef NS_ENUM(NSInteger, NSWindowTabbingMode) {\n    NSWindowTabbingModeAutomatic,\n    NSWindowTabbingModePreferred,\n    NSWindowTabbingModeDisallowed\n};\n@class NSTitlebarAccessoryViewController;\n\n@interface NSWindow : NSResponder"
+        },
+        {
+          "old": "+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;",
+          "new": "/* Recaulk: 10.10; callers check respondsToSelector: first. */\n- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)childViewController __attribute__((availability(macosx,introduced=10.10)));\n@property NSWindowTabbingMode tabbingMode __attribute__((availability(macosx,introduced=10.12)));\n\n+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;"
+        },
+        {
+          "old": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif",
+          "new": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values; the panel masks are NSPanel.h's (10.9's NSUtilityWindowMask and kin). */\nenum {\n    NSWindowStyleMaskBorderless = NSBorderlessWindowMask,\n    NSWindowStyleMaskTitled = NSTitledWindowMask,\n    NSWindowStyleMaskClosable = NSClosableWindowMask,\n    NSWindowStyleMaskMiniaturizable = NSMiniaturizableWindowMask,\n    NSWindowStyleMaskResizable = NSResizableWindowMask,\n    NSWindowStyleMaskTexturedBackground = NSTexturedBackgroundWindowMask,\n    NSWindowStyleMaskUnifiedTitleAndToolbar = NSUnifiedTitleAndToolbarWindowMask,\n    NSWindowStyleMaskFullScreen = NSFullScreenWindowMask,\n    NSWindowStyleMaskUtilityWindow = 1 << 4,\n    NSWindowStyleMaskDocModalWindow = 1 << 6,\n    NSWindowStyleMaskNonactivatingPanel = 1 << 7,\n    NSWindowStyleMaskHUDWindow = 1 << 13\n};"
+        }
+      ]
+    },
+    {
+      "id": "foundation-filecoordinator-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileCoordinator.h",
+      "sha256": "953ab6cbc689fe24155e2f1e3ce8ec60d648a1dae28637417abc1fcad1b5b88e",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSFileCoordinator.h"
+      ],
+      "replacements": [
+        {
+          "old": "    NSFileCoordinatorReadingResolvesSymbolicLink = 1 << 1\n",
+          "new": "    NSFileCoordinatorReadingResolvesSymbolicLink = 1 << 1,\n\n    /* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n    /* 10.10: 10.9's NSFileCoordinator does not know them, so a caller checks @available first. */\n    NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly __attribute__((availability(macosx,introduced=10.10))) = 1 << 2,\n    NSFileCoordinatorReadingForUploading __attribute__((availability(macosx,introduced=10.10))) = 1 << 3\n"
         }
       ]
     }

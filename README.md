@@ -521,7 +521,9 @@ code compiled is the same:
 
 - `appkit-event-v2`: `appkit-event-stage-v1` plus `NSEventType*`, `NSEventMask*` (with `NSEventMaskAny`),
   `NSEventModifierFlags` and `NSEventModifierFlag*`;
-- `appkit-window-v2`: `appkit-window-v1` plus `NSWindowStyleMask*`, including the panel masks;
+- `appkit-window-v2`: `appkit-window-v1` plus `NSWindowStyleMask*`, including the panel masks, and
+  `NSWindowTabbingMode` with `tabbingMode` at its 10.12 availability (a caller checks
+  `respondsToSelector:@selector(setTabbingMode:)` first);
 - `appkit-cell-properties-v2`: `appkit-cell-properties-v1` plus `NSControlSize*`;
 - `appkit-compositing-v1`: `NSCompositingOperation*`;
 - `appkit-alert-style-v1`: `NSAlertStyle*`;
@@ -529,6 +531,17 @@ code compiled is the same:
   they keep the enumeration's type.
 
 Each v2 edits the same header as its v1, so a target selects one or the other.
+
+`appkit-accessibility-protocols-v1` declares the 10.10 role protocols (`NSAccessibilityElement`,
+`NSAccessibilityGroup`, `NSAccessibilityButton`, `NSAccessibilitySwitch`, `NSAccessibilityRadioButton`,
+`NSAccessibilityCheckBox`, `NSAccessibilityStaticText` and `NSAccessibilityNavigableStaticText`), so a class can
+declare that it adopts them. They are compile-time only: 10.9's accessibility never asks through them, so a class
+must still answer through `accessibilityAttributeValue:` and its kin to be accessible on 10.9.
+
+`foundation-filemanager-keys-v1` adds the 10.12 typedefs `NSFileAttributeKey` and `NSFileAttributeType`
+(`NSString *`). `foundation-filecoordinator-v1` adds `NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly`
+and `NSFileCoordinatorReadingForUploading` at their 10.10 availability; 10.9's `NSFileCoordinator` does not know
+them, so a caller checks `@available` first.
 
 APIs 10.9 does not have at all are declared with their availability, so references to them are weak
 and a binary using them still loads on 10.9. A caller must check that they exist before using them:
