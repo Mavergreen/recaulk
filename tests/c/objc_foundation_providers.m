@@ -7,6 +7,10 @@
 - (NSString *)languageCode;
 - (NSString *)countryCode;
 @end
+@interface NSString (RecaulkProviderTest)
+- (BOOL)containsString:(NSString *)str;
+- (BOOL)localizedCaseInsensitiveContainsString:(NSString *)str;
+@end
 
 static int failures;
 #define CHECK(cond, ...) do { if (!(cond)) { printf("FAIL: " __VA_ARGS__); printf("\n"); failures++; } } while (0)
@@ -23,17 +27,31 @@ static void codes(NSString *identifier, NSString *language, NSString *country) {
 	CHECK(same([l countryCode], [l objectForKey:NSLocaleCountryCode]), "%s countryCode disagrees with objectForKey:", [identifier UTF8String]);
 }
 
+static void contains(void) {
+	NSString *s = @"Hello, Wörld";
+	CHECK([s containsString:@"lo, W"], "containsString: misses a substring");
+	CHECK(![s containsString:@"hello"], "containsString: ignores case");
+	CHECK(![s containsString:@""], "containsString: finds the empty string, which rangeOfString: does not");
+	CHECK([[NSMutableString stringWithString:s] containsString:@"Wör"], "a mutable string's containsString: misses a substring");
+	CHECK([s localizedCaseInsensitiveContainsString:@"WÖRLD"], "localizedCaseInsensitiveContainsString: misses a substring in another case");
+	CHECK(![s localizedCaseInsensitiveContainsString:@"world!"], "localizedCaseInsensitiveContainsString: finds what is not there");
+	CHECK(![s localizedCaseInsensitiveContainsString:@""], "localizedCaseInsensitiveContainsString: finds the empty string");
+}
+
 int main(int argc, char **argv) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	int rooted = argc > 1 && strcmp(argv[1], "rooted") == 0;
 	BOOL responds = [NSLocale instancesRespondToSelector:@selector(languageCode)]
-	             && [NSLocale instancesRespondToSelector:@selector(countryCode)];
+	             && [NSLocale instancesRespondToSelector:@selector(countryCode)]
+	             && [NSString instancesRespondToSelector:@selector(containsString:)]
+	             && [NSString instancesRespondToSelector:@selector(localizedCaseInsensitiveContainsString:)];
 	if (!rooted) {
 		/* platform: 10.9's NSLocale has neither method, so an unrooted program must not gain them. */
 		CHECK(!responds, "the providers activated without their root");
 	} else {
 		CHECK(responds, "the rooted providers did not activate");
 		if (responds) {
+			contains();
 			codes(@"en_US", @"en", @"US");
 			codes(@"fr_CA", @"fr", @"CA");
 			codes(@"fr", @"fr", nil);

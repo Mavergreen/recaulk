@@ -55,6 +55,28 @@
       "activation_root": "__recaulk_objc_activate_foundation",
       "required_frameworks": ["Foundation"],
       "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nsstring.contains-string.v1",
+      "class": "NSString",
+      "method_kind": "-",
+      "selector": "containsString:",
+      "encoding": "c24@0:8@16",
+      "implementation_symbol": "__recaulk_objc_string_contains_string",
+      "activation_root": "__recaulk_objc_activate_foundation",
+      "required_frameworks": ["Foundation"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nsstring.localized-case-insensitive-contains-string.v1",
+      "class": "NSString",
+      "method_kind": "-",
+      "selector": "localizedCaseInsensitiveContainsString:",
+      "encoding": "c24@0:8@16",
+      "implementation_symbol": "__recaulk_objc_string_localized_case_insensitive_contains_string",
+      "activation_root": "__recaulk_objc_activate_foundation",
+      "required_frameworks": ["Foundation"],
+      "framework_policy": "strong-linked-before-root"
     }
   ]
 }

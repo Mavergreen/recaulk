@@ -66,7 +66,9 @@ Foundation's methods have a root of their own, which needs Foundation alone:
 `NSLocale`'s `languageCode` and `countryCode` (10.12), the answers
 `objectForKey:` gives for `NSLocaleLanguageCode` and `NSLocaleCountryCode`, except
 that `languageCode`, which Apple declares non-null, is `@""` where 10.9 has no
-language (`""`, `_US`).
+language (`""`, `_US`); and `NSString`'s `containsString:` and
+`localizedCaseInsensitiveContainsString:` (10.10), through `rangeOfString:` (the second with
+`NSCaseInsensitiveSearch` in the current locale), so like 10.10's neither finds the empty string.
 
 ```sh
 cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
@@ -555,6 +557,9 @@ and a binary using them still loads on 10.9. A caller must check that they exist
 run time (`webkit-wkwebview-v1`), and `LSCopyDefaultApplicationURLForURL`
 (`launchservices-default-app-v1`). Linking such a reference needs the linker told that the symbol may
 stay undefined, since 10.9's frameworks do not export it.
+
+`foundation-string-contains-v1` declares the two `NSString` methods with their 10.10 availability, which
+that root provides on 10.9.
 
 `foundation-locale-codes-v1` declares `NSLocale`'s `languageCode` and `countryCode` with their 10.12
 availability; `librecaulk-objc.a`'s Foundation root provides them on 10.9 (see Objective-C methods).

@@ -26,7 +26,12 @@ providers() {
     LOCALE_LANGUAGE_CODE recaulk.nslocale.language-code.v1 NSLocale - languageCode '@16@0:8' \
     __recaulk_objc_locale_language_code __recaulk_objc_activate_foundation Foundation \
     LOCALE_COUNTRY_CODE recaulk.nslocale.country-code.v1 NSLocale - countryCode '@16@0:8' \
-    __recaulk_objc_locale_country_code __recaulk_objc_activate_foundation Foundation
+    __recaulk_objc_locale_country_code __recaulk_objc_activate_foundation Foundation \
+    STRING_CONTAINS recaulk.nsstring.contains-string.v1 NSString - containsString: 'c24@0:8@16' \
+    __recaulk_objc_string_contains_string __recaulk_objc_activate_foundation Foundation \
+    STRING_CONTAINS_CI recaulk.nsstring.localized-case-insensitive-contains-string.v1 NSString - \
+    localizedCaseInsensitiveContainsString: 'c24@0:8@16' \
+    __recaulk_objc_string_localized_case_insensitive_contains_string __recaulk_objc_activate_foundation Foundation
 }
 # spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for it
 probe_source() {
@@ -79,6 +84,26 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 - (NSString *)countryCode { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsstring.contains-string.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (BOOL)containsString:(NSString *)str;
+@end
+@implementation RecaulkProviderEncoding
+- (BOOL)containsString:(NSString *)str { return NO; }
+@end
+EOF
+    ;;
+    recaulk.nsstring.localized-case-insensitive-contains-string.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (BOOL)localizedCaseInsensitiveContainsString:(NSString *)str;
+@end
+@implementation RecaulkProviderEncoding
+- (BOOL)localizedCaseInsensitiveContainsString:(NSString *)str { return NO; }
 @end
 EOF
     ;;
