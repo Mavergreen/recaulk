@@ -516,6 +516,20 @@ so the code compiled is the same. They also add the newer names of existing cons
 (`NSTextAlignmentRight`, `NSRectEdgeMinY`, `NSWindowStyleMask`) and the `NSSearchFieldDelegate`
 protocol.
 
+The 10.12 SDK renamed many AppKit constants; these recipes add the new names with the 10.9 values, so the
+code compiled is the same:
+
+- `appkit-event-v2`: `appkit-event-stage-v1` plus `NSEventType*`, `NSEventMask*` (with `NSEventMaskAny`),
+  `NSEventModifierFlags` and `NSEventModifierFlag*`;
+- `appkit-window-v2`: `appkit-window-v1` plus `NSWindowStyleMask*`, including the panel masks;
+- `appkit-cell-properties-v2`: `appkit-cell-properties-v1` plus `NSControlSize*`;
+- `appkit-compositing-v1`: `NSCompositingOperation*`;
+- `appkit-alert-style-v1`: `NSAlertStyle*`;
+- `appkit-buttoncell-names-v1`: `NSButtonType*` and `NSBezelStyle*`, as members of their enumerations, so
+  they keep the enumeration's type.
+
+Each v2 edits the same header as its v1, so a target selects one or the other.
+
 APIs 10.9 does not have at all are declared with their availability, so references to them are weak
 and a binary using them still loads on 10.9. A caller must check that they exist before using them:
 `NSEvent.stage`, `NSTextField.placeholderString`, `NSTitlebarAccessoryViewController` and
