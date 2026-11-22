@@ -21,6 +21,9 @@ objc_only=AppKit/NSPasteboard.h
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all.o" || bad "the headers do not compile together"
+# platform: a C90 unit has no inline keyword: libgit2's own build sets C_STANDARD 90 (rust, clang22 .22, 2026-11-21)
+"$CC" $FLAGS -arch x86_64 -std=c90 -Wall -Werror -I"$inc" -c "$d/all.c" -o "$d/all90.o" > "$d/c90.log" 2>&1 \
+  || bad "the headers do not compile as C90: $(grep -m1 'error:' "$d/c90.log" | sed 's|.*/include/recaulk/||')"
 # spec: README.md "How to use" -- a wrapper names <sys/cdefs.h> itself: under -fmodules (swiftc's importer, an
 #       Objective-C @import) a macro reaches a header only from a module it imports, never through another header
 # platform: the 10.9 SDK names its module maps module.map, which clang22 calls deprecated
