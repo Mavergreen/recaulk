@@ -50,9 +50,19 @@ if [ -s "$tmp/bad1" ]; then
   fail=1
 fi
 
+# spec: build/dylib-only-backfills.txt -- the overrides that replace nothing, each listed with its reason
+grep -v '^#' build/dylib-only-backfills.txt | awk 'NF { print "recaulk-" $1 }' > "$tmp/dylib-only"
+while IFS= read -r m; do
+  [ -f "$W/overrides/$m" ] || bad "build/dylib-only-backfills.txt lists $m, which src/overrides/ does not build"
+done < "$tmp/dylib-only"
 for o in "$W"/overrides/*.o; do
   "${NM:-nm}" -gU "$o" | awk 'NF == 3 && $2 ~ /^[A-Za-z]$/ && $3 !~ /\.eh$/ { print $3 }' > "$tmp/names"
   [ -s "$tmp/names" ] || continue
+  if grep -qxF -- "$(basename "$o")" "$tmp/dylib-only"; then
+    ! grep -qxF -f "$tmp/names" "$tmp/sdk" \
+      || bad "$(basename "$o") is in build/dylib-only-backfills.txt but replaces something 10.9 has: delete the entry"
+    continue
+  fi
   if ! grep -qxF -f "$tmp/names" "$tmp/sdk"; then
     bad "$(basename "$o") replaces nothing 10.9 has: it is a back-fill; move it to src/backfills/"
   fi

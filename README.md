@@ -214,6 +214,22 @@ symbol, so it is not forwarded: on 10.13 and later a program still gets Recaulk'
 a different address from AppKit's. Compare it with `isEqual:` (or `CFEqual`), never `==`. Through
 `include/recaulk`, `<AppKit/NSPasteboard.h>` declares it where the SDK does not.
 
+## Empty collection literals
+
+A newer SDK's clang compiles `@{}` and `@[]` to the address of CoreFoundation's shared empty collections,
+`___NSDictionary0__struct` and `___NSArray0__struct`, which 10.9's CoreFoundation lacks. `libRecaulkSystem.dylib`
+defines both; `librecaulk.a` does not, since a member there may not run code at load
+(`build/dylib-only-backfills.txt`), and a program built against the 10.9 SDK never references them. At load, a constructor builds in each an instance of the class 10.9's own
+empty `NSDictionary` or `NSArray` has (`objc_constructInstance`), so each is an immutable empty collection that
+nothing owns and nothing frees. A binary built against a newer SDK reaches them with Drydock:
+
+```
+import  redirect  ___NSDictionary0__struct  /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation  /usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib
+```
+
+They are data, so they are not forwarded: on newer macOS a program still gets Recaulk's empty collection, an
+equal one at a different address from CoreFoundation's. Compare with `isEqual:` or `count`, never `==`.
+
 ## Core Graphics
 
 `CGColorCreateSRGB` makes its color in the named `kCGColorSpaceSRGB` space, which 10.9 has, with

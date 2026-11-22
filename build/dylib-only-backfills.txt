@@ -1,0 +1,4 @@
+# <member> <why>: src/overrides/ members that replace nothing 10.9 has. Each needs a constructor, which
+# librecaulk.a may not carry (tests/rule-backfills-add-only.sh), so only libRecaulkSystem.dylib has it.
+empty_dictionary.o ___NSDictionary0__struct is data a constructor fills; a binary reaches it by Drydock's import redirect
+empty_array.o ___NSArray0__struct is data a constructor fills; a binary reaches it by Drydock's import redirect
