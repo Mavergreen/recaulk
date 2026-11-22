@@ -157,7 +157,9 @@ probe noownercopy c '#include <sys/clonefile.h>' '_Static_assert(CLONE_NOOWNERCO
 #       through them; Foundation reaches <dispatch/dispatch.h>
 probe dispatchsdk m '#import <Foundation/Foundation.h>' '#include <dispatch/dispatch.h>' \
   'void recaulk_probe(dispatch_queue_t q) { dispatch_activate(q); dispatch_async_and_wait(q, ^{}); (void)dispatch_block_create(DISPATCH_BLOCK_BARRIER, ^{});' \
-  '  dispatch_queue_global_t g = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0); (void)g; dispatch_apply(2, DISPATCH_APPLY_AUTO, ^(size_t i) { (void)i; }); }'
+  '  dispatch_queue_global_t g = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0); (void)g; dispatch_apply(2, DISPATCH_APPLY_AUTO, ^(size_t i) { (void)i; });' \
+  '  dispatch_block_t b = dispatch_block_create(0, ^{}); dispatch_cancel(b); (void)dispatch_testcancel(b);' \
+  '  dispatch_source_t s = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, q); dispatch_cancel(s); (void)dispatch_testcancel(s); }'
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/dispatchsdk.m" \
   || bad "<dispatch/dispatch.h> through include/recaulk does not declare the dispatch back-fills"
 "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
@@ -170,6 +172,18 @@ for h in $(cd src/include && find . -name '*.h' | sed 's|^\./||' | LC_ALL=C sort
   "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
     -Wall -Werror -isystem "$inc" -fsyntax-only "$d/newsdk.m" > "$d/newsdk.out" 2>&1 \
     || { bad "with the 11.3 SDK, <$h> through include/recaulk does not compile:"; grep 'error:' "$d/newsdk.out" | head -3 | sed 's/^/    /'; }
+done
+
+# spec: README.md "Declarations" -- ntohll and htonll, which the 10.10 SDK's <sys/_endian.h> defines, through every
+#       header that reaches it
+for h in arpa/inet.h netinet/in.h machine/endian.h; do
+  probe endian c "#include <$h>" '#include <stdint.h>' \
+    'uint64_t recaulk_probe(uint64_t x) { uint64_t y = x; HTONLL(y); return ntohll(htonll(x)) + y; }'
+  "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -c "$d/endian.c" -o "$d/endian.o" \
+    || bad "<$h> through include/recaulk does not define ntohll, htonll and HTONLL"
+  "$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+    -Wall -Werror -isystem "$inc" -c "$d/endian.c" -o "$d/endian113.o" \
+    || bad "with the 11.3 SDK, which defines ntohll itself, <$h> through include/recaulk does not compile"
 done
 
 probe pbfileurl m '#import <AppKit/AppKit.h>' 'NSString *recaulk_probe(void) { return NSPasteboardTypeFileURL; }'

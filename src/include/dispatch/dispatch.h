@@ -111,6 +111,14 @@ void dispatch_block_cancel(dispatch_block_t block);
 intptr_t dispatch_block_testcancel(dispatch_block_t block);
 intptr_t dispatch_block_wait(dispatch_block_t block, dispatch_time_t timeout);
 void dispatch_block_notify(dispatch_block_t block, dispatch_queue_t queue, dispatch_block_t notification_block);
+/* The 10.10 SDK's generic cancel and test, for a block or a source; 10.10 also exports dispatch_cancel itself,
+   which a call through these macros never reaches. */
+#if __has_extension(c_generic_selections) && !defined(dispatch_cancel)
+#define dispatch_cancel(object) \
+    _Generic((object), dispatch_block_t: dispatch_block_cancel, dispatch_source_t: dispatch_source_cancel)((object))
+#define dispatch_testcancel(object) \
+    _Generic((object), dispatch_block_t: dispatch_block_testcancel, dispatch_source_t: dispatch_source_testcancel)((object))
+#endif
 #endif
 #endif
 #if !defined(__MAC_OS_X_VERSION_MAX_ALLOWED) || __MAC_OS_X_VERSION_MAX_ALLOWED < 101200

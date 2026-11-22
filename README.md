@@ -171,6 +171,11 @@ defines `CLONE_NOOWNERCOPY` (0x0002, from the 10.13 SDK), which changes nothing 
 default, or with `_DARWIN_C_SOURCE`. Under a bare `_POSIX_C_SOURCE` neither is defined, so a strict-POSIX
 `#ifdef MAP_ANONYMOUS` takes its other branch rather than one that names an undeclared `MAP_ANON`.
 
+`<sys/_endian.h>`, and so `<arpa/inet.h>`, `<netinet/in.h>` and `<machine/endian.h>`, defines the 10.10 SDK's
+`ntohll`, `htonll`, `NTOHLL` and `HTONLL` beside `ntohl`, under the same conditions. `<dispatch/dispatch.h>`
+defines its `dispatch_cancel` and `dispatch_testcancel`, the macros that pick a block's or a source's call; the
+function 10.10 also exports under that name stays undeclared, since no call through the macros reaches it.
+
 ## C++ exceptions
 
 C++ code linked with `librecaulk.a` catches pointers and member pointers by the current rules on
