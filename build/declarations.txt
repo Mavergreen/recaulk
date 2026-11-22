@@ -50,6 +50,7 @@ getattrlistat unistd.h
 getentropy sys/random.h
 linkat unistd.h
 LSCopyDefaultApplicationURLForURL CoreServices/CoreServices.h
+LSCopyApplicationURLsForBundleIdentifier CoreServices/CoreServices.h
 mach_approximate_time mach/mach_time.h
 mach_continuous_approximate_time mach/mach_time.h
 mach_continuous_time mach/mach_time.h

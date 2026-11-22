@@ -17,6 +17,7 @@ extern "C" {
 
 /* spec: README.md, "Declarations"; declared as Apple's LSInfo.h gives it */
 CFURLRef LSCopyDefaultApplicationURLForURL(CFURLRef inURL, LSRolesMask inRoleMask, CFErrorRef *outError);
+CFArrayRef LSCopyApplicationURLsForBundleIdentifier(CFStringRef inBundleIdentifier, CFErrorRef *outError);
 
 #ifdef __cplusplus
 }

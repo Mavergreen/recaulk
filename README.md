@@ -173,6 +173,10 @@ defines `CLONE_NOOWNERCOPY` (0x0002, from the 10.13 SDK), which changes nothing 
 default, or with `_DARWIN_C_SOURCE`. Under a bare `_POSIX_C_SOURCE` neither is defined, so a strict-POSIX
 `#ifdef MAP_ANONYMOUS` takes its other branch rather than one that names an undeclared `MAP_ANON`.
 
+`LSCopyApplicationURLsForBundleIdentifier` (10.10), declared through `<CoreServices/CoreServices.h>`, returns
+the one application 10.9's LaunchServices would launch for the bundle identifier (`LSFindApplicationForInfo`),
+not every copy, or NULL and an OSStatus-domain error such as `kLSApplicationNotFoundErr`.
+
 `<sys/_endian.h>`, and so `<arpa/inet.h>`, `<netinet/in.h>` and `<machine/endian.h>`, defines the 10.10 SDK's
 `ntohll`, `htonll`, `NTOHLL` and `HTONLL` beside `ntohl`, under the same conditions. `<dispatch/dispatch.h>`
 defines its `dispatch_cancel` and `dispatch_testcancel`, the macros that pick a block's or a source's call; the
