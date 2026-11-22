@@ -221,6 +221,13 @@ symbol, so it is not forwarded: on 10.13 and later a program still gets Recaulk'
 a different address from AppKit's. Compare it with `isEqual:` (or `CFEqual`), never `==`. Through
 `include/recaulk`, `<AppKit/NSPasteboard.h>` declares it where the SDK does not.
 
+The same way, it defines the appearance names `NSAppearanceNameVibrantDark` and `NSAppearanceNameVibrantLight`
+(10.10), `NSAppearanceNameDarkAqua` and the four `NSAppearanceNameAccessibilityHighContrast` names (10.14), each
+its own name as a string, as AppKit's are. 10.9 has none of those appearances, so `+[NSAppearance
+appearanceNamed:]` still returns nil for each: a program can compare names with them, not draw with them.
+`<AppKit/NSAppearance.h>` declares them. And it defines `NSEdgeInsetsZero` (10.10, Foundation's there), which
+`<AppKit/NSLayoutConstraint.h>`, the 10.9 home of `NSEdgeInsets`, declares.
+
 ## Empty collection literals
 
 A newer SDK's clang compiles `@{}` and `@[]` to the address of CoreFoundation's shared empty collections,

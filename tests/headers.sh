@@ -11,12 +11,12 @@ trap 'rm -rf "$d"' EXIT
 inc="$T/include/recaulk"
 layer=_recaulk_macports
 cxx_only=cxxabi.h
-objc_only=AppKit/NSPasteboard.h
+objc_only='AppKit/NSAppearance.h AppKit/NSLayoutConstraint.h AppKit/NSPasteboard.h'
 {
   echo '#include <MacportsLegacySupport.h>'
   echo '#include <os/lock.h>'
   echo '#include <time.h>'
-  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx -e "$cxx_only" -e "$objc_only" | sed 's|.*|#include <&>|'
+  (cd src/include && find . -type f | sed 's|^\./||' | LC_ALL=C sort) | grep -vx -e "$cxx_only" $(printf -- '-e %s ' $objc_only) | sed 's|.*|#include <&>|'
   echo 'int main(void){return 0;}'
 } > "$d/all.c"
 [ -n "$(find src/include -type f 2>/dev/null)" ] || bad "src/include holds no headers"
@@ -39,7 +39,7 @@ done
 printf '#include <%s>\nint main() { return 0; }\n' $cxx_only > "$d/cxx.cpp"
 "$CXX" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/cxx.cpp" -o "$d/cxx.o" || bad "the C++-only headers ($cxx_only) do not compile"
 # platform: the 10.9 SDK's AppKit headers, which Recaulk's wrap, are Objective-C only
-printf '#include <%s>\nint main(void) { return 0; }\n' $objc_only > "$d/objc.m"
+{ printf '#include <%s>\n' $objc_only; echo 'int main(void) { return 0; }'; } > "$d/objc.m"
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/objc.m" -o "$d/objc.o" || bad "the Objective-C-only headers ($objc_only) do not compile"
 
 mp="$W/mp-headers/include/LegacySupport"
@@ -185,6 +185,15 @@ for h in arpa/inet.h netinet/in.h machine/endian.h; do
     -Wall -Werror -isystem "$inc" -c "$d/endian.c" -o "$d/endian113.o" \
     || bad "with the 11.3 SDK, which defines ntohll itself, <$h> through include/recaulk does not compile"
 done
+
+probe appkitdata m '#import <AppKit/AppKit.h>' \
+  'NSString *recaulk_names(void) { return NSAppearanceNameVibrantDark ?: NSAppearanceNameAccessibilityHighContrastVibrantDark; }' \
+  'NSEdgeInsets recaulk_zero(void) { return NSEdgeInsetsZero; }'
+"$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/appkitdata.m" \
+  || bad "<AppKit/AppKit.h> through include/recaulk does not declare the appearance names and NSEdgeInsetsZero"
+"$CC" --no-default-config --target=x86_64-apple-macos10.15 -isysroot "$SDK113" -mmacosx-version-min=10.15 -arch x86_64 \
+  -Wall -Werror -isystem "$inc" -fsyntax-only "$d/appkitdata.m" \
+  || bad "with the 11.3 SDK, which declares the appearance names and NSEdgeInsetsZero itself, <AppKit/AppKit.h> through include/recaulk does not compile"
 
 probe pbfileurl m '#import <AppKit/AppKit.h>' 'NSString *recaulk_probe(void) { return NSPasteboardTypeFileURL; }'
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -isystem "$inc" -fsyntax-only "$d/pbfileurl.m" \
