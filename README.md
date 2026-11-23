@@ -619,7 +619,11 @@ v1 stays for the consumers that pinned it, and new ones use v2.
 
 `tests/sdk-metadata-compile.sh` proves each recipe with its probe in `tests/fixtures/sdk-probes/<id>.m`:
 the probe compiles with `-Werror` through the recipe's overlay, made by shipyard's own module, and fails
-to compile without it. A probe's `// weak:` symbols must be weak references in its object file.
+to compile without it. A probe's `// weak:` symbols must be weak references in its object file. A
+`// ast: FILTER REGEX` line proves what compiling cannot, such as a getter redeclared as a property or a
+bridged CF type. The line holds when clang's AST dump of the declarations named FILTER matches REGEX
+through the overlay but not on the SDK alone. A probe with such lines may compile without its recipe. The
+probes run `SDK_METADATA_JOBS` at a time (4 by default), and `SDK_METADATA_ONLY` names the ids to run.
 
 `build/stage-sdk-metadata.sh` validates the file (`build/sdk-metadata-validate.cmake`, through
 `shipyard-cmake -P`) and stages it alone; malformed data stages nothing.
