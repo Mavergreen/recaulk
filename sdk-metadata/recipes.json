@@ -2752,6 +2752,10 @@
           "new": "@property (readonly) NSUInteger count;"
         },
         {
+          "old": "@interface NSDictionary (NSExtendedDictionary)",
+          "new": "@interface NSDictionary<KeyType, ObjectType> (NSExtendedDictionary)"
+        },
+        {
           "old": "- (NSArray *)allKeys;",
           "new": "@property (readonly, copy) NSArray *allKeys;"
         },
@@ -2766,6 +2770,10 @@
         {
           "old": "- (NSString *)descriptionInStringsFileFormat;",
           "new": "@property (readonly, copy) NSString *descriptionInStringsFileFormat;"
+        },
+        {
+          "old": "- (id)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);",
+          "new": "- (ObjectType)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);"
         },
         {
           "old": "@interface NSMutableDictionary : NSDictionary",
@@ -4980,12 +4988,20 @@
           "new": "@property (readonly) NSUInteger count;"
         },
         {
+          "old": "@interface NSOrderedSet (NSExtendedOrderedSet)",
+          "new": "@interface NSOrderedSet<ObjectType> (NSExtendedOrderedSet)"
+        },
+        {
           "old": "- (id)firstObject;",
           "new": "@property (readonly, nonatomic) id firstObject;"
         },
         {
           "old": "- (id)lastObject;",
           "new": "@property (readonly, nonatomic) id lastObject;"
+        },
+        {
+          "old": "- (id)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);",
+          "new": "- (ObjectType)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);"
         },
         {
           "old": "- (NSOrderedSet *)reversedOrderedSet;",

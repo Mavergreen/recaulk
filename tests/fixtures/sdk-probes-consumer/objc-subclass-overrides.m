@@ -39,3 +39,6 @@ int use(NSURL *u, NSError *e, NSArray *a, CFStringRef s) {
   return (int)[c count] + (int)[i count] + (u.fileURL ? 1 : 0) + (int)[[NSProcessInfo processInfo] processorCount]
        + (int)[(NSString *)s length] + (NSRectEdgeMinX == NSMinXEdge) + (NSDateComponentUndefined > 0);
 }
+NSUInteger subscripts(NSDictionary<NSString *, NSString *> *d, NSOrderedSet<NSString *> *o, NSArray<NSString *> *a) {
+  return d[@"k"].length + o[0].length + a[0].length;
+}

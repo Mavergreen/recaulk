@@ -3088,6 +3088,12 @@
     "setter_offset": null
    },
    {
+    "kind": "replace",
+    "old": "@interface NSDictionary (NSExtendedDictionary)",
+    "offset": 439,
+    "new": "@interface NSDictionary<KeyType, ObjectType> (NSExtendedDictionary)"
+   },
+   {
     "kind": "property",
     "name": "allKeys",
     "class": "NSDictionary",
@@ -3134,6 +3140,12 @@
     "property": "@property (readonly, copy) NSString *descriptionInStringsFileFormat;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);",
+    "offset": 1320,
+    "new": "- (ObjectType)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDistantObject.h": [
@@ -6897,6 +6909,12 @@
     "setter_offset": null
    },
    {
+    "kind": "replace",
+    "old": "@interface NSOrderedSet (NSExtendedOrderedSet)",
+    "offset": 560,
+    "new": "@interface NSOrderedSet<ObjectType> (NSExtendedOrderedSet)"
+   },
+   {
     "kind": "property",
     "name": "firstObject",
     "class": "NSOrderedSet",
@@ -6919,6 +6937,12 @@
     "property": "@property (readonly, nonatomic) id lastObject;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);",
+    "offset": 1040,
+    "new": "- (ObjectType)objectAtIndexedSubscript:(NSUInteger)idx NS_AVAILABLE(10_8, 6_0);"
    },
    {
     "kind": "property",

@@ -257,6 +257,14 @@
   {
    "class": "NSURLRequest",
    "selector": "allHTTPHeaderFields"
+  },
+  {
+   "class": "NSDictionary",
+   "selector": "objectForKeyedSubscript:"
+  },
+  {
+   "class": "NSOrderedSet",
+   "selector": "objectAtIndexedSubscript:"
   }
  ],
  "enum_shapes": [
@@ -291,6 +299,16 @@
    "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCalendar.h",
    "old": "enum {\n\tNSDateComponentUndefined = NSIntegerMax,",
    "new": "enum : NSInteger {\n\tNSDateComponentUndefined = NSIntegerMax,"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDictionary.h",
+   "old": "@interface NSDictionary (NSExtendedDictionary)",
+   "new": "@interface NSDictionary<KeyType, ObjectType> (NSExtendedDictionary)"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOrderedSet.h",
+   "old": "@interface NSOrderedSet (NSExtendedOrderedSet)",
+   "new": "@interface NSOrderedSet<ObjectType> (NSExtendedOrderedSet)"
   }
  ],
  "inserts": [
