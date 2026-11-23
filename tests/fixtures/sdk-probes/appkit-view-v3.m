@@ -17,3 +17,4 @@ NSView *probe(NSRect r) {
         return v;
     return e;
 }
+NSAutoresizingMaskOptions probeMaskOptions(NSView *v) { return [v autoresizingMask] | NSViewWidthSizable; }

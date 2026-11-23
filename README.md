@@ -547,6 +547,13 @@ code compiled is the same:
   `respondsToSelector:@selector(setTabbingMode:)` first);
 - `appkit-window-v3`: `appkit-window-v2` plus `NSWindowCollectionBehaviorFullScreenNone` (`1 << 9`), which
   later SDKs give 10.7 and 10.9's omits;
+- `appkit-window-v4`: `appkit-window-v3` plus the 10.12 typedef `NSWindowLevel` (`NSInteger`) and `isVisible`
+  as `@property (readonly, getter=isVisible) BOOL visible`;
+- `appkit-application-v1`: `NSApp` typed `NSApplication *`, as later SDKs type it, so `NSApp.keyWindow` compiles;
+- `appkit-tabviewitem-v1`: `-[NSTabViewItem view]` typed `NSView *`;
+- `appkit-nib-v1`: the 10.12 typedef `NSNibName` (`NSString *`);
+- `appkit-accessibility-v4`: `appkit-accessibility-v3` plus the 10.12 typedef `NSAccessibilityRole` (`NSString *`);
+- `appkit-attributedstring-v1`: the 10.11 typedef `NSUnderlineStyle` (`NSInteger`);
 - `appkit-cell-properties-v2`: `appkit-cell-properties-v1` plus `NSControlSize*`;
 - `appkit-cell-properties-v3`: `appkit-cell-properties-v2` plus the 10.14 names `NSBackgroundStyleNormal` and
   `NSBackgroundStyleEmphasized` (10.9's `Light` and `Dark`);
@@ -556,7 +563,8 @@ code compiled is the same:
   because 10.9 has no `NSVisualEffectView.h`. It includes its material, blending-mode and state enums, with
   the 10.11 and 10.14 materials marked as such, and `allowsVibrancy`. 10.9 has no such class, so references to
   it are weak: check `[NSVisualEffectView class]` before using it. `allowsVibrancy` is declared on the class,
-  not on `NSView` as 10.10 has it, because 10.9's `NSView` does not answer it;
+  not on `NSView` as 10.10 has it, because 10.9's `NSView` does not answer it. It also adds the 10.12 typedef
+  `NSAutoresizingMaskOptions` (`NSUInteger`);
 - `appkit-control-v2`: `appkit-control-properties-v1` and `appkit-control-single-line-v1` together;
 - `appkit-compositing-v1`: `NSCompositingOperation*`;
 - `appkit-alert-style-v1`: `NSAlertStyle*`;

@@ -8094,6 +8094,114 @@
         {
           "old": "APPKIT_EXTERN NSString *NSViewDidUpdateTrackingAreasNotification NS_AVAILABLE_MAC(10_5);",
           "new": "APPKIT_EXTERN NSString *NSViewDidUpdateTrackingAreasNotification NS_AVAILABLE_MAC(10_5);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10's NSVisualEffectView. 10.9 has no such class: its references are weak, so check\n   [NSVisualEffectView class] (or @available) before using it, and a subclass loads only where it exists. */\ntypedef NS_ENUM(NSInteger, NSVisualEffectMaterial) {\n    NSVisualEffectMaterialAppearanceBased = 0,\n    NSVisualEffectMaterialLight = 1,\n    NSVisualEffectMaterialDark = 2,\n    NSVisualEffectMaterialTitlebar = 3,\n    NSVisualEffectMaterialMenu __attribute__((availability(macosx,introduced=10.11))) = 5,\n    NSVisualEffectMaterialSheet __attribute__((availability(macosx,introduced=10.14))) = 11,\n    NSVisualEffectMaterialFullScreenUI __attribute__((availability(macosx,introduced=10.14))) = 15,\n} __attribute__((availability(macosx,introduced=10.10)));\ntypedef NS_ENUM(NSInteger, NSVisualEffectBlendingMode) {\n    NSVisualEffectBlendingModeBehindWindow,\n    NSVisualEffectBlendingModeWithinWindow,\n} __attribute__((availability(macosx,introduced=10.10)));\ntypedef NS_ENUM(NSInteger, NSVisualEffectState) {\n    NSVisualEffectStateFollowsWindowActiveState,\n    NSVisualEffectStateActive,\n    NSVisualEffectStateInactive,\n} __attribute__((availability(macosx,introduced=10.10)));\n__attribute__((availability(macosx,introduced=10.10)))\n@interface NSVisualEffectView : NSView\n@property NSVisualEffectMaterial material;\n@property NSVisualEffectBlendingMode blendingMode;\n@property NSVisualEffectState state;\n/* 10.10 declares allowsVibrancy on NSView; 10.9's NSView has no such method, so it is declared here,\n   where only a class that exists from 10.10 on can be sent it or override it. */\n@property (readonly) BOOL allowsVibrancy;\n@end"
+        },
+        {
+          "old": "// Bitset options for the autoresizingMask",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 named the autoresizingMask bits; 10.9 types them NSUInteger. */\ntypedef NSUInteger NSAutoresizingMaskOptions;\n\n// Bitset options for the autoresizingMask"
+        }
+      ]
+    },
+    {
+      "id": "appkit-window-v4",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+      "sha256": "677557c70c2cdb6ade4ce7dd9ba642544d3661a1e774ee61226204953b4a6743",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWindow : NSResponder",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 named the window level type; 10.9 types levels NSInteger. */\ntypedef NSInteger NSWindowLevel;\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n/* 10.12: callers check respondsToSelector:@selector(setTabbingMode:) first. */\ntypedef NS_ENUM(NSInteger, NSWindowTabbingMode) {\n    NSWindowTabbingModeAutomatic,\n    NSWindowTabbingModePreferred,\n    NSWindowTabbingModeDisallowed\n};\n@class NSTitlebarAccessoryViewController;\n\n@interface NSWindow : NSResponder"
+        },
+        {
+          "old": "+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;",
+          "new": "/* Recaulk: 10.10; callers check respondsToSelector: first. */\n- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)childViewController __attribute__((availability(macosx,introduced=10.10)));\n@property NSWindowTabbingMode tabbingMode __attribute__((availability(macosx,introduced=10.12)));\n\n+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;"
+        },
+        {
+          "old": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif",
+          "new": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values; the panel masks are NSPanel.h's (10.9's NSUtilityWindowMask and kin). */\nenum {\n    NSWindowStyleMaskBorderless = NSBorderlessWindowMask,\n    NSWindowStyleMaskTitled = NSTitledWindowMask,\n    NSWindowStyleMaskClosable = NSClosableWindowMask,\n    NSWindowStyleMaskMiniaturizable = NSMiniaturizableWindowMask,\n    NSWindowStyleMaskResizable = NSResizableWindowMask,\n    NSWindowStyleMaskTexturedBackground = NSTexturedBackgroundWindowMask,\n    NSWindowStyleMaskUnifiedTitleAndToolbar = NSUnifiedTitleAndToolbarWindowMask,\n    NSWindowStyleMaskFullScreen = NSFullScreenWindowMask,\n    NSWindowStyleMaskUtilityWindow = 1 << 4,\n    NSWindowStyleMaskDocModalWindow = 1 << 6,\n    NSWindowStyleMaskNonactivatingPanel = 1 << 7,\n    NSWindowStyleMaskHUDWindow = 1 << 13\n};"
+        },
+        {
+          "old": "NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8",
+          "new": "NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8, /* Recaulk: the next, from a later SDK, which gives it 10.7. */ NSWindowCollectionBehaviorFullScreenNone = 1 << 9"
+        },
+        {
+          "old": "- (BOOL)isVisible;",
+          "new": "@property (readonly, getter=isVisible) BOOL visible;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-application-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSApplication.h",
+      "sha256": "a08087c72b60dc73b137f7a4a6c269815c81fef7de007386d1fd5ce43ce79767",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h"
+      ],
+      "replacements": [
+        {
+          "old": "APPKIT_EXTERN id NSApp;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* Later SDKs type NSApp; the object is the same. */\n@class NSApplication;\nAPPKIT_EXTERN NSApplication *NSApp;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-tabviewitem-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTabViewItem.h",
+      "sha256": "1f21011b4cb47ffe6fe7f1858a1a1577c10e793056625426363cbbfc5dcaf464",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSTabViewItem.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (id)view;",
+          "new": "- (NSView *)view; /* Recaulk: typed as later SDKs type it. */"
+        }
+      ]
+    },
+    {
+      "id": "appkit-nib-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSNib.h",
+      "sha256": "c1bf520f4c62196aaf470dd021e41d5e7c481a52197c6fcc1409000cab0f3efb",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSNib.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSNib : NSObject <NSCoding> {",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 named nib names; they are NSStrings. */\ntypedef NSString *NSNibName;\n\n@interface NSNib : NSObject <NSCoding> {"
+        }
+      ]
+    },
+    {
+      "id": "appkit-accessibility-v4",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAccessibility.h",
+      "sha256": "dd2607f8800a6ea9d900129566bf590ef070f5dd9af2b575b4817d715e5e8f38",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAccessibility.h"
+      ],
+      "replacements": [
+        {
+          "old": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);",
+          "new": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 role protocols, so a class can declare that it adopts them. They are compile-time only: 10.9's\n   accessibility asks through accessibilityAttributeValue: and friends, never through these, so a class must\n   still answer there to be accessible on 10.9. */\n@protocol NSAccessibilityElement <NSObject>\n@required\n- (NSRect)accessibilityFrame;\n- (id)accessibilityParent;\n@optional\n- (BOOL)isAccessibilityFocused;\n- (NSString *)accessibilityIdentifier;\n@end\n@protocol NSAccessibilityGroup <NSAccessibilityElement>\n@end\n@protocol NSAccessibilityButton <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityLabel;\n- (BOOL)accessibilityPerformPress;\n@end\n@protocol NSAccessibilitySwitch <NSAccessibilityButton>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (BOOL)accessibilityPerformIncrement;\n- (BOOL)accessibilityPerformDecrement;\n@end\n@protocol NSAccessibilityRadioButton <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityCheckBox <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityStaticText <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (NSAttributedString *)accessibilityAttributedStringForRange:(NSRange)range;\n- (NSRange)accessibilityVisibleCharacterRange;\n@end\n@protocol NSAccessibilityNavigableStaticText <NSAccessibilityStaticText>\n@required\n- (NSString *)accessibilityStringForRange:(NSRange)range;\n- (NSInteger)accessibilityLineForIndex:(NSInteger)index;\n- (NSRange)accessibilityRangeForLine:(NSInteger)lineNumber;\n- (NSRect)accessibilityFrameForRange:(NSRange)range;\n@end\n/* 10.10's NSAccessibilityElement class, weak-imported: on 10.9 the class is nil, so a caller checks\n   [NSAccessibilityElement class] first, and a subclass of it does not load there. */\n__attribute__((availability(macosx,introduced=10.10)))\n@interface NSAccessibilityElement : NSObject <NSAccessibilityElement>\n+ (id)accessibilityElementWithRole:(NSString *)role frame:(NSRect)frame label:(NSString *)label parent:(id)parent;\n- (void)accessibilityAddChildElement:(NSAccessibilityElement *)childElement;\n@property NSRect accessibilityFrameInParentSpace;\n@property (copy) NSString *accessibilityLabel __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSString *accessibilityRole __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSArray *accessibilityChildren __attribute__((availability(macosx,introduced=10.10)));\n@end"
+        },
+        {
+          "old": "#import <Foundation/NSObject.h>",
+          "new": "#import <Foundation/NSObject.h>\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 typed the role constants; they are NSStrings. */\ntypedef NSString *NSAccessibilityRole;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-attributedstring-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAttributedString.h",
+      "sha256": "dd399378aaee62d853763935f140f58e13ee2e4f1e6fcb296ea87edb4a386d97",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAttributedString.h"
+      ],
+      "replacements": [
+        {
+          "old": "/* This defines currently supported values for NSUnderlineStyleAttributeName and NSStrikethroughStyleAttributeName",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.11 named the underline style type; 10.9 uses NSInteger values. */\ntypedef NSInteger NSUnderlineStyle;\n\n/* This defines currently supported values for NSUnderlineStyleAttributeName and NSStrikethroughStyleAttributeName"
         }
       ]
     }
