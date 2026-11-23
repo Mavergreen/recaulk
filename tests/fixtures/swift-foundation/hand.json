@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "string_enums": [
+  "FXKey"
+ ],
+ "typedef_inserts": [
+  {
+   "header": "Fixture.framework/Headers/Fixture.h",
+   "typedef": "FXOther",
+   "before": "@interface FXMutableThing : FXThing"
+  }
+ ],
+ "retypes": [
+  {
+   "class": "FXThing",
+   "selector": "names"
+  },
+  {
+   "class": "FXThing",
+   "selector": "componentsOf:"
+  }
+ ],
+ "enum_shapes": [
+  {
+   "header": "Fixture.framework/Headers/Fixture.h",
+   "typedef": "FXOptions",
+   "macro": "NS_OPTIONS"
+  }
+ ],
+ "replaces": [],
+ "inserts": []
+}

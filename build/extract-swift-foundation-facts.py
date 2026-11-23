@@ -8,7 +8,24 @@
 import argparse, json, os, re, subprocess, sys, tempfile
 
 # spec: the design limits objc/NSObject.h to these members of the NSObject protocol.
-ALLOW = {'usr/include/objc/NSObject.h': {'description', 'debugDescription', 'hash', 'superclass'}}
+ALLOW = {'usr/include/objc/NSObject.h': {'description', 'debugDescription', 'hash', 'superclass'},
+         'usr/include/objc/runtime.h': set()}
+HEAD = '/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n'
+# spec: R2's typedefs carry their own fallback, so a header's recipe does not depend on objcruntime-macros-v2.
+FALLBACK = ('#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n'
+            '#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n'
+            '#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n')
+NULLABILITY = re.compile(r'\s*\b(_Nullable|_Nonnull|_Null_unspecified|nullable|nonnull|null_unspecified)\b')
+CF_TYPEDEF = re.compile(r'typedef (const )?struct (CF_BRIDGED(?:_MUTABLE)?_TYPE\(\w+\) )?(__\w+) \* (\w+);')
+
+
+def typedef_text(name):
+    return (HEAD + FALLBACK + '#ifndef __RECAULK_TYPEDEF_%s\n#define __RECAULK_TYPEDEF_%s 1\n'
+            'typedef NSString *%s NS_EXTENSIBLE_STRING_ENUM;\n#endif\n' % (name, name, name))
+
+
+def clean_type(t):
+    return NULLABILITY.sub('', t).strip()
 CONTAINERS = ('ObjCInterfaceDecl', 'ObjCCategoryDecl', 'ObjCProtocolDecl')
 
 
@@ -32,6 +49,7 @@ class Walker:
     #   so the current file is carried through the dump in print order (loc, then range begin, then end).
     def __init__(self):
         self.file = None
+        self.files = set()
 
     def _loc(self, loc):
         if not loc:
@@ -41,6 +59,7 @@ class Walker:
             return self._loc(loc['expansionLoc'])
         if 'file' in loc:
             self.file = loc['file']
+            self.files.add(self.file)
         return (self.file, loc.get('offset'))
 
     def walk(self, node, visit, container=None):
@@ -110,23 +129,36 @@ def main():
     ap.add_argument('--import', dest='imports', action='append', required=True)
     ap.add_argument('--old-include', action='append', default=[])
     ap.add_argument('--new-include', action='append', default=[])
-    ap.add_argument('--files', default=r'Foundation\.framework/|^usr/include/objc/NSObject\.h$')
+    ap.add_argument('--files', default=r'Foundation\.framework/|^usr/include/objc/(NSObject|runtime)\.h$')
+    ap.add_argument('--hand')
     o = ap.parse_args()
     files = re.compile(o.files)
+    hand = json.load(open(o.hand)) if o.hand else {}
+    string_enums = set(hand.get('string_enums', []))
+    retypes = {(r['class'], r['selector']) for r in hand.get('retypes', [])}
 
     # 11.3: (owner, getter selector, is class) -> property node
-    props = {}
+    props, new_methods, new_vars = {}, {}, {}
     def vnew(n, c, _b):
-        if n.get('kind') == 'ObjCPropertyDecl' and c is not None:
+        k = n.get('kind')
+        if k == 'ObjCPropertyDecl' and c is not None:
             props.setdefault((owner(c)[0], getter(n), bool(n.get('class'))), n)
-    Walker().walk(ast(o.clang, o.new_sdk, o.new_include, o.imports, '11.0'), vnew)
+        elif k == 'ObjCMethodDecl' and c is not None:
+            new_methods.setdefault((owner(c)[0], n['name']), n)
+        elif k == 'VarDecl' and c is None:
+            new_vars.setdefault(n['name'], clean_type(n['type']['qualType']).replace('const ', '').strip())
+    wn = Walker()
+    wn.walk(ast(o.clang, o.new_sdk, o.new_include, o.imports, '11.0'), vnew)
 
     # 10.9: methods per container
-    methods = []
+    methods, old_vars = [], {}
     def vold(n, c, b):
         if n.get('kind') == 'ObjCMethodDecl' and c is not None and not n.get('isImplicit'):
             methods.append((n, c, b))
-    Walker().walk(ast(o.clang, o.old_sdk, o.old_include, o.imports, '10.9'), vold)
+        elif n.get('kind') == 'VarDecl' and c is None and b and b[0]:
+            old_vars.setdefault(n['name'], b)
+    wo = Walker()
+    wo.walk(ast(o.clang, o.old_sdk, o.old_include, o.imports, '10.9'), vold)
 
     roots = [o.old_sdk] + o.old_include
     texts = {}
@@ -163,6 +195,8 @@ def main():
         typ, trailer = m.group(2).strip(), m.group(4).strip()
         if '^' in typ or '(' in typ:
             continue
+        if (cls, sel) in retypes:
+            typ = clean_type(p['type']['qualType'])
         setter_decl = setter_offset = None
         readonly = bool(p.get('readonly'))
         if not readonly:
@@ -185,6 +219,106 @@ def main():
         out.setdefault(key, []).append({'kind': 'property', 'class': cls, 'container': ckind, 'category': cat,
                                         'decl': decl, 'offset': b[1], 'property': prop,
                                         'setter_decl': setter_decl, 'setter_offset': setter_offset})
+    def add(key, e):
+        out.setdefault(key, []).append(e)
+
+    def text_of(key):
+        for r in roots:
+            f = os.path.join(r, key)
+            if os.path.exists(f):
+                if f not in texts:
+                    texts[f] = open(f, encoding='latin-1').read()
+                return texts[f]
+        sys.exit('extract: no %s' % key)
+
+    def unique(key, s):
+        t = text_of(key)
+        if t.count(s) != 1:
+            sys.exit('extract: %r occurs %d times in %s' % (s[:80], t.count(s), key))
+        return t.index(s)
+
+    # R4 on methods that stay methods: 11.3's return type, without nullability
+    for n, c, b in methods:
+        cls = owner(c)[0]
+        if (cls, n['name']) not in retypes or ':' not in n['name'] or b is None or b[0] is None:
+            continue
+        nm = new_methods.get((cls, n['name']))
+        key = relkey(b[0], roots)
+        if nm is None or key is None:
+            continue
+        old = decl_text(b[0], b[1])
+        new = re.sub(r'^([-+]\s*\()[^()]*(\))', lambda m: m.group(1) + clean_type(nm['returnType']['qualType']) + m.group(2),
+                     old, count=1)
+        add(key, {'kind': 'replace', 'old': old, 'offset': b[1], 'new': new})
+
+    # R2: constants 11.3 types as one of the string enums, retyped, with the typedef before the header's first one
+    first = {}
+    for name, typ in sorted(new_vars.items()):
+        if typ not in string_enums or name not in old_vars:
+            continue
+        path, off = old_vars[name]
+        key = relkey(path, roots)
+        if key is None or not files.search(key):
+            continue
+        old = decl_text(path, off)
+        new = re.sub(r'NSString\s*\*\s*const', typ + ' const', old, count=1)
+        if new == old:
+            continue
+        add(key, {'kind': 'replace', 'old': old, 'offset': off, 'new': new})
+        if (key, typ) not in first or off < first[(key, typ)]:
+            first[(key, typ)] = off
+    for (key, typ), off in sorted(first.items()):
+        add(key, {'kind': 'insert', 'offset': off, 'text': typedef_text(typ)})
+    for ti in hand.get('typedef_inserts', []):
+        add(ti['header'], {'kind': 'insert', 'offset': unique(ti['header'], ti['before']), 'text': typedef_text(ti['typedef'])})
+
+    # R3: every CF typedef 11.3 bridges, in the 10.9 headers this run covers
+    bridged = {}
+    for f in wn.files:
+        if f.endswith('.h') and os.path.exists(f):
+            for m in CF_TYPEDEF.finditer(open(f, encoding='latin-1').read()):
+                if m.group(2):
+                    bridged[(m.group(3), m.group(4))] = m.group(2)
+    for f in sorted(wo.files):
+        key = relkey(f, roots) if f.endswith('.h') else None
+        if key is None or not files.search(key):
+            continue
+        t = text_of(key)
+        for m in CF_TYPEDEF.finditer(t):
+            if m.group(2) or (m.group(3), m.group(4)) not in bridged:
+                continue
+            new = 'typedef %sstruct %s%s * %s;' % (m.group(1) or '', bridged[(m.group(3), m.group(4))], m.group(3), m.group(4))
+            add(key, {'kind': 'replace', 'old': m.group(0), 'offset': m.start(), 'new': new})
+
+    # R5: an anonymous enum beside `typedef UNDER NAME;` becomes MACRO(UNDER, NAME) { cases }
+    for es in hand.get('enum_shapes', []):
+        key, name, macro = es['header'], es['typedef'], es['macro']
+        t = text_of(key)
+        td = list(re.finditer(r'typedef\s+(\w+)\s+%s\s*;' % re.escape(name), t))
+        if len(td) != 1:
+            sys.exit('extract: typedef %s occurs %d times in %s' % (name, len(td), key))
+        td = td[0]
+        gap = r'((?:\s|//[^\n]*\n|/\*.*?\*/)*)'
+        before = list(re.finditer(r'enum\s*\{([^{}]*)\};' + gap + r'$', t[:td.start()], re.S))
+        after = re.match(gap + r'enum\s*\{([^{}]*)\};', t[td.end():], re.S)
+        if before:
+            m = before[-1]
+            start, end, body, between = m.start(), td.end(), m.group(1), m.group(2)
+        elif after:
+            start, end, body, between = td.start(), td.end() + after.end(), after.group(2), after.group(1)
+        else:
+            sys.exit('extract: no anonymous enum beside typedef %s in %s' % (name, key))
+        between = between.strip()
+        new = (between + '\n' if between else '') + 'typedef %s(%s, %s) {%s};' % (macro, td.group(1), name, body)
+        add(key, {'kind': 'replace', 'old': t[start:end], 'offset': start, 'new': new})
+
+    for r in hand.get('replaces', []):
+        add(r['header'], {'kind': 'replace', 'old': r['old'], 'offset': unique(r['header'], r['old']), 'new': r['new']})
+    for r in hand.get('inserts', []):
+        add(r['header'], {'kind': 'insert', 'offset': unique(r['header'], r['before']), 'text': r['text']})
+
+    for k in out:
+        out[k].sort(key=lambda e: (e['offset'], e['kind'] != 'insert'))
     json.dump({'schema': 1, 'headers': {k: out[k] for k in sorted(out)}}, sys.stdout, indent=1)
     sys.stdout.write('\n')
 

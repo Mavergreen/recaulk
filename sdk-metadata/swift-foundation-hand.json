@@ -1,0 +1,308 @@
+{
+ "schema": 1,
+ "string_enums": [
+  "NSCalendarIdentifier",
+  "NSErrorDomain",
+  "NSErrorUserInfoKey",
+  "NSFileAttributeKey",
+  "NSFileAttributeType",
+  "NSFileProtectionType",
+  "NSLinguisticTag",
+  "NSLinguisticTagScheme",
+  "NSLocaleKey",
+  "NSNotificationName",
+  "NSProgressFileOperationKind",
+  "NSProgressKind",
+  "NSProgressUserInfoKey",
+  "NSStreamPropertyKey",
+  "NSURLFileResourceType",
+  "NSURLResourceKey",
+  "NSURLThumbnailDictionaryItem",
+  "NSURLUbiquitousItemDownloadingStatus"
+ ],
+ "typedef_inserts": [
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSString.h",
+   "typedef": "NSStringTransform",
+   "before": "@interface NSString (NSStringExtensionMethods)"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURL.h",
+   "typedef": "NSURLUbiquitousSharedItemRole",
+   "before": "@interface NSURL (NSURLPathUtilities)"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURL.h",
+   "typedef": "NSURLUbiquitousSharedItemPermissions",
+   "before": "@interface NSURL (NSURLPathUtilities)"
+  }
+ ],
+ "retypes": [
+  {
+   "class": "NSCalendar",
+   "selector": "eraSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "longEraSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "monthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortMonthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "veryShortMonthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "standaloneMonthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortStandaloneMonthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "veryShortStandaloneMonthSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "weekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortWeekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "veryShortWeekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "standaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortStandaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "veryShortStandaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "quarterSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortQuarterSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "standaloneQuarterSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "shortStandaloneQuarterSymbols"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "AMSymbol"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "PMSymbol"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "eraSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "longEraSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "monthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortMonthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "veryShortMonthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "standaloneMonthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortStandaloneMonthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "veryShortStandaloneMonthSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "weekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortWeekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "veryShortWeekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "standaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortStandaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "veryShortStandaloneWeekdaySymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "quarterSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortQuarterSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "standaloneQuarterSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "shortStandaloneQuarterSymbols"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "AMSymbol"
+  },
+  {
+   "class": "NSDateFormatter",
+   "selector": "PMSymbol"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "availableLocaleIdentifiers"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "ISOCountryCodes"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "ISOCurrencyCodes"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "ISOLanguageCodes"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "commonISOCurrencyCodes"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "preferredLanguages"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "componentsFromLocaleIdentifier:"
+  },
+  {
+   "class": "NSTimeZone",
+   "selector": "knownTimeZoneNames"
+  },
+  {
+   "class": "NSTimeZone",
+   "selector": "abbreviationDictionary"
+  },
+  {
+   "class": "NSError",
+   "selector": "userInfo"
+  },
+  {
+   "class": "NSObject",
+   "selector": "keyPathsForValuesAffectingValueForKey:"
+  },
+  {
+   "class": "NSString",
+   "selector": "componentsSeparatedByString:"
+  },
+  {
+   "class": "NSString",
+   "selector": "componentsSeparatedByCharactersInSet:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "pathComponents"
+  },
+  {
+   "class": "NSURLRequest",
+   "selector": "allHTTPHeaderFields"
+  }
+ ],
+ "enum_shapes": [
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObjCRuntime.h",
+   "typedef": "NSEnumerationOptions",
+   "macro": "NS_OPTIONS"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLRequest.h",
+   "typedef": "NSURLRequestCachePolicy",
+   "macro": "NS_ENUM"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLRequest.h",
+   "typedef": "NSURLRequestNetworkServiceType",
+   "macro": "NS_ENUM"
+  },
+  {
+   "header": "usr/include/objc/runtime.h",
+   "typedef": "objc_AssociationPolicy",
+   "macro": "OBJC_ENUM"
+  }
+ ],
+ "replaces": [
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSGeometry.h",
+   "old": "#define NSMinXEdge CGRectMinXEdge\n#define NSMinYEdge CGRectMinYEdge\n#define NSMaxXEdge CGRectMaxXEdge\n#define NSMaxYEdge CGRectMaxYEdge\n\ntypedef NSUInteger NSRectEdge;",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NS_ENUM(NSUInteger, NSRectEdge) {\n    NSRectEdgeMinX = CGRectMinXEdge,\n    NSRectEdgeMinY = CGRectMinYEdge,\n    NSRectEdgeMaxX = CGRectMaxXEdge,\n    NSRectEdgeMaxY = CGRectMaxYEdge,\n\n    NSMinXEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MinX instead\"))) = NSRectEdgeMinX,\n    NSMinYEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MinY instead\"))) = NSRectEdgeMinY,\n    NSMaxXEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MaxX instead\"))) = NSRectEdgeMaxX,\n    NSMaxYEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MaxY instead\"))) = NSRectEdgeMaxY,\n};"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCalendar.h",
+   "old": "enum {\n\tNSDateComponentUndefined = NSIntegerMax,",
+   "new": "enum : NSInteger {\n\tNSDateComponentUndefined = NSIntegerMax,"
+  }
+ ],
+ "inserts": [
+  {
+   "header": "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBase.h",
+   "before": "typedef const struct __CFString * CFStringRef;",
+   "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#if __has_attribute(objc_bridge) && __has_feature(objc_bridge_id) && __has_feature(objc_bridge_id_on_typedefs)\n\n#ifdef __OBJC__\n@class NSArray;\n@class NSAttributedString;\n@class NSString;\n@class NSNull;\n@class NSCharacterSet;\n@class NSData;\n@class NSDate;\n@class NSTimeZone;\n@class NSDictionary;\n@class NSError;\n@class NSLocale;\n@class NSNumber;\n@class NSSet;\n@class NSURL;\n#endif\n\n#define CF_BRIDGED_TYPE(T)\t\t__attribute__((objc_bridge(T)))\n#define CF_BRIDGED_MUTABLE_TYPE(T)\t__attribute__((objc_bridge_mutable(T)))\n#define CF_RELATED_TYPE(T,C,I)\t\t__attribute__((objc_bridge_related(T,C,I)))\n#else\n#define CF_BRIDGED_TYPE(T)\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#define CF_RELATED_TYPE(T,C,I)\n#endif\n#endif\n\n"
+  },
+  {
+   "header": "usr/include/objc/runtime.h",
+   "before": "enum {\n    OBJC_ASSOCIATION_ASSIGN = 0,",
+   "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef OBJC_ENUM\n#define OBJC_ENUM(_type, _name) enum _name : _type _name; enum _name : _type\n#endif\n"
+  }
+ ]
+}

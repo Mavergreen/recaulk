@@ -17,12 +17,12 @@ d="$(mktemp -d "${TMPDIR:-/tmp}/swift-foundation-facts.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
 F=tests/fixtures/swift-foundation
 python3 build/extract-swift-foundation-facts.py --clang "$CLANG22" --old-sdk "$SDK" --new-sdk "$SDK113" \
-  --import Fixture/Fixture.h --old-include "$F/109" --new-include "$F/113" --files 'Fixture\.h$' >"$d/fx.json"
+  --import Fixture/Fixture.h --old-include "$F/109" --new-include "$F/113" --files 'Fixture\.h$' --hand "$F/hand.json" >"$d/fx.json"
 python3 - "$d/fx.json" <<'PY'
 import json, sys
 h = json.load(open(sys.argv[1]))['headers']
 assert list(h) == ['Fixture.framework/Headers/Fixture.h'], list(h)
-by = {(e['class'], e['decl']): e for e in h['Fixture.framework/Headers/Fixture.h']}
+by = {(e['class'], e['decl']): e for e in h['Fixture.framework/Headers/Fixture.h'] if e['kind'] == 'property'}
 def one(cls, decl, prop, setter=None, category=None):
     e = by.pop((cls, decl), None)
     assert e, 'no entry for %s %s' % (cls, decl)
@@ -37,11 +37,41 @@ one('FXThing', '- (NSString *)name;', '@property (copy) NSString *name;',
 one('FXThing', '- (NSString *)title;', '@property (readonly, copy) NSString *title;')            # setter_elsewhere
 one('FXThing', '- (NSString *)label;', '@property (readonly, copy) NSString *label;',
     category='FXExtras')                                                                         # category_placement, nullability_stripped
+one('FXThing', '- (NSArray *)names;', '@property (readonly, copy) NSArray<NSString *> *names;')    # merge_property_retype
 assert not by, 'unexpected entries (absent_in_109, onlyOld): %r' % sorted(by)
 t = open('tests/fixtures/swift-foundation/109/Fixture.framework/Headers/Fixture.h').read()
+other = [e for e in h['Fixture.framework/Headers/Fixture.h'] if e['kind'] != 'property']
+reps = {e['old']: e['new'] for e in other if e['kind'] == 'replace'}
+ins = [e for e in other if e['kind'] == 'insert']
+assert reps.pop('- (NSArray *)componentsOf:(NSString *)s;') == '- (NSArray<NSString *> *)componentsOf:(NSString *)s;'  # retype_method
+assert reps.pop('FOUNDATION_EXPORT NSString * const FXKeyA;') == 'FOUNDATION_EXPORT FXKey const FXKeyA;'          # string_enum
+assert reps.pop('FOUNDATION_EXPORT NSString *const FXKeyB NS_AVAILABLE(10_6, 4_0);') == \
+    'FOUNDATION_EXPORT FXKey const FXKeyB NS_AVAILABLE(10_6, 4_0);'
+assert reps.pop('enum {\n    FXOptA = 1,\n    FXOptB = 2\n};\ntypedef NSUInteger FXOptions;') == \
+    'typedef NS_OPTIONS(NSUInteger, FXOptions) {\n    FXOptA = 1,\n    FXOptB = 2\n};'                   # enum_shape
+assert reps.pop('typedef const struct __FXRef * FXRef;') == \
+    'typedef const struct CF_BRIDGED_TYPE(NSString) __FXRef * FXRef;'                                  # cf_bridge
+assert not reps, reps
+assert len(ins) == 2, ins                                                                               # typedef inserts
+for e in ins:
+    assert '#ifndef NS_EXTENSIBLE_STRING_ENUM' in e['text'] and 'nullable' not in e['text'], e
+key = [e for e in ins if 'typedef NSString *FXKey NS_EXTENSIBLE_STRING_ENUM;' in e['text']][0]
+assert t[key['offset']:].startswith('FOUNDATION_EXPORT NSString * const FXKeyA;'), key                  # before first constant
+oth = [e for e in ins if 'typedef NSString *FXOther NS_EXTENSIBLE_STRING_ENUM;' in e['text']][0]
+assert t[oth['offset']:].startswith('@interface FXMutableThing : FXThing'), oth
+for e in other:
+    if e['kind'] == 'replace':
+        assert t[e['offset']:e['offset'] + len(e['old'])] == e['old'], e
 for e in h['Fixture.framework/Headers/Fixture.h']:                                               # offsets_locate
+    if e['kind'] != 'property':
+        continue
     assert t[e['offset']:e['offset'] + len(e['decl'])] == e['decl'], e
     if e['setter_decl']:
         assert t[e['setter_offset']:e['setter_offset'] + len(e['setter_decl'])] == e['setter_decl'], e
 PY
+# spec: the committed facts are exactly what the extractor makes from both SDKs and the hand inputs (facts_current)
+python3 build/extract-swift-foundation-facts.py --clang "$CLANG22" --old-sdk "$SDK" --new-sdk "$SDK113" \
+  --import Foundation/Foundation.h --import objc/runtime.h --hand sdk-metadata/swift-foundation-hand.json >"$d/real.json"
+cmp -s "$d/real.json" sdk-metadata/swift-foundation-facts.json \
+  || { echo "FAIL: sdk-metadata/swift-foundation-facts.json is not what the extractor makes; rerun it"; exit 1; }
 echo "swift-foundation-facts OK"

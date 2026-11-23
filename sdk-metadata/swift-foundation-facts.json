@@ -1,6 +1,307 @@
 {
  "schema": 1,
  "headers": {
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFArray.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFArray * CFArrayRef;",
+    "offset": 4502,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSArray) __CFArray * CFArrayRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFArray * CFMutableArrayRef;",
+    "offset": 4637,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableArray) __CFArray * CFMutableArrayRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBag.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFBag * CFBagRef;",
+    "offset": 1043,
+    "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFBag * CFBagRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFBag * CFMutableBagRef;",
+    "offset": 1084,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFBag * CFMutableBagRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBase.h": [
+   {
+    "kind": "insert",
+    "offset": 12399,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#if __has_attribute(objc_bridge) && __has_feature(objc_bridge_id) && __has_feature(objc_bridge_id_on_typedefs)\n\n#ifdef __OBJC__\n@class NSArray;\n@class NSAttributedString;\n@class NSString;\n@class NSNull;\n@class NSCharacterSet;\n@class NSData;\n@class NSDate;\n@class NSTimeZone;\n@class NSDictionary;\n@class NSError;\n@class NSLocale;\n@class NSNumber;\n@class NSSet;\n@class NSURL;\n#endif\n\n#define CF_BRIDGED_TYPE(T)\t\t__attribute__((objc_bridge(T)))\n#define CF_BRIDGED_MUTABLE_TYPE(T)\t__attribute__((objc_bridge_mutable(T)))\n#define CF_RELATED_TYPE(T,C,I)\t\t__attribute__((objc_bridge_related(T,C,I)))\n#else\n#define CF_BRIDGED_TYPE(T)\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#define CF_RELATED_TYPE(T,C,I)\n#endif\n#endif\n\n"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFString * CFStringRef;",
+    "offset": 12399,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSString) __CFString * CFStringRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFString * CFMutableStringRef;",
+    "offset": 12446,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableString) __CFString * CFMutableStringRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFNull * CFNullRef;",
+    "offset": 13595,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSNull) __CFNull * CFNullRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFAllocator * CFAllocatorRef;",
+    "offset": 14063,
+    "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFAllocator * CFAllocatorRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBinaryHeap.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFBinaryHeap * CFBinaryHeapRef;",
+    "offset": 2914,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFBinaryHeap * CFBinaryHeapRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBitVector.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFBitVector * CFBitVectorRef;",
+    "offset": 273,
+    "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFBitVector * CFBitVectorRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFBitVector * CFMutableBitVectorRef;",
+    "offset": 326,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFBitVector * CFMutableBitVectorRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFCalendar.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFCalendar * CFCalendarRef;",
+    "offset": 358,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSCalendar) __CFCalendar * CFCalendarRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFCharacterSet.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFCharacterSet * CFCharacterSetRef;",
+    "offset": 1852,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSCharacterSet) __CFCharacterSet * CFCharacterSetRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFCharacterSet * CFMutableCharacterSetRef;",
+    "offset": 2022,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableCharacterSet) __CFCharacterSet * CFMutableCharacterSetRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFData.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFData * CFDataRef;",
+    "offset": 239,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSData) __CFData * CFDataRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFData * CFMutableDataRef;",
+    "offset": 282,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableData) __CFData * CFMutableDataRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFDate.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFDate * CFDateRef;",
+    "offset": 622,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSDate) __CFDate * CFDateRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFTimeZone * CFTimeZoneRef;",
+    "offset": 1086,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSTimeZone) __CFTimeZone * CFTimeZoneRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFDictionary.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFDictionary * CFDictionaryRef;",
+    "offset": 8033,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSDictionary) __CFDictionary * CFDictionaryRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFDictionary * CFMutableDictionaryRef;",
+    "offset": 8188,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableDictionary) __CFDictionary * CFMutableDictionaryRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFError.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFError * CFErrorRef;",
+    "offset": 2858,
+    "new": "typedef struct CF_BRIDGED_TYPE(NSError) __CFError * CFErrorRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFFileDescriptor.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFFileDescriptor * CFFileDescriptorRef;",
+    "offset": 287,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFFileDescriptor * CFFileDescriptorRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFMachPort.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFMachPort * CFMachPortRef;",
+    "offset": 244,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMachPort) __CFMachPort * CFMachPortRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFMessagePort.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFMessagePort * CFMessagePortRef;",
+    "offset": 333,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMessagePort) __CFMessagePort * CFMessagePortRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFNotificationCenter.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFNotificationCenter * CFNotificationCenterRef;",
+    "offset": 289,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFNotificationCenter * CFNotificationCenterRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFNumber.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFBoolean * CFBooleanRef;",
+    "offset": 241,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSNumber) __CFBoolean * CFBooleanRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFNumber * CFNumberRef;",
+    "offset": 1178,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSNumber) __CFNumber * CFNumberRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFRunLoop.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFRunLoop * CFRunLoopRef;",
+    "offset": 462,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFRunLoop * CFRunLoopRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFRunLoopSource * CFRunLoopSourceRef;",
+    "offset": 506,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFRunLoopSource * CFRunLoopSourceRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFRunLoopObserver * CFRunLoopObserverRef;",
+    "offset": 562,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFRunLoopObserver * CFRunLoopObserverRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFRunLoopTimer * CFRunLoopTimerRef;",
+    "offset": 622,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSTimer) __CFRunLoopTimer * CFRunLoopTimerRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFSet.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFSet * CFSetRef;",
+    "offset": 4204,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSSet) __CFSet * CFSetRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFSet * CFMutableSetRef;",
+    "offset": 4338,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMutableSet) __CFSet * CFMutableSetRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFSocket.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFSocket * CFSocketRef;",
+    "offset": 251,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFSocket * CFSocketRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFStream.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFReadStream * CFReadStreamRef;",
+    "offset": 1307,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSInputStream) __CFReadStream * CFReadStreamRef;"
+   },
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFWriteStream * CFWriteStreamRef;",
+    "offset": 1356,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSOutputStream) __CFWriteStream * CFWriteStreamRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFStringTokenizer.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFStringTokenizer * CFStringTokenizerRef;",
+    "offset": 2330,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFStringTokenizer * CFStringTokenizerRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFTree.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFTree * CFTreeRef;",
+    "offset": 3322,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFTree * CFTreeRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFURL.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFURL * CFURLRef;",
+    "offset": 827,
+    "new": "typedef const struct CF_BRIDGED_TYPE(NSURL) __CFURL * CFURLRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFUUID.h": [
+   {
+    "kind": "replace",
+    "old": "typedef const struct __CFUUID * CFUUIDRef;",
+    "offset": 273,
+    "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFUUID * CFUUIDRef;"
+   }
+  ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFUserNotification.h": [
+   {
+    "kind": "replace",
+    "old": "typedef struct __CFUserNotification * CFUserNotificationRef;",
+    "offset": 428,
+    "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFUserNotification * CFUserNotificationRef;"
+   }
+  ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAffineTransform.h": [
    {
     "kind": "property",
@@ -642,6 +943,17 @@
     "property": "@property (readonly, copy) NSArray *executableArchitectures NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 6863,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSBundleDidLoadNotification;",
+    "offset": 6863,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSBundleDidLoadNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCache.h": [
@@ -702,6 +1014,95 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCalendar.h": [
+   {
+    "kind": "insert",
+    "offset": 1247,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSCalendarIdentifier\n#define __RECAULK_TYPEDEF_NSCalendarIdentifier 1\ntypedef NSString *NSCalendarIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierGregorian  NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1247,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierGregorian  NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierBuddhist            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1432,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierBuddhist            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierChinese             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1554,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierChinese             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierCoptic              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1676,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierCoptic              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierEthiopicAmeteMihret NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1798,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierEthiopicAmeteMihret NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierEthiopicAmeteAlem   NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 1920,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierEthiopicAmeteAlem   NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierHebrew              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2042,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierHebrew              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierISO8601             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2164,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierISO8601             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIndian              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2286,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIndian              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIslamic             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2408,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIslamic             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIslamicCivil        NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2530,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIslamicCivil        NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierJapanese            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2652,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierJapanese            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierPersian             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2774,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierPersian             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierRepublicOfChina     NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+    "offset": 2896,
+    "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierRepublicOfChina     NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+   },
    {
     "kind": "property",
     "class": "NSCalendar",
@@ -786,7 +1187,7 @@
     "category": null,
     "decl": "- (NSArray *)eraSymbols      NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 8655,
-    "property": "@property (readonly, copy) NSArray *eraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *eraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -797,7 +1198,7 @@
     "category": null,
     "decl": "- (NSArray *)longEraSymbols  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 8731,
-    "property": "@property (readonly, copy) NSArray *longEraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *longEraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -808,7 +1209,7 @@
     "category": null,
     "decl": "- (NSArray *)monthSymbols                    NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 8808,
-    "property": "@property (readonly, copy) NSArray *monthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *monthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -819,7 +1220,7 @@
     "category": null,
     "decl": "- (NSArray *)shortMonthSymbols               NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 8900,
-    "property": "@property (readonly, copy) NSArray *shortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -830,7 +1231,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortMonthSymbols           NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 8992,
-    "property": "@property (readonly, copy) NSArray *veryShortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *veryShortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -841,7 +1242,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneMonthSymbols          NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9084,
-    "property": "@property (readonly, copy) NSArray *standaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *standaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -852,7 +1253,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneMonthSymbols     NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9176,
-    "property": "@property (readonly, copy) NSArray *shortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -863,7 +1264,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9268,
-    "property": "@property (readonly, copy) NSArray *veryShortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *veryShortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -874,7 +1275,7 @@
     "category": null,
     "decl": "- (NSArray *)weekdaySymbols                    NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9361,
-    "property": "@property (readonly, copy) NSArray *weekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *weekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -885,7 +1286,7 @@
     "category": null,
     "decl": "- (NSArray *)shortWeekdaySymbols               NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9455,
-    "property": "@property (readonly, copy) NSArray *shortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -896,7 +1297,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortWeekdaySymbols           NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9549,
-    "property": "@property (readonly, copy) NSArray *veryShortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *veryShortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -907,7 +1308,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneWeekdaySymbols          NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9643,
-    "property": "@property (readonly, copy) NSArray *standaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *standaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -918,7 +1319,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneWeekdaySymbols     NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9737,
-    "property": "@property (readonly, copy) NSArray *shortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -929,7 +1330,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9831,
-    "property": "@property (readonly, copy) NSArray *veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -940,7 +1341,7 @@
     "category": null,
     "decl": "- (NSArray *)quarterSymbols                 NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 9926,
-    "property": "@property (readonly, copy) NSArray *quarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *quarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -951,7 +1352,7 @@
     "category": null,
     "decl": "- (NSArray *)shortQuarterSymbols            NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 10017,
-    "property": "@property (readonly, copy) NSArray *shortQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -962,7 +1363,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneQuarterSymbols       NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 10108,
-    "property": "@property (readonly, copy) NSArray *standaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *standaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -973,7 +1374,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneQuarterSymbols  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "offset": 10199,
-    "property": "@property (readonly, copy) NSArray *shortStandaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -998,6 +1399,23 @@
     "property": "@property (readonly, copy) NSString *PMSymbol NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 28855,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCalendarDayChangedNotification NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);",
+    "offset": 28855,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSCalendarDayChangedNotification NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "enum {\n\tNSDateComponentUndefined = NSIntegerMax,",
+    "offset": 29912,
+    "new": "enum : NSInteger {\n\tNSDateComponentUndefined = NSIntegerMax,"
    },
    {
     "kind": "property",
@@ -1852,6 +2270,17 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDate.h": [
    {
+    "kind": "insert",
+    "offset": 125,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSSystemClockDidChangeNotification NS_AVAILABLE(10_6, 4_0);",
+    "offset": 125,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSSystemClockDidChangeNotification NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
     "kind": "property",
     "class": "NSDate",
     "container": "interface",
@@ -2069,7 +2498,7 @@
     "category": null,
     "decl": "- (NSArray *)eraSymbols;",
     "offset": 3444,
-    "property": "@property (copy) NSArray *eraSymbols;",
+    "property": "@property (copy) NSArray<NSString *> *eraSymbols;",
     "setter_decl": "- (void)setEraSymbols:(NSArray *)array;",
     "setter_offset": 3469
    },
@@ -2080,7 +2509,7 @@
     "category": null,
     "decl": "- (NSArray *)monthSymbols;",
     "offset": 3510,
-    "property": "@property (copy) NSArray *monthSymbols;",
+    "property": "@property (copy) NSArray<NSString *> *monthSymbols;",
     "setter_decl": "- (void)setMonthSymbols:(NSArray *)array;",
     "setter_offset": 3537
    },
@@ -2091,7 +2520,7 @@
     "category": null,
     "decl": "- (NSArray *)shortMonthSymbols;",
     "offset": 3580,
-    "property": "@property (copy) NSArray *shortMonthSymbols;",
+    "property": "@property (copy) NSArray<NSString *> *shortMonthSymbols;",
     "setter_decl": "- (void)setShortMonthSymbols:(NSArray *)array;",
     "setter_offset": 3612
    },
@@ -2102,7 +2531,7 @@
     "category": null,
     "decl": "- (NSArray *)weekdaySymbols;",
     "offset": 3660,
-    "property": "@property (copy) NSArray *weekdaySymbols;",
+    "property": "@property (copy) NSArray<NSString *> *weekdaySymbols;",
     "setter_decl": "- (void)setWeekdaySymbols:(NSArray *)array;",
     "setter_offset": 3689
    },
@@ -2113,7 +2542,7 @@
     "category": null,
     "decl": "- (NSArray *)shortWeekdaySymbols;",
     "offset": 3734,
-    "property": "@property (copy) NSArray *shortWeekdaySymbols;",
+    "property": "@property (copy) NSArray<NSString *> *shortWeekdaySymbols;",
     "setter_decl": "- (void)setShortWeekdaySymbols:(NSArray *)array;",
     "setter_offset": 3768
    },
@@ -2146,7 +2575,7 @@
     "category": null,
     "decl": "- (NSArray *)longEraSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 3948,
-    "property": "@property (copy) NSArray *longEraSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *longEraSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setLongEraSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4001
    },
@@ -2157,7 +2586,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4070,
-    "property": "@property (copy) NSArray *veryShortMonthSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *veryShortMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setVeryShortMonthSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4130
    },
@@ -2168,7 +2597,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4206,
-    "property": "@property (copy) NSArray *standaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *standaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setStandaloneMonthSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4267
    },
@@ -2179,7 +2608,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4344,
-    "property": "@property (copy) NSArray *shortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *shortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setShortStandaloneMonthSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4410
    },
@@ -2190,7 +2619,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4492,
-    "property": "@property (copy) NSArray *veryShortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *veryShortStandaloneMonthSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setVeryShortStandaloneMonthSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4562
    },
@@ -2201,7 +2630,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4648,
-    "property": "@property (copy) NSArray *veryShortWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *veryShortWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setVeryShortWeekdaySymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4710
    },
@@ -2212,7 +2641,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4788,
-    "property": "@property (copy) NSArray *standaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *standaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setStandaloneWeekdaySymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4851
    },
@@ -2223,7 +2652,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 4930,
-    "property": "@property (copy) NSArray *shortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *shortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setShortStandaloneWeekdaySymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 4998
    },
@@ -2234,7 +2663,7 @@
     "category": null,
     "decl": "- (NSArray *)veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 5082,
-    "property": "@property (copy) NSArray *veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setVeryShortStandaloneWeekdaySymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 5154
    },
@@ -2245,7 +2674,7 @@
     "category": null,
     "decl": "- (NSArray *)quarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 5242,
-    "property": "@property (copy) NSArray *quarterSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *quarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setQuarterSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 5295
    },
@@ -2256,7 +2685,7 @@
     "category": null,
     "decl": "- (NSArray *)shortQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 5364,
-    "property": "@property (copy) NSArray *shortQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *shortQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setShortQuarterSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 5422
    },
@@ -2267,7 +2696,7 @@
     "category": null,
     "decl": "- (NSArray *)standaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 5496,
-    "property": "@property (copy) NSArray *standaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *standaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setStandaloneQuarterSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 5559
    },
@@ -2278,7 +2707,7 @@
     "category": null,
     "decl": "- (NSArray *)shortStandaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "offset": 5638,
-    "property": "@property (copy) NSArray *shortStandaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (copy) NSArray<NSString *> *shortStandaloneQuarterSymbols NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": "- (void)setShortStandaloneQuarterSymbols:(NSArray *)array NS_AVAILABLE(10_5, 2_0);",
     "setter_offset": 5706
    },
@@ -2539,6 +2968,100 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSError.h": [
    {
+    "kind": "insert",
+    "offset": 210,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSCocoaErrorDomain;",
+    "offset": 210,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSCocoaErrorDomain;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSPOSIXErrorDomain;",
+    "offset": 366,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSPOSIXErrorDomain;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSOSStatusErrorDomain;",
+    "offset": 420,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSOSStatusErrorDomain;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSMachErrorDomain;",
+    "offset": 477,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSMachErrorDomain;"
+   },
+   {
+    "kind": "insert",
+    "offset": 663,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorUserInfoKey\n#define __RECAULK_TYPEDEF_NSErrorUserInfoKey 1\ntypedef NSString *NSErrorUserInfoKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSUnderlyingErrorKey;",
+    "offset": 663,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSUnderlyingErrorKey;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLocalizedDescriptionKey;",
+    "offset": 806,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSLocalizedDescriptionKey;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLocalizedFailureReasonErrorKey     ;",
+    "offset": 880,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSLocalizedFailureReasonErrorKey     ;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLocalizedRecoverySuggestionErrorKey;",
+    "offset": 966,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSLocalizedRecoverySuggestionErrorKey;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLocalizedRecoveryOptionsErrorKey   ;",
+    "offset": 1052,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSLocalizedRecoveryOptionsErrorKey   ;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSRecoveryAttempterErrorKey;",
+    "offset": 1150,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSRecoveryAttempterErrorKey;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSHelpAnchorErrorKey                ;",
+    "offset": 1317,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSHelpAnchorErrorKey                ;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSStringEncodingErrorKey ;",
+    "offset": 1488,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSStringEncodingErrorKey ;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSURLErrorKey\t\t   ;",
+    "offset": 1590,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSURLErrorKey\t\t   ;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSFilePathErrorKey\t   ;",
+    "offset": 1654,
+    "new": "FOUNDATION_EXPORT NSErrorUserInfoKey const NSFilePathErrorKey\t   ;"
+   },
+   {
     "kind": "property",
     "class": "NSError",
     "container": "interface",
@@ -2567,7 +3090,7 @@
     "category": null,
     "decl": "- (NSDictionary *)userInfo;",
     "offset": 2926,
-    "property": "@property (readonly, copy) NSDictionary *userInfo;",
+    "property": "@property (readonly, copy) NSDictionary<NSErrorUserInfoKey,id> *userInfo;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -2910,6 +3433,35 @@
     "setter_offset": null
    },
    {
+    "kind": "insert",
+    "offset": 1346,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHandleReadCompletionNotification;",
+    "offset": 1346,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSFileHandleReadCompletionNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHandleReadToEndOfFileCompletionNotification;",
+    "offset": 1421,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSFileHandleReadToEndOfFileCompletionNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHandleConnectionAcceptedNotification;",
+    "offset": 1507,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSFileHandleConnectionAcceptedNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHandleDataAvailableNotification;",
+    "offset": 1586,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSFileHandleDataAvailableNotification;"
+   },
+   {
     "kind": "property",
     "class": "NSFileHandle",
     "container": "category",
@@ -2944,6 +3496,17 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileManager.h": [
+   {
+    "kind": "insert",
+    "offset": 2485,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "extern NSString * const NSUbiquityIdentityDidChangeNotification NS_AVAILABLE(10_8, 6_0);",
+    "offset": 2485,
+    "new": "extern NSNotificationName const NSUbiquityIdentityDidChangeNotification NS_AVAILABLE(10_8, 6_0);"
+   },
    {
     "kind": "property",
     "class": "NSFileManager",
@@ -3020,6 +3583,231 @@
     "property": "@property (readonly) NSUInteger level NS_AVAILABLE(10_6, 4_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 31513,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeKey\n#define __RECAULK_TYPEDEF_NSFileAttributeKey 1\ntypedef NSString *NSFileAttributeKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileType;",
+    "offset": 31513,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileType;"
+   },
+   {
+    "kind": "insert",
+    "offset": 31560,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeType\n#define __RECAULK_TYPEDEF_NSFileAttributeType 1\ntypedef NSString *NSFileAttributeType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeDirectory;",
+    "offset": 31560,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeDirectory;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeRegular;",
+    "offset": 31616,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeRegular;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeSymbolicLink;",
+    "offset": 31670,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeSymbolicLink;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeSocket;",
+    "offset": 31729,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeSocket;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeCharacterSpecial;",
+    "offset": 31782,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeCharacterSpecial;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeBlockSpecial;",
+    "offset": 31845,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeBlockSpecial;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileTypeUnknown;",
+    "offset": 31904,
+    "new": "FOUNDATION_EXPORT NSFileAttributeType const NSFileTypeUnknown;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSize;",
+    "offset": 31958,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSize;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileModificationDate;",
+    "offset": 32005,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileModificationDate;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileReferenceCount;",
+    "offset": 32064,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileReferenceCount;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileDeviceIdentifier;",
+    "offset": 32121,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileDeviceIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileOwnerAccountName;",
+    "offset": 32180,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileOwnerAccountName;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileGroupOwnerAccountName;",
+    "offset": 32239,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileGroupOwnerAccountName;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFilePosixPermissions;",
+    "offset": 32303,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFilePosixPermissions;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemNumber;",
+    "offset": 32362,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemNumber;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemFileNumber;",
+    "offset": 32417,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemFileNumber;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileExtensionHidden;",
+    "offset": 32476,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileExtensionHidden;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHFSCreatorCode;",
+    "offset": 32534,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileHFSCreatorCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileHFSTypeCode;",
+    "offset": 32591,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileHFSTypeCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileImmutable;",
+    "offset": 32645,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileImmutable;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileAppendOnly;",
+    "offset": 32697,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileAppendOnly;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileCreationDate;",
+    "offset": 32750,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileCreationDate;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileOwnerAccountID;",
+    "offset": 32805,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileOwnerAccountID;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileGroupOwnerAccountID;",
+    "offset": 32862,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileGroupOwnerAccountID;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileBusy;",
+    "offset": 32924,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileBusy;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionKey NS_AVAILABLE_IOS(4_0);",
+    "offset": 32971,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileProtectionKey NS_AVAILABLE_IOS(4_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 33049,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileProtectionType\n#define __RECAULK_TYPEDEF_NSFileProtectionType 1\ntypedef NSString *NSFileProtectionType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionNone NS_AVAILABLE_IOS(4_0);",
+    "offset": 33049,
+    "new": "FOUNDATION_EXPORT NSFileProtectionType const NSFileProtectionNone NS_AVAILABLE_IOS(4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionComplete NS_AVAILABLE_IOS(4_0);",
+    "offset": 33128,
+    "new": "FOUNDATION_EXPORT NSFileProtectionType const NSFileProtectionComplete NS_AVAILABLE_IOS(4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionCompleteUnlessOpen NS_AVAILABLE_IOS(5_0);",
+    "offset": 33211,
+    "new": "FOUNDATION_EXPORT NSFileProtectionType const NSFileProtectionCompleteUnlessOpen NS_AVAILABLE_IOS(5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionCompleteUntilFirstUserAuthentication NS_AVAILABLE_IOS(5_0);",
+    "offset": 33304,
+    "new": "FOUNDATION_EXPORT NSFileProtectionType const NSFileProtectionCompleteUntilFirstUserAuthentication NS_AVAILABLE_IOS(5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemSize;",
+    "offset": 33416,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemSize;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemFreeSize;",
+    "offset": 33469,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemFreeSize;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemNodes;",
+    "offset": 33526,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemNodes;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSFileSystemFreeNodes;",
+    "offset": 33580,
+    "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileSystemFreeNodes;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileWrapper.h": [
@@ -3135,6 +3923,12 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSGeometry.h": [
+   {
+    "kind": "replace",
+    "old": "#define NSMinXEdge CGRectMinXEdge\n#define NSMinYEdge CGRectMinYEdge\n#define NSMaxXEdge CGRectMaxXEdge\n#define NSMaxYEdge CGRectMaxYEdge\n\ntypedef NSUInteger NSRectEdge;",
+    "offset": 654,
+    "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NS_ENUM(NSUInteger, NSRectEdge) {\n    NSRectEdgeMinX = CGRectMinXEdge,\n    NSRectEdgeMinY = CGRectMinYEdge,\n    NSRectEdgeMaxX = CGRectMaxXEdge,\n    NSRectEdgeMaxY = CGRectMaxYEdge,\n\n    NSMinXEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MinX instead\"))) = NSRectEdgeMinX,\n    NSMinYEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MinY instead\"))) = NSRectEdgeMinY,\n    NSMaxXEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MaxX instead\"))) = NSRectEdgeMaxX,\n    NSMaxYEdge __attribute__((availability(swift, unavailable, message=\"Use NSRectEdge.MaxY instead\"))) = NSRectEdgeMaxY,\n};"
+   },
    {
     "kind": "property",
     "class": "NSValue",
@@ -3347,6 +4141,23 @@
     "property": "@property NSHTTPCookieAcceptPolicy cookieAcceptPolicy;",
     "setter_decl": "- (void)setCookieAcceptPolicy:(NSHTTPCookieAcceptPolicy)cookieAcceptPolicy;",
     "setter_offset": 3816
+   },
+   {
+    "kind": "insert",
+    "offset": 4815,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSHTTPCookieManagerAcceptPolicyChangedNotification;",
+    "offset": 4815,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSHTTPCookieManagerAcceptPolicyChangedNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSHTTPCookieManagerCookiesChangedNotification;",
+    "offset": 5031,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSHTTPCookieManagerCookiesChangedNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHashTable.h": [
@@ -3572,6 +4383,12 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyValueObserving.h": [
    {
+    "kind": "replace",
+    "old": "+ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key NS_AVAILABLE(10_5, 2_0);",
+    "offset": 18060,
+    "new": "+ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key NS_AVAILABLE(10_5, 2_0);"
+   },
+   {
     "kind": "property",
     "class": "NSObject",
     "container": "category",
@@ -3630,6 +4447,244 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLinguisticTagger.h": [
+   {
+    "kind": "insert",
+    "offset": 540,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTagScheme\n#define __RECAULK_TYPEDEF_NSLinguisticTagScheme 1\ntypedef NSString *NSLinguisticTagScheme NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeTokenType NS_AVAILABLE(10_7, 5_0);",
+    "offset": 540,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeTokenType NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeLexicalClass NS_AVAILABLE(10_7, 5_0);",
+    "offset": 760,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeLexicalClass NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeNameType NS_AVAILABLE(10_7, 5_0);",
+    "offset": 991,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeNameType NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeNameTypeOrLexicalClass NS_AVAILABLE(10_7, 5_0);",
+    "offset": 1206,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeNameTypeOrLexicalClass NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeLemma NS_AVAILABLE(10_7, 5_0);",
+    "offset": 1437,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeLemma NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeLanguage NS_AVAILABLE(10_7, 5_0);",
+    "offset": 1616,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeLanguage NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeScript NS_AVAILABLE(10_7, 5_0);",
+    "offset": 1806,
+    "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeScript NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 2018,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTag\n#define __RECAULK_TYPEDEF_NSLinguisticTag 1\ntypedef NSString *NSLinguisticTag NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagWord NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2018,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagWord NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagPunctuation NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2189,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagPunctuation NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagWhitespace NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2330,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagWhitespace NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOther NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2483,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOther NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagNoun NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2705,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagNoun NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagVerb NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2784,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagVerb NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagAdjective NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2863,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagAdjective NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagAdverb NS_AVAILABLE(10_7, 5_0);",
+    "offset": 2947,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagAdverb NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagPronoun NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3028,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagPronoun NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagDeterminer NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3110,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagDeterminer NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagParticle NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3195,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagParticle NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagPreposition NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3278,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagPreposition NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagNumber NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3364,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagNumber NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagConjunction NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3445,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagConjunction NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagInterjection NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3531,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagInterjection NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagClassifier NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3618,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagClassifier NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagIdiom NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3703,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagIdiom NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOtherWord NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3783,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOtherWord NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSentenceTerminator NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3867,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagSentenceTerminator NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOpenQuote NS_AVAILABLE(10_7, 5_0);",
+    "offset": 3960,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOpenQuote NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagCloseQuote NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4044,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagCloseQuote NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOpenParenthesis NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4129,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOpenParenthesis NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagCloseParenthesis NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4219,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagCloseParenthesis NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagWordJoiner NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4310,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagWordJoiner NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagDash NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4395,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagDash NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOtherPunctuation NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4474,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOtherPunctuation NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagParagraphBreak NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4565,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagParagraphBreak NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOtherWhitespace NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4654,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOtherWhitespace NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagPersonalName NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4790,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagPersonalName NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagPlaceName NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4877,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagPlaceName NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagOrganizationName NS_AVAILABLE(10_7, 5_0);",
+    "offset": 4961,
+    "new": "FOUNDATION_EXPORT NSLinguisticTag const NSLinguisticTagOrganizationName NS_AVAILABLE(10_7, 5_0);"
+   },
    {
     "kind": "property",
     "class": "NSLinguisticTagger",
@@ -3705,7 +4760,7 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)availableLocaleIdentifiers;",
     "offset": 1135,
-    "property": "@property (class, readonly, copy) NSArray *availableLocaleIdentifiers;",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *availableLocaleIdentifiers;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3716,7 +4771,7 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)ISOLanguageCodes;",
     "offset": 1176,
-    "property": "@property (class, readonly, copy) NSArray *ISOLanguageCodes;",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *ISOLanguageCodes;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3727,7 +4782,7 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)ISOCountryCodes;",
     "offset": 1207,
-    "property": "@property (class, readonly, copy) NSArray *ISOCountryCodes;",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *ISOCountryCodes;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3738,7 +4793,7 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)ISOCurrencyCodes;",
     "offset": 1237,
-    "property": "@property (class, readonly, copy) NSArray *ISOCurrencyCodes;",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *ISOCurrencyCodes;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3749,7 +4804,7 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)commonISOCurrencyCodes NS_AVAILABLE(10_5, 2_0);",
     "offset": 1268,
-    "property": "@property (class, readonly, copy) NSArray *commonISOCurrencyCodes NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *commonISOCurrencyCodes NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3760,9 +4815,145 @@
     "category": "NSLocaleGeneralInfo",
     "decl": "+ (NSArray *)preferredLanguages NS_AVAILABLE(10_5, 2_0);",
     "offset": 1330,
-    "property": "@property (class, readonly, copy) NSArray *preferredLanguages NS_AVAILABLE(10_5, 2_0);",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *preferredLanguages NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "+ (NSDictionary *)componentsFromLocaleIdentifier:(NSString *)string;",
+    "offset": 1561,
+    "new": "+ (NSDictionary<NSString *,NSString *> *)componentsFromLocaleIdentifier:(NSString *)string;"
+   },
+   {
+    "kind": "insert",
+    "offset": 2719,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSCurrentLocaleDidChangeNotification NS_AVAILABLE(10_5, 2_0);",
+    "offset": 2719,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSCurrentLocaleDidChangeNotification NS_AVAILABLE(10_5, 2_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 2818,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLocaleKey\n#define __RECAULK_TYPEDEF_NSLocaleKey 1\ntypedef NSString *NSLocaleKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleIdentifier;",
+    "offset": 2818,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleLanguageCode;",
+    "offset": 2886,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleLanguageCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCountryCode;",
+    "offset": 2955,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCountryCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleScriptCode;",
+    "offset": 3024,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleScriptCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleVariantCode;",
+    "offset": 3092,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleVariantCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleExemplarCharacterSet;",
+    "offset": 3161,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleExemplarCharacterSet;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCalendar;",
+    "offset": 3243,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCalendar;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCollationIdentifier;",
+    "offset": 3311,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCollationIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleUsesMetricSystem;",
+    "offset": 3387,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleUsesMetricSystem;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleMeasurementSystem;",
+    "offset": 3468,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleMeasurementSystem;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleDecimalSeparator;",
+    "offset": 3542,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleDecimalSeparator;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleGroupingSeparator;",
+    "offset": 3615,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleGroupingSeparator;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCurrencySymbol;",
+    "offset": 3689,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCurrencySymbol;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCurrencyCode;",
+    "offset": 3765,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCurrencyCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleCollatorIdentifier NS_AVAILABLE(10_6, 4_0);",
+    "offset": 3834,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleCollatorIdentifier NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleQuotationBeginDelimiterKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 3934,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleQuotationBeginDelimiterKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleQuotationEndDelimiterKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 4041,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleQuotationEndDelimiterKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleAlternateQuotationBeginDelimiterKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 4146,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleAlternateQuotationBeginDelimiterKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSLocaleAlternateQuotationEndDelimiterKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 4262,
+    "new": "FOUNDATION_EXPORT NSLocaleKey const NSLocaleAlternateQuotationEndDelimiterKey NS_AVAILABLE(10_6, 4_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLock.h": [
@@ -4033,6 +5224,35 @@
     "property": "@property (readonly, copy) NSArray *groupedResults;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 3241,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSMetadataQueryDidStartGatheringNotification NS_AVAILABLE(10_4, 5_0);",
+    "offset": 3241,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSMetadataQueryDidStartGatheringNotification NS_AVAILABLE(10_4, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSMetadataQueryGatheringProgressNotification NS_AVAILABLE(10_4, 5_0);",
+    "offset": 3346,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSMetadataQueryGatheringProgressNotification NS_AVAILABLE(10_4, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSMetadataQueryDidFinishGatheringNotification NS_AVAILABLE(10_4, 5_0);",
+    "offset": 3451,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSMetadataQueryDidFinishGatheringNotification NS_AVAILABLE(10_4, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSMetadataQueryDidUpdateNotification NS_AVAILABLE(10_4, 5_0);",
+    "offset": 3557,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSMetadataQueryDidUpdateNotification NS_AVAILABLE(10_4, 5_0);"
    },
    {
     "kind": "property",
@@ -4945,6 +6165,14 @@
     "setter_offset": 8932
    }
   ],
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObjCRuntime.h": [
+   {
+    "kind": "replace",
+    "old": "enum {\n    NSEnumerationConcurrent = (1UL << 0),\n    NSEnumerationReverse = (1UL << 1),\n};\ntypedef NSUInteger NSEnumerationOptions;",
+    "offset": 15776,
+    "new": "typedef NS_OPTIONS(NSUInteger, NSEnumerationOptions) {\n    NSEnumerationConcurrent = (1UL << 0),\n    NSEnumerationReverse = (1UL << 1),\n};"
+   }
+  ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObject.h": [
    {
     "kind": "property",
@@ -5432,6 +6660,17 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPort.h": [
    {
+    "kind": "insert",
+    "offset": 282,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSPortDidBecomeInvalidNotification;",
+    "offset": 282,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSPortDidBecomeInvalidNotification;"
+   },
+   {
     "kind": "property",
     "class": "NSPort",
     "container": "interface",
@@ -5761,6 +7000,87 @@
     "property": "@property (readonly, copy) NSDictionary *userInfo;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 17237,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressUserInfoKey\n#define __RECAULK_TYPEDEF_NSProgressUserInfoKey 1\ntypedef NSString *NSProgressUserInfoKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressEstimatedTimeRemainingKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 17237,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressEstimatedTimeRemainingKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressThroughputKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 17417,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressThroughputKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 18032,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressKind\n#define __RECAULK_TYPEDEF_NSProgressKind 1\ntypedef NSString *NSProgressKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressKindFile NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18032,
+    "new": "FOUNDATION_EXPORT NSProgressKind const NSProgressKindFile NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18441,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileOperationKindKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 18598,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressFileOperationKind\n#define __RECAULK_TYPEDEF_NSProgressFileOperationKind 1\ntypedef NSString *NSProgressFileOperationKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindDownloading NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18598,
+    "new": "FOUNDATION_EXPORT NSProgressFileOperationKind const NSProgressFileOperationKindDownloading NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindDecompressingAfterDownloading NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18696,
+    "new": "FOUNDATION_EXPORT NSProgressFileOperationKind const NSProgressFileOperationKindDecompressingAfterDownloading NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindReceiving NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18812,
+    "new": "FOUNDATION_EXPORT NSProgressFileOperationKind const NSProgressFileOperationKindReceiving NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindCopying NS_AVAILABLE(10_9, 7_0);",
+    "offset": 18908,
+    "new": "FOUNDATION_EXPORT NSProgressFileOperationKind const NSProgressFileOperationKindCopying NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileURLKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 19282,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileURLKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileTotalCountKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 19618,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileTotalCountKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileCompletedCountKey NS_AVAILABLE(10_9, 7_0);",
+    "offset": 19705,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileCompletedCountKey NS_AVAILABLE(10_9, 7_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProtocolChecker.h": [
@@ -6871,6 +8191,58 @@
     "property": "@property (readonly) BOOL hasSpaceAvailable;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 4864,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStreamPropertyKey\n#define __RECAULK_TYPEDEF_NSStreamPropertyKey 1\ntypedef NSString *NSStreamPropertyKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamSocketSecurityLevelKey\t\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 4864,
+    "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamSocketSecurityLevelKey\t\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamSOCKSProxyConfigurationKey\t\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 5542,
+    "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamSOCKSProxyConfigurationKey\t\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamDataWrittenToMemoryStreamKey\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 6709,
+    "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamDataWrittenToMemoryStreamKey\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamFileCurrentOffsetKey\t\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 6869,
+    "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamFileCurrentOffsetKey\t\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 7085,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamSocketSSLErrorDomain\t\t\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 7085,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSStreamSocketSSLErrorDomain\t\t\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamSOCKSErrorDomain\t\t\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 7249,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSStreamSOCKSErrorDomain\t\t\tNS_AVAILABLE(10_3, 2_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSStreamNetworkServiceType\t\t    NS_AVAILABLE(10_7, 4_0);",
+    "offset": 7643,
+    "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamNetworkServiceType\t\t    NS_AVAILABLE(10_7, 4_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSString.h": [
@@ -6884,6 +8256,11 @@
     "property": "@property (readonly) NSUInteger length;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 4397,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStringTransform\n#define __RECAULK_TYPEDEF_NSStringTransform 1\ntypedef NSString *NSStringTransform NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "property",
@@ -6950,6 +8327,18 @@
     "property": "@property (readonly) BOOL boolValue NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSArray *)componentsSeparatedByString:(NSString *)separator;",
+    "offset": 8484,
+    "new": "- (NSArray<NSString *> *)componentsSeparatedByString:(NSString *)separator;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)separator NS_AVAILABLE(10_5, 2_0);",
+    "offset": 8548,
+    "new": "- (NSArray<NSString *> *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)separator NS_AVAILABLE(10_5, 2_0);"
    },
    {
     "kind": "property",
@@ -7227,6 +8616,17 @@
     "property": "@property (readonly) NSTaskTerminationReason terminationReason NS_AVAILABLE(10_6, NA);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 3035,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSTaskDidTerminateNotification;",
+    "offset": 3035,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSTaskDidTerminateNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThread.h": [
@@ -7372,6 +8772,29 @@
     "property": "@property (readonly, getter=isCancelled) BOOL cancelled NS_AVAILABLE(10_5, 2_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 1704,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSWillBecomeMultiThreadedNotification;",
+    "offset": 1704,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSWillBecomeMultiThreadedNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSDidBecomeSingleThreadedNotification;",
+    "offset": 1778,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSDidBecomeSingleThreadedNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSThreadWillExitNotification;",
+    "offset": 1852,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSThreadWillExitNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimeZone.h": [
@@ -7437,7 +8860,7 @@
     "category": "NSExtendedTimeZone",
     "decl": "+ (NSArray *)knownTimeZoneNames;",
     "offset": 882,
-    "property": "@property (class, readonly, copy) NSArray *knownTimeZoneNames;",
+    "property": "@property (class, readonly, copy) NSArray<NSString *> *knownTimeZoneNames;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -7448,7 +8871,7 @@
     "category": "NSExtendedTimeZone",
     "decl": "+ (NSDictionary *)abbreviationDictionary;",
     "offset": 916,
-    "property": "@property (class, copy) NSDictionary *abbreviationDictionary;",
+    "property": "@property (class, copy) NSDictionary<NSString *,NSString *> *abbreviationDictionary;",
     "setter_decl": "+ (void)setAbbreviationDictionary:(NSDictionary *)dict NS_AVAILABLE(10_6, 4_0);",
     "setter_offset": 958
    },
@@ -7528,6 +8951,17 @@
     "property": "@property (readonly, copy) NSString *description;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 2585,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSSystemTimeZoneDidChangeNotification NS_AVAILABLE(10_5, 2_0);",
+    "offset": 2585,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSSystemTimeZoneDidChangeNotification NS_AVAILABLE(10_5, 2_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimer.h": [
@@ -7798,6 +9232,591 @@
     "setter_offset": null
    },
    {
+    "kind": "insert",
+    "offset": 11768,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLResourceKey\n#define __RECAULK_TYPEDEF_NSURLResourceKey 1\ntypedef NSString *NSURLResourceKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLKeysOfUnsetValuesKey NS_AVAILABLE(10_7, 5_0);",
+    "offset": 11768,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLKeysOfUnsetValuesKey NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLNameKey                        NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14031,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLNameKey                        NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLocalizedNameKey               NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14210,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLocalizedNameKey               NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsRegularFileKey               NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14399,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsRegularFileKey               NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsDirectoryKey                 NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14562,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsDirectoryKey                 NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsSymbolicLinkKey              NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14723,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsSymbolicLinkKey              NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsVolumeKey                    NS_AVAILABLE(10_6, 4_0);",
+    "offset": 14881,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsVolumeKey                    NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsPackageKey                   NS_AVAILABLE(10_6, 4_0);",
+    "offset": 15061,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsPackageKey                   NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsSystemImmutableKey           NS_AVAILABLE(10_6, 4_0);",
+    "offset": 15535,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsSystemImmutableKey           NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsUserImmutableKey             NS_AVAILABLE(10_6, 4_0);",
+    "offset": 15712,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsUserImmutableKey             NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsHiddenKey                    NS_AVAILABLE(10_6, 4_0);",
+    "offset": 15887,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsHiddenKey                    NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLHasHiddenExtensionKey          NS_AVAILABLE(10_6, 4_0);",
+    "offset": 16214,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLHasHiddenExtensionKey          NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLCreationDateKey                NS_AVAILABLE(10_6, 4_0);",
+    "offset": 16443,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLCreationDateKey                NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLContentAccessDateKey           NS_AVAILABLE(10_6, 4_0);",
+    "offset": 16608,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLContentAccessDateKey           NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLContentModificationDateKey     NS_AVAILABLE(10_6, 4_0);",
+    "offset": 16778,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLContentModificationDateKey     NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLAttributeModificationDateKey   NS_AVAILABLE(10_6, 4_0);",
+    "offset": 16957,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLAttributeModificationDateKey   NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLinkCountKey                   NS_AVAILABLE(10_6, 4_0);",
+    "offset": 17142,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLinkCountKey                   NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLParentDirectoryURLKey          NS_AVAILABLE(10_6, 4_0);",
+    "offset": 17311,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLParentDirectoryURLKey          NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeURLKey                   NS_AVAILABLE(10_6, 4_0);",
+    "offset": 17480,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeURLKey                   NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLTypeIdentifierKey              NS_AVAILABLE(10_6, 4_0);",
+    "offset": 17659,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLTypeIdentifierKey              NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLocalizedTypeDescriptionKey    NS_AVAILABLE(10_6, 4_0);",
+    "offset": 17838,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLocalizedTypeDescriptionKey    NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLabelNumberKey                 NS_AVAILABLE(10_6, 4_0);",
+    "offset": 18010,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLabelNumberKey                 NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLabelColorKey                  NS_AVAILABLE(10_6, 4_0);",
+    "offset": 18185,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLabelColorKey                  NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLLocalizedLabelKey              NS_AVAILABLE(10_6, 4_0);",
+    "offset": 18348,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLLocalizedLabelKey              NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLEffectiveIconKey               NS_AVAILABLE(10_6, 4_0);",
+    "offset": 18508,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLEffectiveIconKey               NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLCustomIconKey                  NS_AVAILABLE(10_6, 4_0);",
+    "offset": 18684,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLCustomIconKey                  NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceIdentifierKey      NS_AVAILABLE(10_7, 5_0);",
+    "offset": 18880,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileResourceIdentifierKey      NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIdentifierKey            NS_AVAILABLE(10_7, 5_0);",
+    "offset": 19336,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIdentifierKey            NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLPreferredIOBlockSizeKey        NS_AVAILABLE(10_7, 5_0);",
+    "offset": 19761,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLPreferredIOBlockSizeKey        NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsReadableKey                  NS_AVAILABLE(10_7, 5_0);",
+    "offset": 19983,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsReadableKey                  NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsWritableKey                  NS_AVAILABLE(10_7, 5_0);",
+    "offset": 20191,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsWritableKey                  NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsExecutableKey                NS_AVAILABLE(10_7, 5_0);",
+    "offset": 20403,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsExecutableKey                NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileSecurityKey                NS_AVAILABLE(10_7, 5_0);",
+    "offset": 20648,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileSecurityKey                NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsExcludedFromBackupKey        NS_AVAILABLE(10_8, 5_1);",
+    "offset": 20862,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsExcludedFromBackupKey        NS_AVAILABLE(10_8, 5_1);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLPathKey                        NS_AVAILABLE(10_8, 6_0);",
+    "offset": 21508,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLPathKey                        NS_AVAILABLE(10_8, 6_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsMountTriggerKey              NS_AVAILABLE(10_7, 5_0);",
+    "offset": 21677,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsMountTriggerKey              NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeKey            NS_AVAILABLE(10_7, 5_0);",
+    "offset": 21985,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileResourceTypeKey            NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 22239,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLFileResourceType\n#define __RECAULK_TYPEDEF_NSURLFileResourceType 1\ntypedef NSString *NSURLFileResourceType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeNamedPipe      NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22239,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeNamedPipe      NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeCharacterSpecial NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22335,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeCharacterSpecial NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeDirectory      NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22433,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeDirectory      NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeBlockSpecial   NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22529,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeBlockSpecial   NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeRegular        NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22625,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeRegular        NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeSymbolicLink   NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22721,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeSymbolicLink   NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeSocket         NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22817,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeSocket         NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeUnknown        NS_AVAILABLE(10_7, 5_0);",
+    "offset": 22913,
+    "new": "FOUNDATION_EXPORT NSURLFileResourceType const NSURLFileResourceTypeUnknown        NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileSizeKey                    NS_AVAILABLE(10_6, 4_0);",
+    "offset": 23064,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileSizeKey                    NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLFileAllocatedSizeKey           NS_AVAILABLE(10_6, 4_0);",
+    "offset": 23221,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileAllocatedSizeKey           NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLTotalFileSizeKey               NS_AVAILABLE(10_7, 5_0);",
+    "offset": 23440,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLTotalFileSizeKey               NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLTotalFileAllocatedSizeKey      NS_AVAILABLE(10_7, 5_0);",
+    "offset": 23684,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLTotalFileAllocatedSizeKey      NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsAliasFileKey\t\t   NS_AVAILABLE(10_6, 4_0);",
+    "offset": 24023,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsAliasFileKey\t\t   NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeLocalizedFormatDescriptionKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 24444,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeLocalizedFormatDescriptionKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeTotalCapacityKey              NS_AVAILABLE(10_6, 4_0);",
+    "offset": 24612,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeTotalCapacityKey              NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeAvailableCapacityKey          NS_AVAILABLE(10_6, 4_0);",
+    "offset": 24780,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeAvailableCapacityKey          NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeResourceCountKey              NS_AVAILABLE(10_6, 4_0);",
+    "offset": 24943,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeResourceCountKey              NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsPersistentIDsKey      NS_AVAILABLE(10_6, 4_0);",
+    "offset": 25120,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsPersistentIDsKey      NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsSymbolicLinksKey      NS_AVAILABLE(10_6, 4_0);",
+    "offset": 25379,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsSymbolicLinksKey      NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsHardLinksKey          NS_AVAILABLE(10_6, 4_0);",
+    "offset": 25574,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsHardLinksKey          NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsJournalingKey         NS_AVAILABLE(10_6, 4_0);",
+    "offset": 25765,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsJournalingKey         NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsJournalingKey               NS_AVAILABLE(10_6, 4_0);",
+    "offset": 26113,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsJournalingKey               NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsSparseFilesKey        NS_AVAILABLE(10_6, 4_0);",
+    "offset": 26354,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsSparseFilesKey        NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsZeroRunsKey           NS_AVAILABLE(10_6, 4_0);",
+    "offset": 26744,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsZeroRunsKey           NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsCaseSensitiveNamesKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 27149,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsCaseSensitiveNamesKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsCasePreservedNamesKey NS_AVAILABLE(10_6, 4_0);",
+    "offset": 27555,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsCasePreservedNamesKey NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsRootDirectoryDatesKey NS_AVAILABLE(10_7, 5_0);",
+    "offset": 27888,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsRootDirectoryDatesKey NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsVolumeSizesKey        NS_AVAILABLE(10_7, 5_0);",
+    "offset": 28111,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsVolumeSizesKey        NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsRenamingKey           NS_AVAILABLE(10_7, 5_0);",
+    "offset": 28380,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsRenamingKey           NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsAdvisoryFileLockingKey NS_AVAILABLE(10_7, 5_0);",
+    "offset": 28560,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsAdvisoryFileLockingKey NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeSupportsExtendedSecurityKey   NS_AVAILABLE(10_7, 5_0);",
+    "offset": 28835,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeSupportsExtendedSecurityKey   NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsBrowsableKey                NS_AVAILABLE(10_7, 5_0);",
+    "offset": 29036,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsBrowsableKey                NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeMaximumFileSizeKey            NS_AVAILABLE(10_7, 5_0);",
+    "offset": 29282,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeMaximumFileSizeKey            NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsEjectableKey                NS_AVAILABLE(10_7, 5_0);",
+    "offset": 29520,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsEjectableKey                NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsRemovableKey                NS_AVAILABLE(10_7, 5_0);",
+    "offset": 29754,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsRemovableKey                NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsInternalKey                 NS_AVAILABLE(10_7, 5_0);",
+    "offset": 29965,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsInternalKey                 NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsAutomountedKey              NS_AVAILABLE(10_7, 5_0);",
+    "offset": 30235,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsAutomountedKey              NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsLocalKey                    NS_AVAILABLE(10_7, 5_0);",
+    "offset": 30509,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsLocalKey                    NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeIsReadOnlyKey                 NS_AVAILABLE(10_7, 5_0);",
+    "offset": 30702,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeIsReadOnlyKey                 NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeCreationDateKey               NS_AVAILABLE(10_7, 5_0);",
+    "offset": 30880,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeCreationDateKey               NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeURLForRemountingKey           NS_AVAILABLE(10_7, 5_0);",
+    "offset": 31080,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeURLForRemountingKey           NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeUUIDStringKey                 NS_AVAILABLE(10_7, 5_0);",
+    "offset": 31285,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeUUIDStringKey                 NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeNameKey                       NS_AVAILABLE(10_7, 5_0);",
+    "offset": 31525,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeNameKey                       NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLVolumeLocalizedNameKey              NS_AVAILABLE(10_7, 5_0);",
+    "offset": 31725,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLVolumeLocalizedNameKey              NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLIsUbiquitousItemKey                     NS_AVAILABLE(10_7, 5_0);",
+    "offset": 31940,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLIsUbiquitousItemKey                     NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemHasUnresolvedConflictsKey NS_AVAILABLE(10_7, 5_0);",
+    "offset": 32165,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemHasUnresolvedConflictsKey NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemIsDownloadedKey           NS_DEPRECATED(10_7, 10_9, 5_0, 7_0, \"Use NSURLUbiquitousItemDownloadingStatusKey instead\");",
+    "offset": 32359,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemIsDownloadedKey           NS_DEPRECATED(10_7, 10_9, 5_0, 7_0, \"Use NSURLUbiquitousItemDownloadingStatusKey instead\");"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemIsDownloadingKey          NS_AVAILABLE(10_7, 5_0);",
+    "offset": 32749,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemIsDownloadingKey          NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemIsUploadedKey             NS_AVAILABLE(10_7, 5_0);",
+    "offset": 32946,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemIsUploadedKey             NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemIsUploadingKey            NS_AVAILABLE(10_7, 5_0);",
+    "offset": 33153,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemIsUploadingKey            NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemPercentDownloadedKey      NS_DEPRECATED(10_7, 10_8, 5_0, 6_0);",
+    "offset": 33348,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemPercentDownloadedKey      NS_DEPRECATED(10_7, 10_8, 5_0, 6_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemPercentUploadedKey        NS_DEPRECATED(10_7, 10_8, 5_0, 6_0);",
+    "offset": 33563,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemPercentUploadedKey        NS_DEPRECATED(10_7, 10_8, 5_0, 6_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingStatusKey      NS_AVAILABLE(10_9, 7_0);",
+    "offset": 33776,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemDownloadingStatusKey      NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingErrorKey       NS_AVAILABLE(10_9, 7_0);",
+    "offset": 33983,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemDownloadingErrorKey       NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemUploadingErrorKey         NS_AVAILABLE(10_9, 7_0);",
+    "offset": 34210,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemUploadingErrorKey         NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "insert",
+    "offset": 34510,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus\n#define __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus 1\ntypedef NSString *NSURLUbiquitousItemDownloadingStatus NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingStatusNotDownloaded  NS_AVAILABLE(10_9, 7_0);",
+    "offset": 34510,
+    "new": "FOUNDATION_EXPORT NSURLUbiquitousItemDownloadingStatus const NSURLUbiquitousItemDownloadingStatusNotDownloaded  NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingStatusDownloaded     NS_AVAILABLE(10_9, 7_0);",
+    "offset": 34726,
+    "new": "FOUNDATION_EXPORT NSURLUbiquitousItemDownloadingStatus const NSURLUbiquitousItemDownloadingStatusDownloaded     NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingStatusCurrent        NS_AVAILABLE(10_9, 7_0);",
+    "offset": 34955,
+    "new": "FOUNDATION_EXPORT NSURLUbiquitousItemDownloadingStatus const NSURLUbiquitousItemDownloadingStatusCurrent        NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
     "kind": "property",
     "class": "NSURLComponents",
     "container": "interface",
@@ -7886,13 +9905,23 @@
     "setter_offset": null
    },
    {
+    "kind": "insert",
+    "offset": 47060,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole 1\ntypedef NSString *NSURLUbiquitousSharedItemRole NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "insert",
+    "offset": 47060,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions 1\ntypedef NSString *NSURLUbiquitousSharedItemPermissions NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
     "decl": "- (NSArray *)pathComponents NS_AVAILABLE(10_6, 4_0);",
     "offset": 47318,
-    "property": "@property (readonly, copy) NSArray *pathComponents NS_AVAILABLE(10_6, 4_0);",
+    "property": "@property (readonly, copy) NSArray<NSString *> *pathComponents NS_AVAILABLE(10_6, 4_0);",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -8246,6 +10275,17 @@
     "property": "@property (readonly, copy) NSDictionary *allCredentials;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 4948,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSURLCredentialStorageChangedNotification;",
+    "offset": 4948,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSURLCredentialStorageChangedNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLDownload.h": [
@@ -8281,6 +10321,19 @@
     "property": "@property BOOL deletesFileUponFailure;",
     "setter_decl": "- (void)setDeletesFileUponFailure:(BOOL)deletesFileUponFailure;",
     "setter_offset": 4734
+   }
+  ],
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLError.h": [
+   {
+    "kind": "insert",
+    "offset": 655,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLErrorDomain;",
+    "offset": 655,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSURLErrorDomain;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLProtectionSpace.h": [
@@ -8432,6 +10485,18 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLRequest.h": [
    {
+    "kind": "replace",
+    "old": "enum\n{\n    NSURLRequestUseProtocolCachePolicy = 0,\n\n    NSURLRequestReloadIgnoringLocalCacheData = 1,\n    NSURLRequestReloadIgnoringLocalAndRemoteCacheData = 4, // Unimplemented\n    NSURLRequestReloadIgnoringCacheData = NSURLRequestReloadIgnoringLocalCacheData,\n\n    NSURLRequestReturnCacheDataElseLoad = 2,\n    NSURLRequestReturnCacheDataDontLoad = 3,\n\n    NSURLRequestReloadRevalidatingCacheData = 5, // Unimplemented\n};\ntypedef NSUInteger NSURLRequestCachePolicy;",
+    "offset": 4100,
+    "new": "typedef NS_ENUM(NSUInteger, NSURLRequestCachePolicy) {\n    NSURLRequestUseProtocolCachePolicy = 0,\n\n    NSURLRequestReloadIgnoringLocalCacheData = 1,\n    NSURLRequestReloadIgnoringLocalAndRemoteCacheData = 4, // Unimplemented\n    NSURLRequestReloadIgnoringCacheData = NSURLRequestReloadIgnoringLocalCacheData,\n\n    NSURLRequestReturnCacheDataElseLoad = 2,\n    NSURLRequestReturnCacheDataDontLoad = 3,\n\n    NSURLRequestReloadRevalidatingCacheData = 5, // Unimplemented\n};"
+   },
+   {
+    "kind": "replace",
+    "old": "enum\n{\n    NSURLNetworkServiceTypeDefault = 0,\t// Standard internet traffic\n    NSURLNetworkServiceTypeVoIP = 1,\t// Voice over IP control traffic\n    NSURLNetworkServiceTypeVideo = 2,\t// Video traffic\n    NSURLNetworkServiceTypeBackground = 3, // Background traffic\n    NSURLNetworkServiceTypeVoice = 4\t   // Voice data\n};\ntypedef NSUInteger NSURLRequestNetworkServiceType;",
+    "offset": 5450,
+    "new": "typedef NS_ENUM(NSUInteger, NSURLRequestNetworkServiceType) {\n    NSURLNetworkServiceTypeDefault = 0,\t// Standard internet traffic\n    NSURLNetworkServiceTypeVoIP = 1,\t// Voice over IP control traffic\n    NSURLNetworkServiceTypeVideo = 2,\t// Video traffic\n    NSURLNetworkServiceTypeBackground = 3, // Background traffic\n    NSURLNetworkServiceTypeVoice = 4\t   // Voice data\n};"
+   },
+   {
     "kind": "property",
     "class": "NSURLRequest",
     "container": "interface",
@@ -8526,7 +10591,7 @@
     "category": "NSHTTPURLRequest",
     "decl": "- (NSDictionary *)allHTTPHeaderFields;",
     "offset": 16848,
-    "property": "@property (readonly, copy) NSDictionary *allHTTPHeaderFields;",
+    "property": "@property (readonly, copy) NSDictionary<NSString *,NSString *> *allHTTPHeaderFields;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -8724,6 +10789,17 @@
     "property": "@property (readonly, copy) NSDictionary *dictionaryRepresentation;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 1433,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUbiquitousKeyValueStoreDidChangeExternallyNotification NS_AVAILABLE(10_7, 5_0);",
+    "offset": 1433,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUbiquitousKeyValueStoreDidChangeExternallyNotification NS_AVAILABLE(10_7, 5_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUndoManager.h": [
@@ -8891,6 +10967,59 @@
     "property": "@property (readonly, copy) NSString *redoMenuItemTitle;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 5062,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerCheckpointNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5062,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerCheckpointNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerWillUndoChangeNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5316,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerWillUndoChangeNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerWillRedoChangeNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5416,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerWillRedoChangeNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerDidUndoChangeNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5517,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerDidUndoChangeNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerDidRedoChangeNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5616,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerDidRedoChangeNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerDidOpenUndoGroupNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5716,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerDidOpenUndoGroupNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerWillCloseUndoGroupNotification NS_AVAILABLE(10_0, 3_0);",
+    "offset": 5818,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerWillCloseUndoGroupNotification NS_AVAILABLE(10_0, 3_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerDidCloseUndoGroupNotification NS_AVAILABLE(10_7, 5_0);",
+    "offset": 6020,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUndoManagerDidCloseUndoGroupNotification NS_AVAILABLE(10_7, 5_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserDefaults.h": [
@@ -8915,6 +11044,17 @@
     "property": "@property (readonly, copy) NSArray *volatileDomainNames;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 2593,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSUserDefaultsDidChangeNotification;",
+    "offset": 2593,
+    "new": "FOUNDATION_EXPORT NSNotificationName const NSUserDefaultsDidChangeNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserNotification.h": [
@@ -9659,6 +11799,17 @@
     "property": "@property (readonly) NSInteger columnNumber;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 7186,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSXMLParserErrorDomain\tNS_AVAILABLE(10_3, 2_0);",
+    "offset": 7186,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSXMLParserErrorDomain\tNS_AVAILABLE(10_3, 2_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXPCConnection.h": [
@@ -9729,6 +11880,19 @@
     "property": "@property (readonly, copy) NSString *debugDescription;",
     "setter_decl": null,
     "setter_offset": null
+   }
+  ],
+  "usr/include/objc/runtime.h": [
+   {
+    "kind": "insert",
+    "offset": 58447,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef OBJC_ENUM\n#define OBJC_ENUM(_type, _name) enum _name : _type _name; enum _name : _type\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "enum {\n    OBJC_ASSOCIATION_ASSIGN = 0,           /**< Specifies a weak reference to the associated object. */\n    OBJC_ASSOCIATION_RETAIN_NONATOMIC = 1, /**< Specifies a strong reference to the associated object. \n                                            *   The association is not made atomically. */\n    OBJC_ASSOCIATION_COPY_NONATOMIC = 3,   /**< Specifies that the associated object is copied. \n                                            *   The association is not made atomically. */\n    OBJC_ASSOCIATION_RETAIN = 01401,       /**< Specifies a strong reference to the associated object.\n                                            *   The association is made atomically. */\n    OBJC_ASSOCIATION_COPY = 01403          /**< Specifies that the associated object is copied.\n                                            *   The association is made atomically. */\n};\n\n/// Type to specify the behavior of an association.\ntypedef uintptr_t objc_AssociationPolicy;",
+    "offset": 58447,
+    "new": "/// Type to specify the behavior of an association.\ntypedef OBJC_ENUM(uintptr_t, objc_AssociationPolicy) {\n    OBJC_ASSOCIATION_ASSIGN = 0,           /**< Specifies a weak reference to the associated object. */\n    OBJC_ASSOCIATION_RETAIN_NONATOMIC = 1, /**< Specifies a strong reference to the associated object. \n                                            *   The association is not made atomically. */\n    OBJC_ASSOCIATION_COPY_NONATOMIC = 3,   /**< Specifies that the associated object is copied. \n                                            *   The association is not made atomically. */\n    OBJC_ASSOCIATION_RETAIN = 01401,       /**< Specifies a strong reference to the associated object.\n                                            *   The association is made atomically. */\n    OBJC_ASSOCIATION_COPY = 01403          /**< Specifies that the associated object is copied.\n                                            *   The association is made atomically. */\n};"
    }
   ]
  }
