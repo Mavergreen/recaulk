@@ -23,6 +23,10 @@ providers() {
     WORKSPACE_REDUCE_MOTION recaulk.nsworkspace.should-reduce-motion.v1 NSWorkspace - \
     accessibilityDisplayShouldReduceMotion 'c16@0:8' \
     __recaulk_objc_workspace_should_reduce_motion __recaulk_objc_activate AppKit,Carbon \
+    CONTROL_SINGLE_LINE recaulk.nscontrol.uses-single-line-mode.v1 NSControl - usesSingleLineMode 'c16@0:8' \
+    __recaulk_objc_control_uses_single_line_mode __recaulk_objc_activate AppKit,Carbon \
+    CONTROL_SET_SINGLE_LINE recaulk.nscontrol.set-uses-single-line-mode.v1 NSControl - setUsesSingleLineMode: \
+    'v20@0:8c16' __recaulk_objc_control_set_uses_single_line_mode __recaulk_objc_activate AppKit,Carbon \
     LOCALE_LANGUAGE_CODE recaulk.nslocale.language-code.v1 NSLocale - languageCode '@16@0:8' \
     __recaulk_objc_locale_language_code __recaulk_objc_activate_foundation Foundation \
     LOCALE_COUNTRY_CODE recaulk.nslocale.country-code.v1 NSLocale - countryCode '@16@0:8' \
@@ -104,6 +108,26 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 - (BOOL)localizedCaseInsensitiveContainsString:(NSString *)str { return NO; }
+@end
+EOF
+    ;;
+    recaulk.nscontrol.uses-single-line-mode.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (BOOL)usesSingleLineMode;
+@end
+@implementation RecaulkProviderEncoding
+- (BOOL)usesSingleLineMode { return NO; }
+@end
+EOF
+    ;;
+    recaulk.nscontrol.set-uses-single-line-mode.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setUsesSingleLineMode:(BOOL)flag;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setUsesSingleLineMode:(BOOL)flag { (void)flag; }
 @end
 EOF
     ;;

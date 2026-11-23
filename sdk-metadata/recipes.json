@@ -622,6 +622,146 @@
           "new": "- (void)loadView;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10. 10.9's AppKit never sends these, so an override of one never runs there, and NSViewController\n   does not implement them: [super viewWillAppear] compiles, and runs only where 10.10+ sends the method. */\n- (void)viewDidLoad __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillLayout __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidLayout __attribute__((availability(macosx,introduced=10.10)));"
         }
       ]
+    },
+    {
+      "id": "foundation-filemanager-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileManager.h",
+      "sha256": "f8012746cc99d4fb8a2dad36e070ad2fb3432385abd67ef3bbd93539bfc3e6df",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSFileManager.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSDirectoryEnumerator : NSEnumerator",
+          "new": "@interface NSDirectoryEnumerator<ObjectType> : NSEnumerator<ObjectType>"
+        },
+        {
+          "old": "@class NSArray, NSData, NSDate, NSDirectoryEnumerator, NSError, NSNumber;",
+          "new": "@class NSArray, NSData, NSDate, NSDirectoryEnumerator, NSError, NSNumber;\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names of the NSString keys and values of a file attributes dictionary. */\ntypedef NSString * NSFileAttributeKey;\ntypedef NSString * NSFileAttributeType;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-viewcontroller-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSViewController.h",
+      "sha256": "191a0a11524f025f89e643f14d73e8115d3cf97901aa8337f8f1d8fe916de0b7",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)discardEditing;\n\n@end",
+          "new": "- (void)discardEditing;\n\n@end\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#import <AppKit/NSLayoutConstraint.h>\n__attribute__((availability(macosx,introduced=10.10), weak_import))\n@interface NSTitlebarAccessoryViewController : NSViewController\n@property NSLayoutAttribute layoutAttribute;\n@property CGFloat fullScreenMinHeight;\n@end"
+        },
+        {
+          "old": "- (void)loadView;",
+          "new": "- (void)loadView;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10. 10.9's AppKit never sends these, so an override of one never runs there, and NSViewController\n   does not implement them: [super viewWillAppear] compiles, and runs only where 10.10+ sends the method. */\n- (void)viewDidLoad __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidAppear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidDisappear __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewWillLayout __attribute__((availability(macosx,introduced=10.10)));\n- (void)viewDidLayout __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-accessibility-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAccessibility.h",
+      "sha256": "dd2607f8800a6ea9d900129566bf590ef070f5dd9af2b575b4817d715e5e8f38",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAccessibility.h"
+      ],
+      "replacements": [
+        {
+          "old": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);",
+          "new": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 role protocols, so a class can declare that it adopts them. They are compile-time only: 10.9's\n   accessibility asks through accessibilityAttributeValue: and friends, never through these, so a class must\n   still answer there to be accessible on 10.9. */\n@protocol NSAccessibilityElement <NSObject>\n@required\n- (NSRect)accessibilityFrame;\n- (id)accessibilityParent;\n@optional\n- (BOOL)isAccessibilityFocused;\n- (NSString *)accessibilityIdentifier;\n@end\n@protocol NSAccessibilityGroup <NSAccessibilityElement>\n@end\n@protocol NSAccessibilityButton <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityLabel;\n- (BOOL)accessibilityPerformPress;\n@end\n@protocol NSAccessibilitySwitch <NSAccessibilityButton>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (BOOL)accessibilityPerformIncrement;\n- (BOOL)accessibilityPerformDecrement;\n@end\n@protocol NSAccessibilityRadioButton <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityCheckBox <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityStaticText <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (NSAttributedString *)accessibilityAttributedStringForRange:(NSRange)range;\n- (NSRange)accessibilityVisibleCharacterRange;\n@end\n@protocol NSAccessibilityNavigableStaticText <NSAccessibilityStaticText>\n@required\n- (NSString *)accessibilityStringForRange:(NSRange)range;\n- (NSInteger)accessibilityLineForIndex:(NSInteger)index;\n- (NSRange)accessibilityRangeForLine:(NSInteger)lineNumber;\n- (NSRect)accessibilityFrameForRange:(NSRange)range;\n@end\n/* 10.10's NSAccessibilityElement class, weak-imported: on 10.9 the class is nil, so a caller checks\n   [NSAccessibilityElement class] first, and a subclass of it does not load there. */\n__attribute__((availability(macosx,introduced=10.10)))\n@interface NSAccessibilityElement : NSObject <NSAccessibilityElement>\n+ (id)accessibilityElementWithRole:(NSString *)role frame:(NSRect)frame label:(NSString *)label parent:(id)parent;\n- (void)accessibilityAddChildElement:(NSAccessibilityElement *)childElement;\n@property NSRect accessibilityFrameInParentSpace;\n@end"
+        }
+      ]
+    },
+    {
+      "id": "appkit-cell-properties-v3",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSCell.h",
+      "sha256": "b44392f3a430fae14972160cc6965b96b34aa826cb732e36129271746389eb54",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSCell.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isHighlighted;\n- (void)setHighlighted:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHighlighted) BOOL highlighted;"
+        },
+        {
+          "old": "typedef NSUInteger NSControlSize;",
+          "new": "typedef NSUInteger NSControlSize;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values. */\nenum {\n    NSControlSizeRegular = NSRegularControlSize,\n    NSControlSizeSmall = NSSmallControlSize,\n    NSControlSizeMini = NSMiniControlSize\n};"
+        },
+        {
+          "old": "    NSBackgroundStyleLight = 0,",
+          "new": "    /* Recaulk: the 10.14 names, with the same values, declared from a later SDK. */\n    NSBackgroundStyleNormal = 0,\n    NSBackgroundStyleEmphasized = 1,\n    NSBackgroundStyleLight = 0,"
+        }
+      ]
+    },
+    {
+      "id": "appkit-window-v3",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+      "sha256": "677557c70c2cdb6ade4ce7dd9ba642544d3661a1e774ee61226204953b4a6743",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWindow : NSResponder",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n/* 10.12: callers check respondsToSelector:@selector(setTabbingMode:) first. */\ntypedef NS_ENUM(NSInteger, NSWindowTabbingMode) {\n    NSWindowTabbingModeAutomatic,\n    NSWindowTabbingModePreferred,\n    NSWindowTabbingModeDisallowed\n};\n@class NSTitlebarAccessoryViewController;\n\n@interface NSWindow : NSResponder"
+        },
+        {
+          "old": "+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;",
+          "new": "/* Recaulk: 10.10; callers check respondsToSelector: first. */\n- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)childViewController __attribute__((availability(macosx,introduced=10.10)));\n@property NSWindowTabbingMode tabbingMode __attribute__((availability(macosx,introduced=10.12)));\n\n+ (NSRect)frameRectForContentRect:(NSRect)cRect styleMask:(NSUInteger)aStyle;"
+        },
+        {
+          "old": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif",
+          "new": "enum {\n    NSFullScreenWindowMask      = 1 << 14\n};\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values; the panel masks are NSPanel.h's (10.9's NSUtilityWindowMask and kin). */\nenum {\n    NSWindowStyleMaskBorderless = NSBorderlessWindowMask,\n    NSWindowStyleMaskTitled = NSTitledWindowMask,\n    NSWindowStyleMaskClosable = NSClosableWindowMask,\n    NSWindowStyleMaskMiniaturizable = NSMiniaturizableWindowMask,\n    NSWindowStyleMaskResizable = NSResizableWindowMask,\n    NSWindowStyleMaskTexturedBackground = NSTexturedBackgroundWindowMask,\n    NSWindowStyleMaskUnifiedTitleAndToolbar = NSUnifiedTitleAndToolbarWindowMask,\n    NSWindowStyleMaskFullScreen = NSFullScreenWindowMask,\n    NSWindowStyleMaskUtilityWindow = 1 << 4,\n    NSWindowStyleMaskDocModalWindow = 1 << 6,\n    NSWindowStyleMaskNonactivatingPanel = 1 << 7,\n    NSWindowStyleMaskHUDWindow = 1 << 13\n};"
+        },
+        {
+          "old": "NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8",
+          "new": "NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8, /* Recaulk: the next, from a later SDK, which gives it 10.7. */ NSWindowCollectionBehaviorFullScreenNone = 1 << 9"
+        }
+      ]
+    },
+    {
+      "id": "foundation-kvo-change-key-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyValueObserving.h",
+      "sha256": "8acdf545fdae7ed4201ca4000041b293e2b43b6a5fc6b044b4936d4752ac22b8",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSKeyValueObserving.h"
+      ],
+      "replacements": [
+        {
+          "old": "FOUNDATION_EXPORT NSString *const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeIndexesKey;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 typed the change dictionary's keys; the constants are the same objects. */\ntypedef NSString *NSKeyValueChangeKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeIndexesKey;\n"
+        }
+      ]
+    },
+    {
+      "id": "appkit-color-separator-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSColor.h",
+      "sha256": "011fb814a610d8ea86065e7596ec2b1abcb25bc9f02fd38ab1aa5a09cd6d4ea8",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSColor.h"
+      ],
+      "replacements": [
+        {
+          "old": "+ (NSColor *)gridColor;",
+          "new": "+ (NSColor *)gridColor;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSColor has no separatorColor, so a caller checks availability first. */\n+ (NSColor *)separatorColor __attribute__((availability(macosx,introduced=10.14)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-control-single-line-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+      "sha256": "b38aae56a8bb9c10649fbd1bcd4e002be6241ebbf9b7d2ea561f1c3a4ed95432",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSControl.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;",
+          "new": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, its cell's; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property BOOL usesSingleLineMode __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
     }
   ]
 }

@@ -21,6 +21,9 @@ NSRunningApplication *__recaulk_objc_workspace_open_urls(id, SEL, NSArray *, NSU
 BOOL __recaulk_objc_voiceover_enabled_in(CFStringRef);
 BOOL __recaulk_objc_workspace_is_voiceover_enabled(id, SEL);
 BOOL __recaulk_objc_workspace_should_reduce_motion(id, SEL);
+BOOL __recaulk_objc_control_uses_single_line_mode(NSControl *, SEL);
+void __recaulk_objc_control_set_uses_single_line_mode(NSControl *, SEL, BOOL);
+void __recaulk_objc_register_control_class(Class);
 void __recaulk_objc_activate(void);
 void __recaulk_objc_register_workspace_class(Class);
 #endif

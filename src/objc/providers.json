@@ -35,6 +35,28 @@
       "framework_policy": "strong-linked-before-root"
     },
     {
+      "provider_id": "recaulk.nscontrol.uses-single-line-mode.v1",
+      "class": "NSControl",
+      "method_kind": "-",
+      "selector": "usesSingleLineMode",
+      "encoding": "c16@0:8",
+      "implementation_symbol": "__recaulk_objc_control_uses_single_line_mode",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nscontrol.set-uses-single-line-mode.v1",
+      "class": "NSControl",
+      "method_kind": "-",
+      "selector": "setUsesSingleLineMode:",
+      "encoding": "v20@0:8c16",
+      "implementation_symbol": "__recaulk_objc_control_set_uses_single_line_mode",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
       "provider_id": "recaulk.nslocale.language-code.v1",
       "class": "NSLocale",
       "method_kind": "-",
