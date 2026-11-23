@@ -547,13 +547,19 @@ code compiled is the same:
   `respondsToSelector:@selector(setTabbingMode:)` first);
 - `appkit-window-v3`: `appkit-window-v2` plus `NSWindowCollectionBehaviorFullScreenNone` (`1 << 9`), which
   later SDKs give 10.7 and 10.9's omits;
-- `appkit-window-v4`: `appkit-window-v3` plus the 10.12 typedef `NSWindowLevel` (`NSInteger`) and `isVisible`
-  as `@property (readonly, getter=isVisible) BOOL visible`;
+- `appkit-window-v4`: `appkit-window-v3` plus the 10.12 typedef `NSWindowLevel` (`NSInteger`), `isVisible`
+  as `@property (readonly, getter=isVisible) BOOL visible`, and `sheetParent` as a readonly property (`assign`,
+  where 11.3 says `weak`, since 10.9 consumers build without ARC);
+- `appkit-alert-v2`: `appkit-alert-style-v1` plus `-[NSAlert window]` typed `NSWindow *`, so `[sender window]` on
+  an `id` is an `NSWindow`;
+- `appkit-tabview-v1`: `tabViewItems` as 10.11's `NSArray<__kindof NSTabViewItem *>` property; select it with
+  `foundation-array-v3` (or the `swift-foundation` profile), which makes `NSArray` generic;
 - `appkit-application-v1`: `NSApp` typed `NSApplication *`, as later SDKs type it, so `NSApp.keyWindow` compiles;
 - `appkit-tabviewitem-v1`: `-[NSTabViewItem view]` typed `NSView *`;
 - `appkit-nib-v1`: the 10.12 typedef `NSNibName` (`NSString *`);
 - `appkit-accessibility-v4`: `appkit-accessibility-v3` plus the 10.12 typedef `NSAccessibilityRole` (`NSString *`);
-- `appkit-attributedstring-v1`: the 10.11 typedef `NSUnderlineStyle` (`NSInteger`);
+- `appkit-attributedstring-v1`: the 10.11 typedef `NSUnderlineStyle` (`NSInteger`) and `NSUnderlineByWord`
+  (`0x8000`, the value of 10.9's variable `NSUnderlineByWordMask`);
 - `appkit-cell-properties-v2`: `appkit-cell-properties-v1` plus `NSControlSize*`;
 - `appkit-cell-properties-v3`: `appkit-cell-properties-v2` plus the 10.14 names `NSBackgroundStyleNormal` and
   `NSBackgroundStyleEmphasized` (10.9's `Light` and `Dark`);

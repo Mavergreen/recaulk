@@ -20,3 +20,4 @@ void probeTabbing(NSWindow *w) {
 }
 void probeFullScreen(NSWindow *w) { w.collectionBehavior |= NSWindowCollectionBehaviorFullScreenNone; }
 BOOL probeLevel(NSWindow *w) { NSWindowLevel l = [w level]; return w.visible && l > NSNormalWindowLevel; }
+NSWindow *probeSheet(NSWindow *w) { return w.sheetParent; }
