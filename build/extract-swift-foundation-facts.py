@@ -16,6 +16,10 @@ FALLBACK = ('#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrappe
             '#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n'
             '#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n')
 NULLABILITY = re.compile(r'\s*\b(_Nullable|_Nonnull|_Null_unspecified|nullable|nonnull|null_unspecified)\b')
+# spec: R3's bridging attributes carry their own empty fallback, so a CF header's recipe compiles without
+#       corefoundation-base-v1, whose CFBase.h (included first) defines the real ones.
+CF_FALLBACK = (HEAD + '#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n'
+               '#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n')
 CF_TYPEDEF = re.compile(r'typedef (const )?struct (CF_BRIDGED(?:_MUTABLE)?_TYPE\(\w+\) )?(__\w+) \* (\w+);')
 
 
@@ -286,9 +290,14 @@ def main():
         if key is None or not files.search(key):
             continue
         t = text_of(key)
+        # a header whose hand insert defines the real macros (CFBase.h) needs no fallback, and must not get one
+        fell_back = any('#ifndef CF_BRIDGED_TYPE' in i['text'] for i in hand.get('inserts', []) if i['header'] == key)
         for m in CF_TYPEDEF.finditer(t):
             if m.group(2) or (m.group(3), m.group(4)) not in bridged:
                 continue
+            if not fell_back:
+                add(key, {'kind': 'insert', 'offset': m.start(), 'text': CF_FALLBACK})
+                fell_back = True
             new = 'typedef %sstruct %s%s * %s;' % (m.group(1) or '', bridged[(m.group(3), m.group(4))], m.group(3), m.group(4))
             add(key, {'kind': 'replace', 'old': m.group(0), 'offset': m.start(), 'new': new})
 

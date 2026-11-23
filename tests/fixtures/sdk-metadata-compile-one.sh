@@ -32,15 +32,25 @@ if [ -z "$asts" ]; then
   "$CLANG22" --no-default-config $flags "$probe" >"$d/$id.without" 2>&1 \
     && bad "$id: its probe compiles on the SDK alone without the recipe (a no-op recipe)"
 fi
-# spec: an "// ast:" check holds through the overlay and not on the SDK alone, so the recipe is needed for it
+# spec: an "// ast:" check holds through the overlay and not through its needs alone, so this recipe (not one
+#       it needs) is what makes it hold
+base=
+if [ -n "$asts" ] && [ -n "$need" ]; then
+  if ! bov=$("$SC" -DMODULES="$MODULES" -DSDK="$SDK" -DRECIPES="$PWD/sdk-metadata/recipes.json" \
+               -DIDS="$(printf '%s' "$need" | sed 's/ /;/g')" -DOUT="$d/$id-needs" \
+               -P tests/fixtures/sdk-metadata-materialize.cmake 2>&1); then
+    bad "$id: its needs do not materialize: $bov"; exit 0
+  fi
+  base="-ivfsoverlay $(printf '%s\n' "$bov" | tail -1)"
+fi
 printf '%s\n' "$asts" | while read -r filter regex; do
   [ -n "$filter" ] || continue
   # shellcheck disable=SC2086
   "$CLANG22" --no-default-config $flags -ivfsoverlay "$ov" -Xclang -ast-dump -Xclang -ast-dump-filter="$filter" \
     "$probe" 2>/dev/null | grep -Eq -- "$regex" || bad "$id: $filter has no '$regex' through the overlay"
   # shellcheck disable=SC2086
-  "$CLANG22" --no-default-config $flags -Xclang -ast-dump -Xclang -ast-dump-filter="$filter" \
-    "$probe" 2>/dev/null | grep -Eq -- "$regex" && bad "$id: $filter has '$regex' on the SDK alone (a no-op recipe)"
+  "$CLANG22" --no-default-config $flags $base -Xclang -ast-dump -Xclang -ast-dump-filter="$filter" \
+    "$probe" 2>/dev/null | grep -Eq -- "$regex" && bad "$id: $filter has '$regex' without the recipe (a no-op recipe)"
 done
 weak=$(sed -n 's|^// weak: ||p' "$probe")
 if [ -n "$weak" ]; then

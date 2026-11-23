@@ -669,7 +669,12 @@ in Foundation, CoreFoundation, `objc/NSObject.h` and `objc/runtime.h`:
 - `NS_ENUM`/`NS_OPTIONS` shapes for `NSEnumerationOptions`, `NSURLRequestCachePolicy`,
   `NSURLRequestNetworkServiceType`, `NSRectEdge` and `objc_AssociationPolicy`.
 
-Each of its recipes contains the earlier recipe on its header, so an Objective-C consumer can switch to it too.
+Each of its recipes contains the earlier recipe on its header, so an Objective-C consumer can switch to it too,
+together with the recipes its probe's `// needs:` line names: the generics recipes (`foundation-array-v3`,
+`foundation-dictionary-v2`, `foundation-set-v2`, `foundation-orderedset-v2`, `foundation-enumerator-v2`,
+`foundation-maptable-v2`, `foundation-filemanager-v3`), whose type parameters the generic results name, and
+`corefoundation-base-v1`. A CoreFoundation recipe without `corefoundation-base-v1` still compiles, but its types
+are not bridged.
 
 These recipes are generated, not written by hand:
 - `build/extract-swift-foundation-facts.py` reads clang's AST of the pinned 10.9 SDK and of the family's

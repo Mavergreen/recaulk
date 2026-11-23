@@ -54,6 +54,10 @@ assert reps.pop('enum {\n    FXOptA = 1,\n    FXOptB = 2\n};\ntypedef NSUInteger
 assert reps.pop('typedef const struct __FXRef * FXRef;') == \
     'typedef const struct CF_BRIDGED_TYPE(NSString) __FXRef * FXRef;'                                  # cf_bridge
 assert not reps, reps
+cf = [e for e in ins if '#ifndef CF_BRIDGED_TYPE' in e['text']]                                       # cf_fallback
+assert len(cf) == 1 and t[cf[0]['offset']:].startswith('typedef const struct __FXRef * FXRef;'), cf
+assert '#define CF_BRIDGED_MUTABLE_TYPE(T)\n' in cf[0]['text'], cf
+ins = [e for e in ins if e not in cf]
 assert len(ins) == 2, ins                                                                               # typedef inserts
 for e in ins:
     assert '#ifndef NS_EXTENSIBLE_STRING_ENUM' in e['text'] and 'nullable' not in e['text'], e

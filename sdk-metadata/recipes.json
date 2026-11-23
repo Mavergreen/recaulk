@@ -914,8 +914,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFArray * CFArrayRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSArray) __CFArray * CFArrayRef;"
+          "old": "typedef const struct __CFArray * CFArrayRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSArray) __CFArray * CFArrayRef;\n"
         },
         {
           "old": "typedef struct __CFArray * CFMutableArrayRef;",
@@ -932,8 +932,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFBag * CFBagRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFBag * CFBagRef;"
+          "old": "typedef const struct __CFBag * CFBagRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(id) __CFBag * CFBagRef;\n"
         },
         {
           "old": "typedef struct __CFBag * CFMutableBagRef;",
@@ -976,8 +976,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFBinaryHeap * CFBinaryHeapRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFBinaryHeap * CFBinaryHeapRef;"
+          "old": "typedef struct __CFBinaryHeap * CFBinaryHeapRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFBinaryHeap * CFBinaryHeapRef;\n"
         }
       ]
     },
@@ -990,8 +990,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFBitVector * CFBitVectorRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFBitVector * CFBitVectorRef;"
+          "old": "typedef const struct __CFBitVector * CFBitVectorRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(id) __CFBitVector * CFBitVectorRef;\n"
         },
         {
           "old": "typedef struct __CFBitVector * CFMutableBitVectorRef;",
@@ -1008,8 +1008,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFCalendar * CFCalendarRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSCalendar) __CFCalendar * CFCalendarRef;"
+          "old": "typedef struct __CFCalendar * CFCalendarRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(NSCalendar) __CFCalendar * CFCalendarRef;\n"
         }
       ]
     },
@@ -1022,8 +1022,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFCharacterSet * CFCharacterSetRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSCharacterSet) __CFCharacterSet * CFCharacterSetRef;"
+          "old": "typedef const struct __CFCharacterSet * CFCharacterSetRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSCharacterSet) __CFCharacterSet * CFCharacterSetRef;\n"
         },
         {
           "old": "typedef struct __CFCharacterSet * CFMutableCharacterSetRef;",
@@ -1040,8 +1040,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFData * CFDataRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSData) __CFData * CFDataRef;"
+          "old": "typedef const struct __CFData * CFDataRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSData) __CFData * CFDataRef;\n"
         },
         {
           "old": "typedef struct __CFData * CFMutableDataRef;",
@@ -1058,8 +1058,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFDate * CFDateRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSDate) __CFDate * CFDateRef;"
+          "old": "typedef const struct __CFDate * CFDateRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSDate) __CFDate * CFDateRef;\n"
         },
         {
           "old": "typedef const struct __CFTimeZone * CFTimeZoneRef;",
@@ -1076,8 +1076,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFDictionary * CFDictionaryRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSDictionary) __CFDictionary * CFDictionaryRef;"
+          "old": "typedef const struct __CFDictionary * CFDictionaryRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSDictionary) __CFDictionary * CFDictionaryRef;\n"
         },
         {
           "old": "typedef struct __CFDictionary * CFMutableDictionaryRef;",
@@ -1094,8 +1094,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFError * CFErrorRef;",
-          "new": "typedef struct CF_BRIDGED_TYPE(NSError) __CFError * CFErrorRef;"
+          "old": "typedef struct __CFError * CFErrorRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_TYPE(NSError) __CFError * CFErrorRef;\n"
         }
       ]
     },
@@ -1108,8 +1108,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFFileDescriptor * CFFileDescriptorRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFFileDescriptor * CFFileDescriptorRef;"
+          "old": "typedef struct __CFFileDescriptor * CFFileDescriptorRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFFileDescriptor * CFFileDescriptorRef;\n"
         }
       ]
     },
@@ -1122,8 +1122,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFMachPort * CFMachPortRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMachPort) __CFMachPort * CFMachPortRef;"
+          "old": "typedef struct __CFMachPort * CFMachPortRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(NSMachPort) __CFMachPort * CFMachPortRef;\n"
         }
       ]
     },
@@ -1136,8 +1136,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFMessagePort * CFMessagePortRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSMessagePort) __CFMessagePort * CFMessagePortRef;"
+          "old": "typedef struct __CFMessagePort * CFMessagePortRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(NSMessagePort) __CFMessagePort * CFMessagePortRef;\n"
         }
       ]
     },
@@ -1150,8 +1150,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFNotificationCenter * CFNotificationCenterRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFNotificationCenter * CFNotificationCenterRef;"
+          "old": "typedef struct __CFNotificationCenter * CFNotificationCenterRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFNotificationCenter * CFNotificationCenterRef;\n"
         }
       ]
     },
@@ -1164,8 +1164,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFBoolean * CFBooleanRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSNumber) __CFBoolean * CFBooleanRef;"
+          "old": "typedef const struct __CFBoolean * CFBooleanRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSNumber) __CFBoolean * CFBooleanRef;\n"
         },
         {
           "old": "typedef const struct __CFNumber * CFNumberRef;",
@@ -1182,8 +1182,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFRunLoop * CFRunLoopRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFRunLoop * CFRunLoopRef;"
+          "old": "typedef struct __CFRunLoop * CFRunLoopRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFRunLoop * CFRunLoopRef;\n"
         },
         {
           "old": "typedef struct __CFRunLoopSource * CFRunLoopSourceRef;",
@@ -1208,8 +1208,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFSet * CFSetRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSSet) __CFSet * CFSetRef;"
+          "old": "typedef const struct __CFSet * CFSetRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSSet) __CFSet * CFSetRef;\n"
         },
         {
           "old": "typedef struct __CFSet * CFMutableSetRef;",
@@ -1226,8 +1226,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFSocket * CFSocketRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFSocket * CFSocketRef;"
+          "old": "typedef struct __CFSocket * CFSocketRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFSocket * CFSocketRef;\n"
         }
       ]
     },
@@ -1240,8 +1240,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFReadStream * CFReadStreamRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(NSInputStream) __CFReadStream * CFReadStreamRef;"
+          "old": "typedef struct __CFReadStream * CFReadStreamRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(NSInputStream) __CFReadStream * CFReadStreamRef;\n"
         },
         {
           "old": "typedef struct __CFWriteStream * CFWriteStreamRef;",
@@ -1258,8 +1258,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFStringTokenizer * CFStringTokenizerRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFStringTokenizer * CFStringTokenizerRef;"
+          "old": "typedef struct __CFStringTokenizer * CFStringTokenizerRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFStringTokenizer * CFStringTokenizerRef;\n"
         }
       ]
     },
@@ -1272,8 +1272,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFTree * CFTreeRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFTree * CFTreeRef;"
+          "old": "typedef struct __CFTree * CFTreeRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFTree * CFTreeRef;\n"
         }
       ]
     },
@@ -1286,8 +1286,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFURL * CFURLRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(NSURL) __CFURL * CFURLRef;"
+          "old": "typedef const struct __CFURL * CFURLRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(NSURL) __CFURL * CFURLRef;\n"
         }
       ]
     },
@@ -1300,8 +1300,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef struct __CFUserNotification * CFUserNotificationRef;",
-          "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFUserNotification * CFUserNotificationRef;"
+          "old": "typedef struct __CFUserNotification * CFUserNotificationRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFUserNotification * CFUserNotificationRef;\n"
         }
       ]
     },
@@ -1314,8 +1314,8 @@
       ],
       "replacements": [
         {
-          "old": "typedef const struct __CFUUID * CFUUIDRef;",
-          "new": "typedef const struct CF_BRIDGED_TYPE(id) __CFUUID * CFUUIDRef;"
+          "old": "typedef const struct __CFUUID * CFUUIDRef;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\ntypedef const struct CF_BRIDGED_TYPE(id) __CFUUID * CFUUIDRef;\n"
         }
       ]
     },

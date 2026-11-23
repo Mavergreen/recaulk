@@ -3,6 +3,11 @@
  "headers": {
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFArray.h": [
    {
+    "kind": "insert",
+    "offset": 4502,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFArray * CFArrayRef;",
     "offset": 4502,
@@ -16,6 +21,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBag.h": [
+   {
+    "kind": "insert",
+    "offset": 1043,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef const struct __CFBag * CFBagRef;",
@@ -62,6 +72,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBinaryHeap.h": [
    {
+    "kind": "insert",
+    "offset": 2914,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFBinaryHeap * CFBinaryHeapRef;",
     "offset": 2914,
@@ -69,6 +84,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBitVector.h": [
+   {
+    "kind": "insert",
+    "offset": 273,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef const struct __CFBitVector * CFBitVectorRef;",
@@ -84,6 +104,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFCalendar.h": [
    {
+    "kind": "insert",
+    "offset": 358,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFCalendar * CFCalendarRef;",
     "offset": 358,
@@ -91,6 +116,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFCharacterSet.h": [
+   {
+    "kind": "insert",
+    "offset": 1852,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef const struct __CFCharacterSet * CFCharacterSetRef;",
@@ -106,6 +136,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFData.h": [
    {
+    "kind": "insert",
+    "offset": 239,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFData * CFDataRef;",
     "offset": 239,
@@ -119,6 +154,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFDate.h": [
+   {
+    "kind": "insert",
+    "offset": 622,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef const struct __CFDate * CFDateRef;",
@@ -134,6 +174,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFDictionary.h": [
    {
+    "kind": "insert",
+    "offset": 8033,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFDictionary * CFDictionaryRef;",
     "offset": 8033,
@@ -148,6 +193,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFError.h": [
    {
+    "kind": "insert",
+    "offset": 2858,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFError * CFErrorRef;",
     "offset": 2858,
@@ -155,6 +205,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFFileDescriptor.h": [
+   {
+    "kind": "insert",
+    "offset": 287,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFFileDescriptor * CFFileDescriptorRef;",
@@ -164,6 +219,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFMachPort.h": [
    {
+    "kind": "insert",
+    "offset": 244,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFMachPort * CFMachPortRef;",
     "offset": 244,
@@ -171,6 +231,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFMessagePort.h": [
+   {
+    "kind": "insert",
+    "offset": 333,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFMessagePort * CFMessagePortRef;",
@@ -180,6 +245,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFNotificationCenter.h": [
    {
+    "kind": "insert",
+    "offset": 289,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFNotificationCenter * CFNotificationCenterRef;",
     "offset": 289,
@@ -187,6 +257,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFNumber.h": [
+   {
+    "kind": "insert",
+    "offset": 241,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef const struct __CFBoolean * CFBooleanRef;",
@@ -201,6 +276,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFRunLoop.h": [
+   {
+    "kind": "insert",
+    "offset": 462,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFRunLoop * CFRunLoopRef;",
@@ -228,6 +308,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFSet.h": [
    {
+    "kind": "insert",
+    "offset": 4204,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFSet * CFSetRef;",
     "offset": 4204,
@@ -242,6 +327,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFSocket.h": [
    {
+    "kind": "insert",
+    "offset": 251,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFSocket * CFSocketRef;",
     "offset": 251,
@@ -249,6 +339,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFStream.h": [
+   {
+    "kind": "insert",
+    "offset": 1307,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFReadStream * CFReadStreamRef;",
@@ -264,6 +359,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFStringTokenizer.h": [
    {
+    "kind": "insert",
+    "offset": 2330,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef struct __CFStringTokenizer * CFStringTokenizerRef;",
     "offset": 2330,
@@ -271,6 +371,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFTree.h": [
+   {
+    "kind": "insert",
+    "offset": 3322,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFTree * CFTreeRef;",
@@ -280,6 +385,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFURL.h": [
    {
+    "kind": "insert",
+    "offset": 827,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFURL * CFURLRef;",
     "offset": 827,
@@ -288,6 +398,11 @@
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFUUID.h": [
    {
+    "kind": "insert",
+    "offset": 273,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
+   {
     "kind": "replace",
     "old": "typedef const struct __CFUUID * CFUUIDRef;",
     "offset": 273,
@@ -295,6 +410,11 @@
    }
   ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFUserNotification.h": [
+   {
+    "kind": "insert",
+    "offset": 428,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#endif\n#ifndef CF_BRIDGED_MUTABLE_TYPE\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#endif\n"
+   },
    {
     "kind": "replace",
     "old": "typedef struct __CFUserNotification * CFUserNotificationRef;",

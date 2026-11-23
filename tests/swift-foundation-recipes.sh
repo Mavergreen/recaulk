@@ -73,7 +73,7 @@ ids = p['profiles']['swift-foundation']['recipes']
 assert ids == ['foundation-new-v1', 'foundation-thing-v2'], ids
 hs = [a[i]['header'] for i in ids]; assert len(hs) == len(set(hs))                                    # one_per_header
 probe = open(os.path.join(d, 'a', 'probes', 'foundation-thing-v2.m')).read()
-assert '// needs: foundation-new-v1' in probe and '// ast: ' in probe, probe
+assert '// needs: \n' in probe and '// ast: ' in probe, probe                                    # needs_only_support
 b = load('b')                                                                                         # rewrite_unreleased_in_place
 assert set(b) == set(a), sorted(b)
 assert '@property (readonly, copy) NSString *title;' not in materialize(b['foundation-thing-v2'])
