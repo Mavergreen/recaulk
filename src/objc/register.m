@@ -16,8 +16,15 @@ __attribute__((noinline)) void __recaulk_objc_register_control_class(Class recei
     __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_CONTROL_SET_SINGLE_LINE_SELECTOR),
         (IMP)__recaulk_objc_control_set_uses_single_line_mode,RECAULK_CONTROL_SET_SINGLE_LINE_ENCODING);
 }
+__attribute__((noinline)) void __recaulk_objc_register_tablecolumn_class(Class receiver) {
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_TABLECOLUMN_TITLE_SELECTOR),
+        (IMP)__recaulk_objc_tablecolumn_title,RECAULK_TABLECOLUMN_TITLE_ENCODING);
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_TABLECOLUMN_SET_TITLE_SELECTOR),
+        (IMP)__recaulk_objc_tablecolumn_set_title,RECAULK_TABLECOLUMN_SET_TITLE_ENCODING);
+}
 void __recaulk_objc_activate(void) {
     __recaulk_objc_register_workspace_class(objc_getClass(RECAULK_WORKSPACE_CLASS));
+    __recaulk_objc_register_tablecolumn_class(objc_getClass(RECAULK_TABLECOLUMN_TITLE_CLASS));
     __recaulk_objc_register_control_class(objc_getClass(RECAULK_CONTROL_SINGLE_LINE_CLASS));
 }
 __attribute__((constructor)) static void activateAtLoad(void) { __recaulk_objc_activate(); }

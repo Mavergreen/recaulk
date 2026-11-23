@@ -762,6 +762,148 @@
           "new": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, its cell's; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property BOOL usesSingleLineMode __attribute__((availability(macosx,introduced=10.10)));"
         }
       ]
+    },
+    {
+      "id": "appkit-control-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+      "sha256": "b38aae56a8bb9c10649fbd1bcd4e002be6241ebbf9b7d2ea561f1c3a4ed95432",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSControl.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isContinuous;\n- (void)setContinuous:(BOOL)flag;\n- (BOOL)isEnabled;\n- (void)setEnabled:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isContinuous) BOOL continuous;\n@property (getter=isEnabled) BOOL enabled;"
+        },
+        {
+          "old": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;",
+          "new": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, its cell's; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property BOOL usesSingleLineMode __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-appearance-name-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAppearance.h",
+      "sha256": "7a08348db1dff47075ec78699487bf2c7ce6cce76f395b998c48e258749bc1ea",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAppearance.h"
+      ],
+      "replacements": [
+        {
+          "old": "+ (NSAppearance *)appearanceNamed:(NSString *)name;",
+          "new": "+ (NSAppearance *)appearanceNamed:(NSString *)name;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.9's NSAppearance answers name; its SDK does not declare it. */\n@property (readonly, copy) NSString *name;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-tablecolumn-title-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableColumn.h",
+      "sha256": "79ddafd6d6b25d6b816eef6cb1b117c9422f1a93577f95b6bb1bccc75180197d",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSTableColumn.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (id)headerCell;",
+          "new": "- (id)headerCell;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, the header cell's string; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property (copy) NSString *title __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-menuitem-identifier-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSMenuItem.h",
+      "sha256": "85b500699c6a394bffd7b551ce84ffe692441ccdca63199ad945ce58335527dc",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSMenuItem.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (NSString *)title;",
+          "new": "- (NSString *)title;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.9's NSMenuItem answers identifier and setIdentifier:; its SDK does not declare them. */\n@property (copy) NSString *identifier;"
+        }
+      ]
+    },
+    {
+      "id": "foundation-url-file-url-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURL.h",
+      "sha256": "8d600f4565d5a3aeda1b36d0518a16f296a31e67b865f181265e7a4fad430bb8",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSURL.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isFileURL;",
+          "new": "- (BOOL)isFileURL;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (readonly, getter=isFileURL) BOOL fileURL;"
+        }
+      ]
+    },
+    {
+      "id": "foundation-attributed-string-key-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAttributedString.h",
+      "sha256": "779e1920c804ddf9ea3132811b585c8f7ca9290f6e5ff9a312a1c832d75a515e",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSAttributedString.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSAttributedString : NSObject <NSCopying, NSMutableCopying, NSCoding>",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.13 typed the attribute names; the constants are the same objects. */\ntypedef NSString *NSAttributedStringKey;\n\n@interface NSAttributedString : NSObject <NSCopying, NSMutableCopying, NSCoding>"
+        }
+      ]
+    },
+    {
+      "id": "appkit-view-properties-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSView.h",
+      "sha256": "e02f732aaf4f655a21f9c6130796f7aa6ad8eaf5ad774370062b0cc8b7a2c108",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSView.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (void)setHidden:(BOOL)flag;\n- (BOOL)isHidden;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHidden) BOOL hidden;\n/* 10.10's NSAccessibility properties. 10.9 has no such methods: a subclass's override of one compiles and\n   runs only where called, and calling super's or setting one on 10.9 needs respondsToSelector: first. */\n@property (copy) NSString *accessibilityLabel __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSString *accessibilityRole __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSArray *accessibilityChildren __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-cell-properties-v4",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSCell.h",
+      "sha256": "b44392f3a430fae14972160cc6965b96b34aa826cb732e36129271746389eb54",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSCell.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isHighlighted;\n- (void)setHighlighted:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHighlighted) BOOL highlighted;"
+        },
+        {
+          "old": "typedef NSUInteger NSControlSize;",
+          "new": "typedef NSUInteger NSControlSize;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values. */\nenum {\n    NSControlSizeRegular = NSRegularControlSize,\n    NSControlSizeSmall = NSSmallControlSize,\n    NSControlSizeMini = NSMiniControlSize\n};"
+        },
+        {
+          "old": "    NSBackgroundStyleLight = 0,",
+          "new": "    /* Recaulk: the 10.14 names, with the same values, declared from a later SDK. */\n    NSBackgroundStyleNormal = 0,\n    NSBackgroundStyleEmphasized = 1,\n    NSBackgroundStyleLight = 0,"
+        },
+        {
+          "old": "- (BOOL)usesSingleLineMode NS_AVAILABLE_MAC(10_6);",
+          "new": "- (BOOL)usesSingleLineMode NS_AVAILABLE_MAC(10_6);\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10's NSAccessibility properties. 10.9 has no such methods: a subclass's override of one compiles and\n   runs only where called, and calling super's or setting one on 10.9 needs respondsToSelector: first. */\n@property (copy) NSString *accessibilityLabel __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSString *accessibilityRole __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSArray *accessibilityChildren __attribute__((availability(macosx,introduced=10.10)));"
+        }
+      ]
+    },
+    {
+      "id": "appkit-accessibility-v3",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAccessibility.h",
+      "sha256": "dd2607f8800a6ea9d900129566bf590ef070f5dd9af2b575b4817d715e5e8f38",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAccessibility.h"
+      ],
+      "replacements": [
+        {
+          "old": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);",
+          "new": "APPKIT_EXTERN NSString *const NSAccessibilitySortButtonRole\tNS_DEPRECATED_MAC(10_4, 10_6);\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 role protocols, so a class can declare that it adopts them. They are compile-time only: 10.9's\n   accessibility asks through accessibilityAttributeValue: and friends, never through these, so a class must\n   still answer there to be accessible on 10.9. */\n@protocol NSAccessibilityElement <NSObject>\n@required\n- (NSRect)accessibilityFrame;\n- (id)accessibilityParent;\n@optional\n- (BOOL)isAccessibilityFocused;\n- (NSString *)accessibilityIdentifier;\n@end\n@protocol NSAccessibilityGroup <NSAccessibilityElement>\n@end\n@protocol NSAccessibilityButton <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityLabel;\n- (BOOL)accessibilityPerformPress;\n@end\n@protocol NSAccessibilitySwitch <NSAccessibilityButton>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (BOOL)accessibilityPerformIncrement;\n- (BOOL)accessibilityPerformDecrement;\n@end\n@protocol NSAccessibilityRadioButton <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityCheckBox <NSAccessibilityButton>\n@required\n- (NSNumber *)accessibilityValue;\n@end\n@protocol NSAccessibilityStaticText <NSAccessibilityElement>\n@required\n- (NSString *)accessibilityValue;\n@optional\n- (NSAttributedString *)accessibilityAttributedStringForRange:(NSRange)range;\n- (NSRange)accessibilityVisibleCharacterRange;\n@end\n@protocol NSAccessibilityNavigableStaticText <NSAccessibilityStaticText>\n@required\n- (NSString *)accessibilityStringForRange:(NSRange)range;\n- (NSInteger)accessibilityLineForIndex:(NSInteger)index;\n- (NSRange)accessibilityRangeForLine:(NSInteger)lineNumber;\n- (NSRect)accessibilityFrameForRange:(NSRange)range;\n@end\n/* 10.10's NSAccessibilityElement class, weak-imported: on 10.9 the class is nil, so a caller checks\n   [NSAccessibilityElement class] first, and a subclass of it does not load there. */\n__attribute__((availability(macosx,introduced=10.10)))\n@interface NSAccessibilityElement : NSObject <NSAccessibilityElement>\n+ (id)accessibilityElementWithRole:(NSString *)role frame:(NSRect)frame label:(NSString *)label parent:(id)parent;\n- (void)accessibilityAddChildElement:(NSAccessibilityElement *)childElement;\n@property NSRect accessibilityFrameInParentSpace;\n@property (copy) NSString *accessibilityLabel __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSString *accessibilityRole __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSArray *accessibilityChildren __attribute__((availability(macosx,introduced=10.10)));\n@end"
+        }
+      ]
     }
   ]
 }

@@ -55,7 +55,8 @@ state VoiceOver records (`voiceOverOnOffKey` in `com.apple.universalaccess`) eac
 Apple's 10.13 property, it posts no key-value observing change when VoiceOver turns on or off.
 `accessibilityDisplayShouldReduceMotion` answers NO: 10.9 has no reduce-motion setting (it arrived in 10.12).
 `NSControl`'s `usesSingleLineMode` and its setter (10.10) are the control's cell's, which 10.9 has; a control with no
-cell reads NO. It is separate from
+cell reads NO. `NSTableColumn`'s `title` and `setTitle:` (10.10) are its header cell's string; a nil title is stored
+as `@""`, since 10.10 declares it non-null. It is separate from
 `librecaulk.a` and does nothing unless you ask for it: link it and keep its
 activation root, and AppKit and Carbon strong-linked:
 
@@ -549,6 +550,9 @@ code compiled is the same:
 - `appkit-cell-properties-v2`: `appkit-cell-properties-v1` plus `NSControlSize*`;
 - `appkit-cell-properties-v3`: `appkit-cell-properties-v2` plus the 10.14 names `NSBackgroundStyleNormal` and
   `NSBackgroundStyleEmphasized` (10.9's `Light` and `Dark`);
+- `appkit-cell-properties-v4`: `appkit-cell-properties-v3` plus the accessibility properties below;
+- `appkit-view-properties-v2`: `appkit-view-properties-v1` plus the accessibility properties below;
+- `appkit-control-v2`: `appkit-control-properties-v1` and `appkit-control-single-line-v1` together;
 - `appkit-compositing-v1`: `NSCompositingOperation*`;
 - `appkit-alert-style-v1`: `NSAlertStyle*`;
 - `appkit-buttoncell-names-v1`: `NSButtonType*` and `NSBezelStyle*`, as members of their enumerations, so
@@ -563,6 +567,10 @@ declare that it adopts them. They are compile-time only: 10.9's accessibility ne
 must still answer through `accessibilityAttributeValue:` and its kin to be accessible on 10.9.
 `appkit-accessibility-v2` is v1 plus the 10.10 `NSAccessibilityElement` class, weak-imported: on 10.9 the class
 is nil, so a caller checks `[NSAccessibilityElement class]` first, and a subclass of it does not load there.
+`appkit-accessibility-v3`, `appkit-view-properties-v2` and `appkit-cell-properties-v4` declare 10.10's
+`accessibilityLabel`, `accessibilityRole` and `accessibilityChildren` properties on `NSAccessibilityElement`, `NSView`
+and `NSCell`. 10.9 has no such methods: a subclass's override compiles and runs where it is called, but calling
+`super`'s, or setting one on a plain view or cell, needs `respondsToSelector:` first on 10.9.
 
 `appkit-viewcontroller-lifecycle-v1` declares `NSViewController`'s 10.10 lifecycle methods (`viewDidLoad`,
 `viewWillAppear`, `viewDidAppear`, `viewWillDisappear`, `viewDidDisappear`, `viewWillLayout` and `viewDidLayout`)
@@ -571,12 +579,17 @@ never sends them: an override there never runs, so work it does must also be rea
 `appkit-viewcontroller-v2` is `appkit-titlebar-accessory-v1` and `appkit-viewcontroller-lifecycle-v1` together,
 for a target that needs both. `appkit-control-single-line-v1` declares `NSControl`'s `usesSingleLineMode` (10.10),
 which `librecaulk-objc.a`'s AppKit root provides. `appkit-color-separator-v1` declares `+[NSColor separatorColor]`
-at 10.14: nothing provides it on 10.9, so a caller checks `@available` first.
+at 10.14: nothing provides it on 10.9, so a caller checks `@available` first. `appkit-appearance-name-v1` and
+`appkit-menuitem-identifier-v1` declare `NSAppearance`'s `name` and `NSMenuItem`'s `identifier` as properties: 10.9
+answers both, and its SDK does not declare them. `appkit-tablecolumn-title-v1` declares `NSTableColumn`'s `title`
+(10.10), which `librecaulk-objc.a`'s AppKit root provides.
 
 `foundation-filemanager-keys-v1` adds the 10.12 typedefs `NSFileAttributeKey` and `NSFileAttributeType`
 (`NSString *`); `foundation-filemanager-v2` is it and `foundation-directoryenumerator-generics-v1` together.
 `foundation-kvo-change-key-v1` adds the 10.12 typedef `NSKeyValueChangeKey` and gives the change dictionary's
-keys that type. `foundation-filecoordinator-v1` adds `NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly`
+keys that type; `foundation-attributed-string-key-v1` adds 10.13's `NSAttributedStringKey` the same way.
+`foundation-url-file-url-v1` declares `NSURL`'s `fileURL` property, whose getter is 10.9's `isFileURL`.
+`foundation-filecoordinator-v1` adds `NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly`
 and `NSFileCoordinatorReadingForUploading` at their 10.10 availability; 10.9's `NSFileCoordinator` does not know
 them, so a caller checks `@available` first.
 

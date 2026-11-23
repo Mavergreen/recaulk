@@ -23,6 +23,10 @@ providers() {
     WORKSPACE_REDUCE_MOTION recaulk.nsworkspace.should-reduce-motion.v1 NSWorkspace - \
     accessibilityDisplayShouldReduceMotion 'c16@0:8' \
     __recaulk_objc_workspace_should_reduce_motion __recaulk_objc_activate AppKit,Carbon \
+    TABLECOLUMN_TITLE recaulk.nstablecolumn.title.v1 NSTableColumn - title '@16@0:8' \
+    __recaulk_objc_tablecolumn_title __recaulk_objc_activate AppKit,Carbon \
+    TABLECOLUMN_SET_TITLE recaulk.nstablecolumn.set-title.v1 NSTableColumn - setTitle: \
+    'v24@0:8@16' __recaulk_objc_tablecolumn_set_title __recaulk_objc_activate AppKit,Carbon \
     CONTROL_SINGLE_LINE recaulk.nscontrol.uses-single-line-mode.v1 NSControl - usesSingleLineMode 'c16@0:8' \
     __recaulk_objc_control_uses_single_line_mode __recaulk_objc_activate AppKit,Carbon \
     CONTROL_SET_SINGLE_LINE recaulk.nscontrol.set-uses-single-line-mode.v1 NSControl - setUsesSingleLineMode: \
@@ -128,6 +132,26 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 - (void)setUsesSingleLineMode:(BOOL)flag { (void)flag; }
+@end
+EOF
+    ;;
+    recaulk.nstablecolumn.title.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)title;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)title { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nstablecolumn.set-title.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setTitle:(NSString *)title;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setTitle:(NSString *)title { (void)title; }
 @end
 EOF
     ;;

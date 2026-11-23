@@ -35,6 +35,28 @@
       "framework_policy": "strong-linked-before-root"
     },
     {
+      "provider_id": "recaulk.nstablecolumn.title.v1",
+      "class": "NSTableColumn",
+      "method_kind": "-",
+      "selector": "title",
+      "encoding": "@16@0:8",
+      "implementation_symbol": "__recaulk_objc_tablecolumn_title",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nstablecolumn.set-title.v1",
+      "class": "NSTableColumn",
+      "method_kind": "-",
+      "selector": "setTitle:",
+      "encoding": "v24@0:8@16",
+      "implementation_symbol": "__recaulk_objc_tablecolumn_set_title",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
       "provider_id": "recaulk.nscontrol.uses-single-line-mode.v1",
       "class": "NSControl",
       "method_kind": "-",
