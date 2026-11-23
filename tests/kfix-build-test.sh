@@ -50,6 +50,10 @@ if compiling; then
   # platform: libkmod.a, linked last, supplies _start and _stop
   "$NM" -u "$@" | awk 'NF { print $NF }' | grep -v ':$' | LC_ALL=C sort -u | LC_ALL=C comm -23 - "$O/defined" \
     | grep -vx -e __start -e __stop > "$O/undefined" || true
+  # spec: README.md "The kernel-fixes kext" -- kernel text is written with every CPU parked in a rendezvous, never
+  #       with only this CPU's interrupts off
+  grep -qx _mp_rendezvous_no_intrs "$O/undefined" || bad "it does not write kernel text through mp_rendezvous_no_intrs"
+  grep -qx _ml_set_interrupts_enabled "$O/undefined" && bad "it still writes kernel text with only this CPU's interrupts off"
   missing="$(LC_ALL=C comm -23 "$O/undefined" "$O/available" | tr '\n' ' ')"
   [ -z "$missing" ] || bad "imported but no named 10.9 KPI library exports them: $missing"
 fi

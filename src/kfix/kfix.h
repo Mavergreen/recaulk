@@ -9,6 +9,8 @@ extern const struct kf_patch kf_kqueue_scan_restart;
 extern int kf_kqueue_scan_restart_state;
 void kf_apply_all(void);
 int kf_any_applied(void);
+/* writes len bytes of kernel text with every CPU parked; 0, or EIO with nothing known written */
+int kf_write_text(void *dst, const void *src, size_t len);
 int kf_sysctl_start(void);
 void kf_sysctl_stop(void);
 #endif

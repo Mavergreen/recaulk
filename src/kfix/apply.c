@@ -1,13 +1,12 @@
 /* spec: README.md "The kernel-fixes kext" -- each fix in turn, its site found through /mach_kernel's symbols (whose
    UUID matches the running kernel's): on 13F1911 only, unless
    the boot-arg turns it off, and only over the bytes it expects; its replacement already there means another
-   kext applied it. Kernel text is written with interrupts off and CR0.WP clear, as KQueueScanContinuePatch did. */
+   kext applied it. Kernel text is written by write.c, every CPU parked. */
 #include <sys/types.h>
 #include <sys/errno.h>
 #include <string.h>
 #include <mach/mach_types.h>
 #include <mach-o/loader.h>
-#include <i386/proc_reg.h>
 #include <kern/debug.h>
 #include <pexpert/pexpert.h>
 #include <pexpert/i386/boot.h>
@@ -16,9 +15,7 @@
 #include "kfix.h"
 
 extern int printf(const char *, ...);
-extern boolean_t ml_set_interrupts_enabled(boolean_t);
 
-#define KF_CR0_WP 0x00010000UL
 
 int kf_kqueue_scan_restart_state = KF_NOT_APPLIED;
 
@@ -28,29 +25,6 @@ static const struct {
 } kf_fixes[] = {
 	{ &kf_kqueue_scan_restart, &kf_kqueue_scan_restart_state },
 };
-
-/* KQueueScanContinuePatch's write: this CPU's interrupts off, CR0.WP clear, copy, restore, each step checked */
-static int
-kf_write_text(void *dst, const void *src, size_t len)
-{
-	boolean_t intr = ml_set_interrupts_enabled(FALSE);
-	uintptr_t cr0 = get_cr0();
-	if (cr0 & KF_CR0_WP) {
-		set_cr0(cr0 & ~KF_CR0_WP);
-		if (get_cr0() & KF_CR0_WP) {
-			ml_set_interrupts_enabled(intr);
-			return EIO;
-		}
-	}
-	memcpy(dst, src, len);
-	if (cr0 & KF_CR0_WP) {
-		set_cr0(get_cr0() | KF_CR0_WP);
-		if (!(get_cr0() & KF_CR0_WP))
-			panic(KF_LOG "CR0.WP would not set again after writing kernel text");
-	}
-	ml_set_interrupts_enabled(intr);
-	return memcmp(dst, src, len) == 0 ? 0 : EIO;
-}
 
 static void
 kf_uuid_hex(char out[33], const uint8_t u[16])
