@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sdk": "MacOSX10.9",
+  "sdk_archive_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "recipes": [
+    {
+      "id": "foundation-thing-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThing.h",
+      "sha256": "5170e681c7c571bc8876ce589f52f12c5afa6312b9e5c7b505d151e86ddd3952",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSThing.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isFileURL;",
+          "new": "- (BOOL)isFileURL;\n@property (readonly, getter=isFileURL) BOOL fileURL;"
+        },
+        {
+          "old": "typedef NSUInteger NSThingEdge;",
+          "new": "typedef NSUInteger NSThingEdge;\nenum { NSThingEdgeMin = 0 };"
+        }
+      ]
+    },
+    {
+      "id": "foundation-thing-v3",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThing.h",
+      "sha256": "5170e681c7c571bc8876ce589f52f12c5afa6312b9e5c7b505d151e86ddd3952",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSThing.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isFileURL;",
+          "new": "- (BOOL)isFileURL;\n@property (readonly, getter=isFileURL) BOOL fileURL;"
+        },
+        {
+          "old": "typedef NSUInteger NSThingEdge;",
+          "new": "typedef NSUInteger NSThingEdge;\nenum { NSThingEdgeMin = 0 };"
+        },
+        {
+          "old": "- (NSString *)extra;",
+          "new": "- (NSString *)extra;\n- (NSString *)extra2;"
+        }
+      ]
+    }
+  ]
+}

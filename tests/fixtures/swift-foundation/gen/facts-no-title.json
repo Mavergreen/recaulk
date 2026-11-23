@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "headers": {
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThing.h": [
+   {
+    "kind": "property",
+    "class": "NSThing",
+    "container": "interface",
+    "category": null,
+    "decl": "- (BOOL)isFileURL;",
+    "offset": 94,
+    "property": "@property (readonly, getter=isFileURL) BOOL fileURL;",
+    "setter_decl": null,
+    "setter_offset": null
+   },
+   {
+    "kind": "insert",
+    "offset": 180,
+    "text": "#ifndef __RECAULK_TYPEDEF_NSOtherKey\n#define __RECAULK_TYPEDEF_NSOtherKey 1\ntypedef NSString *NSOtherKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "property",
+    "class": "NSOther",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)name;",
+    "offset": 210,
+    "property": "@property (readonly, copy) NSString *name;",
+    "setter_decl": null,
+    "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "typedef NSUInteger NSThingEdge;\n",
+    "offset": 32,
+    "new": "typedef NS_ENUM(NSUInteger, NSThingEdge) { NSThingEdgeMin = 0 };\n"
+   }
+  ],
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNew.h": [
+   {
+    "kind": "property",
+    "class": "NSNew",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)label;",
+    "offset": 60,
+    "property": "@property (readonly, copy) NSString *label;",
+    "setter_decl": null,
+    "setter_offset": null
+   }
+  ]
+ }
+}
