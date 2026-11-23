@@ -16,7 +16,8 @@ int kf_signal_target_exit_apply(const uint64_t *v, const int *found, uint64_t sl
     const char **why);
 void kf_apply_all(void);
 int kf_any_applied(void);
-/* writes len bytes of kernel text with every CPU parked; 0, or EIO with nothing known written */
+/* writes len bytes of kernel text with every CPU parked; 0, or EIO: nothing written (CR0.WP would not clear), or
+   the bytes read back differ, and the site may hold part of the write */
 int kf_write_text(void *dst, const void *src, size_t len);
 int kf_sysctl_start(void);
 void kf_sysctl_stop(void);

@@ -140,3 +140,20 @@ kf_trampoline(uint8_t out[KF_TRAMPOLINE_LEN], uint64_t handler)
 	for (int i = 0; i < 8; i++)
 		out[6 + i] = (uint8_t)(handler >> (8 * i));
 }
+
+static int
+fbt_ret_like(uint8_t b)
+{
+	return b == 0xc3 || b == 0xc2 || b == 0xe9 || b == 0xeb || b == 0xea;
+}
+
+int
+kf_trampoline_fbt_safe(const uint8_t tr[KF_TRAMPOLINE_LEN], uint8_t next)
+{
+	for (int i = 0; i < KF_TRAMPOLINE_LEN; i++) {
+		uint8_t after = i + 1 < KF_TRAMPOLINE_LEN ? tr[i + 1] : next;
+		if ((tr[i] == 0x5d || tr[i] == 0xc9) && fbt_ret_like(after))
+			return 0;
+	}
+	return 1;
+}

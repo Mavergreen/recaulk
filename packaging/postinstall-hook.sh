@@ -22,9 +22,16 @@ fi
 rm -f "$_wd" || echo "recaulk: could not remove $_wd" >&2
 rm -rf "$ROOT/Library/Extensions/KQueueScanContinuePatch.kext" || echo "recaulk: could not remove KQueueScanContinuePatch.kext" >&2
 if [ -z "$ROOT" ]; then
+  # spec: README.md "The kernel-fixes kext" -- on an upgrade the job and the kext already run; the kernel keeps the
+  #       running kext (it cannot unload once applied), and the new one takes over at the next boot
   # platform: guarded macOS-only call -- only when $ROOT is empty: the boot volume, where installer runs on 10.9
-  /bin/launchctl load /Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist \
-    || echo "recaulk: could not load RecaulkKernelFixes' LaunchDaemon; it loads at the next boot" >&2
+  if /bin/launchctl list dev.mavergreen.recaulk.kernelfixes >/dev/null 2>&1; then
+    echo "recaulk: RecaulkKernelFixes is already loaded; this version takes over at the next boot" >&2
+  else
+    # platform: guarded macOS-only call -- only when $ROOT is empty: the boot volume, where installer runs on 10.9
+    /bin/launchctl load /Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist \
+      || echo "recaulk: could not load RecaulkKernelFixes' LaunchDaemon; it loads at the next boot" >&2
+  fi
 fi
 # spec: README.md "The kernel back-fill kext" -- 10.9 rebuilds its kext caches on its own, later; this makes a consumer's
 #       first load of a kext depending on RecaulkKPI immediate. Only on the boot volume, and a failure only delays that.

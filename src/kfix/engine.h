@@ -40,4 +40,9 @@ int kf_gap_ok(const uint8_t *pre, size_t need);
 /* jmp [rip+0] then handler: 14 bytes */
 #define KF_TRAMPOLINE_LEN 14
 void kf_trampoline(uint8_t out[KF_TRAMPOLINE_LEN], uint64_t handler);
+/* 0 when DTrace's fbt, scanning the function before the padding on past its end, could take a byte of the
+   handler address for a return site and patch it: 5d or c9 followed by c3, c2, e9, eb or ea (xnu-2422.115.4
+   bsd/dev/i386/fbt_x86.c, __provide_probe_64). next is the byte after the trampoline. Conservative: it
+   ignores instruction boundaries. */
+int kf_trampoline_fbt_safe(const uint8_t tr[KF_TRAMPOLINE_LEN], uint8_t next);
 #endif

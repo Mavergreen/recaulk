@@ -4,6 +4,7 @@
    kext applied it. Kernel text is written by write.c, every CPU parked. */
 #include <sys/types.h>
 #include <sys/errno.h>
+#include <sys/sysctl.h>
 #include <string.h>
 #include <mach/mach_types.h>
 #include <mach-o/loader.h>
@@ -57,8 +58,32 @@ kf_apply_all(void)
 	const char *why = NULL;
 	char hex[33];
 	unsigned i, known = 0;
-	int err;
+	int err, safeboot = 0;
+	size_t sblen = sizeof safeboot;
 
+	/* spec: "Escape hatch" -- a Safe Boot applies nothing, whoever loads the kext */
+	if (sysctlbyname("kern.safeboot", &safeboot, &sblen, NULL, 0) == 0 && safeboot != 0) {
+		printf(KF_LOG "no fixes: this is a Safe Boot\n");
+		return;
+	}
+	/* final review #4: first only the slide's two symbols, for the UUID; a kernel no fix names is told so, even if
+	   it lacks a symbol some fix needs */
+	{
+		struct rk_sym w2[2] = { { "_printf", 0, 0 }, { "_panic", 0, 0 } };
+		uint64_t l2[2] = { (uint64_t)(uintptr_t)&printf, (uint64_t)(uintptr_t)&panic };
+		static const uint8_t u13F1911[16] = KF_UUID_13F1911;
+		if ((err = rk_resolve_live(w2, l2, 2, &k, &slide, &why)) != 0) {
+			printf(KF_LOG "no fixes: cannot read the running kernel's symbols (%s, error %d)\n", why, err);
+			return;
+		}
+		k.uuid[0] ^= KF_UUID_FLIP;
+		/* every fix in this kext is 13F1911's */
+		if (!kf_uuid_eq(k.uuid, u13F1911)) {
+			kf_uuid_hex(hex, k.uuid);
+			printf(KF_LOG "no fixes for this kernel (UUID %s)\n", hex);
+			return;
+		}
+	}
 	for (i = 0; i < KF_NFIX; i++) {
 		want[i] = (struct rk_sym){ kf_fixes[i].patch->anchor, 0, 0 };
 		live[i] = 0;
@@ -103,7 +128,7 @@ kf_apply_all(void)
 			continue;
 		}
 		if (kf_write_text(site, p->replace, p->len) != 0) {
-			printf(KF_LOG "%s: refused (the write did not take)\n", p->name);
+			printf(KF_LOG "%s: refused (the write did not take; the site may hold part of it)\n", p->name);
 			continue;
 		}
 		*kf_fixes[i].state = KF_APPLIED;

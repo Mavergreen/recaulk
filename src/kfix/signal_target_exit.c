@@ -21,6 +21,18 @@ extern int printf(const char *, ...);
    the only call to _uthread_cleanup before _thread_sched_call */
 static const uint8_t ste_before[10] = { 0x48, 0x8b, 0x93, 0xf0, 0x02, 0x00, 0x00, 0x48, 0x89, 0xdf };
 
+/* platform: 10.9.5 13F1911, otool -tV: _uthread_cleanup+0xee reads the uthread's vfork state, which fixes
+   struct uthread's offsets on this kernel (bsd/sys/user.h: uu_flag, UT_VFORK 0x02000000; uu_proc):
+     f6 83 23 01 00 00 02   testb $0x2, 0x123(%rbx)   (uu_flag at 0x120, UT_VFORK)
+     74 18                  je ...
+     48 8b bb f8 00 00 00   movq 0xf8(%rbx), %rdi     (uu_proc) */
+static const uint8_t ste_vfork_check[16] = { 0xf6, 0x83, 0x23, 0x01, 0x00, 0x00, 0x02, 0x74, 0x18, 0x48, 0x8b, 0xbb,
+	0xf8, 0x00, 0x00, 0x00 };
+#define STE_VFORK_CHECK_AT 0xee
+#define STE_UU_FLAG 0x120
+#define STE_UU_PROC 0xf8
+#define STE_UT_VFORK 0x02000000
+
 typedef void (*kf_cleanup_fn)(void *task, void *uthread, void *proc);
 static kf_cleanup_fn ste_real_cleanup;
 static void (*ste_signalstart)(void *proc, int locked);
@@ -34,6 +46,15 @@ kf_signal_handler(void *task, void *uthread, void *proc)
 	if (proc != NULL && proc != *ste_kernproc) {
 		ste_signalstart(proc, 0);
 		ste_signalend(proc, 0);
+	}
+	/* final review #3: a thread in vfork is the target psignal picks for its vfork child (p_vforkact), under the
+	   child's P_LINSIGNAL, so it waits out the child's too; one at a time, never nested */
+	if (uthread != NULL && (*(const int *)((const char *)uthread + STE_UU_FLAG) & STE_UT_VFORK) != 0) {
+		void *child = *(void *const *)((const char *)uthread + STE_UU_PROC);
+		if (child != NULL && child != proc && child != *ste_kernproc) {
+			ste_signalstart(child, 0);
+			ste_signalend(child, 0);
+		}
 	}
 	ste_real_cleanup(task, uthread, proc);
 }
@@ -79,6 +100,11 @@ kf_signal_target_exit_apply(const uint64_t *v, const int *found, uint64_t slide,
 		*why = "the padding before timer_call_init is not a ret and 14 NOPs";
 		return ESRCH;
 	}
+	if (memcmp((const uint8_t *)(uintptr_t)(v[S_CLEANUP] + slide + STE_VFORK_CHECK_AT), ste_vfork_check,
+	    sizeof ste_vfork_check) != 0) {
+		*why = "uthread_cleanup's vfork check is not 13F1911's, so struct uthread's offsets are unknown";
+		return ESRCH;
+	}
 	int32_t disp;
 	if ((err = kf_rel32(call + 5, (uint64_t)(uintptr_t)gap, &disp)) != 0) {
 		*why = "the padding is out of the call's reach";
@@ -94,6 +120,10 @@ kf_signal_target_exit_apply(const uint64_t *v, const int *found, uint64_t slide,
 	ste_kernproc = (void *const *)(uintptr_t)(v[S_KERNPROC] + slide);
 	uint8_t tr[KF_TRAMPOLINE_LEN];
 	kf_trampoline(tr, (uint64_t)(uintptr_t)&kf_signal_handler);
+	if (!kf_trampoline_fbt_safe(tr, gap[KF_TRAMPOLINE_LEN])) {
+		*why = "this load's handler address could be taken by DTrace's fbt for a return site; reload to move it";
+		return ESRCH;
+	}
 	if (kf_write_text(gap, tr, sizeof tr) != 0) {
 		*why = "the trampoline write did not take";
 		return EIO;

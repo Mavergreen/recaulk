@@ -54,6 +54,11 @@ if compiling; then
   #       with only this CPU's interrupts off
   grep -qx _mp_rendezvous_no_intrs "$O/undefined" || bad "it does not write kernel text through mp_rendezvous_no_intrs"
   grep -qx _ml_set_interrupts_enabled "$O/undefined" && bad "it still writes kernel text with only this CPU's interrupts off"
+  # spec: README.md "The kernel-fixes kext" -- it reads kern.safeboot itself and applies nothing in a Safe Boot,
+  #       whoever loads it; and stop, with nothing applied, waits out the apply thread's last instructions (final
+  #       review #1, #5)
+  grep -qx _sysctlbyname "$O/undefined" || bad "it does not read kern.safeboot (sysctlbyname)"
+  grep -qx _delay "$O/undefined" || bad "stop does not wait out the apply thread (delay)"
   missing="$(LC_ALL=C comm -23 "$O/undefined" "$O/available" | tr '\n' ' ')"
   [ -z "$missing" ] || bad "imported but no named 10.9 KPI library exports them: $missing"
 fi

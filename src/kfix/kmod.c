@@ -7,6 +7,10 @@
 #include <kern/locks.h>
 #include <kern/sched_prim.h>
 #include <kern/thread.h>
+#include <kern/clock.h>
+
+/* platform: com.apple.kpi.unsupported exports delay (xnu-2422.115.4 osfmk/kern/clock.h, KERNEL_PRIVATE there) */
+extern void delay(int usec);
 #include <sys/types.h>
 #include <sys/vnode.h>
 #include "core.h"
@@ -93,6 +97,9 @@ kf_stop(kmod_info_t *ki, void *data)
 		printf(KF_LOG "not stopping: a fix is in the kernel; it goes at reboot\n");
 		return KERN_FAILURE;
 	}
+	/* final review #1: the apply thread wakes start while it still runs this kext's code (the unlock, its return);
+	   give it time to leave before the kext's memory goes */
+	delay(100 * 1000);
 	kf_sysctl_stop();
 	lck_mtx_free(kf_lock, kf_grp);
 	lck_grp_free(kf_grp);

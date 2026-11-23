@@ -74,6 +74,12 @@ real_kernel(const char *path)
 	ok(kf_gap_ok(pre, 14), "real_gap", "13F1911's padding before timer_call_init is not ret + 14 NOPs");
 	int32_t d;
 	ok(kf_rel32(call + 5, want[3].value - 14, &d) == 0, "real_gap_reach", "the padding is out of reach");
+	static const uint8_t vfc[16] = { 0xf6, 0x83, 0x23, 0x01, 0x00, 0x00, 0x02, 0x74, 0x18, 0x48, 0x8b, 0xbb, 0xf8, 0x00,
+		0x00, 0x00 };
+	uint8_t got[16];
+	f.read(NULL, got, sizeof got, want[2].value + 0xee - k.text_vmaddr);
+	ok(memcmp(got, vfc, sizeof got) == 0, "real_vfork_offsets",
+	    "_uthread_cleanup+0xee is not the uu_flag/uu_proc check the vfork barrier pins");
 	static const uint8_t kq_head[5] = { 0x48, 0x8d, 0x3d, 0xbb, 0xf3 };
 	f.read(NULL, kq, sizeof kq, want[4].value + 0x8dc - k.text_vmaddr);
 	ok(memcmp(kq, kq_head, sizeof kq_head) == 0 && kq[19] == 0xe8, "real_kqueue_site",
@@ -176,6 +182,15 @@ main(int argc, char **argv)
 		static const uint8_t want_tr[14] = { 0xff, 0x25, 0, 0, 0, 0, 0x34, 0x12, 0x00, 0x80, 0x7f, 0xff, 0xff, 0xff };
 		kf_trampoline(tr, 0xffffff7f80001234ULL);
 		ok(memcmp(tr, want_tr, sizeof tr) == 0, "trampoline_bytes", "jmp [rip+0] and the handler are not the bytes");
+		/* fbt scans past a function's end into the trampoline and takes "5d or c9, then c3 c2 e9 eb or ea" as a
+		   return site to patch (xnu-2422.115.4 bsd/dev/i386/fbt_x86.c); such a handler address is refused */
+		ok(kf_trampoline_fbt_safe(tr, 0x55), "fbt_safe", "an ordinary handler address is refused");
+		kf_trampoline(tr, 0xffffff7f80c35d12ULL);
+		ok(!kf_trampoline_fbt_safe(tr, 0x55), "fbt_pop_ret", "5d c3 in the address is accepted");
+		kf_trampoline(tr, 0xffffff7f8000eac9ULL);
+		ok(!kf_trampoline_fbt_safe(tr, 0x55), "fbt_leave_jmp", "c9 ea in the address is accepted");
+		kf_trampoline(tr, 0xffffff7f80005d00ULL);
+		ok(kf_trampoline_fbt_safe(tr, 0x55), "fbt_lone_pop", "5d not before a return-like byte is refused");
 	}
 	if (argc > 1)
 		real_kernel(argv[1]);
