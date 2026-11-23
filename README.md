@@ -552,6 +552,11 @@ code compiled is the same:
   `NSBackgroundStyleEmphasized` (10.9's `Light` and `Dark`);
 - `appkit-cell-properties-v4`: `appkit-cell-properties-v3` plus the accessibility properties below;
 - `appkit-view-properties-v2`: `appkit-view-properties-v1` plus the accessibility properties below;
+- `appkit-view-v3`: `appkit-view-properties-v2` plus 10.10's `NSVisualEffectView`, declared in `NSView.h`
+  because 10.9 has no `NSVisualEffectView.h`. It includes its material, blending-mode and state enums, with
+  the 10.11 and 10.14 materials marked as such, and `allowsVibrancy`. 10.9 has no such class, so references to
+  it are weak: check `[NSVisualEffectView class]` before using it. `allowsVibrancy` is declared on the class,
+  not on `NSView` as 10.10 has it, because 10.9's `NSView` does not answer it;
 - `appkit-control-v2`: `appkit-control-properties-v1` and `appkit-control-single-line-v1` together;
 - `appkit-compositing-v1`: `NSCompositingOperation*`;
 - `appkit-alert-style-v1`: `NSAlertStyle*`;
