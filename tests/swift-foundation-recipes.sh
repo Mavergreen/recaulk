@@ -86,8 +86,8 @@ c = load('c')                                                                   
 assert 'foundation-thing-v4' in c, sorted(c)
 assert '- (NSString *)extra2;' in materialize(c['foundation-thing-v4'])
 PY
-# spec: the committed recipes, probes and profile are what the generator makes from the committed facts
-#       (recipes_current); with the committed recipes as the released set, a current tree regenerates unchanged
+# spec: README.md "Profiles" -- the committed recipes, probes and profile are what the generator makes from
+#       the committed facts (recipes_current); with the committed recipes as the released set, a current tree regenerates unchanged
 . build/msc.sh
 SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
 mkdir -p "$d/real/probes"

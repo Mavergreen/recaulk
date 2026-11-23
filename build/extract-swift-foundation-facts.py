@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# platform: any host with clang22 and both SDKs; run by hand when the R1 facts change, output reviewed and committed.
+# platform: host-agnostic -- any host with clang22 and both SDKs; run by hand when the facts change, output
+#   reviewed and committed.
 # spec: .superpowers/specs/2026-11-23-swift-foundation-recipes-design.md -- R1: every zero-argument getter 10.9
 #       declares, where the 11.3 SDK declares a property with that getter, becomes that property, keeping 10.9's
 #       type text and trailing attributes and taking only 11.3's property attributes; never nullability.

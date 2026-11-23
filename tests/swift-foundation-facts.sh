@@ -87,7 +87,8 @@ for e in h['Fixture.framework/Headers/Fixture.h']:                              
     if e['setter_decl']:
         assert t[e['setter_offset']:e['setter_offset'] + len(e['setter_decl'])] == e['setter_decl'], e
 PY
-# spec: the committed facts are exactly what the extractor makes from both SDKs and the hand inputs (facts_current)
+# spec: README.md "Profiles" -- the committed facts are what the extractor makes from both SDKs and the hand
+#       inputs (facts_current)
 python3 build/extract-swift-foundation-facts.py --clang "$CLANG22" --old-sdk "$SDK" --new-sdk "$SDK113" \
   --import Foundation/Foundation.h --import objc/runtime.h --hand sdk-metadata/swift-foundation-hand.json >"$d/real.json"
 cmp -s "$d/real.json" sdk-metadata/swift-foundation-facts.json \

@@ -32,8 +32,8 @@ if [ -z "$asts" ]; then
   "$CLANG22" --no-default-config $flags "$probe" >"$d/$id.without" 2>&1 \
     && bad "$id: its probe compiles on the SDK alone without the recipe (a no-op recipe)"
 fi
-# spec: an "// ast:" check holds through the overlay and not through its needs alone, so this recipe (not one
-#       it needs) is what makes it hold
+# spec: README.md "SDK declaration metadata" -- an "// ast:" check holds through the overlay and not through
+#       its needs alone, so this recipe (not one it needs) is what makes it hold
 base=
 if [ -n "$asts" ] && [ -n "$need" ]; then
   if ! bov=$("$SC" -DMODULES="$MODULES" -DSDK="$SDK" -DRECIPES="$PWD/sdk-metadata/recipes.json" \
