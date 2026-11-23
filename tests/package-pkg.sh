@@ -78,6 +78,18 @@ kver="$(sed -n '/<key>CFBundleVersion<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\
 [ "$kver" = 2610.5.1 ] || { echo "FAIL: the packaged kext's CFBundleVersion is '$kver', not 2610.5.1 (release 20261005.1)"; exit 1; }
 grep -q 'Library/Extensions/RecaulkKPI.kext' "$tmp/files/usr/local/mavergreen/recaulk/mavergreen.plist" \
   || { echo "FAIL: the manifest's outside list lacks the kext, so uninstall would leave it"; exit 1; }
+# spec: README.md "The kernel-fixes kext" -- RecaulkKernelFixes.kext beside RecaulkKPI, root-owned and writable only by
+#       root, with the LaunchDaemon that loads it at boot; uninstall removes both
+need 'Library/Extensions/RecaulkKernelFixes.kext/Contents/Info.plist'
+need 'Library/Extensions/RecaulkKernelFixes.kext/Contents/MacOS/RecaulkKernelFixes'
+need 'Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist'
+fmodes="$(cpio -itvn < "$tmp/payload.cpio" 2>/dev/null | grep -e 'Library/Extensions/RecaulkKernelFixes.kext' -e 'dev.mavergreen.recaulk.kernelfixes.plist' | awk '{ print $1, $3, $4, $NF }')"
+printf '%s\n' "$fmodes" | awk '$2 != "0" || $3 != "0" || $1 ~ /^.....w/ || $1 ~ /^........w/ { bad = 1 } END { exit bad }' \
+  || { echo "FAIL: the kernel-fixes kext or its daemon is not root:wheel and root-writable only: $fmodes"; exit 1; }
+for o in Library/Extensions/RecaulkKernelFixes.kext Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist; do
+  grep -q "$o" "$tmp/files/usr/local/mavergreen/recaulk/mavergreen.plist" \
+    || { echo "FAIL: the manifest's outside list lacks $o, so uninstall would leave it"; exit 1; }
+done
 # spec: README.md "The kernel back-fill kext" -- the postinstall rebuilds the kext caches, only on the boot volume
 post="$(cat "$tmp"/x/*.pkg/Scripts/postinstall 2>/dev/null || :)"
 [ -z "$post" ] && post="$(for s in "$tmp"/x/*.pkg/Scripts; do [ -d "$s" ] && (cd "$s" && cat postinstall 2>/dev/null); done)"

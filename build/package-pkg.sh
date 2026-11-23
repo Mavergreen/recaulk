@@ -38,6 +38,17 @@ cp -R "$OUT/kext/RecaulkKPI.kext" "$STAGE/Library/Extensions/"
 find "$STAGE/Library/Extensions/RecaulkKPI.kext" -type d -exec chmod 755 {} +
 find "$STAGE/Library/Extensions/RecaulkKPI.kext" -type f -exec chmod 644 {} +
 chmod 755 "$STAGE/Library/Extensions/RecaulkKPI.kext/Contents/MacOS/RecaulkKPI"
+# spec: README.md "The kernel-fixes kext" -- the second kext, staged as the first, and the LaunchDaemon that loads it
+#       at boot (not in Safe Boot), which uninstall unloads and removes with it
+KEXT_SRC="$MAVERICKS_ROOT/src/kfix" KEXT_NAME=RecaulkKernelFixes VERSION="$VERSION" sh "$SELF/build-kext.sh" "$OUT/kfix" >&2
+rm -rf "$STAGE/Library/Extensions/RecaulkKernelFixes.kext"
+cp -R "$OUT/kfix/RecaulkKernelFixes.kext" "$STAGE/Library/Extensions/"
+find "$STAGE/Library/Extensions/RecaulkKernelFixes.kext" -type d -exec chmod 755 {} +
+find "$STAGE/Library/Extensions/RecaulkKernelFixes.kext" -type f -exec chmod 644 {} +
+chmod 755 "$STAGE/Library/Extensions/RecaulkKernelFixes.kext/Contents/MacOS/RecaulkKernelFixes"
+mkdir -p "$STAGE/Library/LaunchDaemons"
+cp "$MAVERICKS_ROOT/packaging/kernelfixes-loader.plist" "$STAGE/Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist"
+chmod 644 "$STAGE/Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist"
 
 SCR="$OUT/pkg-scripts"; rm -rf "$SCR"
 sh "$SCRIPTS/stage_product.sh" --stage "$STAGE" --product recaulk \

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>dev.mavergreen.recaulk.kernelfixes</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>[ "$(/usr/sbin/sysctl -n kern.safeboot 2&gt;/dev/null)" = 1 ] &amp;&amp; { echo "RecaulkKernelFixes: not loading: Safe Boot"; exit 0; }; exec /sbin/kextload /Library/Extensions/RecaulkKernelFixes.kext</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>

@@ -6,6 +6,8 @@
 #       RecaulkKernelFixes reports it as already applied (sysctl 2) and writes nothing. Each round wants a fresh
 #       boot, since a patched kernel stays patched: the guest job reboots between rounds, or runs one round per
 #       boot with RECAULK_KFIX_ROUND=fresh|foreign (default fresh).
+#       The fresh round also checks that kextd raised no unsigned-kext complaint (no_dialog). Whether the
+#       installed LaunchDaemon loads it at boot (boot_load) needs a guest reboot, a manual check for now.
 #       Loading kexts needs RECAULK_KEXT_LOAD=1, which only the on-mavericks job's disposable guest sets.
 set -eu
 cd "$(dirname "$0")/.."
@@ -40,14 +42,22 @@ n=0
 mark() { n=$((n + 1)); sudo -n dmesg > "$d/dmesg.$n"; echo "$n"; }
 since() { sudo -n dmesg | awk -v f="$d/dmesg.$1" 'BEGIN { while ((getline l < f) > 0) seen[l]++ } { if (seen[$0] > 0) seen[$0]--; else print }'; }
 st() { sysctl -n debug.recaulk_kfix.kqueue_scan_restart 2>/dev/null || echo absent; }
-! loaded $B || { echo "FAIL: RecaulkKernelFixes is already loaded; each round wants a fresh boot"; exit 1; }
 
 case "${RECAULK_KFIX_ROUND:-fresh}" in
 fresh)
-  m="$(mark)"
-  sudo -n kextload "$d/RecaulkKernelFixes.kext" > "$d/load.log" 2>&1 || bad "kextload failed: $(cat "$d/load.log")"
+  # spec: README.md "The kernel-fixes kext" -- the pkg's postinstall loads its LaunchDaemon, which loads the
+  #       installed kext; on a guest whose install did not, this loads it the same way
+  if ! loaded $B; then
+    sudo -n kextload /Library/Extensions/RecaulkKernelFixes.kext > "$d/load.log" 2>&1 || bad "kextload failed: $(cat "$d/load.log")"
+  fi
   [ "$(st)" = 1 ] || bad "applied: debug.recaulk_kfix.kqueue_scan_restart is $(st), want 1"
-  since "$m" | grep -q 'RecaulkKernelFixes: kqueue_scan_restart: applied' || bad "applied: no 'kqueue_scan_restart: applied' line: $(since "$m" | grep RecaulkKernelFixes)"
+  sudo -n dmesg | grep -q 'RecaulkKernelFixes: kqueue_scan_restart: applied' || bad "applied: no 'kqueue_scan_restart: applied' line: $(sudo -n dmesg | grep RecaulkKernelFixes)"
+  # platform: 10.9's kextd logs an unsigned /Library/Extensions kext's load as "Invalid signature" and puts up a
+  #           dialog naming it (kext_tools 10.9, checkKextSignature); none may name this bundle
+  if grep -i 'signature' /var/log/system.log 2>/dev/null | grep -q 'RecaulkKernelFixes'; then
+    bad "no_dialog: kextd logged a signature complaint: $(grep -i signature /var/log/system.log | grep RecaulkKernelFixes | tail -1)"
+  fi
+  [ -d /Library/Extensions/RecaulkKernelFixes.kext ] || bad "the pkg installed no /Library/Extensions/RecaulkKernelFixes.kext"
   out="$("$(tbin kq)")" || bad "kqueue_restart: the reproducer failed: $out"
   echo "kfix-runtime-test: kqueue_restart: $out"
   if sudo -n kextunload -b $B > "$d/unload.log" 2>&1; then bad "unload_refused: kextunload succeeded with a fix applied"; fi
@@ -55,6 +65,7 @@ fresh)
   [ "$(st)" = 1 ] || bad "unload_refused: the sysctl is $(st) after the unload attempt"
   ;;
 foreign)
+  loaded $B && { echo "FAIL: RecaulkKernelFixes is already loaded; the foreign round wants a fresh boot without it"; exit 1; }
   sudo -n cp -R "$O/wow/KQueueScanContinuePatch.kext" "$d/"
   sudo -n chown -R root:wheel "$d/KQueueScanContinuePatch.kext"
   sudo -n kextload "$d/KQueueScanContinuePatch.kext" > "$d/wow.log" 2>&1 || bad "his kext would not load: $(cat "$d/wow.log")"
