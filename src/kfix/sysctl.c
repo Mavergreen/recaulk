@@ -4,8 +4,6 @@
 #include <sys/sysctl.h>
 #include "kfix.h"
 
-int kf_kqueue_scan_restart_state = KF_NOT_APPLIED;
-
 SYSCTL_DECL(_debug);
 SYSCTL_NODE(_debug, OID_AUTO, recaulk_kfix, CTLFLAG_RW | CTLFLAG_LOCKED, 0, "RecaulkKernelFixes.kext");
 SYSCTL_INT(_debug_recaulk_kfix, OID_AUTO, kqueue_scan_restart, CTLFLAG_RD | CTLFLAG_LOCKED,

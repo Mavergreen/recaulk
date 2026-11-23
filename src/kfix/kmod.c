@@ -28,7 +28,7 @@ kf_start(kmod_info_t *ki, void *data)
 		return KERN_FAILURE;
 	}
 	printf(KF_LOG "started " RECAULK_KPI_VERSION "\n");
-	kf_kqueue_scan_restart_apply();
+	kf_apply_all();
 	return KERN_SUCCESS;
 }
 
@@ -37,7 +37,7 @@ kf_stop(kmod_info_t *ki, void *data)
 {
 	(void)ki;
 	(void)data;
-	if (kf_kqueue_scan_restart_state == KF_APPLIED) {
+	if (kf_any_applied()) {
 		printf(KF_LOG "not stopping: a fix is in the kernel; it goes at reboot\n");
 		return KERN_FAILURE;
 	}

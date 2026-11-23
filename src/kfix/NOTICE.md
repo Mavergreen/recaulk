@@ -2,13 +2,13 @@
 
 ## KQueueScanContinuePatch (CC-0)
 
-`kqueue_scan_restart.c` is ported from KQueueScanContinuePatch, by Wowfunhappy with assistance from krackers:
+`kqueue_scan_restart.c` (and the write in `apply.c`) is ported from KQueueScanContinuePatch, by Wowfunhappy with assistance from krackers:
 https://gist.github.com/Wowfunhappy/8212f5bea4c601ac9a6297789f232321. Wowfunhappy declared it CC-0 on
 2026-11-23, in comment 6488041 on that gist.
 
 ## Lilu (BSD-3-Clause)
 
-`kf_kernel_slide()` in `kqueue_scan_restart.c` is adapted, by way of that gist, from
+`kf_kernel_header()` in `apply.c` is adapted, by way of that gist, from
 https://github.com/acidanthera/Lilu/blob/137b4d9deb7022bb97fa9899303934534ff20ec7/Lilu/Sources/kern_mach.cpp,
 under this licence:
 
