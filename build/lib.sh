@@ -29,6 +29,18 @@ recaulk_tools() {
   export CL NM OTOOL LIPO STRINGS
 }
 
+# platform: the SDK path may hold a space, so it goes to clang as one argument, never through a flags string
+recaulk_cc() {
+  "$CC" $TARGET_FLAGS -isysroot "$SDK" "$@"
+}
+
+# platform: make hands CC, CFLAGS and the like to sh, which splits them into words, so a path in one (the
+#           checkout's or the build tree's, which may hold a space) goes in as one shell word: this prints
+#           its argument single-quoted for sh
+recaulk_shq() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
 recaulk_archive() {
   _ra_out="$1"; shift
   rm -f "$_ra_out"

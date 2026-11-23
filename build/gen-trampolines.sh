@@ -10,7 +10,6 @@ if [ -z "${SDK:-}" ]; then
   SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
 fi
 recaulk_tools
-flags="$TARGET_FLAGS -isysroot $SDK"
 mkdir -p "$out"
 list="$(mktemp "$out/.symbols.XXXXXX")"
 trap 'rm -f "$list"' EXIT
@@ -108,8 +107,8 @@ Lname:
 
 	.subsections_via_symbols
 ASM
-  "$CC" $flags -arch x86_64 -c "$s" -o "$out/fwd-$i.o"
+  recaulk_cc -arch x86_64 -c "$s" -o "$out/fwd-$i.o"
 done < "$list"
 
-"$CC" $flags -arch x86_64 -Os -fPIC -Wall -c "$MAVERICKS_ROOT/src/forward/resolve.c" -o "$out/fwd-resolve.o"
+recaulk_cc -arch x86_64 -Os -fPIC -Wall -c "$MAVERICKS_ROOT/src/forward/resolve.c" -o "$out/fwd-resolve.o"
 mv -f "$list" "$out/symbols.txt"

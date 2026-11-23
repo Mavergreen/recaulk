@@ -4,7 +4,9 @@
 duplicate_report() {
   for _dr_a in "$@"; do
     # spec: build/image-local-shadows.txt -- a weak hidden definition yields to any other, so it never collides
-    "${NM:-nm}" -gU -m -A "$_dr_a" | awk '
+    # platform: nm -A prefixes each line with the archive path as given, which may hold a space; from the
+    #           archive's own directory that prefix is its file name, so $1 is the archive and member
+    (cd "$(dirname "$_dr_a")" && "${NM:-nm}" -gU -m -A "$(basename "$_dr_a")") | awk '
       NF >= 3 && $NF !~ /\.eh$/ && !/ weak private external / {
         member = $1; sub(/^.*\.a:/, "", member); sub(/:$/, "", member)
         print $NF, member

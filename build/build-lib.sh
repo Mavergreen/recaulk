@@ -11,7 +11,9 @@ if [ -z "${SDK:-}" ]; then
   SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
 fi
 recaulk_tools
-flags="$TARGET_FLAGS -isysroot $SDK"
+# platform: flags is shell words, for make and apsl-notices.sh, which hand it to sh; the SDK path in it is
+#           single-quoted, since it may hold a space
+flags="$TARGET_FLAGS -isysroot $(recaulk_shq "$SDK")"
 if [ "$(uname -s)" = Darwin ]; then MAKE=/usr/bin/make; else MAKE=make; fi
 
 rm -rf "$B/stage"
@@ -21,8 +23,8 @@ src="$(sh "$SELF/fetch-macports.sh" "$W")"
 
 mp_slib() {
   # platform: MacPorts' Makefile compiles and runs a probe program to choose TESTARCHS unless it is given
-  "$MAKE" -C "$src" "$@" CC="$CC" ARCHS=x86_64 TESTARCHS=x86_64 CFLAGS="$flags" LDFLAGS="$flags" \
-    ARX="$AR" BUILDSLIBFLAGS="--format=darwin -qs" slib 1>&2
+  "$MAKE" -C "$src" "$@" CC="$(recaulk_shq "$CC")" ARCHS=x86_64 TESTARCHS=x86_64 CFLAGS="$flags" LDFLAGS="$flags" \
+    ARX="$(recaulk_shq "$AR")" BUILDSLIBFLAGS="--format=darwin -qs" slib 1>&2
 }
 mp_slib
 # spec: README.md "Licences" -- the second pass recompiles only the Apple-derived members MacPorts kept
@@ -34,8 +36,11 @@ for stem in $apsl; do
     || { echo "build-lib: MacPorts' $stem.o was rebuilt without its APSL notice; did its Makefile's object path change?" >&2; exit 1; }
 done
 
-rm -rf "$W/mp-headers"
-"$MAKE" -C "$src" PREFIX=/ DESTDIR="$W/mp-headers" TESTARCHS=x86_64 install-headers 1>&2
+rm -rf "$W/mp-headers" "$src/_recaulk_mp_headers"
+# platform: MacPorts' Makefile names make targets after DESTDIR, which no quoting keeps whole, so the headers
+#           go to a directory relative to $src, free of the space its absolute path may hold, and then to $W
+"$MAKE" -C "$src" PREFIX=/ DESTDIR=_recaulk_mp_headers TESTARCHS=x86_64 install-headers 1>&2
+mv "$src/_recaulk_mp_headers" "$W/mp-headers"
 # spec: README.md requires the pinned MacPorts source to remain unmodified.
 # platform: MacPorts headers adapt declarations to the target SDK; wrappers must follow them.
 mp="$W/mp-headers/include/LegacySupport"
@@ -58,20 +63,20 @@ for dir in backfills overrides; do
     o="$W/$dir/recaulk-$(basename "$c" .c).o"
     set -- -arch x86_64 -Os -fPIC -Wall -Wno-deprecated-declarations -D__RECAULK_SOURCE__ \
       -I"$W/own-include" -I"$MAVERICKS_ROOT/src" -I"$src/include" -c "$c" -o "$o"
-    "$CC" $flags "$@"
+    recaulk_cc "$@"
     # spec: README.md "How to use" -- a member carries the frameworks and libraries it needs; measured from the
     #       compiled object, then compiled again with them
     [ "$dir" = backfills ] || continue
     h="$W/link-options/$(basename "$c" .c).h"
     NM="$NM" sh "$SELF/member-link-options.sh" header "$W/link-options.map" "$o" > "$h"
-    [ -s "$h" ] && "$CC" $flags "$@" -include "$h"
+    [ -s "$h" ] && recaulk_cc "$@" -include "$h"
   done
   recaulk_archive "$W/librecaulk-$dir.a" "$W/$dir"/recaulk-*.o
 done
 # spec: README.md "C++ exceptions" -- the pointer catch vtables, public, for libcxx22's
 #       libc++abi.1.dylib to export; librecaulk.a keeps them hidden.
 mkdir -p "$W/cxxabi-exports" "$T/lib"
-"$CC" $flags -arch x86_64 -Os -fPIC -Wall -DRECAULK_CXXABI_EXPORTS \
+recaulk_cc -arch x86_64 -Os -fPIC -Wall -DRECAULK_CXXABI_EXPORTS \
   -c "$MAVERICKS_ROOT/src/backfills/cxxabi_pointer_catch.c" -o "$W/cxxabi-exports/recaulk-cxxabi_pointer_catch.o"
 recaulk_archive "$T/lib/librecaulk-cxxabi-exports.a" "$W/cxxabi-exports/recaulk-cxxabi_pointer_catch.o"
 
@@ -114,7 +119,7 @@ while IFS= read -r sym; do
       "$F/fwd-$i.s" > "$F/static/fwd-$i.s"
     grep -q '\.private_extern.*"'"$sym"'"$' "$F/static/fwd-$i.s" \
       || { echo "build-lib: fwd-$i.s does not define $sym as gen-trampolines.sh writes it" >&2; exit 1; }
-    "$CC" $flags -arch x86_64 -c "$F/static/fwd-$i.s" -o "$F/static/fwd-$i.o"
+    recaulk_cc -arch x86_64 -c "$F/static/fwd-$i.s" -o "$F/static/fwd-$i.o"
   else
     cp "$F/fwd-$i.o" "$F/static/"
   fi
@@ -138,7 +143,7 @@ dups="$(duplicate_report "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a")"
 grep -v '^#' "$MAVERICKS_ROOT/build/header-entries.txt" | awk 'NF' | LC_ALL=C sort > "$W/header-entries"
 "$NM" -gU "$W/librecaulk-dylib.a" "$W/librecaulk-overrides.a" | awk '{ print $NF }' | grep '^___recaulk_' \
   | LC_ALL=C sort -u | LC_ALL=C comm -23 - "$W/header-entries" > "$W/unexported"
-"$CC" -dynamiclib $flags -arch x86_64 -fuse-ld=lld --ld-path="$CL/bin/ld64.lld" -o "$T/lib/libRecaulkSystem.dylib" \
+recaulk_cc -dynamiclib -arch x86_64 -fuse-ld=lld --ld-path="$CL/bin/ld64.lld" -o "$T/lib/libRecaulkSystem.dylib" \
   -Wl,-reexport_library,/usr/lib/libSystem.B.dylib \
   -Wl,-force_load,"$W/librecaulk-dylib.a" -Wl,-force_load,"$W/librecaulk-overrides.a" \
   -Wl,-unexported_symbols_list,"$W/unexported" \
@@ -159,7 +164,9 @@ cp "$SELF/image-local-shadows.txt" "$T/share/recaulk/image-local-shadows.txt"
 sdk_exports "$SDK" > "$W/sdk-exports.txt"
 {
   echo '# <member> <symbol>: librecaulk.a defines <symbol>, which 10.9 already exports'
-  "$NM" -gU -m -A "$T/lib/librecaulk.a" \
+  # platform: nm -A prefixes each line with the archive path as given, which may hold a space; from its own
+  #           directory that prefix is librecaulk.a, so $1 is the archive and member
+  (cd "$T/lib" && "$NM" -gU -m -A librecaulk.a) \
     | awk '$NF !~ /\.eh$/ { m = $1; sub(/^.*\.a:/, "", m); sub(/:$/, "", m); print m, $NF }' \
     | while read -r m s; do grep -qxF -- "$s" "$W/sdk-exports.txt" && echo "$m $s"; done | LC_ALL=C sort -u
 } > "$T/share/recaulk/system-overrides.txt"

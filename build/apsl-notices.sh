@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-#   usage: AR=<llvm-ar> CC=<clang> MP_CFLAGS=<the build's CFLAGS> sh build/apsl-notices.sh MPSRC OUT
+#   usage: AR=<llvm-ar> CC=<clang> MP_CFLAGS=<the build's CFLAGS, as sh words> sh build/apsl-notices.sh MPSRC OUT
 #          For each member of MPSRC/lib/libMacportsLegacySupport.a for which anything clang -M says its
 #          source reads, but the SDK and the compiler's own headers, carries Apple's licence mark (a header
 #          in build/apsl-declaration-only.txt is exempt at its listed sha256 only): writes OUT/<stem>.h (the
@@ -49,16 +49,21 @@ done < "$out/own"
 while IFS= read -r stem; do
   c="src/$stem.c"
   [ -f "$mp/$c" ] || { echo "apsl-notices: MacPorts member $stem.o has no $c, so whether it is Apple-derived cannot be read" >&2; exit 1; }
-  deps="$(cd "$mp" && "$CC" -Iinclude -arch x86_64 -Os $MP_CFLAGS -M -MT x "$c")" \
+  # platform: MP_CFLAGS is shell words, as make gives it to sh, so a quoted path in it stays one argument
+  deps="$(cd "$mp" && eval "\"\$CC\" -Iinclude -arch x86_64 -Os $MP_CFLAGS -M -MT x \"\$c\"")" \
     || { echo "apsl-notices: clang -M could not list what $c includes" >&2; exit 1; }
   covered=""
-  for f in $(printf '%s\n' "$deps" | tr '\\' ' '); do
+  # platform: clang -M writes a space in a path as "\ " and ends a continued line with "\"; each path goes on
+  #           a line of its own, spaces intact
+  while IFS= read -r f; do
     case "$f" in x:|/*) continue ;; ./*) f="${f#./}" ;; esac
     marked "$mp/$f" || continue
     exempt "$f" && continue
     apsl2 "$mp/$f" || { echo "apsl-notices: $f (in $stem.o) carries an Apple licence that is not APSL 2.0; decide its notice before shipping it" >&2; exit 1; }
     case " $covered " in *" $f "*) ;; *) covered="${covered:+$covered }$f" ;; esac
-  done
+  done <<EOF
+$(printf '%s\n' "$deps" | awk '{ sub(/\\$/, ""); gsub(/\\ /, "\037"); for (i = 1; i <= NF; i++) { f = $i; gsub(/\037/, " ", f); print f } }')
+EOF
   [ -n "$covered" ] || continue
   m="mp-$stem.o"
   copy="$(for f in $covered; do sed -n 's/^[[:space:]*/]*\(Copyright.*Apple.*\)$/\1/p' "$mp/$f"; done \
@@ -71,7 +76,7 @@ while IFS= read -r stem; do
   notice="Recaulk member $m is object code compiled from $c of MacPorts legacy-support and contains Covered Code from $(printf '%s' "$covered" | sed 's/ /, /g') ($copy). Source Code of the Covered Code is available under the terms of the Apple Public Source License Version 2.0 (https://opensource.apple.com/apsl/) at $(printf '%s' "$urls" | sed 's/ / and /g'). Recaulk's own source, which builds this member, is with each Recaulk release at $rel"
   case "$notice" in *'"'*|*'\'*|*"$(printf '\t')"*) echo "apsl-notices: $m's notice holds a quote, backslash or tab: $notice" >&2; exit 1 ;; esac
   printf 'static const char recaulk_apsl_notice[] __attribute__((used, section("__TEXT,__recaulk_apsl"))) =\n  "%s";\n' "$notice" > "$out/$stem.h"
-  printf '$(BUILDDIR)/%s$(SLIBOBJEXT): SLIBCFLAGS += -include %s/%s.h\n' "$stem" "$out" "$stem" >> "$out/notices.mk"
+  printf '$(BUILDDIR)/%s$(SLIBOBJEXT): SLIBCFLAGS += -include %s\n' "$stem" "$(recaulk_shq "$out/$stem.h")" >> "$out/notices.mk"
   printf '%s\tAPSL-2.0\t%s\t%s\t%s\t%s\n' "$m" "$(printf '%s' "$covered" | tr ' ' ',')" "$copy" "$urls" "$notice" >> "$out/rows.tsv"
   printf '%s\n' "$stem"
 done < "$out/members"
