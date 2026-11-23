@@ -3,7 +3,8 @@
 # spec: README.md "The kernel-fixes kext" -- on 10.9.5 13F1911: RecaulkKernelFixes applies kqueue_scan_restart
 #       (sysctl 1, an "applied" line), kevent still works with it applied, and it refuses to unload. In a second
 #       round Wowfunhappy's KQueueScanContinuePatch, rebuilt from the gist, patches the kernel first, and
-#       RecaulkKernelFixes reports it as already applied (sysctl 2) and writes nothing. Each round wants a fresh
+#       RecaulkKernelFixes reports it as already applied (sysctl 2) and writes nothing; before that, a build whose
+#       table names another kernel's UUID applies nothing and unloads. Each round wants a fresh
 #       boot, since a patched kernel stays patched: the guest job reboots between rounds, or runs one round per
 #       boot with RECAULK_KFIX_ROUND=fresh|foreign (default fresh).
 #       The fresh round also checks that kextd raised no unsigned-kext complaint (no_dialog). Whether the
@@ -22,6 +23,10 @@ if compiling; then
     || { echo "FAIL: RecaulkKernelFixes did not build:"; sed 's/^/    | /' "$O/kfix.log"; exit 1; }
   "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror tests/c/kfix_kqueue_restart.c -o "$(tbin kq)"
   check_loads "$(tbin kq)"
+  # spec: README.md "The kernel-fixes kext" -- a build whose table names another kernel's UUID, for uuid_variant
+  rm -rf "$O/kfix-uuid"
+  VERSION=$V KEXT_SRC=src/kfix KEXT_NAME=RecaulkKernelFixes KEXT_CFLAGS=-DRECAULK_KFIX_UUID_FLIP sh build/build-kext.sh "$O/kfix-uuid" \
+    > "$O/kfix-uuid.log" 2>&1 || { echo "FAIL: the changed-UUID variant did not build:"; sed 's/^/    | /' "$O/kfix-uuid.log"; exit 1; }
   # spec: README.md "The kernel-fixes kext" -- his kext, built unchanged from the gist, for the foreign round
   VERSION=$V KEXT_SRC=tests/kext/wowfunhappy KEXT_NAME=KQueueScanContinuePatch sh build/build-kext.sh "$O/wow" \
     > "$O/wow.log" 2>&1 || { echo "FAIL: his kext did not build:"; sed 's/^/    | /' "$O/wow.log"; exit 1; }
@@ -36,6 +41,8 @@ d="$(mktemp -d "${TMPDIR:-/tmp}/kfix-runtime.XXXXXX")"
 # platform: kextd refuses a kext not owned by root
 sudo -n cp -R "$O/kfix/RecaulkKernelFixes.kext" "$d/"
 sudo -n chown -R root:wheel "$d/RecaulkKernelFixes.kext"
+sudo -n mkdir "$d/uuid"; sudo -n cp -R "$O/kfix-uuid/RecaulkKernelFixes.kext" "$d/uuid/"
+sudo -n chown -R root:wheel "$d/uuid/RecaulkKernelFixes.kext"
 trap 'sudo -n rm -rf "$d"' EXIT
 loaded() { kextstat -l -b "$1" | grep -q "$1"; }
 n=0
@@ -66,6 +73,13 @@ fresh)
   ;;
 foreign)
   loaded $B && { echo "FAIL: RecaulkKernelFixes is already loaded; the foreign round wants a fresh boot without it"; exit 1; }
+  # spec: README.md "The kernel-fixes kext" -- uuid_variant: a kernel the table does not name gets no fix, one line,
+  #       and the kext, having applied nothing, unloads
+  m="$(mark)"
+  sudo -n kextload "$d/uuid/RecaulkKernelFixes.kext" > "$d/uuid.log" 2>&1 || bad "uuid_variant: kextload failed: $(cat "$d/uuid.log")"
+  [ "$(st)" = 0 ] || bad "uuid_variant: the sysctl is $(st), want 0"
+  since "$m" | grep -q 'RecaulkKernelFixes: no fixes for this kernel (UUID ' || bad "uuid_variant: no 'no fixes for this kernel' line"
+  sudo -n kextunload -b $B > "$d/unload.log" 2>&1 || bad "uuid_variant: it would not unload: $(cat "$d/unload.log")"
   sudo -n cp -R "$O/wow/KQueueScanContinuePatch.kext" "$d/"
   sudo -n chown -R root:wheel "$d/KQueueScanContinuePatch.kext"
   sudo -n kextload "$d/KQueueScanContinuePatch.kext" > "$d/wow.log" 2>&1 || bad "his kext would not load: $(cat "$d/wow.log")"

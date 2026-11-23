@@ -19,6 +19,7 @@
 #include <string.h>
 #include "core.h"
 #include "kext.h"
+#include "kresolve.h"
 
 #define RK_EXPORT __attribute__((visibility("default"), used))
 
@@ -59,42 +60,9 @@ static lck_mtx_t *lock;
 #define RECAULK_KPI_KERNEL_PATH "/mach_kernel"
 #endif
 
-struct vfile {
-	vnode_t vp;
-	vfs_context_t ctx;
-};
-
-static int
-vread(void *c, void *buf, size_t len, uint64_t off)
-{
-	struct vfile *v = c;
-	int resid = 0, err;
-
-	if (len > 0x7fffffff) {
-		return EFBIG;
-	}
-	err = vn_rdwr(UIO_READ, v->vp, (caddr_t)buf, (int)len, (off_t)off, UIO_SYSSPACE, 0,
-	    vfs_context_ucred(v->ctx), &resid, vfs_context_proc(v->ctx));
-	return err != 0 ? err : resid != 0 ? EIO : 0;
-}
-
-static void *
-kalloc_temp(size_t len)
-{
-	return _MALLOC(len, M_TEMP, M_WAITOK);
-}
-
-static void
-kfree_temp(void *p, size_t len)
-{
-	(void)len;
-	_FREE(p, M_TEMP);
-}
-
 static int
 resolve(vnode_notify_fn *out, uint64_t *slide_out, const char **why)
 {
-	static const struct rk_mem mem = { kalloc_temp, kfree_temp };
 	struct rk_sym want[] = {
 		{ "_vnode_notify", 0, 0 }, { "_printf", 0, 0 }, { "_panic", 0, 0 }, { "_vnode_isdir", 0, 0 },
 	};
@@ -102,77 +70,25 @@ resolve(vnode_notify_fn *out, uint64_t *slide_out, const char **why)
 		0, (uint64_t)(uintptr_t)&printf, (uint64_t)(uintptr_t)&panic, (uint64_t)(uintptr_t)&vnode_isdir,
 	};
 	const unsigned nwant = sizeof(want) / sizeof(want[0]);
-	struct vfile v = { NULLVP, NULL };
-	struct vnode_attr va;
 	struct rk_kernel k;
-	uint8_t running[16];
 	uint64_t slide = 0, target;
 	int err;
 
-	*why = "unknown";
-	if ((v.ctx = vfs_context_create(NULL)) == NULL) {
-		*why = "vfs_context_create failed";
-		return ENOMEM;
-	}
-	/* A-m3: opened, so the filesystem sees VNOP_OPEN before any read */
-	if ((err = vnode_open(RECAULK_KPI_KERNEL_PATH, FREAD, 0, 0, &v.vp, v.ctx)) != 0) {
-		*why = "cannot open " RECAULK_KPI_KERNEL_PATH;
-		v.vp = NULLVP;
-		goto done;
-	}
-	VATTR_INIT(&va);
-	VATTR_WANTED(&va, va_data_size);
-	if (!vnode_isreg(v.vp)) {
-		*why = RECAULK_KPI_KERNEL_PATH " is not a regular file";
-		err = EINVAL;
-		goto done;
-	}
-	if ((err = vnode_getattr(v.vp, &va, v.ctx)) != 0 || !VATTR_IS_SUPPORTED(&va, va_data_size)) {
-		*why = "cannot read " RECAULK_KPI_KERNEL_PATH "'s size";
-		err = err ? err : EINVAL;
-		goto done;
-	}
-	{
-		struct rk_file f = { &v, va.va_data_size, vread };
-		if ((err = rk_read_kernel(&f, &mem, &k, want, nwant, why)) != 0) {
-			goto done;
-		}
-	}
-	if ((err = rk_slide(want, live, nwant, &slide, why)) != 0) {
-		goto done;
-	}
-	/* review M1: a corrupt or foreign file can agree on a wrong slide; its __TEXT, moved, must hold the live symbols
-	   before the live header there is read */
-	if ((err = rk_live_in_text(&k, live, nwant, slide, why)) != 0) {
-		goto done;
+	if ((err = rk_resolve_live(want, live, nwant, &k, &slide, why)) != 0) {
+		return err;
 	}
 	if (want[0].value < k.text_vmaddr || want[0].value - k.text_vmaddr >= k.text_vmsize) {
 		*why = "_vnode_notify lies outside the kernel's __TEXT";
-		err = EINVAL;
-		goto done;
-	}
-	/* The running kernel's own header, read only once three symbols agree on the slide. */
-	if (rk_header_uuid((const void *)(uintptr_t)(k.text_vmaddr + slide), running) != 0 ||
-	    memcmp(running, k.uuid, sizeof(running)) != 0) {
-		*why = "the running kernel's UUID differs from " RECAULK_KPI_KERNEL_PATH "'s (an update awaiting reboot?)";
-		err = ESRCH;
-		goto done;
+		return EINVAL;
 	}
 	target = want[0].value + slide;
 	if ((uintptr_t)target == (uintptr_t)&vnode_notify) {
 		*why = "resolved to this kext's own vnode_notify";
-		err = ELOOP;
-		goto done;
+		return ELOOP;
 	}
 	*out = (vnode_notify_fn)(uintptr_t)target;
 	*slide_out = slide;
-	err = 0;
-done:
-	if (v.vp != NULLVP) {
-		vnode_close(v.vp, FREAD, v.ctx);
-	}
-	vfs_context_rele(v.ctx);
-	return err;
+	return 0;
 }
 
 /* review I1: resolution runs on a kernel thread of its own, so the kernel's credentials and the real root open
