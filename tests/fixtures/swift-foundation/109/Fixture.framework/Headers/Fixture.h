@@ -1,3 +1,5 @@
+#if !defined(__FIXTURE__)
+#define __FIXTURE__ 1
 #import <Foundation/NSObject.h>
 @class NSString, NSArray;
 FOUNDATION_EXPORT NSString * const FXKeyA;
@@ -35,4 +37,6 @@ typedef const struct __FXRef * FXRef;
 @interface FXMutableThing : FXThing
 - (void)setTitle:(NSString *)title;
 - (void)setURL:(NSString *)URL;
+- (void)setNames:(NSArray *)names;
 @end
+#endif

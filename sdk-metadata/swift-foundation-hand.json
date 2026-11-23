@@ -331,6 +331,10 @@
   {
    "class": "NSCalendar",
    "selector": "calendarIdentifier"
+  },
+  {
+   "class": "NSURL",
+   "selector": "resourceValuesForKeys:fromBookmarkData:"
   }
  ],
  "enum_shapes": [
@@ -385,6 +389,16 @@
    "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPropertyList.h",
    "old": "typedef NSUInteger NSPropertyListReadOptions;",
    "new": "/* Recaulk: as the 11.3 SDK declares it; the same size as 10.9's NSUInteger. */\ntypedef NSPropertyListMutabilityOptions NSPropertyListReadOptions;"
+  },
+  {
+   "header": "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFLocale.h",
+   "old": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFStringRef key);",
+   "new": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFLocaleKey key);"
+  },
+  {
+   "header": "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFLocale.h",
+   "old": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFStringRef key, CFStringRef value);",
+   "new": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFLocaleKey key, CFStringRef value);"
   }
  ],
  "inserts": [

@@ -552,6 +552,8 @@ code compiled is the same:
   where 11.3 says `weak`, since 10.9 consumers build without ARC);
 - `appkit-alert-v2`: `appkit-alert-style-v1` plus `-[NSAlert window]` typed `NSWindow *`, so `[sender window]` on
   an `id` is an `NSWindow`;
+- `appkit-textattachment-v1`: 10.11's `NSTextAttachment` `image` property, marked 10.11, so each use needs a
+  guard; 10.9 has no such accessor;
 - `appkit-tabview-v1`: `tabViewItems` as 10.11's `NSArray<__kindof NSTabViewItem *>` property; select it with
   `foundation-array-v3` (or the `swift-foundation` profile), which makes `NSArray` generic;
 - `appkit-application-v1`: `NSApp` typed `NSApplication *`, as later SDKs type it, so `NSApp.keyWindow` compiles;

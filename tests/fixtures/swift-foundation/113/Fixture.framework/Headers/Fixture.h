@@ -32,5 +32,6 @@ typedef const struct CF_BRIDGED_TYPE(NSString) __FXRef * FXRef;
 @interface FXMutableThing : FXThing
 @property (readwrite, copy) NSString *title;
 @property (copy) NSString *URL;
+@property (readwrite, copy) NSArray<NSString *> *names;
 @end
 NS_ASSUME_NONNULL_END

@@ -3923,7 +3923,7 @@
         },
         {
           "old": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSString *)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (^)(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop))block NS_AVAILABLE(10_7, 5_0);",
-          "new": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (__attribute__((noescape)) ^)(NSLinguisticTag, NSRange, NSRange, BOOL *))block NS_AVAILABLE(10_7, 5_0);"
+          "new": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (__attribute__((noescape)) ^)(NSLinguisticTag, NSRange, NSRange, BOOL * _Nonnull))block NS_AVAILABLE(10_7, 5_0);"
         }
       ]
     },
@@ -7230,6 +7230,10 @@
           "new": "FOUNDATION_EXPORT NSURLUbiquitousItemDownloadingStatus const NSURLUbiquitousItemDownloadingStatusCurrent        NS_AVAILABLE(10_9, 7_0);"
         },
         {
+          "old": "+ (NSDictionary *)resourceValuesForKeys:(NSArray *)keys fromBookmarkData:(NSData *)bookmarkData NS_AVAILABLE(10_6, 4_0);",
+          "new": "+ (NSDictionary<NSURLResourceKey,id> *)resourceValuesForKeys:(NSArray<NSURLResourceKey> *)keys fromBookmarkData:(NSData *)bookmarkData NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
           "old": "- (NSURL *)URL;",
           "new": "@property (readonly, copy) NSURL *URL;"
         },
@@ -7679,7 +7683,7 @@
         },
         {
           "old": "- (void)setAllHTTPHeaderFields:(NSDictionary *)headerFields;",
-          "new": "@property (copy) NSDictionary *allHTTPHeaderFields;"
+          "new": "@property (copy) NSDictionary<NSString *,NSString *> *allHTTPHeaderFields;"
         },
         {
           "old": "- (void)setHTTPBody:(NSData *)data;",
@@ -8402,8 +8406,20 @@
       ],
       "replacements": [
         {
-          "old": "CF_EXPORT const CFStringRef kCFLocaleIdentifier;\n",
-          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define CF_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_CFLocaleKey\n#define __RECAULK_TYPEDEF_CFLocaleKey 1\ntypedef CFStringRef CFLocaleKey CF_STRING_ENUM;\n#endif\nCF_EXPORT const CFLocaleKey kCFLocaleIdentifier;\n"
+          "old": "\nCF_IMPLICIT_BRIDGING_ENABLED\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define CF_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_CFLocaleKey\n#define __RECAULK_TYPEDEF_CFLocaleKey 1\ntypedef CFStringRef CFLocaleKey CF_STRING_ENUM;\n#endif\n\nCF_IMPLICIT_BRIDGING_ENABLED\n"
+        },
+        {
+          "old": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFStringRef key);",
+          "new": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFLocaleKey key);"
+        },
+        {
+          "old": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFStringRef key, CFStringRef value);",
+          "new": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFLocaleKey key, CFStringRef value);"
+        },
+        {
+          "old": "CF_EXPORT const CFStringRef kCFLocaleIdentifier;",
+          "new": "CF_EXPORT const CFLocaleKey kCFLocaleIdentifier;"
         },
         {
           "old": "CF_EXPORT const CFStringRef kCFLocaleLanguageCode;",
@@ -8592,6 +8608,20 @@
         {
           "old": "- (id)window;",
           "new": "- (NSWindow *)window; /* Recaulk: typed as later SDKs type it, so [sender window] on an id is an NSWindow. */"
+        }
+      ]
+    },
+    {
+      "id": "appkit-textattachment-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTextAttachment.h",
+      "sha256": "f589d32d590af8d55d67b191942d336d9c8819849eb1c5aa61092e52e4105252",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSTextAttachment.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (id)initWithFileWrapper:(NSFileWrapper *)fileWrapper;",
+          "new": "- (id)initWithFileWrapper:(NSFileWrapper *)fileWrapper;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.11; 10.9 has no such accessor, so guard each use (@available or respondsToSelector:). */\n@property (strong) NSImage *image __attribute__((availability(macosx,introduced=10.11)));"
         }
       ]
     }

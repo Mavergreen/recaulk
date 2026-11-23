@@ -220,8 +220,20 @@
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFLocale.h": [
    {
     "kind": "insert",
-    "offset": 6319,
+    "offset": 269,
     "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define CF_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_CFLocaleKey\n#define __RECAULK_TYPEDEF_CFLocaleKey 1\ntypedef CFStringRef CFLocaleKey CF_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFStringRef key);",
+    "offset": 5660,
+    "new": "CFTypeRef CFLocaleGetValue(CFLocaleRef locale, CFLocaleKey key);"
+   },
+   {
+    "kind": "replace",
+    "old": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFStringRef key, CFStringRef value);",
+    "offset": 5875,
+    "new": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFLocaleKey key, CFStringRef value);"
    },
    {
     "kind": "replace",
@@ -5300,7 +5312,7 @@
     "kind": "replace",
     "old": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSString *)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (^)(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop))block NS_AVAILABLE(10_7, 5_0);",
     "offset": 10847,
-    "new": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (__attribute__((noescape)) ^)(NSLinguisticTag, NSRange, NSRange, BOOL *))block NS_AVAILABLE(10_7, 5_0);"
+    "new": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (__attribute__((noescape)) ^)(NSLinguisticTag, NSRange, NSRange, BOOL * _Nonnull))block NS_AVAILABLE(10_7, 5_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLocale.h": [
@@ -10862,6 +10874,12 @@
     "new": "FOUNDATION_EXPORT NSURLUbiquitousItemDownloadingStatus const NSURLUbiquitousItemDownloadingStatusCurrent        NS_AVAILABLE(10_9, 7_0);"
    },
    {
+    "kind": "replace",
+    "old": "+ (NSDictionary *)resourceValuesForKeys:(NSArray *)keys fromBookmarkData:(NSData *)bookmarkData NS_AVAILABLE(10_6, 4_0);",
+    "offset": 37820,
+    "new": "+ (NSDictionary<NSURLResourceKey,id> *)resourceValuesForKeys:(NSArray<NSURLResourceKey> *)keys fromBookmarkData:(NSData *)bookmarkData NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
     "kind": "property",
     "name": "URL",
     "class": "NSURLComponents",
@@ -11799,7 +11817,7 @@
     "kind": "replace",
     "old": "- (void)setAllHTTPHeaderFields:(NSDictionary *)headerFields;",
     "offset": 20057,
-    "new": "@property (copy) NSDictionary *allHTTPHeaderFields;"
+    "new": "@property (copy) NSDictionary<NSString *,NSString *> *allHTTPHeaderFields;"
    },
    {
     "kind": "replace",

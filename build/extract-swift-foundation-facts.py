@@ -48,26 +48,43 @@ def after_imports(t, limit):
     before limit, so a typedef placed there precedes every use and sits outside any #if; else limit."""
     depth, pos, at, pure = 0, 0, None, False
     comment = False
+    # platform: a header wrapped whole in an include guard (CFLocale.h's #if !defined(__COREFOUNDATION_CFLOCALE__))
+    #   has its imports one level down; that level counts as the top
+    g = re.match(r'(?:\s|/\*.*?\*/|//[^\n]*\n)*#\s*(?:if\s+!\s*defined\s*\(\s*(\w+)\s*\)|ifndef\s+(\w+))\s*\n\s*#\s*define\s+(\w+)',
+                 t, re.S)
+    top = 1 if g and (g.group(1) or g.group(2)) == g.group(3) else 0
     for line in t[:limit].splitlines(True):
         d = line.strip()
         if comment or d.startswith('/*') or d.startswith('//') or not d:
             comment = (comment or d.startswith('/*')) and '*/' not in d
         elif re.match(r'#\s*if', d):
             depth += 1
-            pure = pure if depth > 1 else True
+            pure = pure if depth > top + 1 else True
         elif re.match(r'#\s*endif', d):
             depth -= 1
-            if depth == 0 and pure:
+            if depth == top and pure:
                 at = pos + len(line)
         elif re.match(r'#\s*(import|include|else|elif)\b', d):
-            if depth == 0:
+            if depth == top:
                 at = pos + len(line)
-        elif depth == 0 and d.startswith('@'):
+        elif depth == top and re.match(r'#\s*define\b', d) and at is None:
+            pass        # the guard's own #define
+        elif depth == top and d.startswith('@'):
             break       # the first declaration: imports after it are not the header's own
         else:
             pure = False
         pos += len(line)
     return limit if at is None else at
+
+
+def block_type(t):
+    """A parameter's type without nullability, except _Nonnull inside a block's own parameter list: swift's
+    overlay dereferences a block's BOOL *stop (NSStringAPI.swift's $3.pointee), which needs it nonnull."""
+    m = re.match(r'^(.*?\(\^[^()]*\))\((.*)\)$', t)
+    if not m:
+        return clean_type(t)
+    inner = re.sub(r'\b_Nonnull\b', '\x00', m.group(2))
+    return clean_type(m.group(1)) + '(' + clean_type(inner).replace('\x00', '_Nonnull') + ')'
 
 
 def retype_params(decl, types):
@@ -349,8 +366,8 @@ def main():
             new = re.sub(r'^([-+]\s*\()[^()]*(\))',
                          lambda m: m.group(1) + clean_type(nm['returnType']['qualType']) + m.group(2), new, count=1)
             # spec: a block 11.3 marks NS_NOESCAPE keeps the attribute, where 11.3 spells it (before the caret)
-            ps = [re.sub(r'\(\^', '(__attribute__((noescape)) ^', clean_type(x['type']['qualType']), count=1)
-                  if any(i.get('kind') == 'NoEscapeAttr' for i in x.get('inner', [])) else clean_type(x['type']['qualType'])
+            ps = [re.sub(r'\(\^', '(__attribute__((noescape)) ^', block_type(x['type']['qualType']), count=1)
+                  if any(i.get('kind') == 'NoEscapeAttr' for i in x.get('inner', [])) else block_type(x['type']['qualType'])
                   for x in nm.get('inner', []) if x.get('kind') == 'ParmVarDecl']
             r = retype_params(new, ps)
             if r is None:
@@ -385,6 +402,8 @@ def main():
         if not d:
             continue
         typ, trailer = d.group(1).strip(), d.group(2).strip()
+        if any((k[0], p['name']) in retypes for k in by_class if k[1] == b[0]):
+            typ = clean_type(p['type']['qualType'])    # the getter is retyped (allHTTPHeaderFields): match it
         is_object = typ == 'id' or typ.startswith('id ') or typ.startswith('id<') or typ.endswith('*') or typ == 'Class'
         a = attrs(p, False, is_object, (cls, name) in nonnull)
         sep = '' if typ.endswith('*') else ' '

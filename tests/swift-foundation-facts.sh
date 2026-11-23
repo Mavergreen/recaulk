@@ -54,6 +54,7 @@ assert reps.pop('- (id)valueFor:(NSString *)key;') == '- (id)valueFor:(FXKey)key
 assert reps.pop('- (NSString *)joined:(NSString *)sep;') == '- (nonnull NSString *)joined:(NSString *)sep;'  # nonnull_method
 assert reps.pop('- (void)setTitle:(NSString *)title;') == '@property (copy) NSString *title;'          # readwrite_in_subclass
 assert reps.pop('- (void)setURL:(NSString *)URL;') == '@property (copy) NSString *URL;'                # acronym_setter
+assert reps.pop('- (void)setNames:(NSArray *)names;') == '@property (copy) NSArray<NSString *> *names;'  # fold_takes_getter_type
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXPlainA;') == 'FOUNDATION_EXPORT FXPlain const FXPlainA;'
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXKeyC;') == 'FOUNDATION_EXPORT FXKey const FXKeyC;'  # availability_in_type
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXKeyA;') == 'FOUNDATION_EXPORT FXKey const FXKeyA;'          # string_enum
@@ -73,7 +74,7 @@ assert any('typedef NSString *FXPlain;\n' in e['text'] for e in ins), ins       
 for e in ins:
     assert '#ifndef NS_EXTENSIBLE_STRING_ENUM' in e['text'] and 'nullable' not in e['text'], e
 key = [e for e in ins if 'typedef NSString *FXKey NS_EXTENSIBLE_STRING_ENUM;' in e['text']][0]
-assert t[key['offset']:].startswith('@class NSString, NSArray;'), key                                  # after the imports
+assert t[key['offset']:].startswith('@class NSString, NSArray;'), key                                  # after the imports, inside the include guard
 assert '@class NSString;\n' in key['text'], key
 oth = [e for e in ins if 'typedef NSString *FXOther NS_EXTENSIBLE_STRING_ENUM;' in e['text']][0]
 assert t[oth['offset']:].startswith('@interface FXMutableThing : FXThing'), oth
