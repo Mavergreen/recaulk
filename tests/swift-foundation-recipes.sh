@@ -19,6 +19,15 @@ gen "$d/a" "$G/facts.json" "$G/recipes.json"
 cp -R "$d/a" "$d/a2"; gen "$d/a2" "$G/facts.json" "$G/recipes.json"
 diff -r "$d/a" "$d/a2" >/dev/null || { echo "FAIL: idempotent: a second run changed something"; exit 1; }
 cp -R "$d/a/." "$d/b"; gen "$d/b" "$G/facts-no-title.json" "$G/recipes.json"
+cp -R "$d/a" "$d/o"
+python3 - "$d/o/recipes.json" <<'PY2'
+import json, sys
+d = json.load(open(sys.argv[1]))
+d['recipes'].append(dict(d['recipes'][0], id='foundation-other-v1', header='Other.h'))
+open(sys.argv[1], 'w').write(json.dumps(d, indent=2) + '\n')
+PY2
+cp "$d/o/recipes.json" "$d/o-before.json"; gen "$d/o" "$G/facts.json" "$G/recipes.json"
+cmp -s "$d/o-before.json" "$d/o/recipes.json" || { echo "FAIL: keeps_order: a recipe added after generation moved"; exit 1; }
 cp -R "$d/a" "$d/r"; gen "$d/r" "$G/facts.json" "$d/a/recipes.json"
 diff -r "$d/a" "$d/r" >/dev/null || { echo "FAIL: released_unchanged: regenerating released recipes from the same facts changed them"; exit 1; }
 cp -R "$d/a" "$d/rc"; gen "$d/rc" "$G/facts-no-title.json" "$d/a/recipes.json"

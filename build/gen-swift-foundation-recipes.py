@@ -231,9 +231,10 @@ def main():
         made[rid] = (recipe, checks)
 
     ids = sorted(set(made) | set(hand.get('profile_extra', [])))
-    out = [r for r in recipes if r['id'] not in made]
-    for rid in sorted(made):
-        out.append(made[rid][0])
+    # recipes keep their places; a recipe this run makes for the first time goes at the end
+    out = [made[r['id']][0] if r['id'] in made else r for r in recipes]
+    have = {r['id'] for r in recipes}
+    out += [made[rid][0] for rid in sorted(made) if rid not in have]
     by_id = {r['id']: r for r in out}
     headers = [by_id[i]['header'] for i in ids]
     if len(headers) != len(set(headers)):
