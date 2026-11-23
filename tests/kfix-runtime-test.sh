@@ -43,7 +43,7 @@ runtime_half
 sudo -n true || { echo "FAIL: loading kexts needs root, and sudo asks for a password"; exit 1; }
 fail=0
 bad() { echo "FAIL: $*"; fail=1; }
-B=dev.mavergreen.recaulk.kernelfixes
+KB=dev.mavergreen.recaulk.kernelfixes
 d="$(mktemp -d "${TMPDIR:-/tmp}/kfix-runtime.XXXXXX")"
 # platform: kextd refuses a kext not owned by root
 sudo -n cp -R "$O/kfix/RecaulkKernelFixes.kext" "$d/"
@@ -66,7 +66,7 @@ case "${RECAULK_KFIX_ROUND:-fresh}" in
 fresh)
   # spec: README.md "The kernel-fixes kext" -- the pkg's postinstall loads its LaunchDaemon, which loads the
   #       installed kext; on a guest whose install did not, this loads it the same way
-  if ! loaded $B; then
+  if ! loaded $KB; then
     sudo -n kextload /Library/Extensions/RecaulkKernelFixes.kext > "$d/load.log" 2>&1 || bad "kextload failed: $(cat "$d/load.log")"
   fi
   [ "$(st)" = 1 ] || bad "applied: debug.recaulk_kfix.kqueue_scan_restart is $(st), want 1"
@@ -112,19 +112,19 @@ fresh)
       [ "$(c destroyed)" = 0 ] && [ "$(c reused)" = 0 ] || bad "exit_race: an abort hit a freed thread: $out"
     fi
   fi
-  if sudo -n kextunload -b $B > "$d/unload.log" 2>&1; then bad "unload_refused: kextunload succeeded with a fix applied"; fi
-  loaded $B || bad "unload_refused: the kext is gone"
+  if sudo -n kextunload -b $KB > "$d/unload.log" 2>&1; then bad "unload_refused: kextunload succeeded with a fix applied"; fi
+  loaded $KB || bad "unload_refused: the kext is gone"
   [ "$(st)" = 1 ] || bad "unload_refused: the sysctl is $(st) after the unload attempt"
   ;;
 foreign)
-  loaded $B && { echo "FAIL: RecaulkKernelFixes is already loaded; the foreign round wants a fresh boot without it"; exit 1; }
+  loaded $KB && { echo "FAIL: RecaulkKernelFixes is already loaded; the foreign round wants a fresh boot without it"; exit 1; }
   # spec: README.md "The kernel-fixes kext" -- uuid_variant: a kernel the table does not name gets no fix, one line,
   #       and the kext, having applied nothing, unloads
   m="$(mark)"
   sudo -n kextload "$d/uuid/RecaulkKernelFixes.kext" > "$d/uuid.log" 2>&1 || bad "uuid_variant: kextload failed: $(cat "$d/uuid.log")"
   [ "$(st)" = 0 ] || bad "uuid_variant: the sysctl is $(st), want 0"
   since "$m" | grep -q 'RecaulkKernelFixes: no fixes for this kernel (UUID ' || bad "uuid_variant: no 'no fixes for this kernel' line"
-  sudo -n kextunload -b $B > "$d/unload.log" 2>&1 || bad "uuid_variant: it would not unload: $(cat "$d/unload.log")"
+  sudo -n kextunload -b $KB > "$d/unload.log" 2>&1 || bad "uuid_variant: it would not unload: $(cat "$d/unload.log")"
   sudo -n cp -R "$O/wow/KQueueScanContinuePatch.kext" "$d/"
   sudo -n chown -R root:wheel "$d/KQueueScanContinuePatch.kext"
   sudo -n kextload "$d/KQueueScanContinuePatch.kext" > "$d/wow.log" 2>&1 || bad "his kext would not load: $(cat "$d/wow.log")"
@@ -133,7 +133,7 @@ foreign)
   [ "$(st)" = 2 ] || bad "foreign_patch: the sysctl is $(st), want 2"
   since "$m" | grep -q 'kqueue_scan_restart: already applied (by another kext)' || bad "foreign_patch: no 'already applied' line"
   # spec: README.md "The kernel-fixes kext" -- with nothing of its own applied, it may stop
-  sudo -n kextunload -b $B > "$d/unload.log" 2>&1 || bad "foreign_patch: with nothing applied by it, it would not unload: $(cat "$d/unload.log")"
+  sudo -n kextunload -b $KB > "$d/unload.log" 2>&1 || bad "foreign_patch: with nothing applied by it, it would not unload: $(cat "$d/unload.log")"
   ;;
 *) echo "FAIL: RECAULK_KFIX_ROUND is fresh or foreign"; exit 1 ;;
 esac
