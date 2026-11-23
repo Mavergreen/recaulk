@@ -460,6 +460,78 @@ accepts only `MH_KEXT_BUNDLE`, which needs ld64's `-kext`: clang22's lld writes 
 Mavergreen cctools' ld64, pinned in `components/cctools/version` and fetched into `OUT/tools`; `RECAULK_KEXT_LD`
 names another. Two builds are byte-identical, `LC_UUID` included.
 
+## The kernel-fixes kext
+
+`RecaulkKernelFixes.kext` (`dev.mavergreen.recaulk.kernelfixes`) fixes panics in the 10.9.5 kernel. It fixes
+exactly one kernel, 13F1911 (xnu-2422.115.15, `LC_UUID` 8926E512-6714-34FC-B27C-6AE90EB51D5E), the last 10.9.5
+security update. On any other 10.9 kernel it applies nothing and logs `no fixes for this kernel (UUID <hex>)`.
+On any other Darwin it refuses to start.
+
+It finds each site through `/mach_kernel`'s symbol table, read on a kernel thread of its own. It trusts the
+result only when the live addresses of `printf` and `panic` agree on the KASLR slide and the running kernel's
+UUID matches the file's. It writes only over the bytes it expects, with every CPU parked in a rendezvous, and
+`CR0.WP` lifted only for the write.
+
+### Its fixes
+
+- **`kqueue_scan_restart`**: `kqueue_scan_continue` panics `invalid wait_result (3)` when a `kevent` wait ends
+  `THREAD_RESTART` (`bsd/kern/kern_event.c`, line 2167 in 13F1911). Chromium Legacy's helpers hit it
+  (blueboxd/chromium-legacy#44). The fix returns `EBADF` instead, as 10.12 and later do. The program that called
+  `kevent` sees `EBADF` and must cope with it: Chromium treats it as fatal, so the helper exits where the kernel
+  used to panic (blueboxd/chromium-legacy#97). This fix is ported from Wowfunhappy's KQueueScanContinuePatch,
+  made with krackers and declared CC-0 (gist 8212f5bea4c601ac9a6297789f232321, comment 6488041).
+- **`signal_target_exit`**: `psignal_internal` picks a thread to signal without a reference, then calls
+  `thread_abort_safely` on it (`bsd/kern/kern_sig.c`). If the thread exits and is freed in between, the
+  kernel panics `trying to interlock destroyed mutex`. It takes a thread asleep in the kernel, picked for a
+  signal (say, a child's `SIGCHLD`) just as another thread's `exit` tears the process down; Go programs such as
+  `docker`, run often, hit it every few days. The fix makes an exiting thread wait out any signal in
+  flight to its process before its state is torn down. It hooks the one call to `uthread_cleanup` in
+  `thread_terminate_self`: the call is retargeted, in one store, to a jump placed in the unused padding before
+  `timer_call_init`. A thread in `vfork`, the one its child's signals pick, also waits out the child's. If
+  DTrace's fbt could mistake a byte of that jump for a function return, which depends on where the kext lands,
+  it refuses with a reason, and loading it again places it elsewhere.
+
+### Reading and controlling it
+
+Its log lines begin `RecaulkKernelFixes: `:
+
+- `<fix>: applied`;
+- `<fix>: already applied (by another kext)`;
+- `<fix>: refused (<reason>)`;
+- `<fix>: disabled (boot-arg)`;
+- `no fixes for this kernel (UUID <hex>)`;
+- `not starting: this kernel is Darwin <n> ...`.
+
+`sysctl debug.recaulk_kfix.<fix>` reports each fix: 0 not applied, 1 applied, and 2 applied by another kext
+(`kqueue_scan_restart` only).
+
+The boot-arg `recaulk_kfix=0` turns every fix off. `recaulk_kfix=-<fix>[,-<fix>]` turns off the fixes named.
+A Safe Boot (hold Shift) never loads it, and if something loads it anyway it applies nothing.
+
+Once it has applied a fix it refuses to unload, because the kernel's patched code depends on it. Uninstalling
+Recaulk removes it, and the kernel is unpatched at the next boot.
+
+### Installation
+
+Recaulk's pkg installs it at `/Library/Extensions/RecaulkKernelFixes.kext`. The LaunchDaemon
+`dev.mavergreen.recaulk.kernelfixes` loads it at every boot, except a Safe Boot. On the boot volume the
+postinstall loads that daemon at once. The postinstall also retires Wowfunhappy's KQueueScanContinuePatch: it
+unloads `wowfunhappy.KQueueScanContinuePatch-loader` and removes that daemon and
+`/Library/Extensions/KQueueScanContinuePatch.kext`. A kernel his kext already patched stays patched until
+reboot, and RecaulkKernelFixes reports that fix as state 2 meanwhile.
+
+`KEXT_SRC=src/kfix KEXT_NAME=RecaulkKernelFixes sh build/build-kext.sh OUT` builds it like RecaulkKPI.
+`tests/kfix-engine-test.sh` checks the engine on synthetic bytes, and on 13F1911 checks the pinned sites in
+`/mach_kernel` by reading the file. `tests/kfix-runtime-test.sh` loads the kext on the disposable 10.9.5 guest
+only. There it checks that both fixes apply, `kevent` still works, and the kext refuses to unload. For
+`signal_target_exit` it loads a test-only kext, `tests/kext/widen`, that delays the abort 5 ms, then classifies the
+thread it would abort and skips the abort if that thread is already freed; `tests/c/kfix_exit_race.c`, the race's minimal shape, then makes 200 such
+picks. Unfixed, most picked threads are already freed (182 of 200 on 13F1911); fixed, none are. It needs two or more CPUs: on one,
+the exiting thread is never freed in the window, so an unfixed kernel would pass too. In its mode 1 the
+widener calls through, and an unfixed kernel panics within seconds, the same panic as the field's; that check
+is run by hand, never in CI. `RECAULK_KFIX_ROUND=foreign`, on a fresh boot, also
+checks that a kernel with another UUID gets no fixes, and that the kext stands down after Wowfunhappy's kext.
+
 ## Licences
 
 Recaulk's own code is under the ISC licence in `LICENSE`. Some MacPorts members of `librecaulk.a` are
@@ -480,6 +552,9 @@ their Apple copyright lines (not their other authors'), those files' URLs at the
 starting `#` are comments. Each release attaches the same file as `recaulk-notices.tsv`. A consumer
 that links `librecaulk.a` can take the members its link pulls in (ld64's `-why_load`, or the
 `__recaulk_apsl` strings in its output) and assemble its own NOTICE from those lines.
+
+`src/kfix/kqueue_scan_restart.c` is ported from Wowfunhappy's KQueueScanContinuePatch, which he declared CC-0
+(`src/kfix/NOTICE.md`). `tests/kext/wowfunhappy/` holds an unchanged copy of it, which the guest test builds.
 
 ## SDK declaration metadata
 
