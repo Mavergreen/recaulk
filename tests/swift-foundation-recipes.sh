@@ -12,7 +12,7 @@ gen() {  # gen DIR FACTS RELEASED [RECIPES-SEED]
   [ -f "$1/recipes.json" ] || cp "${4:-$G/recipes.json}" "$1/recipes.json"
   mkdir -p "$1/probes"
   python3 build/gen-swift-foundation-recipes.py --sdk "$G/sdk" --facts "$2" --hand "$G/hand.json" \
-    --recipes "$1/recipes.json" --released "$3" --probes "$1/probes" --profiles "$1/profiles.json"
+    --recipes "$1/recipes.json" --released "$3" --probes "$1/probes" --profiles "$1/profiles.json" --generated "$1/generated.json"
 }
 mkdir -p "$d/a" "$d/b" "$d/c"
 gen "$d/a" "$G/facts.json" "$G/recipes.json"
@@ -31,6 +31,8 @@ cmp -s "$d/o-before.json" "$d/o/recipes.json" || { echo "FAIL: keeps_order: a re
 cp -R "$d/a" "$d/r"; gen "$d/r" "$G/facts.json" "$d/a/recipes.json"
 diff -r "$d/a" "$d/r" >/dev/null || { echo "FAIL: released_unchanged: regenerating released recipes from the same facts changed them"; exit 1; }
 cp -R "$d/a" "$d/rc"; gen "$d/rc" "$G/facts-no-title.json" "$d/a/recipes.json"
+cp -R "$d/rc" "$d/rc2"; gen "$d/rc2" "$G/facts-no-title.json" "$d/rc/recipes.json"
+diff -r "$d/rc" "$d/rc2" >/dev/null || { echo "FAIL: chain_then_regenerate: a chained recipe changed when regenerated from the same facts"; exit 1; }
 gen "$d/c" "$G/facts.json" "$G/recipes-hand-v3.json" "$G/recipes-hand-v3.json"
 python3 - "$d" "$G" <<'PY'
 import json, os, sys
@@ -90,11 +92,12 @@ PY
 SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
 mkdir -p "$d/real/probes"
 cp sdk-metadata/recipes.json sdk-metadata/profiles.json "$d/real/"
+cp sdk-metadata/swift-foundation-generated.json "$d/real/generated.json"
 cp tests/fixtures/sdk-probes/*.m "$d/real/probes/"
 python3 build/gen-swift-foundation-recipes.py --sdk "$SDK" --facts sdk-metadata/swift-foundation-facts.json \
   --hand sdk-metadata/swift-foundation-hand.json --recipes "$d/real/recipes.json" --released sdk-metadata/recipes.json \
-  --probes "$d/real/probes" --profiles "$d/real/profiles.json"
-cmp -s "$d/real/recipes.json" sdk-metadata/recipes.json && cmp -s "$d/real/profiles.json" sdk-metadata/profiles.json \
+  --probes "$d/real/probes" --profiles "$d/real/profiles.json" --generated "$d/real/generated.json"
+cmp -s "$d/real/generated.json" sdk-metadata/swift-foundation-generated.json && cmp -s "$d/real/recipes.json" sdk-metadata/recipes.json && cmp -s "$d/real/profiles.json" sdk-metadata/profiles.json \
   && diff -r "$d/real/probes" tests/fixtures/sdk-probes >/dev/null \
   || { echo "FAIL: the committed recipes are not what build/gen-swift-foundation-recipes.py makes from the facts; regenerate"; exit 1; }
 echo "swift-foundation-recipes OK"

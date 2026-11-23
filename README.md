@@ -682,6 +682,9 @@ These recipes are generated, not written by hand:
   - a changed one that no release shipped is rewritten in place;
   - a changed released one becomes `-vN+1`.
 
+  It records every id it has made in `sdk-metadata/swift-foundation-generated.json` (`--generated`), so a
+  chained recipe is built on the hand-written recipe beneath its lineage, never on its own predecessor.
+
   A hand-written v-next on one of these headers is folded in only if it does not already contain the
   generated edits.
 

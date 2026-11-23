@@ -6,7 +6,8 @@
 #       every such recipe, at most one per header. Replacements are unique and non-overlapping in the pristine
 #       header, as shipyard's materializer requires.
 # usage: gen-swift-foundation-recipes.py --sdk SDK109 --facts F --hand H --recipes R --released RELEASED_R
-#          --probes DIR --profiles P
+#          --probes DIR --profiles P --generated G
+#        G lists every id the generator has made; it reads it (if present) and writes it back
 import argparse, hashlib, json, os, re, sys
 
 PROFILE = 'swift-foundation'
@@ -183,7 +184,7 @@ def widen(text, edits):
 
 def main():
     ap = argparse.ArgumentParser()
-    for a in ('sdk', 'facts', 'hand', 'recipes', 'released', 'probes', 'profiles'):
+    for a in ('sdk', 'facts', 'hand', 'recipes', 'released', 'probes', 'profiles', 'generated'):
         ap.add_argument('--' + a, required=True)
     o = ap.parse_args()
     facts = json.load(open(o.facts))['headers']
@@ -194,6 +195,11 @@ def main():
     previous = set()
     if os.path.exists(o.profiles):
         previous = set(json.load(open(o.profiles))['profiles'].get(PROFILE, {}).get('recipes', []))
+    # every id this generator has ever made, so a chained recipe's released predecessor is never mistaken for
+    # the hand-written base it was built on
+    generated = set()
+    if os.path.exists(o.generated):
+        generated = set(json.load(open(o.generated))['generated'])
     by_id = {r['id']: r for r in recipes}
 
     made = {}
@@ -202,7 +208,7 @@ def main():
         mine = [r for r in on if r['id'] in previous]
         if len(mine) > 1:
             fail('%s: the profile names %s' % (header, ', '.join(r['id'] for r in mine)))
-        bases = [r for r in on if r['id'] not in previous]
+        bases = [r for r in on if r['id'] not in previous and r['id'] not in generated]
         base = None
         if bases:
             top = max(version(r['id'])[1] for r in bases)
@@ -264,6 +270,8 @@ def main():
         with open(os.path.join(o.probes, rid + '.m'), 'w') as f:
             f.write('\n'.join(lines) + '\n')
 
+    with open(o.generated, 'w') as f:
+        f.write(json.dumps({'schema': 1, 'generated': sorted(generated | set(made))}, indent=2) + '\n')
     prof = {'schema': 1, 'profiles': {PROFILE: {'description': DESCRIPTION, 'recipes': ids}}}
     with open(o.profiles, 'w') as f:
         f.write(json.dumps(prof, indent=2) + '\n')
