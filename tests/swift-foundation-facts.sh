@@ -30,8 +30,10 @@ def one(cls, decl, prop, setter=None, category=None):
     assert e['property'] == prop, (e['property'], prop)
     assert e['setter_decl'] == setter, (e['setter_decl'], setter)
     assert e['category'] == category, (e['category'], category)
+    assert e['name'] == prop.rstrip(';').split()[-1].lstrip('*'), e
 one('FXThing', '- (BOOL)isOpen;', '@property (readonly, getter=isOpen) BOOL open;')              # getter_name
 one('FXThing', '+ (id)shared;', '@property (class, readonly, strong) id shared;')                # class_property
+one('FXThing', '+ (instancetype)current;', '@property (class, readonly, strong) FXThing *current;')  # instancetype
 one('FXThing', '- (NSString *)name;', '@property (copy) NSString *name;',
     setter='- (void)setName:(NSString *)name;')                                                  # readwrite_pair
 one('FXThing', '- (NSString *)title;', '@property (readonly, copy) NSString *title;')            # setter_elsewhere

@@ -197,6 +197,8 @@ def main():
             continue
         if (cls, sel) in retypes:
             typ = clean_type(p['type']['qualType'])
+        if typ == 'instancetype':
+            typ = cls + ' *'      # platform: a property cannot have type instancetype
         setter_decl = setter_offset = None
         readonly = bool(p.get('readonly'))
         if not readonly:
@@ -216,7 +218,7 @@ def main():
         if ident in seen:
             continue
         seen.add(ident)
-        out.setdefault(key, []).append({'kind': 'property', 'class': cls, 'container': ckind, 'category': cat,
+        out.setdefault(key, []).append({'kind': 'property', 'name': p['name'], 'class': cls, 'container': ckind, 'category': cat,
                                         'decl': decl, 'offset': b[1], 'property': prop,
                                         'setter_decl': setter_decl, 'setter_offset': setter_offset})
     def add(key, e):

@@ -11,11 +11,12 @@
     "offset": 94,
     "property": "@property (readonly, getter=isFileURL) BOOL fileURL;",
     "setter_decl": null,
-    "setter_offset": null
+    "setter_offset": null,
+    "name": "fileURL"
    },
    {
     "kind": "insert",
-    "offset": 180,
+    "offset": 198,
     "text": "#ifndef __RECAULK_TYPEDEF_NSOtherKey\n#define __RECAULK_TYPEDEF_NSOtherKey 1\ntypedef NSString *NSOtherKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
@@ -24,16 +25,29 @@
     "container": "interface",
     "category": null,
     "decl": "- (NSString *)name;",
-    "offset": 210,
+    "offset": 228,
     "property": "@property (readonly, copy) NSString *name;",
     "setter_decl": null,
-    "setter_offset": null
+    "setter_offset": null,
+    "name": "name"
    },
    {
     "kind": "replace",
     "old": "typedef NSUInteger NSThingEdge;\n",
     "offset": 32,
     "new": "typedef NS_ENUM(NSUInteger, NSThingEdge) { NSThingEdgeMin = 0 };\n"
+   },
+   {
+    "kind": "property",
+    "class": "NSThing",
+    "container": "interface",
+    "category": null,
+    "decl": "- (id)firstThing;",
+    "offset": 175,
+    "property": "@property (readonly, strong) id firstThing;",
+    "setter_decl": null,
+    "setter_offset": null,
+    "name": "firstThing"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNew.h": [
@@ -44,9 +58,10 @@
     "category": null,
     "decl": "- (NSString *)label;",
     "offset": 60,
-    "property": "@property (readonly, copy) NSString *label;",
-    "setter_decl": null,
-    "setter_offset": null
+    "property": "@property (copy) NSString *label;",
+    "setter_decl": "- (void)setLabel:(NSString *)l;",
+    "setter_offset": 81,
+    "name": "label"
    }
   ]
  }

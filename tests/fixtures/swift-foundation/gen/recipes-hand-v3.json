@@ -6,7 +6,7 @@
     {
       "id": "foundation-thing-v1",
       "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThing.h",
-      "sha256": "5170e681c7c571bc8876ce589f52f12c5afa6312b9e5c7b505d151e86ddd3952",
+      "sha256": "4579b9948ff8b146fc8ad03e4195844bee058877d68343b2b024b86d9be49a9c",
       "aliases": [
         "System/Library/Frameworks/Foundation.framework/Headers/NSThing.h"
       ],
@@ -18,13 +18,17 @@
         {
           "old": "typedef NSUInteger NSThingEdge;",
           "new": "typedef NSUInteger NSThingEdge;\nenum { NSThingEdgeMin = 0 };"
+        },
+        {
+          "old": "- (id)firstThing;",
+          "new": "- (ObjectType)firstThing;"
         }
       ]
     },
     {
       "id": "foundation-thing-v3",
       "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThing.h",
-      "sha256": "5170e681c7c571bc8876ce589f52f12c5afa6312b9e5c7b505d151e86ddd3952",
+      "sha256": "4579b9948ff8b146fc8ad03e4195844bee058877d68343b2b024b86d9be49a9c",
       "aliases": [
         "System/Library/Frameworks/Foundation.framework/Headers/NSThing.h"
       ],
@@ -40,6 +44,10 @@
         {
           "old": "- (NSString *)extra;",
           "new": "- (NSString *)extra;\n- (NSString *)extra2;"
+        },
+        {
+          "old": "- (id)firstThing;",
+          "new": "- (ObjectType)firstThing;"
         }
       ]
     }

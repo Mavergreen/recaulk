@@ -1,7 +1,8 @@
 #!/bin/sh
 # platform: host-agnostic
 # usage: sh build/stage-sdk-metadata.sh SOURCE_DIR DEST_DIR
-#        validates SOURCE_DIR/recipes.json and copies it alone to DEST_DIR/recipes.json.
+#        validates SOURCE_DIR/recipes.json and copies it to DEST_DIR/recipes.json, and SOURCE_DIR/profiles.json,
+#        when there is one, to DEST_DIR/profiles.json.
 #        DEST_DIR must not exist; on any refusal it is not created. Exit 0 staged, nonzero refused.
 set -eu
 [ $# -eq 2 ] || { echo "stage-sdk-metadata: usage: stage-sdk-metadata.sh SOURCE_DIR DEST_DIR" >&2; exit 2; }
@@ -29,6 +30,20 @@ if ! out="$("$SC" -DRECIPES="$abs" -DREASON_FILE="$tmp/reason" -P "$SELF/sdk-met
   exit 1
 fi
 cp "$abs" "$tmp/recipes.json"
+# spec: README.md "Profiles" -- profiles.json, when present, is validated against these recipes and ships beside them
+if [ -f "$src/profiles.json" ]; then
+  pabs="$(cd "$src" && pwd)/profiles.json"
+  if ! out="$("$SC" -DRECIPES="$abs" -DPROFILES="$pabs" -DREASON_FILE="$tmp/reason" -P "$SELF/sdk-metadata-profiles-validate.cmake" 2>&1)"; then
+    if [ -s "$tmp/reason" ]; then
+      cat "$tmp/reason" >&2
+    else
+      printf 'stage-sdk-metadata: %s is not valid profile data:\n%s\n' "$pabs" "$out" >&2
+    fi
+    exit 1
+  fi
+  cp "$pabs" "$tmp/profiles.json"
+  chmod 644 "$tmp/profiles.json"
+fi
 cmp -s "$abs" "$tmp/recipes.json" || { echo "stage-sdk-metadata: the staged copy differs from $abs" >&2; exit 1; }
 # platform: mktemp -d creates its directory 0700, and the pkg installs this tree as root, so without
 #           this only root could read the recipes (Recaulk 20261107.2 shipped that way)

@@ -52,10 +52,11 @@ need 'usr/local/mavergreen/recaulk/lib/librecaulk.a'
 need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/recipes.json'
+need 'usr/local/mavergreen/recaulk/share/sdk-metadata/profiles.json'
 # platform: the pkg installs as root, and mktemp -d makes 0700 directories: 20261107.2 shipped
 #           share/sdk-metadata 0700 root, which no product build could read
 modes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'share/sdk-metadata' | cut -c1-10 | tr '\n' ' ')"
-[ "$modes" = "drwxr-xr-x -rw-r--r-- " ] || { echo "FAIL: share/sdk-metadata is not world-readable in the payload: $modes"; exit 1; }
+[ "$modes" = "drwxr-xr-x -rw-r--r-- -rw-r--r-- " ] || { echo "FAIL: share/sdk-metadata is not world-readable in the payload: $modes"; exit 1; }
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
 need 'usr/local/mavergreen/recaulk/share/recaulk/notices.tsv'
 need 'usr/local/mavergreen/recaulk/share/recaulk/unexported-symbols.txt'

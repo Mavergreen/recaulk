@@ -11,6 +11,7 @@ typedef const struct __FXRef * FXRef;
 @interface FXThing : NSObject
 - (BOOL)isOpen;
 + (id)shared;
++ (instancetype)current;
 - (NSString *)name;
 - (void)setName:(NSString *)name;
 - (NSString *)title;

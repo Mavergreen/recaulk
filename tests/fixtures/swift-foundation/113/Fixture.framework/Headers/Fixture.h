@@ -12,6 +12,7 @@ typedef const struct CF_BRIDGED_TYPE(NSString) __FXRef * FXRef;
 @interface FXThing : NSObject
 @property (readonly, getter=isOpen) BOOL open;
 @property (class, readonly, strong) id shared;
+@property (class, readonly, strong) FXThing *current;
 @property (copy) NSString *name;
 @property (readonly, copy) NSString *title;
 @property (nullable, readonly, copy) NSString *label;

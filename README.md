@@ -623,10 +623,57 @@ to compile without it. A probe's `// weak:` symbols must be weak references in i
 `// ast: FILTER REGEX` line proves what compiling cannot, such as a getter redeclared as a property or a
 bridged CF type. The line holds when clang's AST dump of the declarations named FILTER matches REGEX
 through the overlay but not on the SDK alone. A probe with such lines may compile without its recipe. The
-probes run `SDK_METADATA_JOBS` at a time (4 by default), and `SDK_METADATA_ONLY` names the ids to run.
+probes run `SDK_METADATA_JOBS` at a time (4 by default), and `SDK_METADATA_ONLY` names the ids to run
+(`consumer` names the consumer probes). A consumer probe in `tests/fixtures/sdk-probes-consumer/` names a
+profile (`// profile: NAME`) and compiles with `-Werror -Wall` through that whole profile, the way an
+Objective-C consumer selecting it would.
 
 `build/stage-sdk-metadata.sh` validates the file (`build/sdk-metadata-validate.cmake`, through
-`shipyard-cmake -P`) and stages it alone; malformed data stages nothing.
+`shipyard-cmake -P`) and stages it, with `profiles.json` (below); malformed data stages nothing.
+
+### Profiles
+
+`share/sdk-metadata/profiles.json` names fixed sets of recipe ids. A toolchain and every client of what it
+builds must see the same SDK view, so they select a profile by name instead of picking recipes one by one:
+
+```json
+{"schema": 1, "profiles": {"swift-foundation": {"description": "...", "recipes": ["foundation-url-v2", "..."]}}}
+```
+
+Every id in a profile is in `recipes.json`, and no two of them edit one header; staging refuses anything
+else (`build/sdk-metadata-profiles-validate.cmake`). A profile's list is fixed for a Recaulk version. A
+consumer that also selects recipes of its own may select only recipes on headers the profile does not touch.
+If it needs more on such a header, it asks for a v-next of the profile's recipe.
+
+`swift-foundation` is Foundation as swift-5.4's Foundation overlay needs it on 10.9. It covers 141 headers
+in Foundation, CoreFoundation, `objc/NSObject.h` and `objc/runtime.h`:
+- 10.9's getters redeclared as the properties the macOS 11.3 SDK declares, keeping 10.9's types and adding
+  no nullability;
+- the typed string enums, such as `NSURLResourceKey` and `NSNotificationName`, with 10.9's constants retyped
+  to them;
+- CF toll-free bridging annotations;
+- generic result types where swift's overlay needs them;
+- `NS_ENUM`/`NS_OPTIONS` shapes for `NSEnumerationOptions`, `NSURLRequestCachePolicy`,
+  `NSURLRequestNetworkServiceType`, `NSRectEdge` and `objc_AssociationPolicy`.
+
+Each of its recipes contains the earlier recipe on its header, so an Objective-C consumer can switch to it too.
+
+These recipes are generated, not written by hand:
+- `build/extract-swift-foundation-facts.py` reads clang's AST of the pinned 10.9 SDK and of the family's
+  macOS 11.3 SDK (the `sdk113` product). Together with `sdk-metadata/swift-foundation-hand.json` (the string
+  enums, members, anchors and enum shapes to take), it writes `sdk-metadata/swift-foundation-facts.json`.
+  Each fact is a 10.9 declaration, its byte offset, and its later form.
+- `build/gen-swift-foundation-recipes.py` turns the facts into one recipe per header, a probe for each, and
+  the profile. Pass it the newest release tag's `recipes.json` as `--released`:
+  - an unchanged recipe keeps its id;
+  - a changed one that no release shipped is rewritten in place;
+  - a changed released one becomes `-vN+1`.
+
+  A hand-written v-next on one of these headers is folded in only if it does not already contain the
+  generated edits.
+
+`tests/swift-foundation-facts.sh` and `tests/swift-foundation-recipes.sh` prove both scripts on fixtures and
+check that the committed facts, recipes, probes and profile are current.
 
 ## Tests
 

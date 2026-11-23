@@ -5,6 +5,7 @@ typedef NSUInteger NSThingEdge;
 - (NSString *)title;
 - (NSString *)name;
 - (NSString *)extra;
+- (id)firstThing;
 @end
 @interface NSOther : NSObject
 - (NSString *)name;

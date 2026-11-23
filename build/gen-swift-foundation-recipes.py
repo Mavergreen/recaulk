@@ -12,7 +12,17 @@ import argparse, hashlib, json, os, re, sys
 PROFILE = 'swift-foundation'
 DESCRIPTION = "Foundation as swift-5.4's Foundation overlay needs it on 10.9"
 VID = re.compile(r'^(.*)-v(\d+)$')
-PROP_NAME = re.compile(r'[\s*](\w+)\s*(?:\w+\([^()]*\)\s*)*;$')
+METHOD = re.compile(r'^[-+]\s*\(([^()]*)\)\s*(\w+)((?:\s+\w+\([^()]*\))*)\s*;$')
+
+
+def retyped(prop, name, method):
+    """The property with the type a base recipe gave its getter (generics' ObjectType), or None."""
+    p = re.match(r'^(@property (?:\([^)]*\) )?)(.*?)\s*\*?\s*\b%s\b(.*);$' % re.escape(name), prop)
+    m = METHOD.match(method.strip())
+    if not p or not m:
+        return None
+    typ = m.group(1).strip()
+    return '%s%s%s%s%s;' % (p.group(1), typ, '' if typ.endswith('*') else ' ', name, p.group(3))
 
 
 def fail(msg):
@@ -54,16 +64,16 @@ def fact_edits(facts, base_props):
     out = []
     for e in facts:
         if e['kind'] == 'property':
-            name = PROP_NAME.search(e['property']).group(1)
+            name = e['name']
             new = '' if name in base_props else e['property']
             out.append([e['offset'], e['offset'] + len(e['decl']), new,
-                        (e['category'] or e['class'], 'ObjCPropertyDecl .* %s \'' % name) if new else None])
+                        (e['category'] or e['class'], 'ObjCPropertyDecl .* %s \'' % name) if new else None, 'property', name])
             if e['setter_decl'] and new:
-                out.append([e['setter_offset'], e['setter_offset'] + len(e['setter_decl']), '', None])
+                out.append([e['setter_offset'], e['setter_offset'] + len(e['setter_decl']), '', None, 'setter'])
         elif e['kind'] == 'insert':
             m = re.search(r'typedef NSString \*(\w+) NS_EXTENSIBLE_STRING_ENUM;', e['text'])
             out.append([e['offset'], e['offset'], e['text'],
-                        (m.group(1), 'TypedefDecl .* %s \'NSString \\*\'' % m.group(1)) if m else None])
+                        (m.group(1), 'TypedefDecl .* %s \'NSString \\*\'' % m.group(1)) if m else None, 'insert'])
         elif e['kind'] == 'replace':
             n, check = e['new'], None
             m = re.search(r'\b(\w+) const (\w+)', n)
@@ -75,7 +85,7 @@ def fact_edits(facts, base_props):
                 check = (s.group(1), 'EnumDecl .* %s' % s.group(1))
             elif m and m.group(1) != 'NSString' and 'NSString' in e['old']:
                 check = (m.group(2), 'VarDecl .* %s \'const %s\'' % (m.group(2), m.group(1)))
-            out.append([e['offset'], e['offset'] + len(e['old']), n, check])
+            out.append([e['offset'], e['offset'] + len(e['old']), n, check, 'replace'])
         else:
             fail('unknown fact kind %r' % e['kind'])
     return out
@@ -102,6 +112,10 @@ def combine(text, base, facts, header):
                 break
             if b[0] <= f[0] and f[1] <= b[1]:
                 piece = text[f[0]:f[1]]
+                if (f[0], f[1]) == (b[0], b[1]) and f[4] == 'property' and f[2] and retyped(f[2], f[5], b[2]):
+                    b[2] = retyped(f[2], f[5], b[2])
+                    f[2] = None
+                    continue
                 if b[2].count(piece) != 1:
                     fail('%s: cannot place a fact inside base replacement %r' % (header, b[2][:80]))
                 b[2] = b[2].replace(piece, f[2], 1)
@@ -131,6 +145,13 @@ def widen(text, edits):
         j = text.find('\n', i)
         return len(text) if j < 0 else j + 1
 
+    def compose(g):
+        new, at = '', g[0]
+        for ps, pe, pn in sorted(g[2], key=lambda p: (p[0], p[1] != p[0])):
+            new += text[at:ps] + pn
+            at = max(at, pe)
+        return new + text[at:g[1]]
+
     changed = True
     while changed:
         changed = False
@@ -145,7 +166,8 @@ def widen(text, edits):
         groups = out
         for i, g in enumerate(groups):
             old = text[g[0]:g[1]]
-            if old and text.count(old) == 1:
+            # platform: shipyard's materializer refuses an empty new, so a removal takes its line's newline too
+            if old and text.count(old) == 1 and compose(g) not in ('', old):
                 continue
             ns, ne = line_start(g[0]), max(line_end(g[1]) if g[1] > g[0] else line_end(g[0]), g[1])
             if (ns, ne) == (g[0], g[1]):
@@ -156,15 +178,7 @@ def widen(text, edits):
                     ne = line_end(ne)
             g[0], g[1] = ns, ne
             changed = True
-    reps = []
-    for s, e, pieces in groups:
-        new, at = '', s
-        for ps, pe, pn in sorted(pieces, key=lambda p: (p[0], p[1] != p[0])):
-            new += text[at:ps] + pn
-            at = max(at, pe)
-        new += text[at:e]
-        reps.append({'old': text[s:e], 'new': new})
-    return reps
+    return [{'old': text[g[0]:g[1]], 'new': compose(g)} for g in groups]
 
 
 def main():
@@ -185,8 +199,10 @@ def main():
     made = {}
     for header in sorted(facts):
         on = [r for r in recipes if r['header'] == header]
-        mine = [r['id'] for r in on if r['id'] in previous and r['id'] not in released]
-        bases = [r for r in on if r['id'] not in mine]
+        mine = [r for r in on if r['id'] in previous]
+        if len(mine) > 1:
+            fail('%s: the profile names %s' % (header, ', '.join(r['id'] for r in mine)))
+        bases = [r for r in on if r['id'] not in previous]
         base = None
         if bases:
             top = max(version(r['id'])[1] for r in bases)
@@ -194,12 +210,6 @@ def main():
             if len(tops) != 1:
                 fail('%s: %s tie as its latest recipe' % (header, ', '.join(r['id'] for r in tops)))
             base = tops[0]
-        if mine:
-            rid = mine[0]
-        else:
-            rid = '%s-v%d' % (default_stem(header), (version(base['id'])[1] if base else 0) + 1)
-            if rid in by_id:
-                fail('%s would be %s, which exists' % (header, rid))
         raw = open(os.path.join(o.sdk, header), 'rb').read()
         text = raw.decode('latin-1')
         base_reps = base['replacements'] if base else []
@@ -207,6 +217,15 @@ def main():
         fe = fact_edits(facts[header], base_props)
         checks = [f[3] for f in fe if f[3]]
         reps = widen(text, combine(text, base_reps, fe, header))
+        prev = mine[0] if mine else None
+        if prev and prev['replacements'] == reps:
+            rid = prev['id']                     # unchanged: keep it, released or not
+        elif prev and prev['id'] not in released:
+            rid = prev['id']                     # unreleased: rewrite in place
+        else:
+            rid = '%s-v%d' % (default_stem(header), max([version(r['id'])[1] for r in on] or [0]) + 1)
+            if rid in by_id:
+                fail('%s would be %s, which exists' % (header, rid))
         recipe = {'id': rid, 'header': header, 'sha256': hashlib.sha256(raw).hexdigest(), 'aliases': alias(header),
                   'replacements': reps}
         made[rid] = (recipe, checks)

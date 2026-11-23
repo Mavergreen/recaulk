@@ -305,6 +305,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAffineTransform.h": [
    {
     "kind": "property",
+    "name": "transformStruct",
     "class": "NSAffineTransform",
     "container": "interface",
     "category": null,
@@ -318,6 +319,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAppleEventDescriptor.h": [
    {
     "kind": "property",
+    "name": "aeDesc",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -329,6 +331,7 @@
    },
    {
     "kind": "property",
+    "name": "descriptorType",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -340,6 +343,7 @@
    },
    {
     "kind": "property",
+    "name": "data",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -351,6 +355,7 @@
    },
    {
     "kind": "property",
+    "name": "booleanValue",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -362,6 +367,7 @@
    },
    {
     "kind": "property",
+    "name": "enumCodeValue",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -373,6 +379,7 @@
    },
    {
     "kind": "property",
+    "name": "int32Value",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -384,6 +391,7 @@
    },
    {
     "kind": "property",
+    "name": "typeCodeValue",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -395,6 +403,7 @@
    },
    {
     "kind": "property",
+    "name": "stringValue",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -406,6 +415,7 @@
    },
    {
     "kind": "property",
+    "name": "eventClass",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -417,6 +427,7 @@
    },
    {
     "kind": "property",
+    "name": "eventID",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -428,6 +439,7 @@
    },
    {
     "kind": "property",
+    "name": "returnID",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -439,6 +451,7 @@
    },
    {
     "kind": "property",
+    "name": "transactionID",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -450,6 +463,7 @@
    },
    {
     "kind": "property",
+    "name": "numberOfItems",
     "class": "NSAppleEventDescriptor",
     "container": "interface",
     "category": null,
@@ -463,6 +477,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAppleEventManager.h": [
    {
     "kind": "property",
+    "name": "currentAppleEvent",
     "class": "NSAppleEventManager",
     "container": "interface",
     "category": null,
@@ -474,6 +489,7 @@
    },
    {
     "kind": "property",
+    "name": "currentReplyAppleEvent",
     "class": "NSAppleEventManager",
     "container": "interface",
     "category": null,
@@ -487,6 +503,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAppleScript.h": [
    {
     "kind": "property",
+    "name": "source",
     "class": "NSAppleScript",
     "container": "interface",
     "category": null,
@@ -498,6 +515,7 @@
    },
    {
     "kind": "property",
+    "name": "compiled",
     "class": "NSAppleScript",
     "container": "interface",
     "category": null,
@@ -511,6 +529,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArchiver.h": [
    {
     "kind": "property",
+    "name": "archiverData",
     "class": "NSArchiver",
     "container": "interface",
     "category": null,
@@ -522,6 +541,7 @@
    },
    {
     "kind": "property",
+    "name": "atEnd",
     "class": "NSUnarchiver",
     "container": "interface",
     "category": null,
@@ -533,6 +553,7 @@
    },
    {
     "kind": "property",
+    "name": "systemVersion",
     "class": "NSUnarchiver",
     "container": "interface",
     "category": null,
@@ -544,6 +565,7 @@
    },
    {
     "kind": "property",
+    "name": "classForArchiver",
     "class": "NSObject",
     "container": "category",
     "category": "NSArchiverCallback",
@@ -557,6 +579,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h": [
    {
     "kind": "property",
+    "name": "count",
     "class": "NSArray",
     "container": "interface",
     "category": null,
@@ -568,6 +591,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSArray",
     "container": "category",
     "category": "NSExtendedArray",
@@ -579,6 +603,7 @@
    },
    {
     "kind": "property",
+    "name": "firstObject",
     "class": "NSArray",
     "container": "category",
     "category": "NSExtendedArray",
@@ -590,6 +615,7 @@
    },
    {
     "kind": "property",
+    "name": "lastObject",
     "class": "NSArray",
     "container": "category",
     "category": "NSExtendedArray",
@@ -601,6 +627,7 @@
    },
    {
     "kind": "property",
+    "name": "sortedArrayHint",
     "class": "NSArray",
     "container": "category",
     "category": "NSExtendedArray",
@@ -614,6 +641,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAttributedString.h": [
    {
     "kind": "property",
+    "name": "string",
     "class": "NSAttributedString",
     "container": "interface",
     "category": null,
@@ -625,6 +653,7 @@
    },
    {
     "kind": "property",
+    "name": "length",
     "class": "NSAttributedString",
     "container": "category",
     "category": "NSExtendedAttributedString",
@@ -636,6 +665,7 @@
    },
    {
     "kind": "property",
+    "name": "mutableString",
     "class": "NSMutableAttributedString",
     "container": "category",
     "category": "NSExtendedMutableAttributedString",
@@ -649,6 +679,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSBundle.h": [
    {
     "kind": "property",
+    "name": "mainBundle",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -660,6 +691,7 @@
    },
    {
     "kind": "property",
+    "name": "allBundles",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -671,6 +703,7 @@
    },
    {
     "kind": "property",
+    "name": "allFrameworks",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -682,6 +715,7 @@
    },
    {
     "kind": "property",
+    "name": "loaded",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -693,6 +727,7 @@
    },
    {
     "kind": "property",
+    "name": "bundleURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -704,6 +739,7 @@
    },
    {
     "kind": "property",
+    "name": "resourceURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -715,6 +751,7 @@
    },
    {
     "kind": "property",
+    "name": "executableURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -726,6 +763,7 @@
    },
    {
     "kind": "property",
+    "name": "privateFrameworksURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -737,6 +775,7 @@
    },
    {
     "kind": "property",
+    "name": "sharedFrameworksURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -748,6 +787,7 @@
    },
    {
     "kind": "property",
+    "name": "sharedSupportURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -759,6 +799,7 @@
    },
    {
     "kind": "property",
+    "name": "builtInPlugInsURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -770,6 +811,7 @@
    },
    {
     "kind": "property",
+    "name": "appStoreReceiptURL",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -781,6 +823,7 @@
    },
    {
     "kind": "property",
+    "name": "bundlePath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -792,6 +835,7 @@
    },
    {
     "kind": "property",
+    "name": "resourcePath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -803,6 +847,7 @@
    },
    {
     "kind": "property",
+    "name": "executablePath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -814,6 +859,7 @@
    },
    {
     "kind": "property",
+    "name": "privateFrameworksPath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -825,6 +871,7 @@
    },
    {
     "kind": "property",
+    "name": "sharedFrameworksPath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -836,6 +883,7 @@
    },
    {
     "kind": "property",
+    "name": "sharedSupportPath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -847,6 +895,7 @@
    },
    {
     "kind": "property",
+    "name": "builtInPlugInsPath",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -858,6 +907,7 @@
    },
    {
     "kind": "property",
+    "name": "bundleIdentifier",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -869,6 +919,7 @@
    },
    {
     "kind": "property",
+    "name": "infoDictionary",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -880,6 +931,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedInfoDictionary",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -891,6 +943,7 @@
    },
    {
     "kind": "property",
+    "name": "principalClass",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -902,6 +955,7 @@
    },
    {
     "kind": "property",
+    "name": "preferredLocalizations",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -913,6 +967,7 @@
    },
    {
     "kind": "property",
+    "name": "localizations",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -924,6 +979,7 @@
    },
    {
     "kind": "property",
+    "name": "developmentLocalization",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -935,6 +991,7 @@
    },
    {
     "kind": "property",
+    "name": "executableArchitectures",
     "class": "NSBundle",
     "container": "interface",
     "category": null,
@@ -959,6 +1016,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCache.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSCache",
     "container": "interface",
     "category": null,
@@ -970,6 +1028,7 @@
    },
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSCache",
     "container": "interface",
     "category": null,
@@ -981,6 +1040,7 @@
    },
    {
     "kind": "property",
+    "name": "totalCostLimit",
     "class": "NSCache",
     "container": "interface",
     "category": null,
@@ -992,6 +1052,7 @@
    },
    {
     "kind": "property",
+    "name": "countLimit",
     "class": "NSCache",
     "container": "interface",
     "category": null,
@@ -1003,6 +1064,7 @@
    },
    {
     "kind": "property",
+    "name": "evictsObjectsWithDiscardedContent",
     "class": "NSCache",
     "container": "interface",
     "category": null,
@@ -1105,6 +1167,7 @@
    },
    {
     "kind": "property",
+    "name": "currentCalendar",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1116,6 +1179,7 @@
    },
    {
     "kind": "property",
+    "name": "autoupdatingCurrentCalendar",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1127,6 +1191,7 @@
    },
    {
     "kind": "property",
+    "name": "calendarIdentifier",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1138,6 +1203,7 @@
    },
    {
     "kind": "property",
+    "name": "locale",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1149,6 +1215,7 @@
    },
    {
     "kind": "property",
+    "name": "timeZone",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1160,6 +1227,7 @@
    },
    {
     "kind": "property",
+    "name": "firstWeekday",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1171,6 +1239,7 @@
    },
    {
     "kind": "property",
+    "name": "minimumDaysInFirstWeek",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1182,6 +1251,7 @@
    },
    {
     "kind": "property",
+    "name": "eraSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1193,6 +1263,7 @@
    },
    {
     "kind": "property",
+    "name": "longEraSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1204,6 +1275,7 @@
    },
    {
     "kind": "property",
+    "name": "monthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1215,6 +1287,7 @@
    },
    {
     "kind": "property",
+    "name": "shortMonthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1226,6 +1299,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortMonthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1237,6 +1311,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneMonthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1248,6 +1323,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneMonthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1259,6 +1335,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortStandaloneMonthSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1270,6 +1347,7 @@
    },
    {
     "kind": "property",
+    "name": "weekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1281,6 +1359,7 @@
    },
    {
     "kind": "property",
+    "name": "shortWeekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1292,6 +1371,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortWeekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1303,6 +1383,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneWeekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1314,6 +1395,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneWeekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1325,6 +1407,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortStandaloneWeekdaySymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1336,6 +1419,7 @@
    },
    {
     "kind": "property",
+    "name": "quarterSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1347,6 +1431,7 @@
    },
    {
     "kind": "property",
+    "name": "shortQuarterSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1358,6 +1443,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneQuarterSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1369,6 +1455,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneQuarterSymbols",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1380,6 +1467,7 @@
    },
    {
     "kind": "property",
+    "name": "AMSymbol",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1391,6 +1479,7 @@
    },
    {
     "kind": "property",
+    "name": "PMSymbol",
     "class": "NSCalendar",
     "container": "interface",
     "category": null,
@@ -1419,6 +1508,7 @@
    },
    {
     "kind": "property",
+    "name": "calendar",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1430,6 +1520,7 @@
    },
    {
     "kind": "property",
+    "name": "timeZone",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1441,6 +1532,7 @@
    },
    {
     "kind": "property",
+    "name": "era",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1452,6 +1544,7 @@
    },
    {
     "kind": "property",
+    "name": "year",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1463,6 +1556,7 @@
    },
    {
     "kind": "property",
+    "name": "month",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1474,6 +1568,7 @@
    },
    {
     "kind": "property",
+    "name": "day",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1485,6 +1580,7 @@
    },
    {
     "kind": "property",
+    "name": "hour",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1496,6 +1592,7 @@
    },
    {
     "kind": "property",
+    "name": "minute",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1507,6 +1604,7 @@
    },
    {
     "kind": "property",
+    "name": "second",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1518,6 +1616,7 @@
    },
    {
     "kind": "property",
+    "name": "nanosecond",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1529,6 +1628,7 @@
    },
    {
     "kind": "property",
+    "name": "weekday",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1540,6 +1640,7 @@
    },
    {
     "kind": "property",
+    "name": "weekdayOrdinal",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1551,6 +1652,7 @@
    },
    {
     "kind": "property",
+    "name": "quarter",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1562,6 +1664,7 @@
    },
    {
     "kind": "property",
+    "name": "weekOfMonth",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1573,6 +1676,7 @@
    },
    {
     "kind": "property",
+    "name": "weekOfYear",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1584,6 +1688,7 @@
    },
    {
     "kind": "property",
+    "name": "yearForWeekOfYear",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1595,6 +1700,7 @@
    },
    {
     "kind": "property",
+    "name": "leapMonth",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1606,6 +1712,7 @@
    },
    {
     "kind": "property",
+    "name": "date",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1617,6 +1724,7 @@
    },
    {
     "kind": "property",
+    "name": "validDate",
     "class": "NSDateComponents",
     "container": "interface",
     "category": null,
@@ -1630,6 +1738,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCharacterSet.h": [
    {
     "kind": "property",
+    "name": "controlCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1641,6 +1750,7 @@
    },
    {
     "kind": "property",
+    "name": "whitespaceCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1652,6 +1762,7 @@
    },
    {
     "kind": "property",
+    "name": "whitespaceAndNewlineCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1663,6 +1774,7 @@
    },
    {
     "kind": "property",
+    "name": "decimalDigitCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1674,6 +1786,7 @@
    },
    {
     "kind": "property",
+    "name": "letterCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1685,6 +1798,7 @@
    },
    {
     "kind": "property",
+    "name": "lowercaseLetterCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1696,6 +1810,7 @@
    },
    {
     "kind": "property",
+    "name": "uppercaseLetterCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1707,6 +1822,7 @@
    },
    {
     "kind": "property",
+    "name": "nonBaseCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1718,6 +1834,7 @@
    },
    {
     "kind": "property",
+    "name": "alphanumericCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1729,6 +1846,7 @@
    },
    {
     "kind": "property",
+    "name": "decomposableCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1740,6 +1858,7 @@
    },
    {
     "kind": "property",
+    "name": "illegalCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1751,6 +1870,7 @@
    },
    {
     "kind": "property",
+    "name": "punctuationCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1762,6 +1882,7 @@
    },
    {
     "kind": "property",
+    "name": "capitalizedLetterCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1773,6 +1894,7 @@
    },
    {
     "kind": "property",
+    "name": "symbolCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1784,6 +1906,7 @@
    },
    {
     "kind": "property",
+    "name": "newlineCharacterSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1795,6 +1918,7 @@
    },
    {
     "kind": "property",
+    "name": "bitmapRepresentation",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1806,6 +1930,7 @@
    },
    {
     "kind": "property",
+    "name": "invertedSet",
     "class": "NSCharacterSet",
     "container": "interface",
     "category": null,
@@ -1819,6 +1944,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSClassDescription.h": [
    {
     "kind": "property",
+    "name": "attributeKeys",
     "class": "NSClassDescription",
     "container": "interface",
     "category": null,
@@ -1830,6 +1956,7 @@
    },
    {
     "kind": "property",
+    "name": "toOneRelationshipKeys",
     "class": "NSClassDescription",
     "container": "interface",
     "category": null,
@@ -1841,6 +1968,7 @@
    },
    {
     "kind": "property",
+    "name": "toManyRelationshipKeys",
     "class": "NSClassDescription",
     "container": "interface",
     "category": null,
@@ -1852,6 +1980,7 @@
    },
    {
     "kind": "property",
+    "name": "classDescription",
     "class": "NSObject",
     "container": "category",
     "category": "NSClassDescriptionPrimitives",
@@ -1863,6 +1992,7 @@
    },
    {
     "kind": "property",
+    "name": "attributeKeys",
     "class": "NSObject",
     "container": "category",
     "category": "NSClassDescriptionPrimitives",
@@ -1874,6 +2004,7 @@
    },
    {
     "kind": "property",
+    "name": "toOneRelationshipKeys",
     "class": "NSObject",
     "container": "category",
     "category": "NSClassDescriptionPrimitives",
@@ -1885,6 +2016,7 @@
    },
    {
     "kind": "property",
+    "name": "toManyRelationshipKeys",
     "class": "NSObject",
     "container": "category",
     "category": "NSClassDescriptionPrimitives",
@@ -1898,6 +2030,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCoder.h": [
    {
     "kind": "property",
+    "name": "systemVersion",
     "class": "NSCoder",
     "container": "category",
     "category": "NSExtendedCoder",
@@ -1909,6 +2042,7 @@
    },
    {
     "kind": "property",
+    "name": "allowsKeyedCoding",
     "class": "NSCoder",
     "container": "category",
     "category": "NSExtendedCoder",
@@ -1920,6 +2054,7 @@
    },
    {
     "kind": "property",
+    "name": "requiresSecureCoding",
     "class": "NSCoder",
     "container": "category",
     "category": "NSExtendedCoder",
@@ -1931,6 +2066,7 @@
    },
    {
     "kind": "property",
+    "name": "allowedClasses",
     "class": "NSCoder",
     "container": "category",
     "category": "NSExtendedCoder",
@@ -1944,6 +2080,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSComparisonPredicate.h": [
    {
     "kind": "property",
+    "name": "predicateOperatorType",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -1955,6 +2092,7 @@
    },
    {
     "kind": "property",
+    "name": "comparisonPredicateModifier",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -1966,6 +2104,7 @@
    },
    {
     "kind": "property",
+    "name": "leftExpression",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -1977,6 +2116,7 @@
    },
    {
     "kind": "property",
+    "name": "rightExpression",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -1988,6 +2128,7 @@
    },
    {
     "kind": "property",
+    "name": "customSelector",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -1999,6 +2140,7 @@
    },
    {
     "kind": "property",
+    "name": "options",
     "class": "NSComparisonPredicate",
     "container": "interface",
     "category": null,
@@ -2012,6 +2154,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCompoundPredicate.h": [
    {
     "kind": "property",
+    "name": "compoundPredicateType",
     "class": "NSCompoundPredicate",
     "container": "interface",
     "category": null,
@@ -2023,6 +2166,7 @@
    },
    {
     "kind": "property",
+    "name": "subpredicates",
     "class": "NSCompoundPredicate",
     "container": "interface",
     "category": null,
@@ -2036,6 +2180,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSConnection.h": [
    {
     "kind": "property",
+    "name": "statistics",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2047,6 +2192,7 @@
    },
    {
     "kind": "property",
+    "name": "requestTimeout",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2058,6 +2204,7 @@
    },
    {
     "kind": "property",
+    "name": "replyTimeout",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2069,6 +2216,7 @@
    },
    {
     "kind": "property",
+    "name": "rootObject",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2080,6 +2228,7 @@
    },
    {
     "kind": "property",
+    "name": "rootProxy",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2091,6 +2240,7 @@
    },
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2102,6 +2252,7 @@
    },
    {
     "kind": "property",
+    "name": "independentConversationQueueing",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2113,6 +2264,7 @@
    },
    {
     "kind": "property",
+    "name": "valid",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2124,6 +2276,7 @@
    },
    {
     "kind": "property",
+    "name": "requestModes",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2135,6 +2288,7 @@
    },
    {
     "kind": "property",
+    "name": "sendPort",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2146,6 +2300,7 @@
    },
    {
     "kind": "property",
+    "name": "receivePort",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2157,6 +2312,7 @@
    },
    {
     "kind": "property",
+    "name": "multipleThreadsEnabled",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2168,6 +2324,7 @@
    },
    {
     "kind": "property",
+    "name": "remoteObjects",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2179,6 +2336,7 @@
    },
    {
     "kind": "property",
+    "name": "localObjects",
     "class": "NSConnection",
     "container": "interface",
     "category": null,
@@ -2190,6 +2348,7 @@
    },
    {
     "kind": "property",
+    "name": "invocation",
     "class": "NSDistantObjectRequest",
     "container": "interface",
     "category": null,
@@ -2201,6 +2360,7 @@
    },
    {
     "kind": "property",
+    "name": "connection",
     "class": "NSDistantObjectRequest",
     "container": "interface",
     "category": null,
@@ -2212,6 +2372,7 @@
    },
    {
     "kind": "property",
+    "name": "conversation",
     "class": "NSDistantObjectRequest",
     "container": "interface",
     "category": null,
@@ -2225,6 +2386,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSData.h": [
    {
     "kind": "property",
+    "name": "length",
     "class": "NSData",
     "container": "interface",
     "category": null,
@@ -2236,6 +2398,7 @@
    },
    {
     "kind": "property",
+    "name": "bytes",
     "class": "NSData",
     "container": "interface",
     "category": null,
@@ -2247,6 +2410,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSData",
     "container": "category",
     "category": "NSExtendedData",
@@ -2258,6 +2422,7 @@
    },
    {
     "kind": "property",
+    "name": "mutableBytes",
     "class": "NSMutableData",
     "container": "interface",
     "category": null,
@@ -2282,6 +2447,7 @@
    },
    {
     "kind": "property",
+    "name": "timeIntervalSinceReferenceDate",
     "class": "NSDate",
     "container": "interface",
     "category": null,
@@ -2293,6 +2459,7 @@
    },
    {
     "kind": "property",
+    "name": "timeIntervalSinceNow",
     "class": "NSDate",
     "container": "category",
     "category": "NSExtendedDate",
@@ -2304,6 +2471,7 @@
    },
    {
     "kind": "property",
+    "name": "timeIntervalSince1970",
     "class": "NSDate",
     "container": "category",
     "category": "NSExtendedDate",
@@ -2315,6 +2483,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSDate",
     "container": "category",
     "category": "NSExtendedDate",
@@ -2326,6 +2495,7 @@
    },
    {
     "kind": "property",
+    "name": "timeIntervalSinceReferenceDate",
     "class": "NSDate",
     "container": "category",
     "category": "NSExtendedDate",
@@ -2337,6 +2507,7 @@
    },
    {
     "kind": "property",
+    "name": "distantFuture",
     "class": "NSDate",
     "container": "category",
     "category": "NSDateCreation",
@@ -2348,6 +2519,7 @@
    },
    {
     "kind": "property",
+    "name": "distantPast",
     "class": "NSDate",
     "container": "category",
     "category": "NSDateCreation",
@@ -2361,6 +2533,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDateFormatter.h": [
    {
     "kind": "property",
+    "name": "dateFormat",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2372,6 +2545,7 @@
    },
    {
     "kind": "property",
+    "name": "dateStyle",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2383,6 +2557,7 @@
    },
    {
     "kind": "property",
+    "name": "timeStyle",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2394,6 +2569,7 @@
    },
    {
     "kind": "property",
+    "name": "locale",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2405,6 +2581,7 @@
    },
    {
     "kind": "property",
+    "name": "generatesCalendarDates",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2416,6 +2593,7 @@
    },
    {
     "kind": "property",
+    "name": "formatterBehavior",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2427,6 +2605,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultFormatterBehavior",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2438,6 +2617,7 @@
    },
    {
     "kind": "property",
+    "name": "timeZone",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2449,6 +2629,7 @@
    },
    {
     "kind": "property",
+    "name": "calendar",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2460,6 +2641,7 @@
    },
    {
     "kind": "property",
+    "name": "lenient",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2471,6 +2653,7 @@
    },
    {
     "kind": "property",
+    "name": "twoDigitStartDate",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2482,6 +2665,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultDate",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2493,6 +2677,7 @@
    },
    {
     "kind": "property",
+    "name": "eraSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2504,6 +2689,7 @@
    },
    {
     "kind": "property",
+    "name": "monthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2515,6 +2701,7 @@
    },
    {
     "kind": "property",
+    "name": "shortMonthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2526,6 +2713,7 @@
    },
    {
     "kind": "property",
+    "name": "weekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2537,6 +2725,7 @@
    },
    {
     "kind": "property",
+    "name": "shortWeekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2548,6 +2737,7 @@
    },
    {
     "kind": "property",
+    "name": "AMSymbol",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2559,6 +2749,7 @@
    },
    {
     "kind": "property",
+    "name": "PMSymbol",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2570,6 +2761,7 @@
    },
    {
     "kind": "property",
+    "name": "longEraSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2581,6 +2773,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortMonthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2592,6 +2785,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneMonthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2603,6 +2797,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneMonthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2614,6 +2809,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortStandaloneMonthSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2625,6 +2821,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortWeekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2636,6 +2833,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneWeekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2647,6 +2845,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneWeekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2658,6 +2857,7 @@
    },
    {
     "kind": "property",
+    "name": "veryShortStandaloneWeekdaySymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2669,6 +2869,7 @@
    },
    {
     "kind": "property",
+    "name": "quarterSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2680,6 +2881,7 @@
    },
    {
     "kind": "property",
+    "name": "shortQuarterSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2691,6 +2893,7 @@
    },
    {
     "kind": "property",
+    "name": "standaloneQuarterSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2702,6 +2905,7 @@
    },
    {
     "kind": "property",
+    "name": "shortStandaloneQuarterSymbols",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2713,6 +2917,7 @@
    },
    {
     "kind": "property",
+    "name": "gregorianStartDate",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2724,6 +2929,7 @@
    },
    {
     "kind": "property",
+    "name": "doesRelativeDateFormatting",
     "class": "NSDateFormatter",
     "container": "interface",
     "category": null,
@@ -2737,6 +2943,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDecimalNumber.h": [
    {
     "kind": "property",
+    "name": "decimalValue",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2748,6 +2955,7 @@
    },
    {
     "kind": "property",
+    "name": "zero",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2759,6 +2967,7 @@
    },
    {
     "kind": "property",
+    "name": "one",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2770,6 +2979,7 @@
    },
    {
     "kind": "property",
+    "name": "minimumDecimalNumber",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2781,6 +2991,7 @@
    },
    {
     "kind": "property",
+    "name": "maximumDecimalNumber",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2792,6 +3003,7 @@
    },
    {
     "kind": "property",
+    "name": "notANumber",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2803,6 +3015,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultBehavior",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2814,6 +3027,7 @@
    },
    {
     "kind": "property",
+    "name": "objCType",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2825,6 +3039,7 @@
    },
    {
     "kind": "property",
+    "name": "doubleValue",
     "class": "NSDecimalNumber",
     "container": "interface",
     "category": null,
@@ -2836,6 +3051,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultDecimalNumberHandler",
     "class": "NSDecimalNumberHandler",
     "container": "interface",
     "category": null,
@@ -2847,6 +3063,7 @@
    },
    {
     "kind": "property",
+    "name": "decimalValue",
     "class": "NSNumber",
     "container": "category",
     "category": "NSDecimalNumberExtensions",
@@ -2860,6 +3077,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDictionary.h": [
    {
     "kind": "property",
+    "name": "count",
     "class": "NSDictionary",
     "container": "interface",
     "category": null,
@@ -2871,6 +3089,7 @@
    },
    {
     "kind": "property",
+    "name": "allKeys",
     "class": "NSDictionary",
     "container": "category",
     "category": "NSExtendedDictionary",
@@ -2882,6 +3101,7 @@
    },
    {
     "kind": "property",
+    "name": "allValues",
     "class": "NSDictionary",
     "container": "category",
     "category": "NSExtendedDictionary",
@@ -2893,6 +3113,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSDictionary",
     "container": "category",
     "category": "NSExtendedDictionary",
@@ -2904,6 +3125,7 @@
    },
    {
     "kind": "property",
+    "name": "descriptionInStringsFileFormat",
     "class": "NSDictionary",
     "container": "category",
     "category": "NSExtendedDictionary",
@@ -2917,6 +3139,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDistantObject.h": [
    {
     "kind": "property",
+    "name": "connectionForProxy",
     "class": "NSDistantObject",
     "container": "interface",
     "category": null,
@@ -2930,6 +3153,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDistributedLock.h": [
    {
     "kind": "property",
+    "name": "lockDate",
     "class": "NSDistributedLock",
     "container": "interface",
     "category": null,
@@ -2943,6 +3167,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDistributedNotificationCenter.h": [
    {
     "kind": "property",
+    "name": "suspended",
     "class": "NSDistributedNotificationCenter",
     "container": "interface",
     "category": null,
@@ -2956,6 +3181,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSEnumerator.h": [
    {
     "kind": "property",
+    "name": "allObjects",
     "class": "NSEnumerator",
     "container": "category",
     "category": "NSExtendedEnumerator",
@@ -3063,6 +3289,7 @@
    },
    {
     "kind": "property",
+    "name": "domain",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3074,6 +3301,7 @@
    },
    {
     "kind": "property",
+    "name": "code",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3085,6 +3313,7 @@
    },
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3096,6 +3325,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedDescription",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3107,6 +3337,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedFailureReason",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3118,6 +3349,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedRecoverySuggestion",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3129,6 +3361,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedRecoveryOptions",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3140,6 +3373,7 @@
    },
    {
     "kind": "property",
+    "name": "recoveryAttempter",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3151,6 +3385,7 @@
    },
    {
     "kind": "property",
+    "name": "helpAnchor",
     "class": "NSError",
     "container": "interface",
     "category": null,
@@ -3164,6 +3399,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSException.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSException",
     "container": "interface",
     "category": null,
@@ -3175,6 +3411,7 @@
    },
    {
     "kind": "property",
+    "name": "reason",
     "class": "NSException",
     "container": "interface",
     "category": null,
@@ -3186,6 +3423,7 @@
    },
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSException",
     "container": "interface",
     "category": null,
@@ -3197,6 +3435,7 @@
    },
    {
     "kind": "property",
+    "name": "callStackReturnAddresses",
     "class": "NSException",
     "container": "interface",
     "category": null,
@@ -3208,6 +3447,7 @@
    },
    {
     "kind": "property",
+    "name": "callStackSymbols",
     "class": "NSException",
     "container": "interface",
     "category": null,
@@ -3219,6 +3459,7 @@
    },
    {
     "kind": "property",
+    "name": "currentHandler",
     "class": "NSAssertionHandler",
     "container": "interface",
     "category": null,
@@ -3232,6 +3473,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSExpression.h": [
    {
     "kind": "property",
+    "name": "expressionType",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3243,6 +3485,7 @@
    },
    {
     "kind": "property",
+    "name": "constantValue",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3254,6 +3497,7 @@
    },
    {
     "kind": "property",
+    "name": "keyPath",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3265,6 +3509,7 @@
    },
    {
     "kind": "property",
+    "name": "function",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3276,6 +3521,7 @@
    },
    {
     "kind": "property",
+    "name": "variable",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3287,6 +3533,7 @@
    },
    {
     "kind": "property",
+    "name": "operand",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3298,6 +3545,7 @@
    },
    {
     "kind": "property",
+    "name": "arguments",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3309,6 +3557,7 @@
    },
    {
     "kind": "property",
+    "name": "collection",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3320,6 +3569,7 @@
    },
    {
     "kind": "property",
+    "name": "predicate",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3331,6 +3581,7 @@
    },
    {
     "kind": "property",
+    "name": "leftExpression",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3342,6 +3593,7 @@
    },
    {
     "kind": "property",
+    "name": "rightExpression",
     "class": "NSExpression",
     "container": "interface",
     "category": null,
@@ -3355,6 +3607,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileCoordinator.h": [
    {
     "kind": "property",
+    "name": "filePresenters",
     "class": "NSFileCoordinator",
     "container": "interface",
     "category": null,
@@ -3368,6 +3621,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileHandle.h": [
    {
     "kind": "property",
+    "name": "availableData",
     "class": "NSFileHandle",
     "container": "interface",
     "category": null,
@@ -3379,6 +3633,7 @@
    },
    {
     "kind": "property",
+    "name": "offsetInFile",
     "class": "NSFileHandle",
     "container": "interface",
     "category": null,
@@ -3390,6 +3645,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleWithStandardInput",
     "class": "NSFileHandle",
     "container": "category",
     "category": "NSFileHandleCreation",
@@ -3401,6 +3657,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleWithStandardOutput",
     "class": "NSFileHandle",
     "container": "category",
     "category": "NSFileHandleCreation",
@@ -3412,6 +3669,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleWithStandardError",
     "class": "NSFileHandle",
     "container": "category",
     "category": "NSFileHandleCreation",
@@ -3423,6 +3681,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleWithNullDevice",
     "class": "NSFileHandle",
     "container": "category",
     "category": "NSFileHandleCreation",
@@ -3463,6 +3722,7 @@
    },
    {
     "kind": "property",
+    "name": "fileDescriptor",
     "class": "NSFileHandle",
     "container": "category",
     "category": "NSFileHandlePlatformSpecific",
@@ -3474,6 +3734,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleForReading",
     "class": "NSPipe",
     "container": "interface",
     "category": null,
@@ -3485,6 +3746,7 @@
    },
    {
     "kind": "property",
+    "name": "fileHandleForWriting",
     "class": "NSPipe",
     "container": "interface",
     "category": null,
@@ -3509,6 +3771,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultManager",
     "class": "NSFileManager",
     "container": "interface",
     "category": null,
@@ -3520,6 +3783,7 @@
    },
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSFileManager",
     "container": "interface",
     "category": null,
@@ -3531,6 +3795,7 @@
    },
    {
     "kind": "property",
+    "name": "currentDirectoryPath",
     "class": "NSFileManager",
     "container": "interface",
     "category": null,
@@ -3542,6 +3807,7 @@
    },
    {
     "kind": "property",
+    "name": "ubiquityIdentityToken",
     "class": "NSFileManager",
     "container": "interface",
     "category": null,
@@ -3553,6 +3819,7 @@
    },
    {
     "kind": "property",
+    "name": "fileAttributes",
     "class": "NSDirectoryEnumerator",
     "container": "interface",
     "category": null,
@@ -3564,6 +3831,7 @@
    },
    {
     "kind": "property",
+    "name": "directoryAttributes",
     "class": "NSDirectoryEnumerator",
     "container": "interface",
     "category": null,
@@ -3575,6 +3843,7 @@
    },
    {
     "kind": "property",
+    "name": "level",
     "class": "NSDirectoryEnumerator",
     "container": "interface",
     "category": null,
@@ -3813,6 +4082,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileWrapper.h": [
    {
     "kind": "property",
+    "name": "directory",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3824,6 +4094,7 @@
    },
    {
     "kind": "property",
+    "name": "regularFile",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3835,6 +4106,7 @@
    },
    {
     "kind": "property",
+    "name": "symbolicLink",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3846,6 +4118,7 @@
    },
    {
     "kind": "property",
+    "name": "preferredFilename",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3857,6 +4130,7 @@
    },
    {
     "kind": "property",
+    "name": "filename",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3868,6 +4142,7 @@
    },
    {
     "kind": "property",
+    "name": "fileAttributes",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3879,6 +4154,7 @@
    },
    {
     "kind": "property",
+    "name": "serializedRepresentation",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3890,6 +4166,7 @@
    },
    {
     "kind": "property",
+    "name": "fileWrappers",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3901,6 +4178,7 @@
    },
    {
     "kind": "property",
+    "name": "regularFileContents",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3912,6 +4190,7 @@
    },
    {
     "kind": "property",
+    "name": "symbolicLinkDestinationURL",
     "class": "NSFileWrapper",
     "container": "interface",
     "category": null,
@@ -3931,6 +4210,7 @@
    },
    {
     "kind": "property",
+    "name": "pointValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueGeometryExtensions",
@@ -3942,6 +4222,7 @@
    },
    {
     "kind": "property",
+    "name": "sizeValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueGeometryExtensions",
@@ -3953,6 +4234,7 @@
    },
    {
     "kind": "property",
+    "name": "rectValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueGeometryExtensions",
@@ -3966,6 +4248,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHTTPCookie.h": [
    {
     "kind": "property",
+    "name": "properties",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -3977,6 +4260,7 @@
    },
    {
     "kind": "property",
+    "name": "version",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -3988,6 +4272,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -3999,6 +4284,7 @@
    },
    {
     "kind": "property",
+    "name": "value",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4010,6 +4296,7 @@
    },
    {
     "kind": "property",
+    "name": "expiresDate",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4021,6 +4308,7 @@
    },
    {
     "kind": "property",
+    "name": "sessionOnly",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4032,6 +4320,7 @@
    },
    {
     "kind": "property",
+    "name": "domain",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4043,6 +4332,7 @@
    },
    {
     "kind": "property",
+    "name": "path",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4054,6 +4344,7 @@
    },
    {
     "kind": "property",
+    "name": "secure",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4065,6 +4356,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPOnly",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4076,6 +4368,7 @@
    },
    {
     "kind": "property",
+    "name": "comment",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4087,6 +4380,7 @@
    },
    {
     "kind": "property",
+    "name": "commentURL",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4098,6 +4392,7 @@
    },
    {
     "kind": "property",
+    "name": "portList",
     "class": "NSHTTPCookie",
     "container": "interface",
     "category": null,
@@ -4111,6 +4406,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHTTPCookieStorage.h": [
    {
     "kind": "property",
+    "name": "sharedHTTPCookieStorage",
     "class": "NSHTTPCookieStorage",
     "container": "interface",
     "category": null,
@@ -4122,6 +4418,7 @@
    },
    {
     "kind": "property",
+    "name": "cookies",
     "class": "NSHTTPCookieStorage",
     "container": "interface",
     "category": null,
@@ -4133,6 +4430,7 @@
    },
    {
     "kind": "property",
+    "name": "cookieAcceptPolicy",
     "class": "NSHTTPCookieStorage",
     "container": "interface",
     "category": null,
@@ -4163,6 +4461,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHashTable.h": [
    {
     "kind": "property",
+    "name": "pointerFunctions",
     "class": "NSHashTable",
     "container": "interface",
     "category": null,
@@ -4174,6 +4473,7 @@
    },
    {
     "kind": "property",
+    "name": "count",
     "class": "NSHashTable",
     "container": "interface",
     "category": null,
@@ -4185,6 +4485,7 @@
    },
    {
     "kind": "property",
+    "name": "allObjects",
     "class": "NSHashTable",
     "container": "interface",
     "category": null,
@@ -4196,6 +4497,7 @@
    },
    {
     "kind": "property",
+    "name": "anyObject",
     "class": "NSHashTable",
     "container": "interface",
     "category": null,
@@ -4207,6 +4509,7 @@
    },
    {
     "kind": "property",
+    "name": "setRepresentation",
     "class": "NSHashTable",
     "container": "interface",
     "category": null,
@@ -4220,6 +4523,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHost.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSHost",
     "container": "interface",
     "category": null,
@@ -4231,6 +4535,7 @@
    },
    {
     "kind": "property",
+    "name": "names",
     "class": "NSHost",
     "container": "interface",
     "category": null,
@@ -4242,6 +4547,7 @@
    },
    {
     "kind": "property",
+    "name": "address",
     "class": "NSHost",
     "container": "interface",
     "category": null,
@@ -4253,6 +4559,7 @@
    },
    {
     "kind": "property",
+    "name": "addresses",
     "class": "NSHost",
     "container": "interface",
     "category": null,
@@ -4264,6 +4571,7 @@
    },
    {
     "kind": "property",
+    "name": "localizedName",
     "class": "NSHost",
     "container": "interface",
     "category": null,
@@ -4277,6 +4585,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSIndexPath.h": [
    {
     "kind": "property",
+    "name": "length",
     "class": "NSIndexPath",
     "container": "interface",
     "category": null,
@@ -4290,6 +4599,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSIndexSet.h": [
    {
     "kind": "property",
+    "name": "count",
     "class": "NSIndexSet",
     "container": "interface",
     "category": null,
@@ -4301,6 +4611,7 @@
    },
    {
     "kind": "property",
+    "name": "firstIndex",
     "class": "NSIndexSet",
     "container": "interface",
     "category": null,
@@ -4312,6 +4623,7 @@
    },
    {
     "kind": "property",
+    "name": "lastIndex",
     "class": "NSIndexSet",
     "container": "interface",
     "category": null,
@@ -4325,6 +4637,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSInvocation.h": [
    {
     "kind": "property",
+    "name": "methodSignature",
     "class": "NSInvocation",
     "container": "interface",
     "category": null,
@@ -4336,6 +4649,7 @@
    },
    {
     "kind": "property",
+    "name": "argumentsRetained",
     "class": "NSInvocation",
     "container": "interface",
     "category": null,
@@ -4347,6 +4661,7 @@
    },
    {
     "kind": "property",
+    "name": "target",
     "class": "NSInvocation",
     "container": "interface",
     "category": null,
@@ -4358,6 +4673,7 @@
    },
    {
     "kind": "property",
+    "name": "selector",
     "class": "NSInvocation",
     "container": "interface",
     "category": null,
@@ -4371,6 +4687,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyValueCoding.h": [
    {
     "kind": "property",
+    "name": "accessInstanceVariablesDirectly",
     "class": "NSObject",
     "container": "category",
     "category": "NSKeyValueCoding",
@@ -4390,6 +4707,7 @@
    },
    {
     "kind": "property",
+    "name": "observationInfo",
     "class": "NSObject",
     "container": "category",
     "category": "NSKeyValueObservingCustomization",
@@ -4403,6 +4721,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyedArchiver.h": [
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSKeyedArchiver",
     "container": "interface",
     "category": null,
@@ -4414,6 +4733,7 @@
    },
    {
     "kind": "property",
+    "name": "outputFormat",
     "class": "NSKeyedArchiver",
     "container": "interface",
     "category": null,
@@ -4425,6 +4745,7 @@
    },
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSKeyedUnarchiver",
     "container": "interface",
     "category": null,
@@ -4436,6 +4757,7 @@
    },
    {
     "kind": "property",
+    "name": "classForKeyedArchiver",
     "class": "NSObject",
     "container": "category",
     "category": "NSKeyedArchiverObjectSubstitution",
@@ -4687,6 +5009,7 @@
    },
    {
     "kind": "property",
+    "name": "tagSchemes",
     "class": "NSLinguisticTagger",
     "container": "interface",
     "category": null,
@@ -4698,6 +5021,7 @@
    },
    {
     "kind": "property",
+    "name": "string",
     "class": "NSLinguisticTagger",
     "container": "interface",
     "category": null,
@@ -4711,6 +5035,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLocale.h": [
    {
     "kind": "property",
+    "name": "localeIdentifier",
     "class": "NSLocale",
     "container": "category",
     "category": "NSExtendedLocale",
@@ -4722,6 +5047,7 @@
    },
    {
     "kind": "property",
+    "name": "autoupdatingCurrentLocale",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleCreation",
@@ -4733,6 +5059,7 @@
    },
    {
     "kind": "property",
+    "name": "currentLocale",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleCreation",
@@ -4744,6 +5071,7 @@
    },
    {
     "kind": "property",
+    "name": "systemLocale",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleCreation",
@@ -4755,6 +5083,7 @@
    },
    {
     "kind": "property",
+    "name": "availableLocaleIdentifiers",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4766,6 +5095,7 @@
    },
    {
     "kind": "property",
+    "name": "ISOLanguageCodes",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4777,6 +5107,7 @@
    },
    {
     "kind": "property",
+    "name": "ISOCountryCodes",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4788,6 +5119,7 @@
    },
    {
     "kind": "property",
+    "name": "ISOCurrencyCodes",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4799,6 +5131,7 @@
    },
    {
     "kind": "property",
+    "name": "commonISOCurrencyCodes",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4810,6 +5143,7 @@
    },
    {
     "kind": "property",
+    "name": "preferredLanguages",
     "class": "NSLocale",
     "container": "category",
     "category": "NSLocaleGeneralInfo",
@@ -4959,6 +5293,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLock.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSLock",
     "container": "interface",
     "category": null,
@@ -4970,6 +5305,7 @@
    },
    {
     "kind": "property",
+    "name": "condition",
     "class": "NSConditionLock",
     "container": "interface",
     "category": null,
@@ -4981,6 +5317,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSConditionLock",
     "container": "interface",
     "category": null,
@@ -4992,6 +5329,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSRecursiveLock",
     "container": "interface",
     "category": null,
@@ -5003,6 +5341,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSCondition",
     "container": "interface",
     "category": null,
@@ -5016,6 +5355,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSMapTable.h": [
    {
     "kind": "property",
+    "name": "keyPointerFunctions",
     "class": "NSMapTable",
     "container": "interface",
     "category": null,
@@ -5027,6 +5367,7 @@
    },
    {
     "kind": "property",
+    "name": "valuePointerFunctions",
     "class": "NSMapTable",
     "container": "interface",
     "category": null,
@@ -5038,6 +5379,7 @@
    },
    {
     "kind": "property",
+    "name": "count",
     "class": "NSMapTable",
     "container": "interface",
     "category": null,
@@ -5051,6 +5393,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSMetadata.h": [
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5062,6 +5405,7 @@
    },
    {
     "kind": "property",
+    "name": "predicate",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5073,6 +5417,7 @@
    },
    {
     "kind": "property",
+    "name": "sortDescriptors",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5084,6 +5429,7 @@
    },
    {
     "kind": "property",
+    "name": "valueListAttributes",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5095,6 +5441,7 @@
    },
    {
     "kind": "property",
+    "name": "groupingAttributes",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5106,6 +5453,7 @@
    },
    {
     "kind": "property",
+    "name": "notificationBatchingInterval",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5117,6 +5465,7 @@
    },
    {
     "kind": "property",
+    "name": "searchScopes",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5128,6 +5477,7 @@
    },
    {
     "kind": "property",
+    "name": "searchItems",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5139,6 +5489,7 @@
    },
    {
     "kind": "property",
+    "name": "operationQueue",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5150,6 +5501,7 @@
    },
    {
     "kind": "property",
+    "name": "started",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5161,6 +5513,7 @@
    },
    {
     "kind": "property",
+    "name": "gathering",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5172,6 +5525,7 @@
    },
    {
     "kind": "property",
+    "name": "stopped",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5183,6 +5537,7 @@
    },
    {
     "kind": "property",
+    "name": "resultCount",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5194,6 +5549,7 @@
    },
    {
     "kind": "property",
+    "name": "results",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5205,6 +5561,7 @@
    },
    {
     "kind": "property",
+    "name": "valueLists",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5216,6 +5573,7 @@
    },
    {
     "kind": "property",
+    "name": "groupedResults",
     "class": "NSMetadataQuery",
     "container": "interface",
     "category": null,
@@ -5256,6 +5614,7 @@
    },
    {
     "kind": "property",
+    "name": "attributes",
     "class": "NSMetadataItem",
     "container": "interface",
     "category": null,
@@ -5267,6 +5626,7 @@
    },
    {
     "kind": "property",
+    "name": "attribute",
     "class": "NSMetadataQueryAttributeValueTuple",
     "container": "interface",
     "category": null,
@@ -5278,6 +5638,7 @@
    },
    {
     "kind": "property",
+    "name": "value",
     "class": "NSMetadataQueryAttributeValueTuple",
     "container": "interface",
     "category": null,
@@ -5289,6 +5650,7 @@
    },
    {
     "kind": "property",
+    "name": "count",
     "class": "NSMetadataQueryAttributeValueTuple",
     "container": "interface",
     "category": null,
@@ -5300,6 +5662,7 @@
    },
    {
     "kind": "property",
+    "name": "attribute",
     "class": "NSMetadataQueryResultGroup",
     "container": "interface",
     "category": null,
@@ -5311,6 +5674,7 @@
    },
    {
     "kind": "property",
+    "name": "value",
     "class": "NSMetadataQueryResultGroup",
     "container": "interface",
     "category": null,
@@ -5322,6 +5686,7 @@
    },
    {
     "kind": "property",
+    "name": "subgroups",
     "class": "NSMetadataQueryResultGroup",
     "container": "interface",
     "category": null,
@@ -5333,6 +5698,7 @@
    },
    {
     "kind": "property",
+    "name": "resultCount",
     "class": "NSMetadataQueryResultGroup",
     "container": "interface",
     "category": null,
@@ -5344,6 +5710,7 @@
    },
    {
     "kind": "property",
+    "name": "results",
     "class": "NSMetadataQueryResultGroup",
     "container": "interface",
     "category": null,
@@ -5357,6 +5724,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSMethodSignature.h": [
    {
     "kind": "property",
+    "name": "numberOfArguments",
     "class": "NSMethodSignature",
     "container": "interface",
     "category": null,
@@ -5368,6 +5736,7 @@
    },
    {
     "kind": "property",
+    "name": "frameLength",
     "class": "NSMethodSignature",
     "container": "interface",
     "category": null,
@@ -5379,6 +5748,7 @@
    },
    {
     "kind": "property",
+    "name": "methodReturnType",
     "class": "NSMethodSignature",
     "container": "interface",
     "category": null,
@@ -5390,6 +5760,7 @@
    },
    {
     "kind": "property",
+    "name": "methodReturnLength",
     "class": "NSMethodSignature",
     "container": "interface",
     "category": null,
@@ -5403,6 +5774,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNotification.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSNotification",
     "container": "interface",
     "category": null,
@@ -5414,6 +5786,7 @@
    },
    {
     "kind": "property",
+    "name": "object",
     "class": "NSNotification",
     "container": "interface",
     "category": null,
@@ -5425,6 +5798,7 @@
    },
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSNotification",
     "container": "interface",
     "category": null,
@@ -5436,12 +5810,13 @@
    },
    {
     "kind": "property",
+    "name": "defaultCenter",
     "class": "NSNotificationCenter",
     "container": "interface",
     "category": null,
     "decl": "+ (instancetype)defaultCenter;",
     "offset": 1013,
-    "property": "@property (class, readonly, strong) instancetype defaultCenter;",
+    "property": "@property (class, readonly, strong) NSNotificationCenter *defaultCenter;",
     "setter_decl": null,
     "setter_offset": null
    }
@@ -5449,6 +5824,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNotificationQueue.h": [
    {
     "kind": "property",
+    "name": "defaultQueue",
     "class": "NSNotificationQueue",
     "container": "interface",
     "category": null,
@@ -5462,6 +5838,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNumberFormatter.h": [
    {
     "kind": "property",
+    "name": "numberStyle",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5473,6 +5850,7 @@
    },
    {
     "kind": "property",
+    "name": "locale",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5484,6 +5862,7 @@
    },
    {
     "kind": "property",
+    "name": "generatesDecimalNumbers",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5495,6 +5874,7 @@
    },
    {
     "kind": "property",
+    "name": "formatterBehavior",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5506,6 +5886,7 @@
    },
    {
     "kind": "property",
+    "name": "negativeFormat",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5517,6 +5898,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForNegativeValues",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5528,6 +5910,7 @@
    },
    {
     "kind": "property",
+    "name": "positiveFormat",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5539,6 +5922,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForPositiveValues",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5550,6 +5934,7 @@
    },
    {
     "kind": "property",
+    "name": "allowsFloats",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5561,6 +5946,7 @@
    },
    {
     "kind": "property",
+    "name": "decimalSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5572,6 +5958,7 @@
    },
    {
     "kind": "property",
+    "name": "alwaysShowsDecimalSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5583,6 +5970,7 @@
    },
    {
     "kind": "property",
+    "name": "currencyDecimalSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5594,6 +5982,7 @@
    },
    {
     "kind": "property",
+    "name": "usesGroupingSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5605,6 +5994,7 @@
    },
    {
     "kind": "property",
+    "name": "groupingSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5616,6 +6006,7 @@
    },
    {
     "kind": "property",
+    "name": "zeroSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5627,6 +6018,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForZero",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5638,6 +6030,7 @@
    },
    {
     "kind": "property",
+    "name": "nilSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5649,6 +6042,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForNil",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5660,6 +6054,7 @@
    },
    {
     "kind": "property",
+    "name": "notANumberSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5671,6 +6066,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForNotANumber",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5682,6 +6078,7 @@
    },
    {
     "kind": "property",
+    "name": "positiveInfinitySymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5693,6 +6090,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForPositiveInfinity",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5704,6 +6102,7 @@
    },
    {
     "kind": "property",
+    "name": "negativeInfinitySymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5715,6 +6114,7 @@
    },
    {
     "kind": "property",
+    "name": "textAttributesForNegativeInfinity",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5726,6 +6126,7 @@
    },
    {
     "kind": "property",
+    "name": "positivePrefix",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5737,6 +6138,7 @@
    },
    {
     "kind": "property",
+    "name": "positiveSuffix",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5748,6 +6150,7 @@
    },
    {
     "kind": "property",
+    "name": "negativePrefix",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5759,6 +6162,7 @@
    },
    {
     "kind": "property",
+    "name": "negativeSuffix",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5770,6 +6174,7 @@
    },
    {
     "kind": "property",
+    "name": "currencyCode",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5781,6 +6186,7 @@
    },
    {
     "kind": "property",
+    "name": "currencySymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5792,6 +6198,7 @@
    },
    {
     "kind": "property",
+    "name": "internationalCurrencySymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5803,6 +6210,7 @@
    },
    {
     "kind": "property",
+    "name": "percentSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5814,6 +6222,7 @@
    },
    {
     "kind": "property",
+    "name": "perMillSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5825,6 +6234,7 @@
    },
    {
     "kind": "property",
+    "name": "minusSign",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5836,6 +6246,7 @@
    },
    {
     "kind": "property",
+    "name": "plusSign",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5847,6 +6258,7 @@
    },
    {
     "kind": "property",
+    "name": "exponentSymbol",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5858,6 +6270,7 @@
    },
    {
     "kind": "property",
+    "name": "groupingSize",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5869,6 +6282,7 @@
    },
    {
     "kind": "property",
+    "name": "secondaryGroupingSize",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5880,6 +6294,7 @@
    },
    {
     "kind": "property",
+    "name": "multiplier",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5891,6 +6306,7 @@
    },
    {
     "kind": "property",
+    "name": "formatWidth",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5902,6 +6318,7 @@
    },
    {
     "kind": "property",
+    "name": "paddingCharacter",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5913,6 +6330,7 @@
    },
    {
     "kind": "property",
+    "name": "paddingPosition",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5924,6 +6342,7 @@
    },
    {
     "kind": "property",
+    "name": "roundingMode",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5935,6 +6354,7 @@
    },
    {
     "kind": "property",
+    "name": "roundingIncrement",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5946,6 +6366,7 @@
    },
    {
     "kind": "property",
+    "name": "minimumIntegerDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5957,6 +6378,7 @@
    },
    {
     "kind": "property",
+    "name": "maximumIntegerDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5968,6 +6390,7 @@
    },
    {
     "kind": "property",
+    "name": "minimumFractionDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5979,6 +6402,7 @@
    },
    {
     "kind": "property",
+    "name": "maximumFractionDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -5990,6 +6414,7 @@
    },
    {
     "kind": "property",
+    "name": "minimum",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6001,6 +6426,7 @@
    },
    {
     "kind": "property",
+    "name": "maximum",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6012,6 +6438,7 @@
    },
    {
     "kind": "property",
+    "name": "currencyGroupingSeparator",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6023,6 +6450,7 @@
    },
    {
     "kind": "property",
+    "name": "lenient",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6034,6 +6462,7 @@
    },
    {
     "kind": "property",
+    "name": "usesSignificantDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6045,6 +6474,7 @@
    },
    {
     "kind": "property",
+    "name": "minimumSignificantDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6056,6 +6486,7 @@
    },
    {
     "kind": "property",
+    "name": "maximumSignificantDigits",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6067,6 +6498,7 @@
    },
    {
     "kind": "property",
+    "name": "partialStringValidationEnabled",
     "class": "NSNumberFormatter",
     "container": "interface",
     "category": null,
@@ -6078,6 +6510,7 @@
    },
    {
     "kind": "property",
+    "name": "hasThousandSeparators",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6089,6 +6522,7 @@
    },
    {
     "kind": "property",
+    "name": "thousandSeparator",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6100,6 +6534,7 @@
    },
    {
     "kind": "property",
+    "name": "localizesFormat",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6111,6 +6546,7 @@
    },
    {
     "kind": "property",
+    "name": "format",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6122,6 +6558,7 @@
    },
    {
     "kind": "property",
+    "name": "attributedStringForZero",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6133,6 +6570,7 @@
    },
    {
     "kind": "property",
+    "name": "attributedStringForNil",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6144,6 +6582,7 @@
    },
    {
     "kind": "property",
+    "name": "attributedStringForNotANumber",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6155,6 +6594,7 @@
    },
    {
     "kind": "property",
+    "name": "roundingBehavior",
     "class": "NSNumberFormatter",
     "container": "category",
     "category": "NSNumberFormatterCompatibility",
@@ -6176,6 +6616,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObject.h": [
    {
     "kind": "property",
+    "name": "supportsSecureCoding",
     "class": "NSSecureCoding",
     "container": "protocol",
     "category": null,
@@ -6187,6 +6628,7 @@
    },
    {
     "kind": "property",
+    "name": "classForCoder",
     "class": "NSObject",
     "container": "category",
     "category": "NSCoderMethods",
@@ -6198,6 +6640,7 @@
    },
    {
     "kind": "property",
+    "name": "autoContentAccessingProxy",
     "class": "NSObject",
     "container": "category",
     "category": "NSDiscardableContentProxy",
@@ -6211,6 +6654,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSObjectScripting.h": [
    {
     "kind": "property",
+    "name": "scriptingProperties",
     "class": "NSObject",
     "container": "category",
     "category": "NSScripting",
@@ -6224,6 +6668,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOperation.h": [
    {
     "kind": "property",
+    "name": "cancelled",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6235,6 +6680,7 @@
    },
    {
     "kind": "property",
+    "name": "executing",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6246,6 +6692,7 @@
    },
    {
     "kind": "property",
+    "name": "finished",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6257,6 +6704,7 @@
    },
    {
     "kind": "property",
+    "name": "concurrent",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6268,6 +6716,7 @@
    },
    {
     "kind": "property",
+    "name": "ready",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6279,6 +6728,7 @@
    },
    {
     "kind": "property",
+    "name": "dependencies",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6290,6 +6740,7 @@
    },
    {
     "kind": "property",
+    "name": "queuePriority",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6301,6 +6752,7 @@
    },
    {
     "kind": "property",
+    "name": "threadPriority",
     "class": "NSOperation",
     "container": "interface",
     "category": null,
@@ -6312,6 +6764,7 @@
    },
    {
     "kind": "property",
+    "name": "executionBlocks",
     "class": "NSBlockOperation",
     "container": "interface",
     "category": null,
@@ -6323,6 +6776,7 @@
    },
    {
     "kind": "property",
+    "name": "invocation",
     "class": "NSInvocationOperation",
     "container": "interface",
     "category": null,
@@ -6334,6 +6788,7 @@
    },
    {
     "kind": "property",
+    "name": "result",
     "class": "NSInvocationOperation",
     "container": "interface",
     "category": null,
@@ -6345,6 +6800,7 @@
    },
    {
     "kind": "property",
+    "name": "operations",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6356,6 +6812,7 @@
    },
    {
     "kind": "property",
+    "name": "operationCount",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6367,6 +6824,7 @@
    },
    {
     "kind": "property",
+    "name": "maxConcurrentOperationCount",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6378,6 +6836,7 @@
    },
    {
     "kind": "property",
+    "name": "suspended",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6389,6 +6848,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6400,6 +6860,7 @@
    },
    {
     "kind": "property",
+    "name": "currentQueue",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6411,6 +6872,7 @@
    },
    {
     "kind": "property",
+    "name": "mainQueue",
     "class": "NSOperationQueue",
     "container": "interface",
     "category": null,
@@ -6424,6 +6886,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOrderedSet.h": [
    {
     "kind": "property",
+    "name": "count",
     "class": "NSOrderedSet",
     "container": "interface",
     "category": null,
@@ -6435,6 +6898,7 @@
    },
    {
     "kind": "property",
+    "name": "firstObject",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6446,6 +6910,7 @@
    },
    {
     "kind": "property",
+    "name": "lastObject",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6457,6 +6922,7 @@
    },
    {
     "kind": "property",
+    "name": "reversedOrderedSet",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6468,6 +6934,7 @@
    },
    {
     "kind": "property",
+    "name": "array",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6479,6 +6946,7 @@
    },
    {
     "kind": "property",
+    "name": "set",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6490,6 +6958,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSOrderedSet",
     "container": "category",
     "category": "NSExtendedOrderedSet",
@@ -6503,6 +6972,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPathUtilities.h": [
    {
     "kind": "property",
+    "name": "pathComponents",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6514,6 +6984,7 @@
    },
    {
     "kind": "property",
+    "name": "absolutePath",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6525,6 +6996,7 @@
    },
    {
     "kind": "property",
+    "name": "lastPathComponent",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6536,6 +7008,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByDeletingLastPathComponent",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6547,6 +7020,7 @@
    },
    {
     "kind": "property",
+    "name": "pathExtension",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6558,6 +7032,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByDeletingPathExtension",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6569,6 +7044,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByAbbreviatingWithTildeInPath",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6580,6 +7056,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByExpandingTildeInPath",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6591,6 +7068,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByStandardizingPath",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6602,6 +7080,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByResolvingSymlinksInPath",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6613,6 +7092,7 @@
    },
    {
     "kind": "property",
+    "name": "fileSystemRepresentation",
     "class": "NSString",
     "container": "category",
     "category": "NSStringPathExtensions",
@@ -6626,6 +7106,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPointerArray.h": [
    {
     "kind": "property",
+    "name": "pointerFunctions",
     "class": "NSPointerArray",
     "container": "interface",
     "category": null,
@@ -6637,6 +7118,7 @@
    },
    {
     "kind": "property",
+    "name": "count",
     "class": "NSPointerArray",
     "container": "interface",
     "category": null,
@@ -6648,6 +7130,7 @@
    },
    {
     "kind": "property",
+    "name": "allObjects",
     "class": "NSPointerArray",
     "container": "category",
     "category": "NSPointerArrayConveniences",
@@ -6672,6 +7155,7 @@
    },
    {
     "kind": "property",
+    "name": "valid",
     "class": "NSPort",
     "container": "interface",
     "category": null,
@@ -6683,6 +7167,7 @@
    },
    {
     "kind": "property",
+    "name": "reservedSpaceLength",
     "class": "NSPort",
     "container": "interface",
     "category": null,
@@ -6694,6 +7179,7 @@
    },
    {
     "kind": "property",
+    "name": "machPort",
     "class": "NSMachPort",
     "container": "interface",
     "category": null,
@@ -6705,6 +7191,7 @@
    },
    {
     "kind": "property",
+    "name": "protocolFamily",
     "class": "NSSocketPort",
     "container": "interface",
     "category": null,
@@ -6716,6 +7203,7 @@
    },
    {
     "kind": "property",
+    "name": "socketType",
     "class": "NSSocketPort",
     "container": "interface",
     "category": null,
@@ -6727,6 +7215,7 @@
    },
    {
     "kind": "property",
+    "name": "protocol",
     "class": "NSSocketPort",
     "container": "interface",
     "category": null,
@@ -6738,6 +7227,7 @@
    },
    {
     "kind": "property",
+    "name": "address",
     "class": "NSSocketPort",
     "container": "interface",
     "category": null,
@@ -6749,6 +7239,7 @@
    },
    {
     "kind": "property",
+    "name": "socket",
     "class": "NSSocketPort",
     "container": "interface",
     "category": null,
@@ -6762,6 +7253,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPortCoder.h": [
    {
     "kind": "property",
+    "name": "classForPortCoder",
     "class": "NSObject",
     "container": "category",
     "category": "NSDistributedObjects",
@@ -6775,6 +7267,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPortMessage.h": [
    {
     "kind": "property",
+    "name": "components",
     "class": "NSPortMessage",
     "container": "interface",
     "category": null,
@@ -6786,6 +7279,7 @@
    },
    {
     "kind": "property",
+    "name": "receivePort",
     "class": "NSPortMessage",
     "container": "interface",
     "category": null,
@@ -6797,6 +7291,7 @@
    },
    {
     "kind": "property",
+    "name": "sendPort",
     "class": "NSPortMessage",
     "container": "interface",
     "category": null,
@@ -6808,6 +7303,7 @@
    },
    {
     "kind": "property",
+    "name": "msgid",
     "class": "NSPortMessage",
     "container": "interface",
     "category": null,
@@ -6821,6 +7317,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPortNameServer.h": [
    {
     "kind": "property",
+    "name": "defaultNameServerPortNumber",
     "class": "NSSocketPortNameServer",
     "container": "interface",
     "category": null,
@@ -6834,6 +7331,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPredicate.h": [
    {
     "kind": "property",
+    "name": "predicateFormat",
     "class": "NSPredicate",
     "container": "interface",
     "category": null,
@@ -6847,6 +7345,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProcessInfo.h": [
    {
     "kind": "property",
+    "name": "processInfo",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6858,6 +7357,7 @@
    },
    {
     "kind": "property",
+    "name": "environment",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6869,6 +7369,7 @@
    },
    {
     "kind": "property",
+    "name": "arguments",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6880,6 +7381,7 @@
    },
    {
     "kind": "property",
+    "name": "hostName",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6891,6 +7393,7 @@
    },
    {
     "kind": "property",
+    "name": "processName",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6902,6 +7405,7 @@
    },
    {
     "kind": "property",
+    "name": "processIdentifier",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6913,6 +7417,7 @@
    },
    {
     "kind": "property",
+    "name": "globallyUniqueString",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6924,6 +7429,7 @@
    },
    {
     "kind": "property",
+    "name": "operatingSystemVersionString",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6935,6 +7441,7 @@
    },
    {
     "kind": "property",
+    "name": "processorCount",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6946,6 +7453,7 @@
    },
    {
     "kind": "property",
+    "name": "activeProcessorCount",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6957,6 +7465,7 @@
    },
    {
     "kind": "property",
+    "name": "physicalMemory",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6968,6 +7477,7 @@
    },
    {
     "kind": "property",
+    "name": "systemUptime",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6979,6 +7489,7 @@
    },
    {
     "kind": "property",
+    "name": "automaticTerminationSupportEnabled",
     "class": "NSProcessInfo",
     "container": "interface",
     "category": null,
@@ -6992,6 +7503,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProgress.h": [
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSProgress",
     "container": "interface",
     "category": null,
@@ -7086,6 +7598,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProtocolChecker.h": [
    {
     "kind": "property",
+    "name": "protocol",
     "class": "NSProtocolChecker",
     "container": "interface",
     "category": null,
@@ -7097,6 +7610,7 @@
    },
    {
     "kind": "property",
+    "name": "target",
     "class": "NSProtocolChecker",
     "container": "interface",
     "category": null,
@@ -7110,6 +7624,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProxy.h": [
    {
     "kind": "property",
+    "name": "description",
     "class": "NSProxy",
     "container": "interface",
     "category": null,
@@ -7121,6 +7636,7 @@
    },
    {
     "kind": "property",
+    "name": "debugDescription",
     "class": "NSProxy",
     "container": "interface",
     "category": null,
@@ -7134,6 +7650,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSRange.h": [
    {
     "kind": "property",
+    "name": "rangeValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueRangeExtensions",
@@ -7147,6 +7664,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSRunLoop.h": [
    {
     "kind": "property",
+    "name": "currentRunLoop",
     "class": "NSRunLoop",
     "container": "interface",
     "category": null,
@@ -7158,6 +7676,7 @@
    },
    {
     "kind": "property",
+    "name": "mainRunLoop",
     "class": "NSRunLoop",
     "container": "interface",
     "category": null,
@@ -7169,6 +7688,7 @@
    },
    {
     "kind": "property",
+    "name": "currentMode",
     "class": "NSRunLoop",
     "container": "interface",
     "category": null,
@@ -7182,6 +7702,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScanner.h": [
    {
     "kind": "property",
+    "name": "string",
     "class": "NSScanner",
     "container": "interface",
     "category": null,
@@ -7193,6 +7714,7 @@
    },
    {
     "kind": "property",
+    "name": "scanLocation",
     "class": "NSScanner",
     "container": "interface",
     "category": null,
@@ -7204,6 +7726,7 @@
    },
    {
     "kind": "property",
+    "name": "charactersToBeSkipped",
     "class": "NSScanner",
     "container": "category",
     "category": "NSExtendedScanner",
@@ -7215,6 +7738,7 @@
    },
    {
     "kind": "property",
+    "name": "caseSensitive",
     "class": "NSScanner",
     "container": "category",
     "category": "NSExtendedScanner",
@@ -7226,6 +7750,7 @@
    },
    {
     "kind": "property",
+    "name": "locale",
     "class": "NSScanner",
     "container": "category",
     "category": "NSExtendedScanner",
@@ -7237,6 +7762,7 @@
    },
    {
     "kind": "property",
+    "name": "atEnd",
     "class": "NSScanner",
     "container": "category",
     "category": "NSExtendedScanner",
@@ -7250,6 +7776,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptClassDescription.h": [
    {
     "kind": "property",
+    "name": "suiteName",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7261,6 +7788,7 @@
    },
    {
     "kind": "property",
+    "name": "className",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7272,6 +7800,7 @@
    },
    {
     "kind": "property",
+    "name": "implementationClassName",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7283,6 +7812,7 @@
    },
    {
     "kind": "property",
+    "name": "superclassDescription",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7294,6 +7824,7 @@
    },
    {
     "kind": "property",
+    "name": "appleEventCode",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7305,6 +7836,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultSubcontainerAttributeKey",
     "class": "NSScriptClassDescription",
     "container": "interface",
     "category": null,
@@ -7316,6 +7848,7 @@
    },
    {
     "kind": "property",
+    "name": "classCode",
     "class": "NSObject",
     "container": "category",
     "category": "NSScriptClassDescription",
@@ -7327,6 +7860,7 @@
    },
    {
     "kind": "property",
+    "name": "className",
     "class": "NSObject",
     "container": "category",
     "category": "NSScriptClassDescription",
@@ -7340,6 +7874,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptCommand.h": [
    {
     "kind": "property",
+    "name": "commandDescription",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7351,6 +7886,7 @@
    },
    {
     "kind": "property",
+    "name": "directParameter",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7362,6 +7898,7 @@
    },
    {
     "kind": "property",
+    "name": "receiversSpecifier",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7373,6 +7910,7 @@
    },
    {
     "kind": "property",
+    "name": "evaluatedReceivers",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7384,6 +7922,7 @@
    },
    {
     "kind": "property",
+    "name": "arguments",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7395,6 +7934,7 @@
    },
    {
     "kind": "property",
+    "name": "evaluatedArguments",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7406,6 +7946,7 @@
    },
    {
     "kind": "property",
+    "name": "wellFormed",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7417,6 +7958,7 @@
    },
    {
     "kind": "property",
+    "name": "scriptErrorNumber",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7428,6 +7970,7 @@
    },
    {
     "kind": "property",
+    "name": "scriptErrorOffendingObjectDescriptor",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7439,6 +7982,7 @@
    },
    {
     "kind": "property",
+    "name": "scriptErrorExpectedTypeDescriptor",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7450,6 +7994,7 @@
    },
    {
     "kind": "property",
+    "name": "scriptErrorString",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7461,6 +8006,7 @@
    },
    {
     "kind": "property",
+    "name": "appleEvent",
     "class": "NSScriptCommand",
     "container": "interface",
     "category": null,
@@ -7474,6 +8020,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptCommandDescription.h": [
    {
     "kind": "property",
+    "name": "suiteName",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7485,6 +8032,7 @@
    },
    {
     "kind": "property",
+    "name": "commandName",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7496,6 +8044,7 @@
    },
    {
     "kind": "property",
+    "name": "appleEventClassCode",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7507,6 +8056,7 @@
    },
    {
     "kind": "property",
+    "name": "appleEventCode",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7518,6 +8068,7 @@
    },
    {
     "kind": "property",
+    "name": "commandClassName",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7529,6 +8080,7 @@
    },
    {
     "kind": "property",
+    "name": "returnType",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7540,6 +8092,7 @@
    },
    {
     "kind": "property",
+    "name": "appleEventCodeForReturnType",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7551,6 +8104,7 @@
    },
    {
     "kind": "property",
+    "name": "argumentNames",
     "class": "NSScriptCommandDescription",
     "container": "interface",
     "category": null,
@@ -7564,6 +8118,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptExecutionContext.h": [
    {
     "kind": "property",
+    "name": "topLevelObject",
     "class": "NSScriptExecutionContext",
     "container": "interface",
     "category": null,
@@ -7575,6 +8130,7 @@
    },
    {
     "kind": "property",
+    "name": "objectBeingTested",
     "class": "NSScriptExecutionContext",
     "container": "interface",
     "category": null,
@@ -7586,6 +8142,7 @@
    },
    {
     "kind": "property",
+    "name": "rangeContainerObject",
     "class": "NSScriptExecutionContext",
     "container": "interface",
     "category": null,
@@ -7599,6 +8156,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptObjectSpecifiers.h": [
    {
     "kind": "property",
+    "name": "childSpecifier",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7610,6 +8168,7 @@
    },
    {
     "kind": "property",
+    "name": "containerSpecifier",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7621,6 +8180,7 @@
    },
    {
     "kind": "property",
+    "name": "containerIsObjectBeingTested",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7632,6 +8192,7 @@
    },
    {
     "kind": "property",
+    "name": "containerIsRangeContainerObject",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7643,6 +8204,7 @@
    },
    {
     "kind": "property",
+    "name": "key",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7654,6 +8216,7 @@
    },
    {
     "kind": "property",
+    "name": "containerClassDescription",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7665,6 +8228,7 @@
    },
    {
     "kind": "property",
+    "name": "keyClassDescription",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7676,6 +8240,7 @@
    },
    {
     "kind": "property",
+    "name": "objectsByEvaluatingSpecifier",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7687,6 +8252,7 @@
    },
    {
     "kind": "property",
+    "name": "evaluationErrorNumber",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7698,6 +8264,7 @@
    },
    {
     "kind": "property",
+    "name": "evaluationErrorSpecifier",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7709,6 +8276,7 @@
    },
    {
     "kind": "property",
+    "name": "descriptor",
     "class": "NSScriptObjectSpecifier",
     "container": "interface",
     "category": null,
@@ -7720,6 +8288,7 @@
    },
    {
     "kind": "property",
+    "name": "objectSpecifier",
     "class": "NSObject",
     "container": "category",
     "category": "NSScriptObjectSpecifiers",
@@ -7731,6 +8300,7 @@
    },
    {
     "kind": "property",
+    "name": "index",
     "class": "NSIndexSpecifier",
     "container": "interface",
     "category": null,
@@ -7742,6 +8312,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSNameSpecifier",
     "container": "interface",
     "category": null,
@@ -7753,6 +8324,7 @@
    },
    {
     "kind": "property",
+    "name": "position",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7764,6 +8336,7 @@
    },
    {
     "kind": "property",
+    "name": "objectSpecifier",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7775,6 +8348,7 @@
    },
    {
     "kind": "property",
+    "name": "insertionContainer",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7786,6 +8360,7 @@
    },
    {
     "kind": "property",
+    "name": "insertionKey",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7797,6 +8372,7 @@
    },
    {
     "kind": "property",
+    "name": "insertionIndex",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7808,6 +8384,7 @@
    },
    {
     "kind": "property",
+    "name": "insertionReplaces",
     "class": "NSPositionalSpecifier",
     "container": "interface",
     "category": null,
@@ -7819,6 +8396,7 @@
    },
    {
     "kind": "property",
+    "name": "startSpecifier",
     "class": "NSRangeSpecifier",
     "container": "interface",
     "category": null,
@@ -7830,6 +8408,7 @@
    },
    {
     "kind": "property",
+    "name": "endSpecifier",
     "class": "NSRangeSpecifier",
     "container": "interface",
     "category": null,
@@ -7841,6 +8420,7 @@
    },
    {
     "kind": "property",
+    "name": "relativePosition",
     "class": "NSRelativeSpecifier",
     "container": "interface",
     "category": null,
@@ -7852,6 +8432,7 @@
    },
    {
     "kind": "property",
+    "name": "baseSpecifier",
     "class": "NSRelativeSpecifier",
     "container": "interface",
     "category": null,
@@ -7863,6 +8444,7 @@
    },
    {
     "kind": "property",
+    "name": "uniqueID",
     "class": "NSUniqueIDSpecifier",
     "container": "interface",
     "category": null,
@@ -7874,6 +8456,7 @@
    },
    {
     "kind": "property",
+    "name": "test",
     "class": "NSWhoseSpecifier",
     "container": "interface",
     "category": null,
@@ -7885,6 +8468,7 @@
    },
    {
     "kind": "property",
+    "name": "startSubelementIdentifier",
     "class": "NSWhoseSpecifier",
     "container": "interface",
     "category": null,
@@ -7896,6 +8480,7 @@
    },
    {
     "kind": "property",
+    "name": "startSubelementIndex",
     "class": "NSWhoseSpecifier",
     "container": "interface",
     "category": null,
@@ -7907,6 +8492,7 @@
    },
    {
     "kind": "property",
+    "name": "endSubelementIdentifier",
     "class": "NSWhoseSpecifier",
     "container": "interface",
     "category": null,
@@ -7918,6 +8504,7 @@
    },
    {
     "kind": "property",
+    "name": "endSubelementIndex",
     "class": "NSWhoseSpecifier",
     "container": "interface",
     "category": null,
@@ -7931,6 +8518,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptStandardSuiteCommands.h": [
    {
     "kind": "property",
+    "name": "keySpecifier",
     "class": "NSCloneCommand",
     "container": "interface",
     "category": null,
@@ -7942,6 +8530,7 @@
    },
    {
     "kind": "property",
+    "name": "saveOptions",
     "class": "NSCloseCommand",
     "container": "interface",
     "category": null,
@@ -7953,6 +8542,7 @@
    },
    {
     "kind": "property",
+    "name": "createClassDescription",
     "class": "NSCreateCommand",
     "container": "interface",
     "category": null,
@@ -7964,6 +8554,7 @@
    },
    {
     "kind": "property",
+    "name": "resolvedKeyDictionary",
     "class": "NSCreateCommand",
     "container": "interface",
     "category": null,
@@ -7975,6 +8566,7 @@
    },
    {
     "kind": "property",
+    "name": "keySpecifier",
     "class": "NSDeleteCommand",
     "container": "interface",
     "category": null,
@@ -7986,6 +8578,7 @@
    },
    {
     "kind": "property",
+    "name": "keySpecifier",
     "class": "NSMoveCommand",
     "container": "interface",
     "category": null,
@@ -7997,6 +8590,7 @@
    },
    {
     "kind": "property",
+    "name": "saveOptions",
     "class": "NSQuitCommand",
     "container": "interface",
     "category": null,
@@ -8008,6 +8602,7 @@
    },
    {
     "kind": "property",
+    "name": "keySpecifier",
     "class": "NSSetCommand",
     "container": "interface",
     "category": null,
@@ -8021,6 +8616,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSScriptSuiteRegistry.h": [
    {
     "kind": "property",
+    "name": "suiteNames",
     "class": "NSScriptSuiteRegistry",
     "container": "interface",
     "category": null,
@@ -8034,6 +8630,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSSet.h": [
    {
     "kind": "property",
+    "name": "count",
     "class": "NSSet",
     "container": "interface",
     "category": null,
@@ -8045,6 +8642,7 @@
    },
    {
     "kind": "property",
+    "name": "allObjects",
     "class": "NSSet",
     "container": "category",
     "category": "NSExtendedSet",
@@ -8056,6 +8654,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSSet",
     "container": "category",
     "category": "NSExtendedSet",
@@ -8069,6 +8668,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSSortDescriptor.h": [
    {
     "kind": "property",
+    "name": "key",
     "class": "NSSortDescriptor",
     "container": "interface",
     "category": null,
@@ -8080,6 +8680,7 @@
    },
    {
     "kind": "property",
+    "name": "ascending",
     "class": "NSSortDescriptor",
     "container": "interface",
     "category": null,
@@ -8091,6 +8692,7 @@
    },
    {
     "kind": "property",
+    "name": "selector",
     "class": "NSSortDescriptor",
     "container": "interface",
     "category": null,
@@ -8102,6 +8704,7 @@
    },
    {
     "kind": "property",
+    "name": "comparator",
     "class": "NSSortDescriptor",
     "container": "interface",
     "category": null,
@@ -8113,6 +8716,7 @@
    },
    {
     "kind": "property",
+    "name": "reversedSortDescriptor",
     "class": "NSSortDescriptor",
     "container": "interface",
     "category": null,
@@ -8126,6 +8730,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSSpellServer.h": [
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSSpellServer",
     "container": "interface",
     "category": null,
@@ -8139,6 +8744,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSStream.h": [
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSStream",
     "container": "interface",
     "category": null,
@@ -8150,6 +8756,7 @@
    },
    {
     "kind": "property",
+    "name": "streamStatus",
     "class": "NSStream",
     "container": "interface",
     "category": null,
@@ -8161,6 +8768,7 @@
    },
    {
     "kind": "property",
+    "name": "streamError",
     "class": "NSStream",
     "container": "interface",
     "category": null,
@@ -8172,6 +8780,7 @@
    },
    {
     "kind": "property",
+    "name": "hasBytesAvailable",
     "class": "NSInputStream",
     "container": "interface",
     "category": null,
@@ -8183,6 +8792,7 @@
    },
    {
     "kind": "property",
+    "name": "hasSpaceAvailable",
     "class": "NSOutputStream",
     "container": "interface",
     "category": null,
@@ -8248,6 +8858,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSString.h": [
    {
     "kind": "property",
+    "name": "length",
     "class": "NSString",
     "container": "interface",
     "category": null,
@@ -8264,6 +8875,7 @@
    },
    {
     "kind": "property",
+    "name": "doubleValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8275,6 +8887,7 @@
    },
    {
     "kind": "property",
+    "name": "floatValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8286,6 +8899,7 @@
    },
    {
     "kind": "property",
+    "name": "intValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8297,6 +8911,7 @@
    },
    {
     "kind": "property",
+    "name": "integerValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8308,6 +8923,7 @@
    },
    {
     "kind": "property",
+    "name": "longLongValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8319,6 +8935,7 @@
    },
    {
     "kind": "property",
+    "name": "boolValue",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8342,6 +8959,7 @@
    },
    {
     "kind": "property",
+    "name": "uppercaseString",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8353,6 +8971,7 @@
    },
    {
     "kind": "property",
+    "name": "lowercaseString",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8364,6 +8983,7 @@
    },
    {
     "kind": "property",
+    "name": "capitalizedString",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8375,6 +8995,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8386,6 +9007,7 @@
    },
    {
     "kind": "property",
+    "name": "hash",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8397,6 +9019,7 @@
    },
    {
     "kind": "property",
+    "name": "fastestEncoding",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8408,6 +9031,7 @@
    },
    {
     "kind": "property",
+    "name": "smallestEncoding",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8419,6 +9043,7 @@
    },
    {
     "kind": "property",
+    "name": "decomposedStringWithCanonicalMapping",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8430,6 +9055,7 @@
    },
    {
     "kind": "property",
+    "name": "precomposedStringWithCanonicalMapping",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8441,6 +9067,7 @@
    },
    {
     "kind": "property",
+    "name": "decomposedStringWithCompatibilityMapping",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8452,6 +9079,7 @@
    },
    {
     "kind": "property",
+    "name": "precomposedStringWithCompatibilityMapping",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8463,6 +9091,7 @@
    },
    {
     "kind": "property",
+    "name": "UTF8String",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8474,6 +9103,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultCStringEncoding",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8485,6 +9115,7 @@
    },
    {
     "kind": "property",
+    "name": "availableStringEncodings",
     "class": "NSString",
     "container": "category",
     "category": "NSStringExtensionMethods",
@@ -8498,6 +9129,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTask.h": [
    {
     "kind": "property",
+    "name": "launchPath",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8509,6 +9141,7 @@
    },
    {
     "kind": "property",
+    "name": "arguments",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8520,6 +9153,7 @@
    },
    {
     "kind": "property",
+    "name": "environment",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8531,6 +9165,7 @@
    },
    {
     "kind": "property",
+    "name": "currentDirectoryPath",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8542,6 +9177,7 @@
    },
    {
     "kind": "property",
+    "name": "standardInput",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8553,6 +9189,7 @@
    },
    {
     "kind": "property",
+    "name": "standardOutput",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8564,6 +9201,7 @@
    },
    {
     "kind": "property",
+    "name": "standardError",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8575,6 +9213,7 @@
    },
    {
     "kind": "property",
+    "name": "processIdentifier",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8586,6 +9225,7 @@
    },
    {
     "kind": "property",
+    "name": "running",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8597,6 +9237,7 @@
    },
    {
     "kind": "property",
+    "name": "terminationStatus",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8608,6 +9249,7 @@
    },
    {
     "kind": "property",
+    "name": "terminationReason",
     "class": "NSTask",
     "container": "interface",
     "category": null,
@@ -8632,6 +9274,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThread.h": [
    {
     "kind": "property",
+    "name": "currentThread",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8643,6 +9286,7 @@
    },
    {
     "kind": "property",
+    "name": "threadDictionary",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8654,6 +9298,7 @@
    },
    {
     "kind": "property",
+    "name": "threadPriority",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8665,6 +9310,7 @@
    },
    {
     "kind": "property",
+    "name": "callStackReturnAddresses",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8676,6 +9322,7 @@
    },
    {
     "kind": "property",
+    "name": "callStackSymbols",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8687,6 +9334,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8698,6 +9346,7 @@
    },
    {
     "kind": "property",
+    "name": "stackSize",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8709,6 +9358,7 @@
    },
    {
     "kind": "property",
+    "name": "isMainThread",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8720,6 +9370,7 @@
    },
    {
     "kind": "property",
+    "name": "isMainThread",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8731,6 +9382,7 @@
    },
    {
     "kind": "property",
+    "name": "mainThread",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8742,6 +9394,7 @@
    },
    {
     "kind": "property",
+    "name": "executing",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8753,6 +9406,7 @@
    },
    {
     "kind": "property",
+    "name": "finished",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8764,6 +9418,7 @@
    },
    {
     "kind": "property",
+    "name": "cancelled",
     "class": "NSThread",
     "container": "interface",
     "category": null,
@@ -8800,6 +9455,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimeZone.h": [
    {
     "kind": "property",
+    "name": "name",
     "class": "NSTimeZone",
     "container": "interface",
     "category": null,
@@ -8811,6 +9467,7 @@
    },
    {
     "kind": "property",
+    "name": "data",
     "class": "NSTimeZone",
     "container": "interface",
     "category": null,
@@ -8822,6 +9479,7 @@
    },
    {
     "kind": "property",
+    "name": "systemTimeZone",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8833,6 +9491,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultTimeZone",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8844,6 +9503,7 @@
    },
    {
     "kind": "property",
+    "name": "localTimeZone",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8855,6 +9515,7 @@
    },
    {
     "kind": "property",
+    "name": "knownTimeZoneNames",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8866,6 +9527,7 @@
    },
    {
     "kind": "property",
+    "name": "abbreviationDictionary",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8877,6 +9539,7 @@
    },
    {
     "kind": "property",
+    "name": "timeZoneDataVersion",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8888,6 +9551,7 @@
    },
    {
     "kind": "property",
+    "name": "secondsFromGMT",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8899,6 +9563,7 @@
    },
    {
     "kind": "property",
+    "name": "abbreviation",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8910,6 +9575,7 @@
    },
    {
     "kind": "property",
+    "name": "daylightSavingTime",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8921,6 +9587,7 @@
    },
    {
     "kind": "property",
+    "name": "daylightSavingTimeOffset",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8932,6 +9599,7 @@
    },
    {
     "kind": "property",
+    "name": "nextDaylightSavingTimeTransition",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8943,6 +9611,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSTimeZone",
     "container": "category",
     "category": "NSExtendedTimeZone",
@@ -8967,6 +9636,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimer.h": [
    {
     "kind": "property",
+    "name": "fireDate",
     "class": "NSTimer",
     "container": "interface",
     "category": null,
@@ -8978,6 +9648,7 @@
    },
    {
     "kind": "property",
+    "name": "timeInterval",
     "class": "NSTimer",
     "container": "interface",
     "category": null,
@@ -8989,6 +9660,7 @@
    },
    {
     "kind": "property",
+    "name": "tolerance",
     "class": "NSTimer",
     "container": "interface",
     "category": null,
@@ -9000,6 +9672,7 @@
    },
    {
     "kind": "property",
+    "name": "valid",
     "class": "NSTimer",
     "container": "interface",
     "category": null,
@@ -9011,6 +9684,7 @@
    },
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSTimer",
     "container": "interface",
     "category": null,
@@ -9024,6 +9698,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURL.h": [
    {
     "kind": "property",
+    "name": "absoluteString",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9035,6 +9710,7 @@
    },
    {
     "kind": "property",
+    "name": "relativeString",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9046,6 +9722,7 @@
    },
    {
     "kind": "property",
+    "name": "baseURL",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9057,6 +9734,7 @@
    },
    {
     "kind": "property",
+    "name": "absoluteURL",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9068,6 +9746,7 @@
    },
    {
     "kind": "property",
+    "name": "scheme",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9079,6 +9758,7 @@
    },
    {
     "kind": "property",
+    "name": "resourceSpecifier",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9090,6 +9770,7 @@
    },
    {
     "kind": "property",
+    "name": "host",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9101,6 +9782,7 @@
    },
    {
     "kind": "property",
+    "name": "port",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9112,6 +9794,7 @@
    },
    {
     "kind": "property",
+    "name": "user",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9123,6 +9806,7 @@
    },
    {
     "kind": "property",
+    "name": "password",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9134,6 +9818,7 @@
    },
    {
     "kind": "property",
+    "name": "path",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9145,6 +9830,7 @@
    },
    {
     "kind": "property",
+    "name": "fragment",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9156,6 +9842,7 @@
    },
    {
     "kind": "property",
+    "name": "parameterString",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9167,6 +9854,7 @@
    },
    {
     "kind": "property",
+    "name": "query",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9178,6 +9866,7 @@
    },
    {
     "kind": "property",
+    "name": "relativePath",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9189,6 +9878,7 @@
    },
    {
     "kind": "property",
+    "name": "fileSystemRepresentation",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9200,6 +9890,7 @@
    },
    {
     "kind": "property",
+    "name": "fileURL",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9211,6 +9902,7 @@
    },
    {
     "kind": "property",
+    "name": "standardizedURL",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9222,6 +9914,7 @@
    },
    {
     "kind": "property",
+    "name": "filePathURL",
     "class": "NSURL",
     "container": "interface",
     "category": null,
@@ -9818,6 +10511,7 @@
    },
    {
     "kind": "property",
+    "name": "URL",
     "class": "NSURLComponents",
     "container": "interface",
     "category": null,
@@ -9829,6 +10523,7 @@
    },
    {
     "kind": "property",
+    "name": "URLUserAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9840,6 +10535,7 @@
    },
    {
     "kind": "property",
+    "name": "URLPasswordAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9851,6 +10547,7 @@
    },
    {
     "kind": "property",
+    "name": "URLHostAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9862,6 +10559,7 @@
    },
    {
     "kind": "property",
+    "name": "URLPathAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9873,6 +10571,7 @@
    },
    {
     "kind": "property",
+    "name": "URLQueryAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9884,6 +10583,7 @@
    },
    {
     "kind": "property",
+    "name": "URLFragmentAllowedCharacterSet",
     "class": "NSCharacterSet",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9895,6 +10595,7 @@
    },
    {
     "kind": "property",
+    "name": "stringByRemovingPercentEncoding",
     "class": "NSString",
     "container": "category",
     "category": "NSURLUtilities",
@@ -9916,6 +10617,7 @@
    },
    {
     "kind": "property",
+    "name": "pathComponents",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9927,6 +10629,7 @@
    },
    {
     "kind": "property",
+    "name": "lastPathComponent",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9938,6 +10641,7 @@
    },
    {
     "kind": "property",
+    "name": "pathExtension",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9949,6 +10653,7 @@
    },
    {
     "kind": "property",
+    "name": "URLByDeletingLastPathComponent",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9960,6 +10665,7 @@
    },
    {
     "kind": "property",
+    "name": "URLByDeletingPathExtension",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9971,6 +10677,7 @@
    },
    {
     "kind": "property",
+    "name": "URLByStandardizingPath",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9982,6 +10689,7 @@
    },
    {
     "kind": "property",
+    "name": "URLByResolvingSymlinksInPath",
     "class": "NSURL",
     "container": "category",
     "category": "NSURLPathUtilities",
@@ -9995,6 +10703,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLAuthenticationChallenge.h": [
    {
     "kind": "property",
+    "name": "protectionSpace",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10006,6 +10715,7 @@
    },
    {
     "kind": "property",
+    "name": "proposedCredential",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10017,6 +10727,7 @@
    },
    {
     "kind": "property",
+    "name": "previousFailureCount",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10028,6 +10739,7 @@
    },
    {
     "kind": "property",
+    "name": "failureResponse",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10039,6 +10751,7 @@
    },
    {
     "kind": "property",
+    "name": "error",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10050,6 +10763,7 @@
    },
    {
     "kind": "property",
+    "name": "sender",
     "class": "NSURLAuthenticationChallenge",
     "container": "interface",
     "category": null,
@@ -10063,6 +10777,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLCache.h": [
    {
     "kind": "property",
+    "name": "response",
     "class": "NSCachedURLResponse",
     "container": "interface",
     "category": null,
@@ -10074,6 +10789,7 @@
    },
    {
     "kind": "property",
+    "name": "data",
     "class": "NSCachedURLResponse",
     "container": "interface",
     "category": null,
@@ -10085,6 +10801,7 @@
    },
    {
     "kind": "property",
+    "name": "userInfo",
     "class": "NSCachedURLResponse",
     "container": "interface",
     "category": null,
@@ -10096,6 +10813,7 @@
    },
    {
     "kind": "property",
+    "name": "storagePolicy",
     "class": "NSCachedURLResponse",
     "container": "interface",
     "category": null,
@@ -10107,6 +10825,7 @@
    },
    {
     "kind": "property",
+    "name": "sharedURLCache",
     "class": "NSURLCache",
     "container": "interface",
     "category": null,
@@ -10118,6 +10837,7 @@
    },
    {
     "kind": "property",
+    "name": "memoryCapacity",
     "class": "NSURLCache",
     "container": "interface",
     "category": null,
@@ -10129,6 +10849,7 @@
    },
    {
     "kind": "property",
+    "name": "diskCapacity",
     "class": "NSURLCache",
     "container": "interface",
     "category": null,
@@ -10140,6 +10861,7 @@
    },
    {
     "kind": "property",
+    "name": "currentMemoryUsage",
     "class": "NSURLCache",
     "container": "interface",
     "category": null,
@@ -10151,6 +10873,7 @@
    },
    {
     "kind": "property",
+    "name": "currentDiskUsage",
     "class": "NSURLCache",
     "container": "interface",
     "category": null,
@@ -10164,6 +10887,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLConnection.h": [
    {
     "kind": "property",
+    "name": "originalRequest",
     "class": "NSURLConnection",
     "container": "interface",
     "category": null,
@@ -10175,6 +10899,7 @@
    },
    {
     "kind": "property",
+    "name": "currentRequest",
     "class": "NSURLConnection",
     "container": "interface",
     "category": null,
@@ -10188,6 +10913,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLCredential.h": [
    {
     "kind": "property",
+    "name": "persistence",
     "class": "NSURLCredential",
     "container": "interface",
     "category": null,
@@ -10199,6 +10925,7 @@
    },
    {
     "kind": "property",
+    "name": "user",
     "class": "NSURLCredential",
     "container": "category",
     "category": "NSInternetPassword",
@@ -10210,6 +10937,7 @@
    },
    {
     "kind": "property",
+    "name": "password",
     "class": "NSURLCredential",
     "container": "category",
     "category": "NSInternetPassword",
@@ -10221,6 +10949,7 @@
    },
    {
     "kind": "property",
+    "name": "hasPassword",
     "class": "NSURLCredential",
     "container": "category",
     "category": "NSInternetPassword",
@@ -10232,6 +10961,7 @@
    },
    {
     "kind": "property",
+    "name": "identity",
     "class": "NSURLCredential",
     "container": "category",
     "category": "NSClientCertificate",
@@ -10243,6 +10973,7 @@
    },
    {
     "kind": "property",
+    "name": "certificates",
     "class": "NSURLCredential",
     "container": "category",
     "category": "NSClientCertificate",
@@ -10256,6 +10987,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLCredentialStorage.h": [
    {
     "kind": "property",
+    "name": "sharedCredentialStorage",
     "class": "NSURLCredentialStorage",
     "container": "interface",
     "category": null,
@@ -10267,6 +10999,7 @@
    },
    {
     "kind": "property",
+    "name": "allCredentials",
     "class": "NSURLCredentialStorage",
     "container": "interface",
     "category": null,
@@ -10291,6 +11024,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLDownload.h": [
    {
     "kind": "property",
+    "name": "request",
     "class": "NSURLDownload",
     "container": "interface",
     "category": null,
@@ -10302,6 +11036,7 @@
    },
    {
     "kind": "property",
+    "name": "resumeData",
     "class": "NSURLDownload",
     "container": "interface",
     "category": null,
@@ -10313,6 +11048,7 @@
    },
    {
     "kind": "property",
+    "name": "deletesFileUponFailure",
     "class": "NSURLDownload",
     "container": "interface",
     "category": null,
@@ -10339,6 +11075,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLProtectionSpace.h": [
    {
     "kind": "property",
+    "name": "realm",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10350,6 +11087,7 @@
    },
    {
     "kind": "property",
+    "name": "receivesCredentialSecurely",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10361,6 +11099,7 @@
    },
    {
     "kind": "property",
+    "name": "isProxy",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10372,6 +11111,7 @@
    },
    {
     "kind": "property",
+    "name": "host",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10383,6 +11123,7 @@
    },
    {
     "kind": "property",
+    "name": "port",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10394,6 +11135,7 @@
    },
    {
     "kind": "property",
+    "name": "proxyType",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10405,6 +11147,7 @@
    },
    {
     "kind": "property",
+    "name": "protocol",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10416,6 +11159,7 @@
    },
    {
     "kind": "property",
+    "name": "authenticationMethod",
     "class": "NSURLProtectionSpace",
     "container": "interface",
     "category": null,
@@ -10427,6 +11171,7 @@
    },
    {
     "kind": "property",
+    "name": "distinguishedNames",
     "class": "NSURLProtectionSpace",
     "container": "category",
     "category": "NSClientCertificateSpace",
@@ -10438,6 +11183,7 @@
    },
    {
     "kind": "property",
+    "name": "serverTrust",
     "class": "NSURLProtectionSpace",
     "container": "category",
     "category": "NSServerTrustValidationSpace",
@@ -10451,6 +11197,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLProtocol.h": [
    {
     "kind": "property",
+    "name": "client",
     "class": "NSURLProtocol",
     "container": "interface",
     "category": null,
@@ -10462,6 +11209,7 @@
    },
    {
     "kind": "property",
+    "name": "request",
     "class": "NSURLProtocol",
     "container": "interface",
     "category": null,
@@ -10473,6 +11221,7 @@
    },
    {
     "kind": "property",
+    "name": "cachedResponse",
     "class": "NSURLProtocol",
     "container": "interface",
     "category": null,
@@ -10498,6 +11247,7 @@
    },
    {
     "kind": "property",
+    "name": "supportsSecureCoding",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10509,6 +11259,7 @@
    },
    {
     "kind": "property",
+    "name": "URL",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10520,6 +11271,7 @@
    },
    {
     "kind": "property",
+    "name": "cachePolicy",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10531,6 +11283,7 @@
    },
    {
     "kind": "property",
+    "name": "timeoutInterval",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10542,6 +11295,7 @@
    },
    {
     "kind": "property",
+    "name": "mainDocumentURL",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10553,6 +11307,7 @@
    },
    {
     "kind": "property",
+    "name": "networkServiceType",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10564,6 +11319,7 @@
    },
    {
     "kind": "property",
+    "name": "allowsCellularAccess",
     "class": "NSURLRequest",
     "container": "interface",
     "category": null,
@@ -10575,6 +11331,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPMethod",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10586,6 +11343,7 @@
    },
    {
     "kind": "property",
+    "name": "allHTTPHeaderFields",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10597,6 +11355,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPBody",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10608,6 +11367,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPBodyStream",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10619,6 +11379,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPShouldHandleCookies",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10630,6 +11391,7 @@
    },
    {
     "kind": "property",
+    "name": "HTTPShouldUsePipelining",
     "class": "NSURLRequest",
     "container": "category",
     "category": "NSHTTPURLRequest",
@@ -10643,6 +11405,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLResponse.h": [
    {
     "kind": "property",
+    "name": "URL",
     "class": "NSURLResponse",
     "container": "interface",
     "category": null,
@@ -10654,6 +11417,7 @@
    },
    {
     "kind": "property",
+    "name": "MIMEType",
     "class": "NSURLResponse",
     "container": "interface",
     "category": null,
@@ -10665,6 +11429,7 @@
    },
    {
     "kind": "property",
+    "name": "expectedContentLength",
     "class": "NSURLResponse",
     "container": "interface",
     "category": null,
@@ -10676,6 +11441,7 @@
    },
    {
     "kind": "property",
+    "name": "textEncodingName",
     "class": "NSURLResponse",
     "container": "interface",
     "category": null,
@@ -10687,6 +11453,7 @@
    },
    {
     "kind": "property",
+    "name": "suggestedFilename",
     "class": "NSURLResponse",
     "container": "interface",
     "category": null,
@@ -10698,6 +11465,7 @@
    },
    {
     "kind": "property",
+    "name": "statusCode",
     "class": "NSHTTPURLResponse",
     "container": "interface",
     "category": null,
@@ -10709,6 +11477,7 @@
    },
    {
     "kind": "property",
+    "name": "allHeaderFields",
     "class": "NSHTTPURLResponse",
     "container": "interface",
     "category": null,
@@ -10722,6 +11491,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLSession.h": [
    {
     "kind": "property",
+    "name": "sharedSession",
     "class": "NSURLSession",
     "container": "interface",
     "category": null,
@@ -10733,6 +11503,7 @@
    },
    {
     "kind": "property",
+    "name": "defaultSessionConfiguration",
     "class": "NSURLSessionConfiguration",
     "container": "interface",
     "category": null,
@@ -10744,6 +11515,7 @@
    },
    {
     "kind": "property",
+    "name": "ephemeralSessionConfiguration",
     "class": "NSURLSessionConfiguration",
     "container": "interface",
     "category": null,
@@ -10757,6 +11529,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUUID.h": [
    {
     "kind": "property",
+    "name": "UUIDString",
     "class": "NSUUID",
     "container": "interface",
     "category": null,
@@ -10770,6 +11543,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUbiquitousKeyValueStore.h": [
    {
     "kind": "property",
+    "name": "defaultStore",
     "class": "NSUbiquitousKeyValueStore",
     "container": "interface",
     "category": null,
@@ -10781,6 +11555,7 @@
    },
    {
     "kind": "property",
+    "name": "dictionaryRepresentation",
     "class": "NSUbiquitousKeyValueStore",
     "container": "interface",
     "category": null,
@@ -10805,6 +11580,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUndoManager.h": [
    {
     "kind": "property",
+    "name": "groupingLevel",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10816,6 +11592,7 @@
    },
    {
     "kind": "property",
+    "name": "undoRegistrationEnabled",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10827,6 +11604,7 @@
    },
    {
     "kind": "property",
+    "name": "groupsByEvent",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10838,6 +11616,7 @@
    },
    {
     "kind": "property",
+    "name": "levelsOfUndo",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10849,6 +11628,7 @@
    },
    {
     "kind": "property",
+    "name": "runLoopModes",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10860,6 +11640,7 @@
    },
    {
     "kind": "property",
+    "name": "canUndo",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10871,6 +11652,7 @@
    },
    {
     "kind": "property",
+    "name": "canRedo",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10882,6 +11664,7 @@
    },
    {
     "kind": "property",
+    "name": "undoing",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10893,6 +11676,7 @@
    },
    {
     "kind": "property",
+    "name": "redoing",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10904,6 +11688,7 @@
    },
    {
     "kind": "property",
+    "name": "undoActionIsDiscardable",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10915,6 +11700,7 @@
    },
    {
     "kind": "property",
+    "name": "redoActionIsDiscardable",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10926,6 +11712,7 @@
    },
    {
     "kind": "property",
+    "name": "undoActionName",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10937,6 +11724,7 @@
    },
    {
     "kind": "property",
+    "name": "redoActionName",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10948,6 +11736,7 @@
    },
    {
     "kind": "property",
+    "name": "undoMenuItemTitle",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -10959,6 +11748,7 @@
    },
    {
     "kind": "property",
+    "name": "redoMenuItemTitle",
     "class": "NSUndoManager",
     "container": "interface",
     "category": null,
@@ -11025,6 +11815,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserDefaults.h": [
    {
     "kind": "property",
+    "name": "standardUserDefaults",
     "class": "NSUserDefaults",
     "container": "interface",
     "category": null,
@@ -11036,6 +11827,7 @@
    },
    {
     "kind": "property",
+    "name": "volatileDomainNames",
     "class": "NSUserDefaults",
     "container": "interface",
     "category": null,
@@ -11060,6 +11852,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserNotification.h": [
    {
     "kind": "property",
+    "name": "defaultUserNotificationCenter",
     "class": "NSUserNotificationCenter",
     "container": "interface",
     "category": null,
@@ -11073,6 +11866,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserScriptTask.h": [
    {
     "kind": "property",
+    "name": "scriptURL",
     "class": "NSUserScriptTask",
     "container": "interface",
     "category": null,
@@ -11086,6 +11880,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSValue.h": [
    {
     "kind": "property",
+    "name": "objCType",
     "class": "NSValue",
     "container": "interface",
     "category": null,
@@ -11097,6 +11892,7 @@
    },
    {
     "kind": "property",
+    "name": "nonretainedObjectValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueExtensionMethods",
@@ -11108,6 +11904,7 @@
    },
    {
     "kind": "property",
+    "name": "pointerValue",
     "class": "NSValue",
     "container": "category",
     "category": "NSValueExtensionMethods",
@@ -11119,6 +11916,7 @@
    },
    {
     "kind": "property",
+    "name": "charValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11130,6 +11928,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedCharValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11141,6 +11940,7 @@
    },
    {
     "kind": "property",
+    "name": "shortValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11152,6 +11952,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedShortValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11163,6 +11964,7 @@
    },
    {
     "kind": "property",
+    "name": "intValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11174,6 +11976,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedIntValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11185,6 +11988,7 @@
    },
    {
     "kind": "property",
+    "name": "longValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11196,6 +12000,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedLongValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11207,6 +12012,7 @@
    },
    {
     "kind": "property",
+    "name": "longLongValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11218,6 +12024,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedLongLongValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11229,6 +12036,7 @@
    },
    {
     "kind": "property",
+    "name": "floatValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11240,6 +12048,7 @@
    },
    {
     "kind": "property",
+    "name": "doubleValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11251,6 +12060,7 @@
    },
    {
     "kind": "property",
+    "name": "boolValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11262,6 +12072,7 @@
    },
    {
     "kind": "property",
+    "name": "integerValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11273,6 +12084,7 @@
    },
    {
     "kind": "property",
+    "name": "unsignedIntegerValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11284,6 +12096,7 @@
    },
    {
     "kind": "property",
+    "name": "stringValue",
     "class": "NSNumber",
     "container": "interface",
     "category": null,
@@ -11297,6 +12110,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLDTD.h": [
    {
     "kind": "property",
+    "name": "publicID",
     "class": "NSXMLDTD",
     "container": "interface",
     "category": null,
@@ -11308,6 +12122,7 @@
    },
    {
     "kind": "property",
+    "name": "systemID",
     "class": "NSXMLDTD",
     "container": "interface",
     "category": null,
@@ -11321,6 +12136,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLDTDNode.h": [
    {
     "kind": "property",
+    "name": "DTDKind",
     "class": "NSXMLDTDNode",
     "container": "interface",
     "category": null,
@@ -11332,6 +12148,7 @@
    },
    {
     "kind": "property",
+    "name": "external",
     "class": "NSXMLDTDNode",
     "container": "interface",
     "category": null,
@@ -11343,6 +12160,7 @@
    },
    {
     "kind": "property",
+    "name": "publicID",
     "class": "NSXMLDTDNode",
     "container": "interface",
     "category": null,
@@ -11354,6 +12172,7 @@
    },
    {
     "kind": "property",
+    "name": "systemID",
     "class": "NSXMLDTDNode",
     "container": "interface",
     "category": null,
@@ -11365,6 +12184,7 @@
    },
    {
     "kind": "property",
+    "name": "notationName",
     "class": "NSXMLDTDNode",
     "container": "interface",
     "category": null,
@@ -11378,6 +12198,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLDocument.h": [
    {
     "kind": "property",
+    "name": "characterEncoding",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11389,6 +12210,7 @@
    },
    {
     "kind": "property",
+    "name": "version",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11400,6 +12222,7 @@
    },
    {
     "kind": "property",
+    "name": "standalone",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11411,6 +12234,7 @@
    },
    {
     "kind": "property",
+    "name": "documentContentKind",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11422,6 +12246,7 @@
    },
    {
     "kind": "property",
+    "name": "MIMEType",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11433,6 +12258,7 @@
    },
    {
     "kind": "property",
+    "name": "DTD",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11444,6 +12270,7 @@
    },
    {
     "kind": "property",
+    "name": "XMLData",
     "class": "NSXMLDocument",
     "container": "interface",
     "category": null,
@@ -11457,6 +12284,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLElement.h": [
    {
     "kind": "property",
+    "name": "attributes",
     "class": "NSXMLElement",
     "container": "interface",
     "category": null,
@@ -11468,6 +12296,7 @@
    },
    {
     "kind": "property",
+    "name": "namespaces",
     "class": "NSXMLElement",
     "container": "interface",
     "category": null,
@@ -11481,6 +12310,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLNode.h": [
    {
     "kind": "property",
+    "name": "kind",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11492,6 +12322,7 @@
    },
    {
     "kind": "property",
+    "name": "name",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11503,6 +12334,7 @@
    },
    {
     "kind": "property",
+    "name": "objectValue",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11514,6 +12346,7 @@
    },
    {
     "kind": "property",
+    "name": "stringValue",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11525,6 +12358,7 @@
    },
    {
     "kind": "property",
+    "name": "index",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11536,6 +12370,7 @@
    },
    {
     "kind": "property",
+    "name": "level",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11547,6 +12382,7 @@
    },
    {
     "kind": "property",
+    "name": "rootDocument",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11558,6 +12394,7 @@
    },
    {
     "kind": "property",
+    "name": "parent",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11569,6 +12406,7 @@
    },
    {
     "kind": "property",
+    "name": "childCount",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11580,6 +12418,7 @@
    },
    {
     "kind": "property",
+    "name": "children",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11591,6 +12430,7 @@
    },
    {
     "kind": "property",
+    "name": "previousSibling",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11602,6 +12442,7 @@
    },
    {
     "kind": "property",
+    "name": "nextSibling",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11613,6 +12454,7 @@
    },
    {
     "kind": "property",
+    "name": "previousNode",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11624,6 +12466,7 @@
    },
    {
     "kind": "property",
+    "name": "nextNode",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11635,6 +12478,7 @@
    },
    {
     "kind": "property",
+    "name": "XPath",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11646,6 +12490,7 @@
    },
    {
     "kind": "property",
+    "name": "localName",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11657,6 +12502,7 @@
    },
    {
     "kind": "property",
+    "name": "prefix",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11668,6 +12514,7 @@
    },
    {
     "kind": "property",
+    "name": "URI",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11679,6 +12526,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11690,6 +12538,7 @@
    },
    {
     "kind": "property",
+    "name": "XMLString",
     "class": "NSXMLNode",
     "container": "interface",
     "category": null,
@@ -11703,6 +12552,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLParser.h": [
    {
     "kind": "property",
+    "name": "delegate",
     "class": "NSXMLParser",
     "container": "interface",
     "category": null,
@@ -11714,6 +12564,7 @@
    },
    {
     "kind": "property",
+    "name": "shouldProcessNamespaces",
     "class": "NSXMLParser",
     "container": "interface",
     "category": null,
@@ -11725,6 +12576,7 @@
    },
    {
     "kind": "property",
+    "name": "shouldReportNamespacePrefixes",
     "class": "NSXMLParser",
     "container": "interface",
     "category": null,
@@ -11736,6 +12588,7 @@
    },
    {
     "kind": "property",
+    "name": "shouldResolveExternalEntities",
     "class": "NSXMLParser",
     "container": "interface",
     "category": null,
@@ -11747,6 +12600,7 @@
    },
    {
     "kind": "property",
+    "name": "parserError",
     "class": "NSXMLParser",
     "container": "interface",
     "category": null,
@@ -11758,6 +12612,7 @@
    },
    {
     "kind": "property",
+    "name": "publicID",
     "class": "NSXMLParser",
     "container": "category",
     "category": "NSXMLParserLocatorAdditions",
@@ -11769,6 +12624,7 @@
    },
    {
     "kind": "property",
+    "name": "systemID",
     "class": "NSXMLParser",
     "container": "category",
     "category": "NSXMLParserLocatorAdditions",
@@ -11780,6 +12636,7 @@
    },
    {
     "kind": "property",
+    "name": "lineNumber",
     "class": "NSXMLParser",
     "container": "category",
     "category": "NSXMLParserLocatorAdditions",
@@ -11791,6 +12648,7 @@
    },
    {
     "kind": "property",
+    "name": "columnNumber",
     "class": "NSXMLParser",
     "container": "category",
     "category": "NSXMLParserLocatorAdditions",
@@ -11815,6 +12673,7 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXPCConnection.h": [
    {
     "kind": "property",
+    "name": "remoteObjectProxy",
     "class": "NSXPCConnection",
     "container": "interface",
     "category": null,
@@ -11826,6 +12685,7 @@
    },
    {
     "kind": "property",
+    "name": "endpoint",
     "class": "NSXPCListener",
     "container": "interface",
     "category": null,
@@ -11839,6 +12699,7 @@
   "usr/include/objc/NSObject.h": [
    {
     "kind": "property",
+    "name": "hash",
     "class": "NSObject",
     "container": "protocol",
     "category": null,
@@ -11850,6 +12711,7 @@
    },
    {
     "kind": "property",
+    "name": "superclass",
     "class": "NSObject",
     "container": "protocol",
     "category": null,
@@ -11861,6 +12723,7 @@
    },
    {
     "kind": "property",
+    "name": "description",
     "class": "NSObject",
     "container": "protocol",
     "category": null,
@@ -11872,6 +12735,7 @@
    },
    {
     "kind": "property",
+    "name": "debugDescription",
     "class": "NSObject",
     "container": "protocol",
     "category": null,

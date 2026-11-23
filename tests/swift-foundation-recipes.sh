@@ -19,6 +19,9 @@ gen "$d/a" "$G/facts.json" "$G/recipes.json"
 cp -R "$d/a" "$d/a2"; gen "$d/a2" "$G/facts.json" "$G/recipes.json"
 diff -r "$d/a" "$d/a2" >/dev/null || { echo "FAIL: idempotent: a second run changed something"; exit 1; }
 cp -R "$d/a/." "$d/b"; gen "$d/b" "$G/facts-no-title.json" "$G/recipes.json"
+cp -R "$d/a" "$d/r"; gen "$d/r" "$G/facts.json" "$d/a/recipes.json"
+diff -r "$d/a" "$d/r" >/dev/null || { echo "FAIL: released_unchanged: regenerating released recipes from the same facts changed them"; exit 1; }
+cp -R "$d/a" "$d/rc"; gen "$d/rc" "$G/facts-no-title.json" "$d/a/recipes.json"
 gen "$d/c" "$G/facts.json" "$G/recipes-hand-v3.json" "$G/recipes-hand-v3.json"
 python3 - "$d" "$G" <<'PY'
 import json, os, sys
@@ -31,6 +34,7 @@ def materialize(r):
     spans = []
     for x in r['replacements']:
         assert x['old'] and t.count(x['old']) == 1, ('not unique', r['id'], x['old'])
+        assert x['new'] and x['new'] != x['old'], ('empty or unchanged new', r['id'], x)
         s = t.index(x['old']); spans.append((s, s + len(x['old']), x['new']))
     spans.sort()
     for (a, b, _), (c, e, _) in zip(spans, spans[1:]):
@@ -44,12 +48,14 @@ t = materialize(a['foundation-thing-v2'])
 assert t.count('BOOL fileURL;') == 1, t                                                              # overlap_with_existing
 assert '- (BOOL)isFileURL;' not in t, t
 assert '@property (readonly, copy) NSString *title;' in t
+assert '@property (readonly, strong) ObjectType firstThing;' in t and '- (ObjectType)firstThing;' not in t, t  # property_takes_base_type
 assert t.count('@property (readonly, copy) NSString *name;') == 1 and t.count('- (NSString *)name;') == 1, t  # repeated decl placed
 assert t.index('@property (readonly, copy) NSString *name;') > t.index('@interface NSOther'), t
 assert 'typedef NS_ENUM(NSUInteger, NSThingEdge)' in t and 'NSThingEdgeMin = 0 };\n@interface' in t, t  # superseded base
 assert 'enum { NSThingEdgeMin = 0 };' not in t, t
 assert t.index('typedef NSString *NSOtherKey') < t.index('@interface NSOther'), t
-assert '@property (readonly, copy) NSString *label;' in materialize(a['foundation-new-v1'])
+n = materialize(a['foundation-new-v1'])
+assert '@property (copy) NSString *label;' in n and 'setLabel' not in n, n                        # setter_removed
 assert a['foundation-new-v1']['aliases'] == ['System/Library/Frameworks/Foundation.framework/Headers/NSNew.h']
 p = json.load(open(os.path.join(d, 'a', 'profiles.json')))
 ids = p['profiles']['swift-foundation']['recipes']
@@ -60,8 +66,26 @@ assert '// needs: foundation-new-v1' in probe and '// ast: ' in probe, probe
 b = load('b')                                                                                         # rewrite_unreleased_in_place
 assert set(b) == set(a), sorted(b)
 assert '@property (readonly, copy) NSString *title;' not in materialize(b['foundation-thing-v2'])
+rc = load('rc')                                                                                       # released_changed chains
+assert 'foundation-thing-v3' in rc and 'foundation-thing-v2' in rc, sorted(rc)
+assert rc['foundation-thing-v2'] == a['foundation-thing-v2']
+assert '@property (readonly, copy) NSString *title;' not in materialize(rc['foundation-thing-v3'])
+assert rc['foundation-new-v1'] == a['foundation-new-v1']
 c = load('c')                                                                                         # fold_hand_vnext
 assert 'foundation-thing-v4' in c, sorted(c)
 assert '- (NSString *)extra2;' in materialize(c['foundation-thing-v4'])
 PY
+# spec: the committed recipes, probes and profile are what the generator makes from the committed facts
+#       (recipes_current); with the committed recipes as the released set, a current tree regenerates unchanged
+. build/msc.sh
+SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
+mkdir -p "$d/real/probes"
+cp sdk-metadata/recipes.json sdk-metadata/profiles.json "$d/real/"
+cp tests/fixtures/sdk-probes/*.m "$d/real/probes/"
+python3 build/gen-swift-foundation-recipes.py --sdk "$SDK" --facts sdk-metadata/swift-foundation-facts.json \
+  --hand sdk-metadata/swift-foundation-hand.json --recipes "$d/real/recipes.json" --released sdk-metadata/recipes.json \
+  --probes "$d/real/probes" --profiles "$d/real/profiles.json"
+cmp -s "$d/real/recipes.json" sdk-metadata/recipes.json && cmp -s "$d/real/profiles.json" sdk-metadata/profiles.json \
+  && diff -r "$d/real/probes" tests/fixtures/sdk-probes >/dev/null \
+  || { echo "FAIL: the committed recipes are not what build/gen-swift-foundation-recipes.py makes from the facts; regenerate"; exit 1; }
 echo "swift-foundation-recipes OK"

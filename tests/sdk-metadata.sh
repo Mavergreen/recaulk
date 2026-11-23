@@ -18,8 +18,11 @@ echo "== schema_and_identity, array_replacements"
 echo "== stage_data_only"
 if sh build/stage-sdk-metadata.sh sdk-metadata "$d/staged"; then
   cmp -s sdk-metadata/recipes.json "$d/staged/recipes.json" || bad "staged recipes.json differs from sdk-metadata/recipes.json"
-  extra="$(cd "$d/staged" && find . -type f ! -name recipes.json)"
-  [ -z "$extra" ] || bad "staging copied more than recipes.json: $extra"
+  extra="$(cd "$d/staged" && find . -type f ! -name recipes.json ! -name profiles.json)"
+  [ -z "$extra" ] || bad "staging copied more than recipes.json and profiles.json: $extra"
+  # spec: README.md "Profiles" -- profiles.json ships beside the recipes it names (profiles_staged)
+  cmp -s sdk-metadata/profiles.json "$d/staged/profiles.json" || bad "staged profiles.json differs from sdk-metadata/profiles.json"
+  [ "$(ls -l "$d/staged/profiles.json" | cut -c1-10)" = -rw-r--r-- ] || bad "the staged profiles.json is not 0644"
   # platform: the pkg installs this tree as root, and mktemp -d makes 0700 directories; every user
   #           must read the recipes, so the directory is 0755 and the file 0644
   [ "$(ls -ld "$d/staged" | cut -c1-10)" = drwxr-xr-x ] || bad "the staged directory is not 0755: $(ls -ld "$d/staged")"
@@ -60,6 +63,33 @@ refuse empty-replacements "$(sub "$(printf '%s' "$r" | sed 's|\[{"old":"a","new"
 refuse empty-old "$(sub "$(printf '%s' "$r" | sed 's|"old":"a"|"old":""|')")"
 refuse identical-old-new "$(sub "$(printf '%s' "$r" | sed 's|"new":"b"|"new":"a"|')")"
 refuse replacement-extra-key "$(sub "$(printf '%s' "$r" | sed 's|"new":"b"|"new":"b","regex":true|')")"
+echo "== profiles_refused"
+r2='{"id":"y-v1","header":"A/B.h","sha256":"62c14ca4c2ab6fc0194328585cce9d18aab0b65338bd0aab2146ad9b0053c585","aliases":[],"replacements":[{"old":"a","new":"b"}]}'
+r3='{"id":"z-v1","header":"A/C.h","sha256":"62c14ca4c2ab6fc0194328585cce9d18aab0b65338bd0aab2146ad9b0053c585","aliases":[],"replacements":[{"old":"a","new":"b"}]}'
+refuse_profile() {
+  _name="$1" _json="$2"
+  mkdir -p "$d/in-$_name"
+  printf '%s\n' "$(sub "$r,$r2,$r3")" > "$d/in-$_name/recipes.json"
+  printf '%s\n' "$_json" > "$d/in-$_name/profiles.json"
+  if sh build/stage-sdk-metadata.sh "$d/in-$_name" "$d/out-$_name" 2>"$d/err-$_name"; then
+    bad "$_name: a malformed profile was staged"
+  fi
+  grep -q "^stage-sdk-metadata: " "$d/err-$_name" || bad "$_name: refused without naming why: $(cat "$d/err-$_name")"
+  [ ! -e "$d/out-$_name" ] || bad "$_name: a refused staging left $d/out-$_name behind"
+}
+p='{"schema":1,"profiles":{"p":{"description":"d","recipes":[IDS]}}}'
+refuse_profile profiles-unknown-id "$(printf '%s' "$p" | sed 's|IDS|"x-v1","nope-v1"|')"
+refuse_profile profiles-two-per-header "$(printf '%s' "$p" | sed 's|IDS|"x-v1","y-v1"|')"
+refuse_profile profiles-wrong-schema "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s|"schema":1|"schema":2|')"
+refuse_profile profiles-empty "$(printf '%s' "$p" | sed 's|IDS||')"
+refuse_profile profiles-unknown-key "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s|"description"|"extra":1,"description"|')"
+refuse_profile profiles-duplicate-id "$(printf '%s' "$p" | sed 's|IDS|"x-v1","x-v1"|')"
+mkdir -p "$d/in-profile-ok"
+printf '%s\n' "$(sub "$r,$r2,$r3")" > "$d/in-profile-ok/recipes.json"
+printf '%s\n' "$(printf '%s' "$p" | sed 's|IDS|"x-v1","z-v1"|')" > "$d/in-profile-ok/profiles.json"
+sh build/stage-sdk-metadata.sh "$d/in-profile-ok" "$d/out-profile-ok" 2>"$d/err-profile-ok" \
+  || bad "a well-formed profile was refused: $(cat "$d/err-profile-ok")"
+
 mkdir -p "$d/in-ok"
 printf '%s\n' "$(sub "$r")" > "$d/in-ok/recipes.json"
 sh build/stage-sdk-metadata.sh "$d/in-ok" "$d/out-ok" || bad "the well-formed control recipe set was refused: $(cat "$d/err-ok" 2>/dev/null)"

@@ -27,8 +27,9 @@ ids=$("$SC" -DRECIPES="$PWD/sdk-metadata/recipes.json" -P tests/fixtures/sdk-met
 for p in tests/fixtures/sdk-probes/*.m; do
   printf '%s\n' "$ids" | grep -qx "$(basename "$p" .m)" || bad "$(basename "$p" .m) has a probe but no recipe"
 done
-# platform: SDK_METADATA_ONLY limits the run to the named recipe ids, for working on one probe
-[ -n "${SDK_METADATA_ONLY:-}" ] && ids=$SDK_METADATA_ONLY
+# platform: SDK_METADATA_ONLY limits the run to the named recipe ids (and "consumer", the consumer probes),
+#   for working on one probe
+[ -n "${SDK_METADATA_ONLY:-}" ] && ids=$(printf '%s\n' $SDK_METADATA_ONLY | grep -vx consumer || :)
 # platform: each recipe's probe is independent, so they run SDK_METADATA_JOBS at a time (default 4); their
 #   reports print in id order afterwards
 export SC MODULES SDK CLANG22 d
@@ -37,5 +38,23 @@ for id in $ids; do
   [ -f "$d/$id.out" ] && cat "$d/$id.out"
   [ -f "$d/$id.fail" ] && fail=1
 done
+# spec: a consumer probe (tests/fixtures/sdk-probes-consumer/*.m, "// profile: NAME") compiles with -Werror -Wall
+#       through its whole profile, as an Objective-C consumer selecting that profile would build it
+case " ${SDK_METADATA_ONLY:-consumer} " in *" consumer "*)
+  for probe in tests/fixtures/sdk-probes-consumer/*.m; do
+    [ -f "$probe" ] || continue
+    name=$(sed -n 's|^// profile: ||p' "$probe")
+    sel=$(python3 -c 'import json, sys; print(";".join(json.load(open("sdk-metadata/profiles.json"))["profiles"][sys.argv[1]]["recipes"]))' "$name") \
+      || { bad "$probe: no profile $name"; continue; }
+    if ! ov=$("$SC" -DMODULES="$MODULES" -DSDK="$SDK" -DRECIPES="$PWD/sdk-metadata/recipes.json" -DIDS="$sel" \
+                -DOUT="$d/consumer-$name" -P tests/fixtures/sdk-metadata-materialize.cmake 2>&1); then
+      bad "profile $name does not materialize: $ov"; continue
+    fi
+    ov=$(printf '%s\n' "$ov" | tail -1)
+    "$CLANG22" --no-default-config -fsyntax-only -Werror -Wall -x objective-c -fno-objc-arc -fblocks -arch x86_64 \
+      -mmacosx-version-min=10.9 -isysroot "$SDK" -ivfsoverlay "$ov" "$probe" >"$d/consumer.out" 2>&1 \
+      || { bad "$probe does not compile through profile $name"; sed 's/^/    /' "$d/consumer.out" | head -12; }
+  done ;;
+esac
 [ "$fail" -eq 0 ] && echo "sdk-metadata-compile OK"
 exit "$fail"
