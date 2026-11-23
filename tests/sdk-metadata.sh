@@ -2,9 +2,13 @@
 # platform: host-agnostic
 set -eu
 cd "$(dirname "$0")/.."
-# platform: off macOS, shipyard's install action puts no shipyard-cmake on PATH; the runner's cmake serves
+# platform: shipyard-cmake where shipyard's install action put it (on Linux too since shipyard f1c970a), else the host's cmake
 SC="$(command -v shipyard-cmake || command -v cmake || echo /usr/local/mavergreen/bin/shipyard-cmake)"
 [ -x "$SC" ] || { echo "FAIL: no shipyard-cmake or cmake"; exit 1; }
+# platform: a real cmake, never the launcher: off Darwin shipyard-cmake runs the cmake on PATH, so a stand-in cmake
+#           that ran the launcher would run itself until exec fails (E2BIG). The cmake product on macOS, else the host's.
+RC=/usr/local/mavergreen/cmake/bin/cmake
+[ -x "$RC" ] || RC="$(command -v cmake || :)"
 
 fail=0
 bad() { echo "FAIL: $*"; fail=1; }
@@ -96,7 +100,8 @@ sh build/stage-sdk-metadata.sh "$d/in-ok" "$d/out-ok" || bad "the well-formed co
 
 echo "== cmake_without_shipyard (a Linux runner)"
 mkdir -p "$d/bin"
-printf '#!/bin/sh\n: > "%s/used-cmake"\nexec "%s" "$@"\n' "$d" "$SC" > "$d/bin/cmake"
+[ -x "$RC" ] || bad "no real cmake for the stand-in"
+printf '#!/bin/sh\n: > "%s/used-cmake"\nexec "%s" "$@"\n' "$d" "$RC" > "$d/bin/cmake"
 chmod +x "$d/bin/cmake"
 PATH="$d/bin:/usr/bin:/bin" sh build/stage-sdk-metadata.sh sdk-metadata "$d/staged-linux" \
   || bad "the stager failed with only cmake on PATH"
