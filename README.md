@@ -658,12 +658,19 @@ else (`build/sdk-metadata-profiles-validate.cmake`). A profile's list is fixed f
 consumer that also selects recipes of its own may select only recipes on headers the profile does not touch.
 If it needs more on such a header, it asks for a v-next of the profile's recipe.
 
-`swift-foundation` is Foundation as swift-5.4's Foundation overlay needs it on 10.9. It covers 141 headers
+`swift-foundation` is Foundation as swift-5.4's Foundation overlay needs it on 10.9. It covers 144 headers
 in Foundation, CoreFoundation, `objc/NSObject.h` and `objc/runtime.h`:
 - 10.9's getters redeclared as the properties the macOS 11.3 SDK declares, keeping 10.9's types and adding
-  no nullability;
-- the typed string enums, such as `NSURLResourceKey` and `NSNotificationName`, with 10.9's constants retyped
-  to them;
+  no nullability; a setter that 10.9 declares on a subclass (`NSMutableURLRequest`'s) becomes the readwrite
+  property 11.3 redeclares there;
+- `nonnull` where swift's overlay depends on it: `-[NSObject init]`, `description`, `debugDescription`,
+  `-[NSError localizedDescription]` (without it the overlay's `Error.localizedDescription` calls itself),
+  `-[NSScanner string]`, `+[NSString availableStringEncodings]` and
+  `-[NSIndexSet indexesInRange:options:passingTest:]`;
+- the typed string enums, such as `NSURLResourceKey` and `NSNotificationName`, with 10.9's constants and
+  the methods the overlay calls retyped to them, `NSKeyValueChangeKey` as `NS_STRING_ENUM`, `CFLocaleKey` as
+  `CF_STRING_ENUM`, and `NSErrorDomain` and `NSErrorUserInfoKey` as plain typedefs, as 11.3 has them;
+- `NSPropertyListReadOptions` as 11.3's `NSPropertyListMutabilityOptions`;
 - CF toll-free bridging annotations;
 - generic result types where swift's overlay needs them;
 - `NS_ENUM`/`NS_OPTIONS` shapes for `NSEnumerationOptions`, `NSURLRequestCachePolicy`,

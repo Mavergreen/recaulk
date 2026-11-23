@@ -2,8 +2,14 @@
  "schema": 1,
  "string_enums": [
   "NSCalendarIdentifier",
-  "NSErrorDomain",
-  "NSErrorUserInfoKey",
+  {
+   "name": "NSErrorDomain",
+   "kind": "plain"
+  },
+  {
+   "name": "NSErrorUserInfoKey",
+   "kind": "plain"
+  },
   "NSFileAttributeKey",
   "NSFileAttributeType",
   "NSFileProtectionType",
@@ -18,7 +24,11 @@
   "NSURLFileResourceType",
   "NSURLResourceKey",
   "NSURLThumbnailDictionaryItem",
-  "NSURLUbiquitousItemDownloadingStatus"
+  "NSURLUbiquitousItemDownloadingStatus",
+  {
+   "name": "CFLocaleKey",
+   "kind": "cf"
+  }
  ],
  "typedef_inserts": [
   {
@@ -265,6 +275,62 @@
   {
    "class": "NSOrderedSet",
    "selector": "objectAtIndexedSubscript:"
+  },
+  {
+   "class": "NSObject",
+   "selector": "init"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "objectForKey:"
+  },
+  {
+   "class": "NSLocale",
+   "selector": "displayNameForKey:value:"
+  },
+  {
+   "class": "NSNotification",
+   "selector": "name"
+  },
+  {
+   "class": "NSNotification",
+   "selector": "initWithName:object:userInfo:"
+  },
+  {
+   "class": "NSString",
+   "selector": "linguisticTagsInRange:scheme:options:orthography:tokenRanges:"
+  },
+  {
+   "class": "NSString",
+   "selector": "enumerateLinguisticTagsInRange:scheme:options:orthography:usingBlock:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "getResourceValue:forKey:error:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "setResourceValue:forKey:error:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "resourceValuesForKeys:error:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "setResourceValues:error:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "removeCachedResourceValueForKey:"
+  },
+  {
+   "class": "NSURL",
+   "selector": "setTemporaryResourceValue:forKey:"
+  },
+  {
+   "class": "NSCalendar",
+   "selector": "calendarIdentifier"
   }
  ],
  "enum_shapes": [
@@ -309,6 +375,16 @@
    "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOrderedSet.h",
    "old": "@interface NSOrderedSet (NSExtendedOrderedSet)",
    "new": "@interface NSOrderedSet<ObjectType> (NSExtendedOrderedSet)"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyValueObserving.h",
+   "old": "FOUNDATION_EXPORT NSString *const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeIndexesKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeNotificationIsPriorKey NS_AVAILABLE(10_5, 2_0);",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 typed the change dictionary's keys; the constants are the same objects. */\n#ifndef NS_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define NS_STRING_ENUM\n#endif\n#endif\ntypedef NSString *NSKeyValueChangeKey NS_STRING_ENUM;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeIndexesKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNotificationIsPriorKey NS_AVAILABLE(10_5, 2_0);"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPropertyList.h",
+   "old": "typedef NSUInteger NSPropertyListReadOptions;",
+   "new": "/* Recaulk: as the 11.3 SDK declares it; the same size as 10.9's NSUInteger. */\ntypedef NSPropertyListMutabilityOptions NSPropertyListReadOptions;"
   }
  ],
  "inserts": [
@@ -321,6 +397,36 @@
    "header": "usr/include/objc/runtime.h",
    "before": "enum {\n    OBJC_ASSOCIATION_ASSIGN = 0,",
    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef OBJC_ENUM\n#define OBJC_ENUM(_type, _name) enum _name : _type _name; enum _name : _type\n#endif\n"
+  }
+ ],
+ "nonnull": [
+  {
+   "class": "NSObject",
+   "selector": "init"
+  },
+  {
+   "class": "NSObject",
+   "selector": "description"
+  },
+  {
+   "class": "NSObject",
+   "selector": "debugDescription"
+  },
+  {
+   "class": "NSScanner",
+   "selector": "string"
+  },
+  {
+   "class": "NSString",
+   "selector": "availableStringEncodings"
+  },
+  {
+   "class": "NSIndexSet",
+   "selector": "indexesInRange:options:passingTest:"
+  },
+  {
+   "class": "NSError",
+   "selector": "localizedDescription"
   }
  ]
 }

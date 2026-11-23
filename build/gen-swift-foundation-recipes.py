@@ -72,20 +72,27 @@ def fact_edits(facts, base_props):
             if e['setter_decl'] and new:
                 out.append([e['setter_offset'], e['setter_offset'] + len(e['setter_decl']), '', None, 'setter'])
         elif e['kind'] == 'insert':
-            m = re.search(r'typedef NSString \*(\w+) NS_EXTENSIBLE_STRING_ENUM;', e['text'])
+            m = re.search(r'typedef (NSString \*|CFStringRef )(\w+)\b', e['text'])
             out.append([e['offset'], e['offset'], e['text'],
-                        (m.group(1), 'TypedefDecl .* %s \'NSString \\*\'' % m.group(1)) if m else None, 'insert'])
+                        (m.group(2), 'TypedefDecl .* %s \'%s\'' % (m.group(2), re.escape(m.group(1).strip())))
+                        if m else None, 'insert'])
         elif e['kind'] == 'replace':
             n, check = e['new'], None
             m = re.search(r'\b(\w+) const (\w+)', n)
             c = re.search(r'struct CF_BRIDGED(?:_MUTABLE)?_TYPE\(\w+\) (__\w+) \*', n)
             s = re.search(r'typedef (?:NS_ENUM|NS_OPTIONS|OBJC_ENUM)\(\w+, (\w+)\)', n)
+            k = re.search(r'\bconst (\w+) (\w+)\s*;', n)
+            td = re.search(r'^typedef (\w+) (\w+);$', n, re.M)
             if c:
                 check = (c.group(1), 'ObjCBridge(Mutable)?Attr')
             elif s:
                 check = (s.group(1), 'EnumDecl .* %s' % s.group(1))
             elif m and m.group(1) != 'NSString' and 'NSString' in e['old']:
                 check = (m.group(2), 'VarDecl .* %s \'const %s\'' % (m.group(2), m.group(1)))
+            elif k and 'CFStringRef' in e['old'] and k.group(1) != 'CFStringRef':
+                check = (k.group(2), 'VarDecl .* %s \'const %s\'' % (k.group(2), k.group(1)))
+            elif td and td.group(1) not in e['old']:
+                check = (td.group(2), 'TypedefDecl .* %s \'%s\'' % (td.group(2), td.group(1)))
             out.append([e['offset'], e['offset'] + len(e['old']), n, check, 'replace'])
         else:
             fail('unknown fact kind %r' % e['kind'])
@@ -258,7 +265,7 @@ def main():
         # a typedef that a needed recipe also declares proves nothing about this one
         elsewhere = ''.join(x['new'] for i in generic_ids if i != rid for x in by_id[i]['replacements'])
         checks = [c for c in checks if not (c[1].startswith('TypedefDecl ') and
-                                            'typedef NSString *%s NS_EXTENSIBLE_STRING_ENUM;' % c[0] in elsewhere)]
+                                            re.search(r'typedef (NSString \*|CFStringRef )%s\b' % c[0], elsewhere))]
         if not checks:
             fail('%s: no fact gives its probe a check' % rid)
         kinds, picked = set(), []

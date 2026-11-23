@@ -217,6 +217,133 @@
     "new": "typedef struct CF_BRIDGED_MUTABLE_TYPE(id) __CFFileDescriptor * CFFileDescriptorRef;"
    }
   ],
+  "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFLocale.h": [
+   {
+    "kind": "insert",
+    "offset": 6319,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define CF_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_CFLocaleKey\n#define __RECAULK_TYPEDEF_CFLocaleKey 1\ntypedef CFStringRef CFLocaleKey CF_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleIdentifier;",
+    "offset": 6319,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleLanguageCode;",
+    "offset": 6368,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleLanguageCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCountryCode;",
+    "offset": 6419,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCountryCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleScriptCode;",
+    "offset": 6469,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleScriptCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleVariantCode;",
+    "offset": 6518,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleVariantCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleExemplarCharacterSet;",
+    "offset": 6569,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleExemplarCharacterSet;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCalendarIdentifier;",
+    "offset": 6628,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCalendarIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCalendar;",
+    "offset": 6685,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCalendar;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCollationIdentifier;",
+    "offset": 6732,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCollationIdentifier;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleUsesMetricSystem;",
+    "offset": 6790,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleUsesMetricSystem;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleMeasurementSystem;",
+    "offset": 6845,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleMeasurementSystem;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleDecimalSeparator;",
+    "offset": 6923,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleDecimalSeparator;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleGroupingSeparator;",
+    "offset": 6978,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleGroupingSeparator;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCurrencySymbol;",
+    "offset": 7034,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCurrencySymbol;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCurrencyCode;",
+    "offset": 7087,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCurrencyCode;"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleCollatorIdentifier CF_AVAILABLE(10_6, 4_0);",
+    "offset": 7168,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleCollatorIdentifier CF_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);",
+    "offset": 7249,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);",
+    "offset": 7338,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleAlternateQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);",
+    "offset": 7425,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleAlternateQuotationBeginDelimiterKey CF_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "CF_EXPORT const CFStringRef kCFLocaleAlternateQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);",
+    "offset": 7523,
+    "new": "CF_EXPORT const CFLocaleKey kCFLocaleAlternateQuotationEndDelimiterKey CF_AVAILABLE(10_6, 4_0);"
+   }
+  ],
   "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFMachPort.h": [
    {
     "kind": "insert",
@@ -798,6 +925,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSBundle.h": [
    {
+    "kind": "insert",
+    "offset": 109,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "mainBundle",
     "class": "NSBundle",
@@ -1122,11 +1254,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 6863,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSBundleDidLoadNotification;",
     "offset": 6863,
@@ -1198,8 +1325,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCalendar.h": [
    {
     "kind": "insert",
-    "offset": 1247,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSCalendarIdentifier\n#define __RECAULK_TYPEDEF_NSCalendarIdentifier 1\ntypedef NSString *NSCalendarIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 210,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSCalendarIdentifier\n#define __RECAULK_TYPEDEF_NSCalendarIdentifier 1\ntypedef NSString *NSCalendarIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -1317,7 +1444,7 @@
     "category": null,
     "decl": "- (NSString *)calendarIdentifier;",
     "offset": 8248,
-    "property": "@property (readonly, copy) NSString *calendarIdentifier;",
+    "property": "@property (readonly) NSCalendarIdentifier calendarIdentifier;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -1608,11 +1735,6 @@
     "property": "@property (readonly, copy) NSString *PMSymbol NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
     "setter_decl": null,
     "setter_offset": null
-   },
-   {
-    "kind": "insert",
-    "offset": 28855,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -2551,13 +2673,19 @@
     "property": "@property (readonly) void *mutableBytes NS_RETURNS_INNER_POINTER;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setLength:(NSUInteger)length;",
+    "offset": 8578,
+    "new": "@property NSUInteger length;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDate.h": [
    {
     "kind": "insert",
-    "offset": 125,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 106,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -3265,7 +3393,7 @@
     "kind": "replace",
     "old": "- (id)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);",
     "offset": 1320,
-    "new": "- (ObjectType)objectForKeyedSubscript:(id)key NS_AVAILABLE(10_8, 6_0);"
+    "new": "- (ObjectType)objectForKeyedSubscript:(KeyType)key NS_AVAILABLE(10_8, 6_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSDistantObject.h": [
@@ -3327,8 +3455,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSError.h": [
    {
     "kind": "insert",
-    "offset": 210,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 107,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorUserInfoKey\n#define __RECAULK_TYPEDEF_NSErrorUserInfoKey 1\ntypedef NSString *NSErrorUserInfoKey;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -3353,11 +3481,6 @@
     "old": "FOUNDATION_EXPORT NSString *const NSMachErrorDomain;",
     "offset": 477,
     "new": "FOUNDATION_EXPORT NSErrorDomain const NSMachErrorDomain;"
-   },
-   {
-    "kind": "insert",
-    "offset": 663,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorUserInfoKey\n#define __RECAULK_TYPEDEF_NSErrorUserInfoKey 1\ntypedef NSString *NSErrorUserInfoKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -3463,7 +3586,7 @@
     "category": null,
     "decl": "- (NSString *)localizedDescription;",
     "offset": 3522,
-    "property": "@property (readonly, copy) NSString *localizedDescription;",
+    "property": "@property (readonly, copy, nonnull) NSString *localizedDescription;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -3752,6 +3875,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileHandle.h": [
    {
+    "kind": "insert",
+    "offset": 174,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "availableData",
     "class": "NSFileHandle",
@@ -3824,11 +3952,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 1346,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSFileHandleReadCompletionNotification;",
     "offset": 1346,
@@ -3892,8 +4015,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSFileManager.h": [
    {
     "kind": "insert",
-    "offset": 2485,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 258,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeKey\n#define __RECAULK_TYPEDEF_NSFileAttributeKey 1\ntypedef NSString *NSFileAttributeKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeType\n#define __RECAULK_TYPEDEF_NSFileAttributeType 1\ntypedef NSString *NSFileAttributeType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileProtectionType\n#define __RECAULK_TYPEDEF_NSFileProtectionType 1\ntypedef NSString *NSFileProtectionType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -3986,20 +4109,10 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 31513,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeKey\n#define __RECAULK_TYPEDEF_NSFileAttributeKey 1\ntypedef NSString *NSFileAttributeKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSFileType;",
     "offset": 31513,
     "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileType;"
-   },
-   {
-    "kind": "insert",
-    "offset": 31560,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileAttributeType\n#define __RECAULK_TYPEDEF_NSFileAttributeType 1\ntypedef NSString *NSFileAttributeType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -4156,11 +4269,6 @@
     "old": "FOUNDATION_EXPORT NSString * const NSFileProtectionKey NS_AVAILABLE_IOS(4_0);",
     "offset": 32971,
     "new": "FOUNDATION_EXPORT NSFileAttributeKey const NSFileProtectionKey NS_AVAILABLE_IOS(4_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 33049,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSFileProtectionType\n#define __RECAULK_TYPEDEF_NSFileProtectionType 1\ntypedef NSString *NSFileProtectionType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -4537,6 +4645,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSHTTPCookieStorage.h": [
    {
+    "kind": "insert",
+    "offset": 160,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "sharedHTTPCookieStorage",
     "class": "NSHTTPCookieStorage",
@@ -4571,11 +4684,6 @@
     "property": "@property NSHTTPCookieAcceptPolicy cookieAcceptPolicy;",
     "setter_decl": "- (void)setCookieAcceptPolicy:(NSHTTPCookieAcceptPolicy)cookieAcceptPolicy;",
     "setter_offset": 3816
-   },
-   {
-    "kind": "insert",
-    "offset": 4815,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -4764,6 +4872,12 @@
     "property": "@property (readonly) NSUInteger lastIndex;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSIndexSet *)indexesInRange:(NSRange)range options:(NSEnumerationOptions)opts passingTest:(BOOL (^)(NSUInteger idx, BOOL *stop))predicate NS_AVAILABLE(10_6, 4_0);",
+    "offset": 4454,
+    "new": "- (nonnull NSIndexSet *)indexesInRange:(NSRange)range options:(NSEnumerationOptions)opts passingTest:(BOOL (^)(NSUInteger idx, BOOL *stop))predicate NS_AVAILABLE(10_6, 4_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSInvocation.h": [
@@ -4833,6 +4947,12 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSKeyValueObserving.h": [
    {
     "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeIndexesKey;\nFOUNDATION_EXPORT NSString *const NSKeyValueChangeNotificationIsPriorKey NS_AVAILABLE(10_5, 2_0);",
+    "offset": 4213,
+    "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 typed the change dictionary's keys; the constants are the same objects. */\n#ifndef NS_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n#define NS_STRING_ENUM\n#endif\n#endif\ntypedef NSString *NSKeyValueChangeKey NS_STRING_ENUM;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeKindKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNewKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeOldKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeIndexesKey;\nFOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNotificationIsPriorKey NS_AVAILABLE(10_5, 2_0);"
+   },
+   {
+    "kind": "replace",
     "old": "+ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key NS_AVAILABLE(10_5, 2_0);",
     "offset": 18060,
     "new": "+ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key NS_AVAILABLE(10_5, 2_0);"
@@ -4876,6 +4996,12 @@
     "setter_offset": 1620
    },
    {
+    "kind": "replace",
+    "old": "- (void)setRequiresSecureCoding:(BOOL)b NS_AVAILABLE(10_8, 6_0);",
+    "offset": 3120,
+    "new": "@property BOOL requiresSecureCoding NS_AVAILABLE(10_8, 6_0);"
+   },
+   {
     "kind": "property",
     "name": "delegate",
     "class": "NSKeyedUnarchiver",
@@ -4886,6 +5012,12 @@
     "property": "@property (assign) id <NSKeyedUnarchiverDelegate> delegate;",
     "setter_decl": "- (void)setDelegate:(id <NSKeyedUnarchiverDelegate>)delegate;",
     "setter_offset": 3725
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setRequiresSecureCoding:(BOOL)b NS_AVAILABLE(10_8, 6_0);",
+    "offset": 5265,
+    "new": "@property BOOL requiresSecureCoding NS_AVAILABLE(10_8, 6_0);"
    },
    {
     "kind": "property",
@@ -4903,8 +5035,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLinguisticTagger.h": [
    {
     "kind": "insert",
-    "offset": 540,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTagScheme\n#define __RECAULK_TYPEDEF_NSLinguisticTagScheme 1\ntypedef NSString *NSLinguisticTagScheme NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 150,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTag\n#define __RECAULK_TYPEDEF_NSLinguisticTag 1\ntypedef NSString *NSLinguisticTag NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTagScheme\n#define __RECAULK_TYPEDEF_NSLinguisticTagScheme 1\ntypedef NSString *NSLinguisticTagScheme NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -4947,11 +5079,6 @@
     "old": "FOUNDATION_EXPORT NSString *const NSLinguisticTagSchemeScript NS_AVAILABLE(10_7, 5_0);",
     "offset": 1806,
     "new": "FOUNDATION_EXPORT NSLinguisticTagScheme const NSLinguisticTagSchemeScript NS_AVAILABLE(10_7, 5_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 2018,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLinguisticTag\n#define __RECAULK_TYPEDEF_NSLinguisticTag 1\ntypedef NSString *NSLinguisticTag NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -5162,9 +5289,38 @@
     "property": "@property (strong) NSString *string NS_AVAILABLE(10_7, 5_0);",
     "setter_decl": "- (void)setString:(NSString *)string NS_AVAILABLE(10_7, 5_0);",
     "setter_offset": 6953
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSArray *)linguisticTagsInRange:(NSRange)range scheme:(NSString *)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography tokenRanges:(NSArray **)tokenRanges NS_AVAILABLE(10_7, 5_0);",
+    "offset": 10602,
+    "new": "- (NSArray<NSLinguisticTag> *)linguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography tokenRanges:(NSArray<NSValue *> **)tokenRanges NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSString *)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (^)(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop))block NS_AVAILABLE(10_7, 5_0);",
+    "offset": 10847,
+    "new": "- (void)enumerateLinguisticTagsInRange:(NSRange)range scheme:(NSLinguisticTagScheme)tagScheme options:(NSLinguisticTaggerOptions)opts orthography:(NSOrthography *)orthography usingBlock:(void (__attribute__((noescape)) ^)(NSLinguisticTag, NSRange, NSRange, BOOL *))block NS_AVAILABLE(10_7, 5_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSLocale.h": [
+   {
+    "kind": "insert",
+    "offset": 144,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLocaleKey\n#define __RECAULK_TYPEDEF_NSLocaleKey 1\ntypedef NSString *NSLocaleKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)objectForKey:(id)key;",
+    "offset": 285,
+    "new": "- (id)objectForKey:(NSLocaleKey)key;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSString *)displayNameForKey:(id)key value:(id)value;",
+    "offset": 314,
+    "new": "- (NSString *)displayNameForKey:(NSLocaleKey)key value:(id)value;"
+   },
    {
     "kind": "property",
     "name": "localeIdentifier",
@@ -5292,20 +5448,10 @@
     "new": "+ (NSDictionary<NSString *,NSString *> *)componentsFromLocaleIdentifier:(NSString *)string;"
    },
    {
-    "kind": "insert",
-    "offset": 2719,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSCurrentLocaleDidChangeNotification NS_AVAILABLE(10_5, 2_0);",
     "offset": 2719,
     "new": "FOUNDATION_EXPORT NSNotificationName const NSCurrentLocaleDidChangeNotification NS_AVAILABLE(10_5, 2_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 2818,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSLocaleKey\n#define __RECAULK_TYPEDEF_NSLocaleKey 1\ntypedef NSString *NSLocaleKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -5524,6 +5670,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSMetadata.h": [
    {
+    "kind": "insert",
+    "offset": 185,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "delegate",
     "class": "NSMetadataQuery",
@@ -5716,11 +5867,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 3241,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSMetadataQueryDidStartGatheringNotification NS_AVAILABLE(10_4, 5_0);",
     "offset": 3241,
@@ -5903,6 +6049,19 @@
     "setter_offset": null
    }
   ],
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNetServices.h": [
+   {
+    "kind": "insert",
+    "offset": 149,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSNetServicesErrorDomain;",
+    "offset": 391,
+    "new": "FOUNDATION_EXPORT NSErrorDomain const NSNetServicesErrorDomain;"
+   }
+  ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNotification.h": [
    {
     "kind": "property",
@@ -5912,7 +6071,7 @@
     "category": null,
     "decl": "- (NSString *)name;",
     "offset": 276,
-    "property": "@property (readonly, copy) NSString *name;",
+    "property": "@property (readonly) NSNotificationName name;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -5939,6 +6098,12 @@
     "property": "@property (readonly, copy) NSDictionary *userInfo;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (instancetype)initWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo NS_AVAILABLE(10_6, 4_0);",
+    "offset": 585,
+    "new": "- (instancetype)initWithName:(NSNotificationName)name object:(id)object userInfo:(NSDictionary *)userInfo NS_AVAILABLE(10_6, 4_0);"
    },
    {
     "kind": "property",
@@ -7288,8 +7453,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPort.h": [
    {
     "kind": "insert",
-    "offset": 282,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 106,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -7646,6 +7811,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProgress.h": [
    {
+    "kind": "insert",
+    "offset": 112,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressFileOperationKind\n#define __RECAULK_TYPEDEF_NSProgressFileOperationKind 1\ntypedef NSString *NSProgressFileOperationKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressKind\n#define __RECAULK_TYPEDEF_NSProgressKind 1\ntypedef NSString *NSProgressKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressUserInfoKey\n#define __RECAULK_TYPEDEF_NSProgressUserInfoKey 1\ntypedef NSString *NSProgressUserInfoKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "userInfo",
     "class": "NSProgress",
@@ -7656,11 +7826,6 @@
     "property": "@property (readonly, copy) NSDictionary *userInfo;",
     "setter_decl": null,
     "setter_offset": null
-   },
-   {
-    "kind": "insert",
-    "offset": 17237,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressUserInfoKey\n#define __RECAULK_TYPEDEF_NSProgressUserInfoKey 1\ntypedef NSString *NSProgressUserInfoKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -7675,11 +7840,6 @@
     "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressThroughputKey NS_AVAILABLE(10_9, 7_0);"
    },
    {
-    "kind": "insert",
-    "offset": 18032,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressKind\n#define __RECAULK_TYPEDEF_NSProgressKind 1\ntypedef NSString *NSProgressKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString *const NSProgressKindFile NS_AVAILABLE(10_9, 7_0);",
     "offset": 18032,
@@ -7690,11 +7850,6 @@
     "old": "FOUNDATION_EXPORT NSString *const NSProgressFileOperationKindKey NS_AVAILABLE(10_9, 7_0);",
     "offset": 18441,
     "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileOperationKindKey NS_AVAILABLE(10_9, 7_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 18598,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSProgressFileOperationKind\n#define __RECAULK_TYPEDEF_NSProgressFileOperationKind 1\ntypedef NSString *NSProgressFileOperationKind NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -7737,6 +7892,32 @@
     "old": "FOUNDATION_EXPORT NSString *const NSProgressFileCompletedCountKey NS_AVAILABLE(10_9, 7_0);",
     "offset": 19705,
     "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileCompletedCountKey NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileAnimationImageKey NS_AVAILABLE(10_9, NA);",
+    "offset": 20352,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileAnimationImageKey NS_AVAILABLE(10_9, NA);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileAnimationImageOriginalRectKey NS_AVAILABLE(10_9, NA);",
+    "offset": 20442,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileAnimationImageOriginalRectKey NS_AVAILABLE(10_9, NA);"
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *const NSProgressFileIconKey NS_AVAILABLE(10_9, NA);",
+    "offset": 20925,
+    "new": "FOUNDATION_EXPORT NSProgressUserInfoKey const NSProgressFileIconKey NS_AVAILABLE(10_9, NA);"
+   }
+  ],
+  "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSPropertyList.h": [
+   {
+    "kind": "replace",
+    "old": "typedef NSUInteger NSPropertyListReadOptions;",
+    "offset": 770,
+    "new": "/* Recaulk: as the 11.3 SDK declares it; the same size as 10.9's NSUInteger. */\ntypedef NSPropertyListMutabilityOptions NSPropertyListReadOptions;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSProtocolChecker.h": [
@@ -7852,7 +8033,7 @@
     "category": null,
     "decl": "- (NSString *)string;",
     "offset": 203,
-    "property": "@property (readonly, copy) NSString *string;",
+    "property": "@property (readonly, copy, nonnull) NSString *string;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -7876,9 +8057,9 @@
     "category": "NSExtendedScanner",
     "decl": "- (NSCharacterSet *)charactersToBeSkipped;",
     "offset": 466,
-    "property": "@property (readonly, copy) NSCharacterSet *charactersToBeSkipped;",
-    "setter_decl": null,
-    "setter_offset": null
+    "property": "@property (copy) NSCharacterSet *charactersToBeSkipped;",
+    "setter_decl": "- (void)setCharactersToBeSkipped:(NSCharacterSet *)set;",
+    "setter_offset": 294
    },
    {
     "kind": "property",
@@ -7888,9 +8069,9 @@
     "category": "NSExtendedScanner",
     "decl": "- (BOOL)caseSensitive;",
     "offset": 509,
-    "property": "@property (readonly) BOOL caseSensitive;",
-    "setter_decl": null,
-    "setter_offset": null
+    "property": "@property BOOL caseSensitive;",
+    "setter_decl": "- (void)setCaseSensitive:(BOOL)flag;",
+    "setter_offset": 350
    },
    {
     "kind": "property",
@@ -7900,9 +8081,9 @@
     "category": "NSExtendedScanner",
     "decl": "- (id)locale;",
     "offset": 532,
-    "property": "@property (readonly, strong) id locale;",
-    "setter_decl": null,
-    "setter_offset": null
+    "property": "@property (strong) id locale;",
+    "setter_decl": "- (void)setLocale:(id)locale;",
+    "setter_offset": 387
    },
    {
     "kind": "property",
@@ -8887,6 +9068,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSStream.h": [
    {
+    "kind": "insert",
+    "offset": 114,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStreamPropertyKey\n#define __RECAULK_TYPEDEF_NSStreamPropertyKey 1\ntypedef NSString *NSStreamPropertyKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "delegate",
     "class": "NSStream",
@@ -8947,11 +9133,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 4864,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStreamPropertyKey\n#define __RECAULK_TYPEDEF_NSStreamPropertyKey 1\ntypedef NSString *NSStreamPropertyKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSStreamSocketSecurityLevelKey\t\tNS_AVAILABLE(10_3, 2_0);",
     "offset": 4864,
@@ -8974,11 +9155,6 @@
     "old": "FOUNDATION_EXPORT NSString * const NSStreamFileCurrentOffsetKey\t\tNS_AVAILABLE(10_3, 2_0);",
     "offset": 6869,
     "new": "FOUNDATION_EXPORT NSStreamPropertyKey const NSStreamFileCurrentOffsetKey\t\tNS_AVAILABLE(10_3, 2_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 7085,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -9015,7 +9191,7 @@
    {
     "kind": "insert",
     "offset": 4397,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStringTransform\n#define __RECAULK_TYPEDEF_NSStringTransform 1\ntypedef NSString *NSStringTransform NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSStringTransform\n#define __RECAULK_TYPEDEF_NSStringTransform 1\ntypedef NSString *NSStringTransform NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "property",
@@ -9265,12 +9441,17 @@
     "category": "NSStringExtensionMethods",
     "decl": "+ (const NSStringEncoding *)availableStringEncodings;",
     "offset": 17124,
-    "property": "@property (class, readonly) const NSStringEncoding *availableStringEncodings;",
+    "property": "@property (class, readonly, nonnull) const NSStringEncoding *availableStringEncodings;",
     "setter_decl": null,
     "setter_offset": null
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTask.h": [
+   {
+    "kind": "insert",
+    "offset": 106,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
    {
     "kind": "property",
     "name": "launchPath",
@@ -9404,11 +9585,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 3035,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSTaskDidTerminateNotification;",
     "offset": 3035,
@@ -9416,6 +9592,11 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSThread.h": [
+   {
+    "kind": "insert",
+    "offset": 138,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
    {
     "kind": "property",
     "name": "currentThread",
@@ -9573,11 +9754,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 1704,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSWillBecomeMultiThreadedNotification;",
     "offset": 1704,
@@ -9597,6 +9773,11 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimeZone.h": [
+   {
+    "kind": "insert",
+    "offset": 140,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
    {
     "kind": "property",
     "name": "name",
@@ -9766,11 +9947,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 2585,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSSystemTimeZoneDidChangeNotification NS_AVAILABLE(10_5, 2_0);",
     "offset": 2585,
@@ -9840,6 +10016,11 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURL.h": [
+   {
+    "kind": "insert",
+    "offset": 263,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLFileResourceType\n#define __RECAULK_TYPEDEF_NSURLFileResourceType 1\ntypedef NSString *NSURLFileResourceType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLResourceKey\n#define __RECAULK_TYPEDEF_NSURLResourceKey 1\ntypedef NSString *NSURLResourceKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus\n#define __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus 1\ntypedef NSString *NSURLUbiquitousItemDownloadingStatus NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
    {
     "kind": "property",
     "name": "absoluteString",
@@ -10069,15 +10250,46 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 11768,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLResourceKey\n#define __RECAULK_TYPEDEF_NSURLResourceKey 1\ntypedef NSString *NSURLResourceKey NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "kind": "replace",
+    "old": "- (BOOL)getResourceValue:(out id *)value forKey:(NSString *)key error:(out NSError **)error NS_AVAILABLE(10_6, 4_0);",
+    "offset": 8970,
+    "new": "- (BOOL)getResourceValue:(out id *)value forKey:(NSURLResourceKey)key error:(out NSError **)error NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSDictionary *)resourceValuesForKeys:(NSArray *)keys error:(NSError **)error NS_AVAILABLE(10_6, 4_0);",
+    "offset": 10047,
+    "new": "- (NSDictionary<NSURLResourceKey,id> *)resourceValuesForKeys:(NSArray<NSURLResourceKey> *)keys error:(NSError **)error NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (BOOL)setResourceValue:(id)value forKey:(NSString *)key error:(NSError **)error NS_AVAILABLE(10_6, 4_0);",
+    "offset": 10628,
+    "new": "- (BOOL)setResourceValue:(id)value forKey:(NSURLResourceKey)key error:(NSError **)error NS_AVAILABLE(10_6, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (BOOL)setResourceValues:(NSDictionary *)keyedValues error:(NSError **)error NS_AVAILABLE(10_6, 4_0);",
+    "offset": 11664,
+    "new": "- (BOOL)setResourceValues:(NSDictionary<NSURLResourceKey,id> *)keyedValues error:(NSError **)error NS_AVAILABLE(10_6, 4_0);"
    },
    {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSURLKeysOfUnsetValuesKey NS_AVAILABLE(10_7, 5_0);",
     "offset": 11768,
     "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLKeysOfUnsetValuesKey NS_AVAILABLE(10_7, 5_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)removeCachedResourceValueForKey:(NSString *)key NS_AVAILABLE(10_9, 7_0);",
+    "offset": 12425,
+    "new": "- (void)removeCachedResourceValueForKey:(NSURLResourceKey)key NS_AVAILABLE(10_9, 7_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setTemporaryResourceValue:(id)value forKey:(NSString *)key NS_AVAILABLE(10_9, 7_0);",
+    "offset": 13495,
+    "new": "- (void)setTemporaryResourceValue:(id)value forKey:(NSURLResourceKey)key NS_AVAILABLE(10_9, 7_0);"
    },
    {
     "kind": "replace",
@@ -10279,6 +10491,12 @@
    },
    {
     "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString * const NSURLTagNamesKey                    NS_AVAILABLE(10_9, NA);",
+    "offset": 21342,
+    "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLTagNamesKey                    NS_AVAILABLE(10_9, NA);"
+   },
+   {
+    "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSURLPathKey                        NS_AVAILABLE(10_8, 6_0);",
     "offset": 21508,
     "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLPathKey                        NS_AVAILABLE(10_8, 6_0);"
@@ -10294,11 +10512,6 @@
     "old": "FOUNDATION_EXPORT NSString * const NSURLFileResourceTypeKey            NS_AVAILABLE(10_7, 5_0);",
     "offset": 21985,
     "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLFileResourceTypeKey            NS_AVAILABLE(10_7, 5_0);"
-   },
-   {
-    "kind": "insert",
-    "offset": 22239,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLFileResourceType\n#define __RECAULK_TYPEDEF_NSURLFileResourceType 1\ntypedef NSString *NSURLFileResourceType NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -10631,11 +10844,6 @@
     "new": "FOUNDATION_EXPORT NSURLResourceKey const NSURLUbiquitousItemUploadingErrorKey         NS_AVAILABLE(10_9, 7_0);"
    },
    {
-    "kind": "insert",
-    "offset": 34510,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus\n#define __RECAULK_TYPEDEF_NSURLUbiquitousItemDownloadingStatus 1\ntypedef NSString *NSURLUbiquitousItemDownloadingStatus NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSURLUbiquitousItemDownloadingStatusNotDownloaded  NS_AVAILABLE(10_9, 7_0);",
     "offset": 34510,
@@ -10752,12 +10960,12 @@
    {
     "kind": "insert",
     "offset": 47060,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole 1\ntypedef NSString *NSURLUbiquitousSharedItemRole NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemRole 1\ntypedef NSString *NSURLUbiquitousSharedItemRole NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "insert",
     "offset": 47060,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions 1\ntypedef NSString *NSURLUbiquitousSharedItemPermissions NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions\n#define __RECAULK_TYPEDEF_NSURLUbiquitousSharedItemPermissions 1\ntypedef NSString *NSURLUbiquitousSharedItemPermissions NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "property",
@@ -11130,6 +11338,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLCredentialStorage.h": [
    {
+    "kind": "insert",
+    "offset": 163,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "sharedCredentialStorage",
     "class": "NSURLCredentialStorage",
@@ -11152,11 +11365,6 @@
     "property": "@property (readonly, copy) NSDictionary *allCredentials;",
     "setter_decl": null,
     "setter_offset": null
-   },
-   {
-    "kind": "insert",
-    "offset": 4948,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -11206,8 +11414,8 @@
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLError.h": [
    {
     "kind": "insert",
-    "offset": 655,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+    "offset": 369,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -11474,6 +11682,42 @@
     "setter_offset": null
    },
    {
+    "kind": "replace",
+    "old": "- (void)setURL:(NSURL *)URL;",
+    "offset": 13533,
+    "new": "@property (copy) NSURL *URL;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setCachePolicy:(NSURLRequestCachePolicy)policy;",
+    "offset": 13722,
+    "new": "@property NSURLRequestCachePolicy cachePolicy;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setTimeoutInterval:(NSTimeInterval)seconds;",
+    "offset": 14594,
+    "new": "@property NSTimeInterval timeoutInterval;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setMainDocumentURL:(NSURL *)URL;",
+    "offset": 15311,
+    "new": "@property (copy) NSURL *mainDocumentURL;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setNetworkServiceType:(NSURLRequestNetworkServiceType)networkServiceType NS_AVAILABLE(10_7, 4_0);",
+    "offset": 15728,
+    "new": "@property NSURLRequestNetworkServiceType networkServiceType NS_AVAILABLE(10_7, 4_0);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setAllowsCellularAccess:(BOOL)allow NS_AVAILABLE(10_8, 6_0);",
+    "offset": 16154,
+    "new": "@property BOOL allowsCellularAccess NS_AVAILABLE(10_8, 6_0);"
+   },
+   {
     "kind": "property",
     "name": "HTTPMethod",
     "class": "NSURLRequest",
@@ -11544,6 +11788,42 @@
     "property": "@property (readonly) BOOL HTTPShouldUsePipelining NS_AVAILABLE(10_7, 4_0);",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setHTTPMethod:(NSString *)method;",
+    "offset": 19384,
+    "new": "@property (copy) NSString *HTTPMethod;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setAllHTTPHeaderFields:(NSDictionary *)headerFields;",
+    "offset": 20057,
+    "new": "@property (copy) NSDictionary *allHTTPHeaderFields;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setHTTPBody:(NSData *)data;",
+    "offset": 21659,
+    "new": "@property (copy) NSData *HTTPBody;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setHTTPBodyStream:(NSInputStream *)inputStream;",
+    "offset": 22220,
+    "new": "@property (strong) NSInputStream *HTTPBodyStream;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setHTTPShouldHandleCookies:(BOOL)should;",
+    "offset": 22687,
+    "new": "@property BOOL HTTPShouldHandleCookies;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setHTTPShouldUsePipelining:(BOOL)shouldUsePipelining NS_AVAILABLE(10_7, 4_0);",
+    "offset": 23782,
+    "new": "@property BOOL HTTPShouldUsePipelining NS_AVAILABLE(10_7, 4_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSURLResponse.h": [
@@ -11686,6 +11966,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUbiquitousKeyValueStore.h": [
    {
+    "kind": "insert",
+    "offset": 125,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "defaultStore",
     "class": "NSUbiquitousKeyValueStore",
@@ -11710,11 +11995,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 1433,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSUbiquitousKeyValueStoreDidChangeExternallyNotification NS_AVAILABLE(10_7, 5_0);",
     "offset": 1433,
@@ -11722,6 +12002,11 @@
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUndoManager.h": [
+   {
+    "kind": "insert",
+    "offset": 273,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
    {
     "kind": "property",
     "name": "groupingLevel",
@@ -11903,11 +12188,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 5062,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSUndoManagerCheckpointNotification NS_AVAILABLE(10_0, 3_0);",
     "offset": 5062,
@@ -11958,6 +12238,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSUserDefaults.h": [
    {
+    "kind": "insert",
+    "offset": 114,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "standardUserDefaults",
     "class": "NSUserDefaults",
@@ -11980,11 +12265,6 @@
     "property": "@property (readonly, copy) NSArray *volatileDomainNames;",
     "setter_decl": null,
     "setter_offset": null
-   },
-   {
-    "kind": "insert",
-    "offset": 2593,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
     "kind": "replace",
@@ -12695,6 +12975,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSXMLParser.h": [
    {
+    "kind": "insert",
+    "offset": 118,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "delegate",
     "class": "NSXMLParser",
@@ -12803,11 +13088,6 @@
     "setter_offset": null
    },
    {
-    "kind": "insert",
-    "offset": 7186,
-    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSErrorDomain\n#define __RECAULK_TYPEDEF_NSErrorDomain 1\ntypedef NSString *NSErrorDomain NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
-   },
-   {
     "kind": "replace",
     "old": "FOUNDATION_EXPORT NSString * const NSXMLParserErrorDomain\tNS_AVAILABLE(10_3, 2_0);",
     "offset": 7186,
@@ -12873,7 +13153,7 @@
     "category": null,
     "decl": "- (NSString *)description;",
     "offset": 943,
-    "property": "@property (readonly, copy) NSString *description;",
+    "property": "@property (readonly, copy, nonnull) NSString *description;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -12885,9 +13165,21 @@
     "category": null,
     "decl": "- (NSString *)debugDescription;",
     "offset": 980,
-    "property": "@property (readonly, copy) NSString *debugDescription;",
+    "property": "@property (readonly, copy, nonnull) NSString *debugDescription;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)init;",
+    "offset": 1208,
+    "new": "- (nonnull instancetype)init;"
+   },
+   {
+    "kind": "replace",
+    "old": "+ (NSString *)description;",
+    "offset": 2173,
+    "new": "+ (nonnull NSString *)description;"
    }
   ],
   "usr/include/objc/runtime.h": [

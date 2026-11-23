@@ -1,7 +1,11 @@
 {
  "schema": 1,
  "string_enums": [
-  "FXKey"
+  "FXKey",
+  {
+   "name": "FXPlain",
+   "kind": "plain"
+  }
  ],
  "typedef_inserts": [
   {
@@ -18,6 +22,10 @@
   {
    "class": "FXThing",
    "selector": "componentsOf:"
+  },
+  {
+   "class": "FXThing",
+   "selector": "valueFor:"
   }
  ],
  "enum_shapes": [
@@ -28,5 +36,15 @@
   }
  ],
  "replaces": [],
- "inserts": []
+ "inserts": [],
+ "nonnull": [
+  {
+   "class": "FXThing",
+   "selector": "summary"
+  },
+  {
+   "class": "FXThing",
+   "selector": "joined:"
+  }
+ ]
 }

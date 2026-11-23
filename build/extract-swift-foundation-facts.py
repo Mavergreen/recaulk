@@ -23,13 +23,81 @@ CF_FALLBACK = (HEAD + '#ifndef CF_BRIDGED_TYPE\n#define CF_BRIDGED_TYPE(T)\n#end
 CF_TYPEDEF = re.compile(r'typedef (const )?struct (CF_BRIDGED(?:_MUTABLE)?_TYPE\(\w+\) )?(__\w+) \* (\w+);')
 
 
-def typedef_text(name):
-    return (HEAD + FALLBACK + '#ifndef __RECAULK_TYPEDEF_%s\n#define __RECAULK_TYPEDEF_%s 1\n'
-            'typedef NSString *%s NS_EXTENSIBLE_STRING_ENUM;\n#endif\n' % (name, name, name))
+# spec: CF_STRING_ENUM carries its own fallback, as NS_EXTENSIBLE_STRING_ENUM does
+CF_ENUM_FALLBACK = ('#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n'
+                    '#define CF_STRING_ENUM __attribute__((swift_wrapper(enum)))\n#else\n'
+                    '#define CF_STRING_ENUM\n#endif\n#endif\n')
+
+
+def typedef_text(name, kind='extensible'):
+    """A string enum's typedef, guarded so that two recipes may each declare it. kind is extensible
+    (NS_EXTENSIBLE_STRING_ENUM), plain (11.3 declares a bare NSString typedef), or cf (CF_STRING_ENUM)."""
+    guard = '#ifndef __RECAULK_TYPEDEF_%s\n#define __RECAULK_TYPEDEF_%s 1\n' % (name, name)
+    if kind == 'cf':
+        return HEAD + CF_ENUM_FALLBACK + guard + 'typedef CFStringRef %s CF_STRING_ENUM;\n#endif\n' % name
+    if kind == 'plain':
+        return HEAD + '@class NSString;\n' + guard + 'typedef NSString *%s;\n#endif\n' % name
+    if kind != 'extensible':
+        sys.exit('extract: unknown string enum kind %r' % kind)
+    return HEAD + '@class NSString;\n' + FALLBACK + guard + 'typedef NSString *%s NS_EXTENSIBLE_STRING_ENUM;\n#endif\n' % name
+
+
+def after_imports(t, limit):
+    """The start of the line after the header's last top-level #import/#include (or #if block of them)
+    before limit, so a typedef placed there precedes every use and sits outside any #if; else limit."""
+    depth, pos, at, pure = 0, 0, None, False
+    comment = False
+    for line in t[:limit].splitlines(True):
+        d = line.strip()
+        if comment or d.startswith('/*') or d.startswith('//') or not d:
+            comment = (comment or d.startswith('/*')) and '*/' not in d
+        elif re.match(r'#\s*if', d):
+            depth += 1
+            pure = pure if depth > 1 else True
+        elif re.match(r'#\s*endif', d):
+            depth -= 1
+            if depth == 0 and pure:
+                at = pos + len(line)
+        elif re.match(r'#\s*(import|include|else|elif)\b', d):
+            if depth == 0:
+                at = pos + len(line)
+        elif depth == 0 and d.startswith('@'):
+            break       # the first declaration: imports after it are not the header's own
+        else:
+            pure = False
+        pos += len(line)
+    return limit if at is None else at
+
+
+def retype_params(decl, types):
+    """decl with its parameters' parenthesized types replaced by types, in order; None if the counts differ.
+    A type that differs only in spacing keeps 10.9's text, and an in/out/inout qualifier is kept."""
+    spans, i = [], decl.index(')') + 1
+    while True:
+        m = re.compile(r':\s*\(').search(decl, i)
+        if not m:
+            break
+        a, depth, j = m.end(), 1, m.end()
+        while depth:
+            depth += {'(': 1, ')': -1}.get(decl[j], 0)
+            j += 1
+        spans.append((a, j - 1))
+        i = j
+    if len(spans) != len(types):
+        return None
+    for (a, b), t in reversed(list(zip(spans, types))):
+        old = decl[a:b]
+        q = re.match(r'\s*((?:in|out|inout|bycopy|byref|oneway)\s+)', old)
+        new = (q.group(1) if q else '') + t
+        if re.sub(r'\s', '', old) != re.sub(r'\s', '', new):
+            decl = decl[:a] + new + decl[b:]
+    return decl
 
 
 def clean_type(t):
-    return NULLABILITY.sub('', t).strip()
+    t = NULLABILITY.sub('', t).strip()
+    t = re.sub(r'\*\s+\*', '**', t)
+    return re.sub(r'  +', ' ', t)
 CONTAINERS = ('ObjCInterfaceDecl', 'ObjCCategoryDecl', 'ObjCProtocolDecl')
 
 
@@ -101,7 +169,7 @@ def getter(p):
     return (p.get('getter') or {}).get('name') or p['name']
 
 
-def attrs(p, readonly, is_object):
+def attrs(p, readonly, is_object, nonnull=False):
     a = []
     if p.get('class'):
         a.append('class')
@@ -117,6 +185,8 @@ def attrs(p, readonly, is_object):
         elif p.get('weak') or p.get('unsafe_unretained') or p.get('assign'):
             # platform: 10.9 consumers compile without ARC, where a weak property cannot be synthesized
             a.append('assign')
+    if nonnull:
+        a.append('nonnull')
     if getter(p) != p['name']:
         a.append('getter=' + getter(p))
     return a
@@ -138,19 +208,27 @@ def main():
     o = ap.parse_args()
     files = re.compile(o.files)
     hand = json.load(open(o.hand)) if o.hand else {}
-    string_enums = set(hand.get('string_enums', []))
+    string_enums = {}
+    for e in hand.get('string_enums', []):
+        e = e if isinstance(e, dict) else {'name': e}
+        string_enums[e['name']] = e.get('kind', 'extensible')
     retypes = {(r['class'], r['selector']) for r in hand.get('retypes', [])}
+    nonnull = {(r['class'], r['selector']) for r in hand.get('nonnull', [])}
 
     # 11.3: (owner, getter selector, is class) -> property node
-    props, new_methods, new_vars = {}, {}, {}
+    props, props_by_name, new_methods, new_vars = {}, {}, {}, {}
     def vnew(n, c, _b):
         k = n.get('kind')
         if k == 'ObjCPropertyDecl' and c is not None:
             props.setdefault((owner(c)[0], getter(n), bool(n.get('class'))), n)
+            props_by_name.setdefault((owner(c)[0], n['name'], bool(n.get('class'))), n)
         elif k == 'ObjCMethodDecl' and c is not None:
             new_methods.setdefault((owner(c)[0], n['name']), n)
         elif k == 'VarDecl' and c is None:
-            new_vars.setdefault(n['name'], clean_type(n['type']['qualType']).replace('const ', '').strip())
+            # platform: an availability attribute can print inside the type ('API_AVAILABLE(...) const T'); the
+            #   type's name is its last word
+            t = re.search(r'(\w+)\s*$', clean_type(n['type']['qualType']).replace('const ', ''))
+            new_vars.setdefault(n['name'], t.group(1) if t else '')
     wn = Walker()
     wn.walk(ast(o.clang, o.new_sdk, o.new_include, o.imports, '11.0'), vnew)
 
@@ -172,9 +250,12 @@ def main():
         t = texts[path]
         return t[off:t.index(';', off) + 1]
 
-    by_container = {}
+    by_container, by_class = {}, {}
     for n, c, b in methods:
         by_container.setdefault(id(c), {})[(n['name'], bool(n.get('instance')))] = (n, b)
+        if b and b[0] and owner(c)[2] != 'protocol':
+            by_class.setdefault((owner(c)[0], b[0]), {}).setdefault((n['name'], bool(n.get('instance'))), (n, b))
+    converted, used_setters = set(), set()
 
     out = {}
     seen = set()
@@ -208,13 +289,16 @@ def main():
         if not readonly:
             sname = p.get('setter', {}).get('name') or 'set%s%s:' % (p['name'][0].upper(), p['name'][1:])
             s = by_container[id(c)].get((sname, not is_class))
+            if s is None and ckind != 'protocol':
+                # the same class's other @interface in this header (NSScanner's setLocale: beside its category's locale)
+                s = by_class.get((cls, b[0]), {}).get((sname, not is_class))
             if s is None:
                 readonly = True
             else:
                 setter_decl, setter_offset = decl_text(b[0], s[1][1]), s[1][1]
         is_object = typ == 'id' or typ.startswith('id ') or typ.startswith('id<') or typ.endswith('*') \
             or typ in ('Class', 'instancetype')
-        a = attrs(p, readonly, is_object)
+        a = attrs(p, readonly, is_object, (cls, sel) in nonnull)
         sep = '' if typ.endswith('*') else ' '
         prop = '@property %s%s%s%s%s;' % ('(%s) ' % ', '.join(a) if a else '', typ, sep, p['name'],
                                           ' ' + trailer if trailer else '')
@@ -222,6 +306,9 @@ def main():
         if ident in seen:
             continue
         seen.add(ident)
+        converted.add((b[0], b[1]))
+        if setter_offset is not None:
+            used_setters.add((b[0], setter_offset))
         out.setdefault(key, []).append({'kind': 'property', 'name': p['name'], 'class': cls, 'container': ckind, 'category': cat,
                                         'decl': decl, 'offset': b[1], 'property': prop,
                                         'setter_decl': setter_decl, 'setter_offset': setter_offset})
@@ -243,19 +330,66 @@ def main():
             sys.exit('extract: %r occurs %d times in %s' % (s[:80], t.count(s), key))
         return t.index(s)
 
-    # R4 on methods that stay methods: 11.3's return type, without nullability
+    # R4 on methods that stay methods: 11.3's return and parameter types, without nullability; a nonnull
+    # member's result is marked nonnull
     for n, c, b in methods:
-        cls = owner(c)[0]
-        if (cls, n['name']) not in retypes or ':' not in n['name'] or b is None or b[0] is None:
+        cls, sel = owner(c)[0], n['name']
+        if ((cls, sel) not in retypes and (cls, sel) not in nonnull) or b is None or b[0] is None \
+                or (b[0], b[1]) in converted:
             continue
-        nm = new_methods.get((cls, n['name']))
         key = relkey(b[0], roots)
-        if nm is None or key is None:
+        if key is None:
             continue
-        old = decl_text(b[0], b[1])
-        new = re.sub(r'^([-+]\s*\()[^()]*(\))', lambda m: m.group(1) + clean_type(nm['returnType']['qualType']) + m.group(2),
-                     old, count=1)
-        add(key, {'kind': 'replace', 'old': old, 'offset': b[1], 'new': new})
+        old = new = decl_text(b[0], b[1])
+        if (cls, sel) in retypes:
+            nm = new_methods.get((cls, sel))
+            if nm is None:
+                sys.exit('extract: 11.3 has no %s %s to retype from' % (cls, sel))
+            new = re.sub(r'^([-+]\s*\()[^()]*(\))',
+                         lambda m: m.group(1) + clean_type(nm['returnType']['qualType']) + m.group(2), new, count=1)
+            # spec: a block 11.3 marks NS_NOESCAPE keeps the attribute, where 11.3 spells it (before the caret)
+            ps = [re.sub(r'\(\^', '(__attribute__((noescape)) ^', clean_type(x['type']['qualType']), count=1)
+                  if any(i.get('kind') == 'NoEscapeAttr' for i in x.get('inner', [])) else clean_type(x['type']['qualType'])
+                  for x in nm.get('inner', []) if x.get('kind') == 'ParmVarDecl']
+            r = retype_params(new, ps)
+            if r is None:
+                sys.exit('extract: %s %s has %d parameters in 11.3 but not in 10.9' % (cls, sel, len(ps)))
+            new = r
+        if (cls, sel) in nonnull:
+            new = re.sub(r'^([-+]\s*\()', r'\1nonnull ', new, count=1)
+        if new != old:
+            add(key, {'kind': 'replace', 'old': old, 'offset': b[1], 'new': new})
+
+    # R1 for a setter whose class 10.9 gives no getter (NSMutableURLRequest's, over NSURLRequest's readonly
+    # properties): 11.3 redeclares the property readwrite in the subclass, so the setter becomes that declaration
+    for n, c, b in methods:
+        sel = n['name']
+        m = re.match(r'set([A-Z]\w*):$', sel)
+        if not m or not n.get('instance') or b is None or b[0] is None or (b[0], b[1]) in used_setters:
+            continue
+        cls, _cat, ckind = owner(c)
+        if ckind == 'protocol':
+            continue
+        key = relkey(b[0], roots)
+        if key is None or not files.search(key) or key in ALLOW:
+            continue
+        name = m.group(1)[0].lower() + m.group(1)[1:]
+        p = props_by_name.get((cls, name, False)) or props_by_name.get((cls, m.group(1), False))
+        if p is None or p.get('readonly'):
+            continue
+        if any(k[0] == cls and (getter(p), True) in v for k, v in by_class.items()):
+            continue
+        decl = decl_text(b[0], b[1])
+        d = re.match(r'^-\s*\(void\)\s*%s\s*\(([^()]*)\)\s*\w+\s*(.*?);$' % re.escape(sel), decl, re.S)
+        if not d:
+            continue
+        typ, trailer = d.group(1).strip(), d.group(2).strip()
+        is_object = typ == 'id' or typ.startswith('id ') or typ.startswith('id<') or typ.endswith('*') or typ == 'Class'
+        a = attrs(p, False, is_object, (cls, name) in nonnull)
+        sep = '' if typ.endswith('*') else ' '
+        prop = '@property %s%s%s%s%s;' % ('(%s) ' % ', '.join(a) if a else '', typ, sep, p['name'],
+                                          ' ' + trailer if trailer else '')
+        add(key, {'kind': 'replace', 'old': decl, 'offset': b[1], 'new': prop})
 
     # R2: constants 11.3 types as one of the string enums, retyped, with the typedef before the header's first one
     first = {}
@@ -267,16 +401,25 @@ def main():
         if key is None or not files.search(key):
             continue
         old = decl_text(path, off)
-        new = re.sub(r'NSString\s*\*\s*const', typ + ' const', old, count=1)
+        if string_enums[typ] == 'cf':
+            new = re.sub(r'const\s+CFStringRef\b', 'const ' + typ, old, count=1)
+        else:
+            new = re.sub(r'NSString\s*\*\s*const', typ + ' const', old, count=1)
         if new == old:
             continue
         add(key, {'kind': 'replace', 'old': old, 'offset': off, 'new': new})
         if (key, typ) not in first or off < first[(key, typ)]:
             first[(key, typ)] = off
+    # every string enum's typedef goes after the header's imports, before its first use, one insert per header
+    placed = {}
     for (key, typ), off in sorted(first.items()):
-        add(key, {'kind': 'insert', 'offset': off, 'text': typedef_text(typ)})
+        placed.setdefault(key, []).append((typ, off))
+    for key, ts in sorted(placed.items()):
+        at = after_imports(text_of(key), min(off for _, off in ts))
+        add(key, {'kind': 'insert', 'offset': at, 'text': ''.join(typedef_text(t, string_enums[t]) for t, _ in sorted(ts))})
     for ti in hand.get('typedef_inserts', []):
-        add(ti['header'], {'kind': 'insert', 'offset': unique(ti['header'], ti['before']), 'text': typedef_text(ti['typedef'])})
+        add(ti['header'], {'kind': 'insert', 'offset': unique(ti['header'], ti['before']),
+                           'text': typedef_text(ti['typedef'], ti.get('kind', 'extensible'))})
 
     # R3: every CF typedef 11.3 bridges, in the 10.9 headers this run covers
     bridged = {}
