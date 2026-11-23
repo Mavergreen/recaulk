@@ -49,9 +49,9 @@ void
 kf_apply_all(void)
 {
 	const char *cmdline = PE_state.bootArgs ? ((boot_args *)PE_state.bootArgs)->CommandLine : NULL;
-	/* the fixes' anchors, then two symbols whose live addresses fix the slide */
-	struct rk_sym want[KF_NFIX + 2];
-	uint64_t live[KF_NFIX + 2];
+	/* the patches' anchors, the hook's symbols, then two whose live addresses fix the slide */
+	struct rk_sym want[KF_NFIX + KF_STE_NSYMS + 2];
+	uint64_t live[KF_NFIX + KF_STE_NSYMS + 2];
 	struct rk_kernel k;
 	uint64_t slide;
 	const char *why = NULL;
@@ -61,6 +61,10 @@ kf_apply_all(void)
 
 	for (i = 0; i < KF_NFIX; i++) {
 		want[i] = (struct rk_sym){ kf_fixes[i].patch->anchor, 0, 0 };
+		live[i] = 0;
+	}
+	for (unsigned j = 0; j < KF_STE_NSYMS; j++, i++) {
+		want[i] = (struct rk_sym){ kf_ste_syms[j], 0, 0 };
 		live[i] = 0;
 	}
 	want[i] = (struct rk_sym){ "_printf", 0, 0 };
@@ -105,6 +109,25 @@ kf_apply_all(void)
 		*kf_fixes[i].state = KF_APPLIED;
 		printf(KF_LOG "%s: applied\n", p->name);
 	}
+	/* signal_target_exit, a hook, on the same kernel */
+	static const uint8_t ste_uuid[16] = KF_UUID_13F1911;
+	if (kf_uuid_eq(k.uuid, ste_uuid)) {
+		uint64_t v[KF_STE_NSYMS];
+		int found[KF_STE_NSYMS];
+		known++;
+		for (unsigned j = 0; j < KF_STE_NSYMS; j++) {
+			v[j] = want[KF_NFIX + j].value;
+			found[j] = want[KF_NFIX + j].found;
+		}
+		if (kf_bootarg_disabled(cmdline, "signal_target_exit"))
+			printf(KF_LOG "signal_target_exit: disabled (boot-arg)\n");
+		else if ((err = kf_signal_target_exit_apply(v, found, slide, &k, &why)) != 0)
+			printf(KF_LOG "signal_target_exit: refused (%s)\n", why);
+		else {
+			kf_signal_target_exit_state = KF_APPLIED;
+			printf(KF_LOG "signal_target_exit: applied\n");
+		}
+	}
 	if (known == 0) {
 		kf_uuid_hex(hex, k.uuid);
 		printf(KF_LOG "no fixes for this kernel (UUID %s)\n", hex);
@@ -117,5 +140,5 @@ kf_any_applied(void)
 	for (unsigned i = 0; i < sizeof kf_fixes / sizeof kf_fixes[0]; i++)
 		if (*kf_fixes[i].state == KF_APPLIED)
 			return 1;
-	return 0;
+	return kf_signal_target_exit_state == KF_APPLIED;
 }

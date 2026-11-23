@@ -1,7 +1,8 @@
 #!/bin/sh
 # platform: host-agnostic -- builds RecaulkKernelFixes.kext, Wowfunhappy's kext and a kevent smoke test; loads them on the 10.9 guest only (RECAULK_TEST_PHASE)
 # spec: README.md "The kernel-fixes kext" -- on 10.9.5 13F1911: RecaulkKernelFixes applies kqueue_scan_restart
-#       (sysctl 1, an "applied" line), kevent still works with it applied, and it refuses to unload. In a second
+#       (sysctl 1, an "applied" line), kevent still works with it applied, signal_target_exit is applied, and it
+#       refuses to unload. In a second
 #       round Wowfunhappy's KQueueScanContinuePatch, rebuilt from the gist, patches the kernel first, and
 #       RecaulkKernelFixes reports it as already applied (sysctl 2) and writes nothing; before that, a build whose
 #       table names another kernel's UUID applies nothing and unloads. Each round wants a fresh
@@ -67,6 +68,9 @@ fresh)
   [ -d /Library/Extensions/RecaulkKernelFixes.kext ] || bad "the pkg installed no /Library/Extensions/RecaulkKernelFixes.kext"
   out="$("$(tbin kq)")" || bad "kqueue_restart: the reproducer failed: $out"
   echo "kfix-runtime-test: kqueue_restart: $out"
+  # spec: README.md "The kernel-fixes kext" -- signal_target_exit is applied
+  sig="$(sysctl -n debug.recaulk_kfix.signal_target_exit 2>/dev/null || echo absent)"
+  [ "$sig" = 1 ] || bad "signal_applied: debug.recaulk_kfix.signal_target_exit is $sig, want 1: $(sudo -n dmesg | grep 'RecaulkKernelFixes: signal_target_exit')"
   if sudo -n kextunload -b $B > "$d/unload.log" 2>&1; then bad "unload_refused: kextunload succeeded with a fix applied"; fi
   loaded $B || bad "unload_refused: the kext is gone"
   [ "$(st)" = 1 ] || bad "unload_refused: the sysctl is $(st) after the unload attempt"

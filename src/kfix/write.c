@@ -39,7 +39,13 @@ kf_write_action(void *arg)
 		w->err = EIO;
 		return;
 	}
-	memcpy(w->dst, w->src, w->len);
+	if (w->len == 4) {
+		uint32_t v;
+		memcpy(&v, w->src, 4);
+		*(volatile uint32_t *)w->dst = v;	/* one store: a call's displacement */
+	} else {
+		memcpy(w->dst, w->src, w->len);
+	}
 	set_cr0(get_cr0() | KF_CR0_WP);
 	if (!(get_cr0() & KF_CR0_WP))
 		panic(KF_LOG "CR0.WP would not set again after writing kernel text");

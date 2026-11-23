@@ -75,3 +75,68 @@ kf_bootarg_disabled(const char *cmdline, const char *name)
 	}
 	return 0;
 }
+
+static int32_t
+rd32(const uint8_t *p)
+{
+	return (int32_t)((uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24);
+}
+
+int
+kf_find_call(const uint8_t *fn, size_t fnlen, uint64_t fn_addr, uint64_t target, const uint8_t *before,
+    size_t nbefore, uint64_t *call_addr, const char **why)
+{
+	unsigned found = 0;
+	uint64_t at = 0;
+	for (size_t i = nbefore; i + 5 <= fnlen; i++) {
+		if (fn[i] != 0xe8 || memcmp(fn + i - nbefore, before, nbefore) != 0)
+			continue;
+		if (fn_addr + i + 5 + (uint64_t)(int64_t)rd32(fn + i + 1) != target)
+			continue;
+		found++;
+		at = fn_addr + i;
+	}
+	if (found != 1) {
+		*why = found == 0 ? "no call to the target after the expected bytes" : "more than one matching call";
+		return ESRCH;
+	}
+	*call_addr = at;
+	return 0;
+}
+
+int
+kf_store_ok(uint64_t addr, size_t len)
+{
+	return len > 0 && len <= 64 && (addr & ~(uint64_t)63) == ((addr + len - 1) & ~(uint64_t)63);
+}
+
+int
+kf_rel32(uint64_t next_ip, uint64_t target, int32_t *disp)
+{
+	int64_t d = (int64_t)(target - next_ip);
+	if (d < -(int64_t)0x80000000LL || d > (int64_t)0x7fffffffLL)
+		return ERANGE;
+	*disp = (int32_t)d;
+	return 0;
+}
+
+int
+kf_gap_ok(const uint8_t *pre, size_t need)
+{
+	if (pre[0] != 0xc3)
+		return 0;
+	for (size_t i = 1; i <= need; i++)
+		if (pre[i] != 0x90)
+			return 0;
+	return 1;
+}
+
+void
+kf_trampoline(uint8_t out[KF_TRAMPOLINE_LEN], uint64_t handler)
+{
+	out[0] = 0xff;
+	out[1] = 0x25;
+	out[2] = out[3] = out[4] = out[5] = 0;
+	for (int i = 0; i < 8; i++)
+		out[6 + i] = (uint8_t)(handler >> (8 * i));
+}
