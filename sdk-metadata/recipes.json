@@ -8735,7 +8735,7 @@
       "replacements": [
         {
           "old": "- (NSString *)name;",
-          "new": "@property (readonly) NSNotificationName name;"
+          "new": "@property (readonly, copy) NSNotificationName name;"
         },
         {
           "old": "- (id)object;",
@@ -9091,7 +9091,7 @@
         },
         {
           "old": "+ (NSColor *)gridColor;",
-          "new": "@property (class, readonly, strong) NSColor *gridColor;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSColor has no separatorColor, so a caller checks availability first. */\n+ (NSColor *)separatorColor __attribute__((availability(macosx,introduced=10.14)));"
+          "new": "@property (class, readonly, strong) NSColor *gridColor;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSColor has no separatorColor, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *separatorColor __attribute__((availability(macosx,introduced=10.14)));\n/* 10.10; 10.9's NSColor has no labelColor, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *labelColor __attribute__((availability(macosx,introduced=10.10)));"
         },
         {
           "old": "+ (NSColor *)keyboardFocusIndicatorColor;",
@@ -9354,6 +9354,10 @@
           "new": "@property (class, assign) Class cellClass;"
         },
         {
+          "old": "- (id)initWithFrame:(NSRect)frameRect;",
+          "new": "- (nonnull instancetype)initWithFrame:(NSRect)frameRect;"
+        },
+        {
           "old": "- (id)cell;",
           "new": "@property (strong) id cell;"
         },
@@ -9467,7 +9471,7 @@
         },
         {
           "old": "- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection;",
-          "new": "\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, its cell's; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property BOOL usesSingleLineMode __attribute__((availability(macosx,introduced=10.10)));"
+          "new": "\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, its cell's; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property BOOL usesSingleLineMode;"
         },
         {
           "old": "- (NSInteger)integerValue NS_AVAILABLE_MAC(10_5);",
@@ -10004,6 +10008,10 @@
         {
           "old": "- (NSFontSymbolicTraits)symbolicTraits;",
           "new": "@property (readonly) NSFontDescriptorSymbolicTraits symbolicTraits;"
+        },
+        {
+          "old": "- (id)objectForKey:(NSString *)anAttribute;",
+          "new": "- (id)objectForKey:(NSFontDescriptorAttributeName)anAttribute;"
         },
         {
           "old": "- (NSDictionary *)fontAttributes;",
@@ -10666,6 +10674,10 @@
         {
           "old": "- (void)setAllowsCutCopyPaste:(BOOL)allow;\n",
           "new": "\n"
+        },
+        {
+          "old": "\n@end\n",
+          "new": "\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSImageView has no tint, so a caller checks availability first. */\n@property (nullable, copy) NSColor *contentTintColor __attribute__((availability(macosx,introduced=10.14)));\n\n@end\n"
         }
       ]
     },
@@ -11904,6 +11916,10 @@
           "new": "@property (readonly) NSInteger numberOfRows;"
         },
         {
+          "old": "- (NSTableColumn *)tableColumnWithIdentifier:(NSString *)identifier;",
+          "new": "- (NSTableColumn *)tableColumnWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;"
+        },
+        {
           "old": "- (NSInteger)editedColumn;",
           "new": "@property (readonly) NSInteger editedColumn;"
         },
@@ -12931,7 +12947,7 @@
         },
         {
           "old": "- (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;",
-          "new": "- (instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;"
+          "new": "- (nonnull instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;"
         },
         {
           "old": "- (NSString *)title;",
@@ -13624,6 +13640,630 @@
         {
           "old": "APPKIT_EXTERN NSString * const NSWindowDidChangeOcclusionStateNotification NS_AVAILABLE_MAC(10_9);",
           "new": "APPKIT_EXTERN NSNotificationName const NSWindowDidChangeOcclusionStateNotification NS_AVAILABLE_MAC(10_9);"
+        }
+      ]
+    },
+    {
+      "id": "foundation-bundle-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSBundle.h",
+      "sha256": "41142d2954431c921d92ed5acb0925df7844c78fe7636e8b9e06af7f6ed0a8fc",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSBundle.h"
+      ],
+      "replacements": [
+        {
+          "old": "\n@class NSArray, NSDictionary, NSString, NSURL, NSError;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSArray, NSDictionary, NSString, NSURL, NSError;\n"
+        },
+        {
+          "old": "+ (NSBundle *)mainBundle;",
+          "new": "@property (class, readonly, strong) NSBundle *mainBundle;"
+        },
+        {
+          "old": "+ (NSBundle *)bundleForClass:(Class)aClass;",
+          "new": "+ (nonnull NSBundle *)bundleForClass:(Class)aClass;"
+        },
+        {
+          "old": "+ (NSArray *)allBundles;",
+          "new": "@property (class, readonly, copy) NSArray *allBundles;"
+        },
+        {
+          "old": "+ (NSArray *)allFrameworks;",
+          "new": "@property (class, readonly, copy) NSArray *allFrameworks;"
+        },
+        {
+          "old": "- (BOOL)isLoaded;",
+          "new": "@property (readonly, getter=isLoaded) BOOL loaded;"
+        },
+        {
+          "old": "- (NSURL *)bundleURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *bundleURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)resourceURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *resourceURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)executableURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *executableURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)privateFrameworksURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *privateFrameworksURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)sharedFrameworksURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *sharedFrameworksURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)sharedSupportURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *sharedSupportURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)builtInPlugInsURL NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property (readonly, copy) NSURL *builtInPlugInsURL NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSURL *)appStoreReceiptURL NS_AVAILABLE(10_7, 7_0);",
+          "new": "@property (readonly, copy) NSURL *appStoreReceiptURL NS_AVAILABLE(10_7, 7_0);"
+        },
+        {
+          "old": "- (NSString *)bundlePath;",
+          "new": "@property (readonly, copy) NSString *bundlePath;"
+        },
+        {
+          "old": "- (NSString *)resourcePath;",
+          "new": "@property (readonly, copy) NSString *resourcePath;"
+        },
+        {
+          "old": "- (NSString *)executablePath;",
+          "new": "@property (readonly, copy) NSString *executablePath;"
+        },
+        {
+          "old": "- (NSString *)privateFrameworksPath;",
+          "new": "@property (readonly, copy) NSString *privateFrameworksPath;"
+        },
+        {
+          "old": "- (NSString *)sharedFrameworksPath;",
+          "new": "@property (readonly, copy) NSString *sharedFrameworksPath;"
+        },
+        {
+          "old": "- (NSString *)sharedSupportPath;",
+          "new": "@property (readonly, copy) NSString *sharedSupportPath;"
+        },
+        {
+          "old": "- (NSString *)builtInPlugInsPath;",
+          "new": "@property (readonly, copy) NSString *builtInPlugInsPath;"
+        },
+        {
+          "old": "- (NSString *)bundleIdentifier;",
+          "new": "@property (readonly, copy) NSString *bundleIdentifier;"
+        },
+        {
+          "old": "- (NSDictionary *)infoDictionary;",
+          "new": "@property (readonly, copy) NSDictionary *infoDictionary;"
+        },
+        {
+          "old": "- (NSDictionary *)localizedInfoDictionary;",
+          "new": "@property (readonly, copy) NSDictionary *localizedInfoDictionary;"
+        },
+        {
+          "old": "- (Class)principalClass;",
+          "new": "@property (readonly) Class principalClass;"
+        },
+        {
+          "old": "- (NSArray *)preferredLocalizations;",
+          "new": "@property (readonly, copy) NSArray *preferredLocalizations;"
+        },
+        {
+          "old": "- (NSArray *)localizations;",
+          "new": "@property (readonly, copy) NSArray *localizations;"
+        },
+        {
+          "old": "- (NSString *)developmentLocalization;",
+          "new": "@property (readonly, copy) NSString *developmentLocalization;"
+        },
+        {
+          "old": "- (NSArray *)executableArchitectures NS_AVAILABLE(10_5, 2_0);",
+          "new": "@property (readonly, copy) NSArray *executableArchitectures NS_AVAILABLE(10_5, 2_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSBundleDidLoadNotification;",
+          "new": "FOUNDATION_EXPORT NSNotificationName const NSBundleDidLoadNotification;"
+        }
+      ]
+    },
+    {
+      "id": "foundation-calendar-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCalendar.h",
+      "sha256": "fb76047da8b810822e3a4907ad03ee2dc6a1acde40237e042b580e1c7ad3076d",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSCalendar.h"
+      ],
+      "replacements": [
+        {
+          "old": "\n@class NSDateComponents, NSLocale, NSTimeZone, NSString, NSArray;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSCalendarIdentifier\n#define __RECAULK_TYPEDEF_NSCalendarIdentifier 1\ntypedef NSString *NSCalendarIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSDateComponents, NSLocale, NSTimeZone, NSString, NSArray;\n"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierGregorian  NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierGregorian  NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierBuddhist            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierBuddhist            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierChinese             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierChinese             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierCoptic              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierCoptic              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierEthiopicAmeteMihret NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierEthiopicAmeteMihret NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierEthiopicAmeteAlem   NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierEthiopicAmeteAlem   NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierHebrew              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierHebrew              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierISO8601             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierISO8601             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIndian              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIndian              NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIslamic             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIslamic             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierIslamicCivil        NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierIslamicCivil        NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierJapanese            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierJapanese            NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierPersian             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierPersian             NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarIdentifierRepublicOfChina     NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);",
+          "new": "FOUNDATION_EXPORT NSCalendarIdentifier const NSCalendarIdentifierRepublicOfChina     NS_AVAILABLE(10_6, __NSCALENDAR_COND_IOS_4_0);"
+        },
+        {
+          "old": "+ (id)currentCalendar;",
+          "new": "@property (class, readonly, copy) id currentCalendar;"
+        },
+        {
+          "old": "+ (id)autoupdatingCurrentCalendar NS_AVAILABLE(10_5, 2_0);",
+          "new": "@property (class, readonly, strong) id autoupdatingCurrentCalendar NS_AVAILABLE(10_5, 2_0);"
+        },
+        {
+          "old": "- (NSString *)calendarIdentifier;",
+          "new": "@property (readonly, copy) NSCalendarIdentifier calendarIdentifier;"
+        },
+        {
+          "old": "- (void)setLocale:(NSLocale *)locale;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSLocale *)locale;",
+          "new": "@property (copy) NSLocale *locale;"
+        },
+        {
+          "old": "- (void)setTimeZone:(NSTimeZone *)tz;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSTimeZone *)timeZone;",
+          "new": "@property (copy) NSTimeZone *timeZone;"
+        },
+        {
+          "old": "- (void)setFirstWeekday:(NSUInteger)weekday;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSUInteger)firstWeekday;",
+          "new": "@property NSUInteger firstWeekday;"
+        },
+        {
+          "old": "- (void)setMinimumDaysInFirstWeek:(NSUInteger)mdw;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSUInteger)minimumDaysInFirstWeek;",
+          "new": "@property NSUInteger minimumDaysInFirstWeek;"
+        },
+        {
+          "old": "- (NSArray *)eraSymbols      NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *eraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)longEraSymbols  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *longEraSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)monthSymbols                    NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *monthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortMonthSymbols               NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)veryShortMonthSymbols           NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *veryShortMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)standaloneMonthSymbols          NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *standaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortStandaloneMonthSymbols     NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)veryShortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *veryShortStandaloneMonthSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)weekdaySymbols                    NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *weekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortWeekdaySymbols               NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)veryShortWeekdaySymbols           NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *veryShortWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)standaloneWeekdaySymbols          NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *standaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortStandaloneWeekdaySymbols     NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *veryShortStandaloneWeekdaySymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)quarterSymbols                 NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *quarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortQuarterSymbols            NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)standaloneQuarterSymbols       NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *standaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSArray *)shortStandaloneQuarterSymbols  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSArray<NSString *> *shortStandaloneQuarterSymbols NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSString *)AMSymbol  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSString *AMSymbol NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSString *)PMSymbol  NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property (readonly, copy) NSString *PMSymbol NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "FOUNDATION_EXPORT NSString * const NSCalendarDayChangedNotification NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);",
+          "new": "FOUNDATION_EXPORT NSNotificationName const NSCalendarDayChangedNotification NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);"
+        },
+        {
+          "old": "enum {\n\tNSDateComponentUndefined = NSIntegerMax,",
+          "new": "enum : NSInteger {\n\tNSDateComponentUndefined = NSIntegerMax,"
+        },
+        {
+          "old": "- (NSCalendar *)calendar NS_AVAILABLE(10_7, 4_0);",
+          "new": "@property (copy) NSCalendar *calendar NS_AVAILABLE(10_7, 4_0);"
+        },
+        {
+          "old": "- (NSTimeZone *)timeZone NS_AVAILABLE(10_7, 4_0);",
+          "new": "@property (copy) NSTimeZone *timeZone NS_AVAILABLE(10_7, 4_0);"
+        },
+        {
+          "old": "- (NSInteger)era;",
+          "new": "@property NSInteger era;"
+        },
+        {
+          "old": "- (NSInteger)year;",
+          "new": "@property NSInteger year;"
+        },
+        {
+          "old": "- (NSInteger)month;",
+          "new": "@property NSInteger month;"
+        },
+        {
+          "old": "- (NSInteger)day;",
+          "new": "@property NSInteger day;"
+        },
+        {
+          "old": "- (NSInteger)hour;",
+          "new": "@property NSInteger hour;"
+        },
+        {
+          "old": "- (NSInteger)minute;",
+          "new": "@property NSInteger minute;"
+        },
+        {
+          "old": "- (NSInteger)second;",
+          "new": "@property NSInteger second;"
+        },
+        {
+          "old": "- (NSInteger)nanosecond NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);",
+          "new": "@property NSInteger nanosecond NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);"
+        },
+        {
+          "old": "- (NSInteger)weekday;",
+          "new": "@property NSInteger weekday;"
+        },
+        {
+          "old": "- (NSInteger)weekdayOrdinal;",
+          "new": "@property NSInteger weekdayOrdinal;"
+        },
+        {
+          "old": "- (NSInteger)quarter NS_AVAILABLE(10_6, 4_0);",
+          "new": "@property NSInteger quarter NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "- (NSInteger)weekOfMonth NS_AVAILABLE(10_7, 5_0);",
+          "new": "@property NSInteger weekOfMonth NS_AVAILABLE(10_7, 5_0);"
+        },
+        {
+          "old": "- (NSInteger)weekOfYear NS_AVAILABLE(10_7, 5_0);",
+          "new": "@property NSInteger weekOfYear NS_AVAILABLE(10_7, 5_0);"
+        },
+        {
+          "old": "- (NSInteger)yearForWeekOfYear NS_AVAILABLE(10_7, 5_0);",
+          "new": "@property NSInteger yearForWeekOfYear NS_AVAILABLE(10_7, 5_0);"
+        },
+        {
+          "old": "- (BOOL)isLeapMonth NS_AVAILABLE(10_8, 6_0);",
+          "new": "@property (getter=isLeapMonth) BOOL leapMonth NS_AVAILABLE(10_8, 6_0);"
+        },
+        {
+          "old": "- (void)setCalendar:(NSCalendar *)cal NS_AVAILABLE(10_7, 4_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setTimeZone:(NSTimeZone *)tz NS_AVAILABLE(10_7, 4_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setEra:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setYear:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setMonth:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setDay:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setHour:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setMinute:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setSecond:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setNanosecond:(NSInteger)value NS_AVAILABLE(10_7, __NSCALENDAR_COND_IOS_5_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setWeekday:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setWeekdayOrdinal:(NSInteger)v;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setQuarter:(NSInteger)v NS_AVAILABLE(10_6, 4_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setWeekOfMonth:(NSInteger)w NS_AVAILABLE(10_7, 5_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setWeekOfYear:(NSInteger)w NS_AVAILABLE(10_7, 5_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setYearForWeekOfYear:(NSInteger)y NS_AVAILABLE(10_7, 5_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (void)setLeapMonth:(BOOL)lm NS_AVAILABLE(10_8, 6_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSDate *)date NS_AVAILABLE(10_7, 4_0);",
+          "new": "@property (readonly, copy) NSDate *date NS_AVAILABLE(10_7, 4_0);"
+        },
+        {
+          "old": "- (BOOL)isValidDate NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);",
+          "new": "@property (readonly, getter=isValidDate) BOOL validDate NS_AVAILABLE(10_9, __NSCALENDAR_COND_IOS_7_0);"
+        }
+      ]
+    },
+    {
+      "id": "appkit-responder-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSResponder.h",
+      "sha256": "82ca478ebe77d60ef0230865e3af774e85c3873f96959737036dc0c019b9edac",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSResponder.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (NSResponder *)nextResponder;",
+          "new": "@property (assign) NSResponder *nextResponder;"
+        },
+        {
+          "old": "- (void)setNextResponder:(NSResponder *)aResponder;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (BOOL)acceptsFirstResponder;",
+          "new": "@property (readonly) BOOL acceptsFirstResponder;"
+        },
+        {
+          "old": "- (void)setMenu:(NSMenu *)menu;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSMenu *)menu;",
+          "new": "@property (strong) NSMenu *menu;"
+        },
+        {
+          "old": "- (NSUndoManager *)undoManager;",
+          "new": "@property (readonly, strong) NSUndoManager *undoManager;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-tablecolumn-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableColumn.h",
+      "sha256": "79ddafd6d6b25d6b816eef6cb1b117c9422f1a93577f95b6bb1bccc75180197d",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSTableColumn.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSTableColumn : NSObject <NSCoding, NSUserInterfaceItemIdentification> {\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n@interface NSTableColumn : NSObject <NSCoding, NSUserInterfaceItemIdentification> {\n"
+        },
+        {
+          "old": "- (id)initWithIdentifier:(NSString *)identifier;",
+          "new": "- (instancetype)initWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;"
+        },
+        {
+          "old": "- (void)setIdentifier:(NSString *)identifier;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSString *)identifier;",
+          "new": "@property (copy) NSUserInterfaceItemIdentifier identifier;"
+        },
+        {
+          "old": "- (void)setTableView:(NSTableView *)tableView;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSTableView *)tableView;",
+          "new": "@property (assign) NSTableView *tableView;"
+        },
+        {
+          "old": "- (void)setWidth:(CGFloat)width;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (CGFloat)width;",
+          "new": "@property CGFloat width;"
+        },
+        {
+          "old": "- (void)setMinWidth:(CGFloat)minWidth;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (CGFloat)minWidth;",
+          "new": "@property CGFloat minWidth;"
+        },
+        {
+          "old": "- (void)setMaxWidth:(CGFloat)maxWidth;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (CGFloat)maxWidth;",
+          "new": "@property CGFloat maxWidth;"
+        },
+        {
+          "old": "- (void)setHeaderCell:(NSCell *)cell;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (id)headerCell;",
+          "new": "@property (strong) id headerCell;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10, the header cell's string; librecaulk-objc.a's AppKit root provides it on 10.9. */\n@property (copy) NSString *title __attribute__((availability(macosx,introduced=10.10)));"
+        },
+        {
+          "old": "- (void)setDataCell:(NSCell *)cell;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (id)dataCell;",
+          "new": "@property (strong) id dataCell;"
+        },
+        {
+          "old": "- (void)setEditable:(BOOL)flag;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (BOOL)isEditable;",
+          "new": "@property (getter=isEditable) BOOL editable;"
+        },
+        {
+          "old": "- (void)setSortDescriptorPrototype:(NSSortDescriptor *)sortDescriptor;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSSortDescriptor *)sortDescriptorPrototype;",
+          "new": "@property (copy) NSSortDescriptor *sortDescriptorPrototype;"
+        },
+        {
+          "old": "- (void)setResizingMask:(NSUInteger)resizingMask;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSUInteger)resizingMask;",
+          "new": "@property NSUInteger resizingMask;"
+        },
+        {
+          "old": "- (void)setHeaderToolTip:(NSString *)string NS_AVAILABLE_MAC(10_5);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSString *)headerToolTip NS_AVAILABLE_MAC(10_5);",
+          "new": "@property (copy) NSString *headerToolTip NS_AVAILABLE_MAC(10_5);"
+        },
+        {
+          "old": "- (BOOL)isHidden NS_AVAILABLE_MAC(10_5);",
+          "new": "@property (getter=isHidden) BOOL hidden NS_AVAILABLE_MAC(10_5);"
+        },
+        {
+          "old": "- (void)setHidden:(BOOL)hidden NS_AVAILABLE_MAC(10_5);\n",
+          "new": "\n"
         }
       ]
     }

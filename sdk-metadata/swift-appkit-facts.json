@@ -1261,6 +1261,12 @@
     "setter_offset": 801
    },
    {
+    "kind": "replace",
+    "old": "- (id)initWithFrame:(NSRect)frameRect;",
+    "offset": 861,
+    "new": "- (nonnull instancetype)initWithFrame:(NSRect)frameRect;"
+   },
+   {
     "kind": "property",
     "name": "cell",
     "class": "NSControl",
@@ -2770,6 +2776,12 @@
     "setter_offset": null
    },
    {
+    "kind": "replace",
+    "old": "- (id)objectForKey:(NSString *)anAttribute;",
+    "offset": 2990,
+    "new": "- (id)objectForKey:(NSFontDescriptorAttributeName)anAttribute;"
+   },
+   {
     "kind": "property",
     "name": "fontAttributes",
     "class": "NSFontDescriptor",
@@ -3796,6 +3808,11 @@
     "property": "@property BOOL allowsCutCopyPaste;",
     "setter_decl": "- (void)setAllowsCutCopyPaste:(BOOL)allow;",
     "setter_offset": 1208
+   },
+   {
+    "kind": "insert",
+    "offset": 1251,
+    "text": "\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSImageView has no tint, so a caller checks availability first. */\n@property (nullable, copy) NSColor *contentTintColor __attribute__((availability(macosx,introduced=10.14)));\n"
    }
   ],
   "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSLayoutConstraint.h": [
@@ -5079,6 +5096,56 @@
     "new": "APPKIT_EXTERN NSNotificationName NSPopUpButtonWillPopUpNotification;"
    }
   ],
+  "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSResponder.h": [
+   {
+    "kind": "property",
+    "name": "nextResponder",
+    "class": "NSResponder",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSResponder *)nextResponder;",
+    "offset": 370,
+    "property": "@property (assign) NSResponder *nextResponder;",
+    "setter_decl": "- (void)setNextResponder:(NSResponder *)aResponder;",
+    "setter_offset": 402
+   },
+   {
+    "kind": "property",
+    "name": "acceptsFirstResponder",
+    "class": "NSResponder",
+    "container": "interface",
+    "category": null,
+    "decl": "- (BOOL)acceptsFirstResponder;",
+    "offset": 3525,
+    "property": "@property (readonly) BOOL acceptsFirstResponder;",
+    "setter_decl": null,
+    "setter_offset": null
+   },
+   {
+    "kind": "property",
+    "name": "menu",
+    "class": "NSResponder",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSMenu *)menu;",
+    "offset": 3732,
+    "property": "@property (strong) NSMenu *menu;",
+    "setter_decl": "- (void)setMenu:(NSMenu *)menu;",
+    "setter_offset": 3700
+   },
+   {
+    "kind": "property",
+    "name": "undoManager",
+    "class": "NSResponder",
+    "container": "category",
+    "category": "NSUndoSupport",
+    "decl": "- (NSUndoManager *)undoManager;",
+    "offset": 12171,
+    "property": "@property (readonly, strong) NSUndoManager *undoManager;",
+    "setter_decl": null,
+    "setter_offset": null
+   }
+  ],
   "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSScreen.h": [
    {
     "kind": "insert",
@@ -5707,6 +5774,163 @@
     "setter_offset": 580
    }
   ],
+  "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableColumn.h": [
+   {
+    "kind": "insert",
+    "offset": 309,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)initWithIdentifier:(NSString *)identifier;",
+    "offset": 1239,
+    "new": "- (instancetype)initWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;"
+   },
+   {
+    "kind": "property",
+    "name": "identifier",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)identifier;",
+    "offset": 1547,
+    "property": "@property (copy) NSUserInterfaceItemIdentifier identifier;",
+    "setter_decl": "- (void)setIdentifier:(NSString *)identifier;",
+    "setter_offset": 1501
+   },
+   {
+    "kind": "property",
+    "name": "tableView",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSTableView *)tableView;",
+    "offset": 1621,
+    "property": "@property (assign) NSTableView *tableView;",
+    "setter_decl": "- (void)setTableView:(NSTableView *)tableView;",
+    "setter_offset": 1574
+   },
+   {
+    "kind": "property",
+    "name": "width",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (CGFloat)width;",
+    "offset": 1934,
+    "property": "@property CGFloat width;",
+    "setter_decl": "- (void)setWidth:(CGFloat)width;",
+    "setter_offset": 1901
+   },
+   {
+    "kind": "property",
+    "name": "minWidth",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (CGFloat)minWidth;",
+    "offset": 2254,
+    "property": "@property CGFloat minWidth;",
+    "setter_decl": "- (void)setMinWidth:(CGFloat)minWidth;",
+    "setter_offset": 2215
+   },
+   {
+    "kind": "property",
+    "name": "maxWidth",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (CGFloat)maxWidth;",
+    "offset": 2606,
+    "property": "@property CGFloat maxWidth;",
+    "setter_decl": "- (void)setMaxWidth:(CGFloat)maxWidth;",
+    "setter_offset": 2567
+   },
+   {
+    "kind": "property",
+    "name": "headerCell",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (id)headerCell;",
+    "offset": 2879,
+    "property": "@property (strong) id headerCell;",
+    "setter_decl": "- (void)setHeaderCell:(NSCell *)cell;",
+    "setter_offset": 2841
+   },
+   {
+    "kind": "property",
+    "name": "dataCell",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (id)dataCell;",
+    "offset": 3411,
+    "property": "@property (strong) id dataCell;",
+    "setter_decl": "- (void)setDataCell:(NSCell *)cell;",
+    "setter_offset": 3375
+   },
+   {
+    "kind": "property",
+    "name": "editable",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (BOOL)isEditable;",
+    "offset": 4497,
+    "property": "@property (getter=isEditable) BOOL editable;",
+    "setter_decl": "- (void)setEditable:(BOOL)flag;",
+    "setter_offset": 4465
+   },
+   {
+    "kind": "property",
+    "name": "sortDescriptorPrototype",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSSortDescriptor *)sortDescriptorPrototype;",
+    "offset": 5117,
+    "property": "@property (copy) NSSortDescriptor *sortDescriptorPrototype;",
+    "setter_decl": "- (void)setSortDescriptorPrototype:(NSSortDescriptor *)sortDescriptor;",
+    "setter_offset": 5046
+   },
+   {
+    "kind": "property",
+    "name": "resizingMask",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSUInteger)resizingMask;",
+    "offset": 5752,
+    "property": "@property NSUInteger resizingMask;",
+    "setter_decl": "- (void)setResizingMask:(NSUInteger)resizingMask;",
+    "setter_offset": 5702
+   },
+   {
+    "kind": "property",
+    "name": "headerToolTip",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)headerToolTip NS_AVAILABLE_MAC(10_5);",
+    "offset": 6048,
+    "property": "@property (copy) NSString *headerToolTip NS_AVAILABLE_MAC(10_5);",
+    "setter_decl": "- (void)setHeaderToolTip:(NSString *)string NS_AVAILABLE_MAC(10_5);",
+    "setter_offset": 5980
+   },
+   {
+    "kind": "property",
+    "name": "hidden",
+    "class": "NSTableColumn",
+    "container": "interface",
+    "category": null,
+    "decl": "- (BOOL)isHidden NS_AVAILABLE_MAC(10_5);",
+    "offset": 6482,
+    "property": "@property (getter=isHidden) BOOL hidden NS_AVAILABLE_MAC(10_5);",
+    "setter_decl": "- (void)setHidden:(BOOL)hidden NS_AVAILABLE_MAC(10_5);",
+    "setter_offset": 6523
+   }
+  ],
   "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableView.h": [
    {
     "kind": "insert",
@@ -5933,6 +6157,12 @@
     "property": "@property (readonly) NSInteger numberOfRows;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (NSTableColumn *)tableColumnWithIdentifier:(NSString *)identifier;",
+    "offset": 17265,
+    "new": "- (NSTableColumn *)tableColumnWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;"
    },
    {
     "kind": "property",
@@ -7712,7 +7942,7 @@
     "kind": "replace",
     "old": "- (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;",
     "offset": 11749,
-    "new": "- (instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;"
+    "new": "- (nonnull instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;"
    },
    {
     "kind": "property",

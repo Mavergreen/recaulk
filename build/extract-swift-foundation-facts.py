@@ -325,7 +325,9 @@ def main():
             else:
                 setter_decl, setter_offset = decl_text(b[0], s[1][1]), s[1][1]
         is_object = typ == 'id' or typ.startswith('id ') or typ.startswith('id<') or typ.endswith('*') \
-            or typ in ('Class', 'instancetype')
+            or typ in ('Class', 'instancetype') \
+            or (typ != 'SEL' and not clean_type(p['type'].get('desugaredQualType', '')).startswith('struct ')
+                and clean_type(p['type'].get('desugaredQualType', '')).endswith('*'))  # a string enum's typedef (copy)
         a = attrs(p, readonly, is_object, (cls, sel) in nonnull)
         sep = '' if typ.endswith('*') else ' '
         prop = '@property %s%s%s%s%s;' % ('(%s) ' % ', '.join(a) if a else '', typ, sep, p['name'],

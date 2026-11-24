@@ -965,6 +965,12 @@
     "setter_offset": null
    },
    {
+    "kind": "replace",
+    "old": "+ (NSBundle *)bundleForClass:(Class)aClass;",
+    "offset": 913,
+    "new": "+ (nonnull NSBundle *)bundleForClass:(Class)aClass;"
+   },
+   {
     "kind": "property",
     "name": "allBundles",
     "class": "NSBundle",
@@ -1497,7 +1503,7 @@
     "category": null,
     "decl": "- (NSString *)calendarIdentifier;",
     "offset": 8248,
-    "property": "@property (readonly) NSCalendarIdentifier calendarIdentifier;",
+    "property": "@property (readonly, copy) NSCalendarIdentifier calendarIdentifier;",
     "setter_decl": null,
     "setter_offset": null
    },
@@ -6135,7 +6141,7 @@
     "category": null,
     "decl": "- (NSString *)name;",
     "offset": 276,
-    "property": "@property (readonly) NSNotificationName name;",
+    "property": "@property (readonly, copy) NSNotificationName name;",
     "setter_decl": null,
     "setter_offset": null
    },

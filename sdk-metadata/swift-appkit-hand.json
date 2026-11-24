@@ -33,6 +33,11 @@
    "before": "@interface NSTableView : NSControl"
   },
   {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableColumn.h",
+   "typedef": "NSUserInterfaceItemIdentifier",
+   "before": "@interface NSTableColumn : NSObject <NSCoding, NSUserInterfaceItemIdentification> {"
+  },
+  {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSFontDescriptor.h",
    "typedef": "NSFontDescriptorAttributeName",
    "before": "@class NSMutableDictionary, NSDictionary, NSArray, NSSet, NSAffineTransform;"
@@ -90,6 +95,26 @@
   {
    "class": "NSFontDescriptor",
    "selector": "symbolicTraits"
+  },
+  {
+   "class": "NSTableView",
+   "selector": "tableColumnWithIdentifier:"
+  },
+  {
+   "class": "NSTableColumn",
+   "selector": "identifier"
+  },
+  {
+   "class": "NSTableColumn",
+   "selector": "initWithIdentifier:"
+  },
+  {
+   "class": "NSFontDescriptor",
+   "selector": "objectForKey:"
+  },
+  {
+   "class": "NSControl",
+   "selector": "initWithFrame:"
   }
  ],
  "nonnull": [
@@ -100,6 +125,14 @@
   {
    "class": "NSMenuItem",
    "selector": "initWithTitle:action:keyEquivalent:"
+  },
+  {
+   "class": "NSWindow",
+   "selector": "initWithContentRect:styleMask:backing:defer:"
+  },
+  {
+   "class": "NSControl",
+   "selector": "initWithFrame:"
   }
  ],
  "enum_shapes": [
@@ -163,6 +196,11 @@
  ],
  "inserts": [
   {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSImageView.h",
+   "before": "\n@end",
+   "text": "\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSImageView has no tint, so a caller checks availability first. */\n@property (nullable, copy) NSColor *contentTintColor __attribute__((availability(macosx,introduced=10.14)));\n"
+  },
+  {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSFontDescriptor.h",
    "before": "@class NSMutableDictionary, NSDictionary, NSArray, NSSet, NSAffineTransform;",
    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 names, with 10.9's values. */\ntypedef NS_OPTIONS(uint32_t, NSFontDescriptorSymbolicTraits) {\n    NSFontDescriptorTraitItalic = 1u << 0,\n    NSFontDescriptorTraitBold = 1u << 1,\n    NSFontDescriptorTraitExpanded = 1u << 5,\n    NSFontDescriptorTraitCondensed = 1u << 6,\n    NSFontDescriptorTraitMonoSpace = 1u << 10,\n    NSFontDescriptorTraitVertical = 1u << 11,\n    NSFontDescriptorTraitUIOptimized = 1u << 12,\n    NSFontDescriptorClassMask = 0xF0000000\n};\n\n"
@@ -218,6 +256,16 @@
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphics.h",
    "old": "enum {\n    NSCompositingOperationClear",
    "new": "typedef NS_ENUM(NSUInteger, NSCompositingOperation) {\n    NSCompositingOperationClear"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSColor.h",
+   "old": "+ (NSColor *)separatorColor __attribute__((availability(macosx,introduced=10.14)));",
+   "new": "@property (class, readonly, strong) NSColor *separatorColor __attribute__((availability(macosx,introduced=10.14)));\n/* 10.10; 10.9's NSColor has no labelColor, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *labelColor __attribute__((availability(macosx,introduced=10.10)));"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+   "old": "@property BOOL usesSingleLineMode __attribute__((availability(macosx,introduced=10.10)));",
+   "new": "@property BOOL usesSingleLineMode;"
   },
   {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSNib.h",

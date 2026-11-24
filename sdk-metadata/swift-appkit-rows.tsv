@@ -98,3 +98,17 @@ NSWindow.h	R1-property	-parentWindow	declaration	swift-appkit
 NSWindow.h	R1-property	-screen	declaration	swift-appkit
 NSWindow.h	R4-generic	-contentView	declaration	swift-appkit
 NSWindow.h	R5-enum	NSWindowStyleMask	declaration (new type name)	swift-appkit
+NSTableView.h	R4-type	-tableColumnWithIdentifier:	declaration	swift-appkit
+NSTableColumn.h	R1-property	-identifier	declaration	swift-appkit
+NSTableColumn.h	R4-type	-initWithIdentifier:	declaration	swift-appkit
+NSTableColumn.h	R1-property	-width	declaration	swift-appkit
+NSTableColumn.h	R1-property	-minWidth	declaration	swift-appkit
+NSTableColumn.h	R1-property	-maxWidth	declaration	swift-appkit
+NSFontDescriptor.h	R4-type	-objectForKey:	declaration	swift-appkit
+NSResponder.h	R1-property	-menu	declaration	swift-appkit
+NSWindow.h	nullability	-initWithContentRect:styleMask:backing:defer:	declaration	swift-appkit
+NSColor.h	R1-property	+separatorColor	declaration	swift-appkit
+NSControl.h	nullability	-initWithFrame:	declaration	swift-appkit
+NSControl.h	availability	-usesSingleLineMode	declaration	swift-appkit
+NSColor.h	R1-property	+labelColor	declaration	swift-appkit
+NSImageView.h	R1-property	-contentTintColor	declaration	swift-appkit

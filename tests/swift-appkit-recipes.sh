@@ -104,6 +104,32 @@ for h, n in [('NSEvent.h', 'NSEventModifierFlags'), ('NSView.h', 'NSAutoresizing
 assert '#if __swift__ < 40200\n@interface NSObject(NSControlSubclassNotifications)' in text['NSControl.h'], 'category_hidden_from_swift'
 # spec: NSUserInterfaceItemIdentifier is a swift_wrapper struct; the table view's lookup takes it (identifier_typed)
 assert '- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner' in text['NSTableView.h'], 'identifier_typed'
+# spec: swift-gg's measurement of 7e4683f, eight rows (gg_rows), and the maintainer's rulings on its two questions
+#       (gg_rulings): usesSingleLineMode needs no availability, as librecaulk-objc.a provides it on 10.9, and
+#       guarded later colors are declared at their availability
+fnd = {x['header'].split('/')[-1]: materialize(x) for x in (r[i] for i in p['swift-appkit']['recipes'])
+       if '/Foundation.framework/' in x['header']}
+AV = lambda v: ' __attribute__((availability(macosx,introduced=%s)));' % v
+for h, decl, label in [
+        ('NSTableView.h', '- (NSTableColumn *)tableColumnWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;', 'gg_rows 1'),
+        ('NSTableColumn.h', '@property (copy) NSUserInterfaceItemIdentifier identifier;', 'gg_rows 2'),
+        ('NSTableColumn.h', '- (instancetype)initWithIdentifier:(NSUserInterfaceItemIdentifier)identifier;', 'gg_rows 2'),
+        ('NSTableColumn.h', '@property CGFloat width;', 'gg_rows 2'),
+        ('NSTableColumn.h', '@property CGFloat minWidth;', 'gg_rows 2'),
+        ('NSTableColumn.h', '@property CGFloat maxWidth;', 'gg_rows 2'),
+        ('NSFontDescriptor.h', '- (id)objectForKey:(NSFontDescriptorAttributeName)anAttribute;', 'gg_rows 3'),
+        ('NSResponder.h', '@property (strong) NSMenu *menu;', 'gg_rows 5'),
+        ('NSWindow.h', '- (nonnull instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle '
+                       'backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;', 'gg_rows 6'),
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *separatorColor' + AV('10.14'), 'gg_rows 7'),
+        ('NSControl.h', '- (nonnull instancetype)initWithFrame:(NSRect)frameRect;', 'gg_rows 8'),
+        ('NSControl.h', '@property BOOL usesSingleLineMode;', 'gg_rulings'),
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *labelColor' + AV('10.10'), 'gg_rulings'),
+        ('NSImageView.h', '@property (nullable, copy) NSColor *contentTintColor' + AV('10.14'), 'gg_rulings')]:
+    assert decl in text.get(h, ''), (label, h, decl)
+assert '+ (nonnull NSBundle *)bundleForClass:(Class)aClass;' in fnd['NSBundle.h'], 'gg_rows 4'
+assert 'designated' not in text['NSWindow.h'].split('initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)')[1].split(';')[0].lower(), \
+    'gg_rows 6: nonnull only, as measured'
 for v in ('NSTrackingMouseEnteredAndExited', 'NSTrackingActiveAlways', 'NSTrackingEnabledDuringMouseDrag'):
     assert text['NSTrackingArea.h'].count(v) == 1, v
 PY
