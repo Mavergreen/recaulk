@@ -36,6 +36,7 @@ clang22 builds Recaulk on every host, so the Linux build and a native build on 1
 - self-upstream-exclude:components/clang22/linux-sha256: the pins bot's digest of the clang22 Linux archive; an ingredient pin, not Recaulk's own code
 - install-path:Library/Extensions/*: RecaulkKPI.kext, the kernel back-fill macFUSE depends on, and RecaulkKernelFixes.kext, the 10.9.5 kernel fixes; 10.9 loads third-party kexts only from here. They are in the manifest's outside list, so uninstalling Recaulk removes them
 - arm64:usr/local/mavergreen/recaulk/bin/recaulk-materialize: swift's toolchain and developers on Apple Silicon run it to materialize the 10.9 SDK views they build Mavericks targets against
+- macos-runner:release.yml:modern-smoke: recaulk-materialize's arm64 slice must run natively on Apple Silicon before it ships (conventions check 37), and only a macOS runner has one; shipyard approved the slot 2026-11-24. Exit: when the family has an arm64 Mac test host that is not a GitHub runner, or the slice is no longer shipped
 - self-upstream-exclude:release-notes/**: release-note sources; not in the pkg
 - self-upstream-exclude:comment-reasons: the conventions gate's comment config; not in the pkg
 - self-upstream-exclude:.claude/**: an agent's settings for working in this repo; not in the pkg

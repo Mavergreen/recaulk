@@ -269,6 +269,45 @@ jobs:
             RECAULK_BUILD="$PWD/mm-build/recaulk" RECAULK_INSTALLED=/usr/local/mavergreen/recaulk /usr/local/bin/guest-macosx-aqua sh tests/guest/run-runtime-tests.sh
             sh build/launch-updater.sh
 
+  # spec: README.md "Materializing an SDK view" -- recaulk-materialize's arm64 slice (INGREDIENTS.md) runs natively
+  #       on Apple Silicon before it ships: this run's own pkg, installed. Late, so a red Linux run never takes a
+  #       macOS runner (shipyard, 2026-11-24).
+  modern-smoke:
+    needs: [build, on-mavericks]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: macos-26
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      VER: ${{ needs.build.outputs.ver }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install mavericks-shipyard
+        uses: Mavergreen/shipyard/.github/actions/install@v1
+      - uses: actions/download-artifact@v8
+        with:
+          name: recaulk
+          path: dist
+      - name: Install this run's pkg
+        run: sudo installer -pkg "dist/recaulk-$VER.pkg" -target /
+      - name: recaulk-materialize runs natively and materializes swift-foundation
+        run: |
+          set -eu
+          got="$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)"
+          [ "$got" = 1 ] || { echo "::error::hw.optional.arm64 is $got: this runner is not Apple Silicon"; exit 1; }
+          RM=/usr/local/mavergreen/recaulk/bin/recaulk-materialize
+          arch -arm64 "$RM" --version
+          v="$(arch -arm64 "$RM" --version)"
+          [ "$v" = "recaulk-materialize $VER" ] || { echo "::error::installed recaulk-materialize says '$v', this run built $VER"; exit 1; }
+          arch -arm64 "$RM" --print-stamp --profile swift-foundation
+          SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
+          arch -arm64 "$RM" --sdk "$SDK" --out "$RUNNER_TEMP/view" --profile swift-foundation
+          [ -f "$RUNNER_TEMP/view/sdk/MacOSX10.9.sdk/SDKSettings.json" ] || { echo "::error::no SDKSettings.json in the view"; exit 1; }
+          arch -arm64 "$RM" --sdk "$SDK" --out "$RUNNER_TEMP/view" --profile swift-foundation --verify
+
   scan:
     needs: [build]
     if: always() && needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
@@ -282,7 +321,7 @@ jobs:
       SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
   publish:
-    needs: [build, scan, on-mavericks]
+    needs: [build, scan, on-mavericks, modern-smoke]
     if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -304,7 +343,7 @@ jobs:
   required:
     name: required (release)
     if: always()
-    needs: [build, on-mavericks, scan, publish, retry]
+    needs: [build, on-mavericks, modern-smoke, scan, publish, retry]
     runs-on: ubuntu-latest
     steps:
       - uses: Mavergreen/shipyard/.github/actions/required-gate@v1
