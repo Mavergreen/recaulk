@@ -71,6 +71,20 @@ variant 's|"id": "t-stdio-v1"|"id": "t-stdio-v1"|; s|"header": "usr/include/stdi
 run --profile t
 refuse two_recipes_one_header t-array-v1 t-stdio-v1
 
+echo "== malformed_recipe (review I4)"
+variant 's|"aliases": \[\]|"alias": []|'; run --recipe t-stdio-v1
+refuse malformed_recipe t-stdio-v1 "unexpected key 'alias'"
+"$d/rm" --print-stamp --recipe t-stdio-v1 --recipes "$d/v.json" >/dev/null 2>"$d/err" && rc=0 || rc=$?
+refuse malformed_recipe_print_stamp t-stdio-v1 "unexpected key 'alias'"
+
+echo "== multi_line_old_is_one_line (review I7)"
+variant 's|"old": "int t_stdio_unrewritten;"|"old": "int t_nowhere;\\nint t_nowhere2;"|'; run --profile t
+refuse multi_line_old t-stdio-v1 'does not occur'
+
+echo "== empty_alias (review I9)"
+variant 's|"aliases": \[\]|"aliases": [""]|'; run --recipe t-stdio-v1
+refuse empty_alias 'not a plain path'
+
 echo "== unknown_ids"
 R= run --recipe t-nope-v1; refuse unknown_recipe t-nope-v1
 R= run --profile nope; refuse unknown_profile nope

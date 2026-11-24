@@ -4,6 +4,7 @@
 #include <libgen.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 #define USAGE "usage: recaulk-materialize --sdk DIR --out DIR (--profile NAME | --recipe ID...) " \
@@ -65,9 +66,25 @@ static struct mz_json *load(const char *path, const char *what) {
 }
 
 /* spec: README.md "Materializing an SDK view" -- the data installed beside the binary, ../share/sdk-metadata/ */
+/* platform: argv[0] is a bare name when the shell found the program on PATH; search PATH as the shell did */
+static int find_self(const char *argv0, char self[PATH_MAX]) {
+    if (strchr(argv0, '/')) return realpath(argv0, self) ? 0 : -1;
+    const char *path = getenv("PATH");
+    while (path && *path) {
+        const char *end = strchr(path, ':');
+        size_t n = end ? (size_t)(end - path) : strlen(path);
+        char cand[PATH_MAX];
+        if (n && (size_t)snprintf(cand, sizeof cand, "%.*s/%s", (int)n, path, argv0) < sizeof cand &&
+            !access(cand, X_OK) && realpath(cand, self))
+            return 0;
+        path = end ? end + 1 : NULL;
+    }
+    return -1;
+}
+
 static const char *beside(const char *argv0, const char *name) {
     char self[PATH_MAX];
-    if (!realpath(argv0, self)) mz_fail("cannot find this program's own path to look up %s; pass it", name);
+    if (find_self(argv0, self)) mz_fail("cannot find this program's own path to look up %s; pass it", name);
     char *dir = mz_xstrdup(dirname(self));
     size_t n = strlen(dir) + strlen(name) + 32;
     char *p = mz_xmalloc(n);
@@ -95,7 +112,7 @@ int main(int argc, char **argv) {
     char digest[65];
     mz_recipes_digest(sel, nsel, digest);
     if (a.print_stamp) {
-        mz_print_identity(stdout, a.profile, ids, digest, NULL, NULL);
+        mz_print_identity(stdout, a.profile, ids, digest, NULL, NULL, NULL, NULL);
         fputs("}\n", stdout);
         return fflush(stdout) ? 1 : 0;
     }
@@ -107,6 +124,9 @@ int main(int argc, char **argv) {
     char *base = mz_xstrdup(sdk_real), name[PATH_MAX];
     snprintf(name, sizeof name, "%s.sdk", want->s);
     if (strcmp(basename(base), name)) mz_fail("the recipes are for %s, but --sdk resolves to %s", name, sdk_real);
+    const struct mz_json *pin = mz_json_get(recipes, "sdk_archive_sha256");
+    if (!pin || pin->t != MZ_STR) mz_fail("the recipe file names no sdk_archive_sha256");
+    a.archive = pin->s;
 
     if (!a.dry_run) mz_existing_out(&a, ids, digest, sdk_real); /* exits 0 on a matching tree */
     struct mz_header *hs;

@@ -61,6 +61,9 @@ mz --sdk "$REAL" --out "$d/oreal" --profile t
 echo "== stamp"
 grep -qF '"profile":"t","ids":["t-array-v1","t-stdio-v1"],' "$O/stamp.json" || bad "the stamp's profile and ids: $(cat "$O/stamp.json")"
 grep -qF "\"sdk\":\"$REAL\"" "$O/stamp.json" || bad "the stamp does not record the SDK's real path"
+grep -qF "\"given\":\"$GIVEN\",\"out\":\"$O\"" "$O/stamp.json" || bad "the stamp does not record the SDK as given and --out"
+grep -qF '"archive":"fcf88ce8ff0dd3248b97f4eb81c7909f2cc786725de277f4d05a2b935cc49de0"' "$O/stamp.json" \
+  || bad "the stamp does not record the recipes' SDK archive pin"
 grep -qF '"headers/usr/include/stdio.h":"' "$O/stamp.json" || bad "the stamp's files lack headers/usr/include/stdio.h"
 [ "$(wc -l < "$O/stamp.json" | tr -d ' ')" = 1 ] || bad "the stamp is not one line"
 
@@ -112,6 +115,22 @@ refuse other_profile "$O" profile
 sh "$F/make-sdk.sh" "$d/s2"
 mz --sdk "$d/s2/MacOSX10.9.sdk" --out "$O" --profile t
 refuse other_sdk "$O" sdk
+
+echo "== identity_names_the_sdk_spelling_and_out (review I1)"
+mz --sdk "$REAL" --out "$O" --profile t
+refuse other_spelling "$O" given
+mv "$O" "$d/moved"
+mz --sdk "$GIVEN" --out "$d/moved" --profile t
+refuse moved_out "$d/moved" out
+mv "$d/moved" "$O"
+
+echo "== never_inside_the_sdk (review I3)"
+mz --sdk "$GIVEN" --out "$REAL/usr/view" --profile t
+refuse inside_sdk 'inside the SDK'
+mz --sdk "$GIVEN" --out "$GIVEN/v2" --profile t
+refuse inside_sdk_via_link 'inside the SDK'
+[ ! -e "$REAL/usr/view" ] && [ ! -e "$REAL/v2" ] && [ -z "$(ls -d "$REAL"/v2.tmp.* "$REAL"/usr/view.tmp.* 2>/dev/null)" ] \
+  || bad "a refused --out inside the SDK wrote into it"
 
 echo "== verify"
 printf ' ' >> "$O/headers/usr/include/stdio.h"

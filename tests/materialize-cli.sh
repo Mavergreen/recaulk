@@ -41,5 +41,15 @@ grep -q -- --frob "$d/err" || bad "--frob: stderr $(cat "$d/err")"
 
 echo "== one_stderr_line"
 [ "$(wc -l <"$d/err" | tr -d ' ')" = 1 ] || bad "a usage error printed more than one line"
+echo "== from_path (review I2)"
+mkdir -p "$d/p/bin" "$d/p/share/sdk-metadata"
+cp "$d/rm" "$d/p/bin/recaulk-materialize"
+cp tests/fixtures/materialize/recipes.json tests/fixtures/materialize/profiles.json "$d/p/share/sdk-metadata/"
+mkdir "$d/elsewhere"
+(cd "$d/elsewhere" && PATH="$d/p/bin:$PATH" recaulk-materialize --print-stamp --profile t) >"$d/out" 2>"$d/err" && rc=0 || rc=$?
+[ "$rc" = 0 ] || bad "run from PATH it exited $rc: $(cat "$d/err")"
+ln -s "$d/p/bin/recaulk-materialize" "$d/linked"
+"$d/linked" --print-stamp --profile t >/dev/null 2>"$d/err" || bad "run through a symlink it failed: $(cat "$d/err")"
+
 [ "$fail" = 0 ] && echo "materialize-cli OK"
 exit "$fail"

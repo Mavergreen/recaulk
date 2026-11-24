@@ -39,6 +39,29 @@ static const struct mz_json *recipe_by_id(const struct mz_json *recipes, const c
     return NULL;
 }
 
+/* every key a selected recipe needs, with its type, before anything (the digest included) reads it */
+static void check_shape(const struct mz_json *r) {
+    static const char *const rkeys[] = {"id", "header", "sha256", "aliases", "replacements", NULL};
+    static const char *const ekeys[] = {"old", "new", NULL};
+    char w[512];
+    snprintf(w, sizeof w, "recipe '%s'", str(r, "id", "a recipe"));
+    only_keys(r, w, rkeys);
+    str(r, "header", w);
+    str(r, "sha256", w);
+    const struct mz_json *al = arr(r, "aliases", w);
+    for (size_t k = 0; k < al->len; k++)
+        if (al->v[k]->t != MZ_STR) mz_fail("%s aliases[%zu] is not a string", w, k);
+    const struct mz_json *reps = arr(r, "replacements", w);
+    if (!reps->len) mz_fail("%s has no replacements", w);
+    for (size_t k = 0; k < reps->len; k++) {
+        char ew[600];
+        snprintf(ew, sizeof ew, "%s replacements[%zu]", w, k);
+        only_keys(reps->v[k], ew, ekeys);
+        const struct mz_json *old = mz_json_get(reps->v[k], "old"), *nw = mz_json_get(reps->v[k], "new");
+        if (!old || old->t != MZ_STR || !old->slen || !nw || nw->t != MZ_STR) mz_fail("%s needs old and new strings", ew);
+    }
+}
+
 static int cmp_str(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
 
 int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, const struct mz_args *a,
@@ -93,6 +116,7 @@ int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, con
             if (!strcmp(ids[i], ids[k])) mz_fail("recipe id '%s' is selected more than once", ids[i]);
         (*sel)[i] = recipe_by_id(recipes, ids[i]);
         if (!(*sel)[i]) mz_fail("no recipe '%s' in the recipe file", ids[i]);
+        check_shape((*sel)[i]);
     }
     *nsel = n;
 
@@ -120,7 +144,7 @@ int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, con
 /* spec: shipyard's _msm_sdk_file -- a plain relative path, inside the SDK once resolved, a file */
 static char *sdk_file(const char *sdk_real, const char *rel, const char *where) {
     size_t n = strlen(rel);
-    if (rel[0] == '/' || rel[n - 1] == '/' || strstr(rel, "//") || strpbrk(rel, "\n\r\t\"\\") ||
+    if (!n || rel[0] == '/' || rel[n - 1] == '/' || strstr(rel, "//") || strpbrk(rel, "\n\r\t\"\\") ||
         !strcmp(rel, ".") || !strcmp(rel, "..") || !strncmp(rel, "./", 2) || !strncmp(rel, "../", 3) ||
         strstr(rel, "/./") || strstr(rel, "/../") || (n >= 2 && !strcmp(rel + n - 2, "/.")) ||
         (n >= 3 && !strcmp(rel + n - 3, "/..")))
@@ -208,9 +232,10 @@ void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, str
             if (!nw->slen) mz_fail("%s: new is empty", ew);
             if (nw->slen == old->slen && !memcmp(nw->s, old->s, old->slen)) mz_fail("%s changes nothing", ew);
             const char *at = find(text, tn, old->s, old->slen, 0);
-            if (!at) mz_fail("%s: '%s' does not occur in %s", w, old->s, header);
+            /* spec: README.md "Materializing an SDK view" -- one stderr line, so the index, not the (multi-line) text */
+            if (!at) mz_fail("%s: its old text does not occur in %s", ew, header);
             if (find(text, tn, old->s, old->slen, (size_t)(at - text) + 1))
-                mz_fail("%s: '%s' occurs more than once in %s", w, old->s, header);
+                mz_fail("%s: its old text occurs more than once in %s", ew, header);
             ed[k].start = (size_t)(at - text);
             ed[k].end = ed[k].start + old->slen;
             ed[k].new = nw;

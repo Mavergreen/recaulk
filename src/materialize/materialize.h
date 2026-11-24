@@ -15,6 +15,7 @@ struct mz_args {
     const char **ids;
     int nids;
     int print_stamp, verify, version, dry_run;
+    const char *archive; /* the recipe file's sdk_archive_sha256, recorded in the stamp */
 };
 
 int mz_parse_args(int argc, char **argv, struct mz_args *a, char *err, size_t errlen);
@@ -56,7 +57,8 @@ void mz_recipes_digest(const struct mz_json **sel, size_t nsel, char hex[65]);
 /* publish.c */
 int mz_settings_json(const char *sdk_real, char **json);
 void mz_print_identity(FILE *f, const char *profile, const char *ids_json, const char *digest, const char *recaulk,
-                       const char *sdk_real);
+                       const char *sdk_real, const char *given, const char *out);
+void mz_strip(char *dst, size_t n, const char *src);
 int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *digest, const char *sdk_real);
 void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header *h, size_t nh, const char *ids_json,
                 const char *digest);

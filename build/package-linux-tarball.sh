@@ -1,5 +1,5 @@
 #!/bin/sh
-# platform: Linux-only -- GNU tar's --sort=name packs it, and build-materialize.sh linux builds for this host
+# platform: host-agnostic -- needs GNU tar (TAR= names one), as ed25519's package-tar.sh does
 #   usage: VERSION=V [OUT=DIR] sh build/package-linux-tarball.sh
 #          Writes OUT/recaulk-V-linux-x86_64.tar.gz (default OUT: dist) and prints its path: opt/mavergreen/recaulk/
 #          holding build-lib.sh's staged lib/, include/ and share/, and a static Linux bin/recaulk-materialize; owned

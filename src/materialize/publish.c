@@ -125,14 +125,26 @@ int mz_settings_json(const char *sdk_real, char **json) {
 static void put(FILE *f, const char *s) { mz_json_write_string(f, s, strlen(s)); }
 
 /* identity, as --print-stamp prints it and the stamp's leading keys hold */
+/* sdk, given and out are NULL for --print-stamp: the caller's cache key carries its own paths */
 void mz_print_identity(FILE *f, const char *profile, const char *ids_json, const char *digest, const char *recaulk,
-                       const char *sdk_real) {
+                       const char *sdk_real, const char *given, const char *out) {
     fprintf(f, "{\"schema\":1,\"format\":%d,", MZ_FORMAT);
     if (recaulk) { fputs("\"recaulk\":", f); put(f, recaulk); fputc(',', f); }
     fputs("\"profile\":", f);
     if (profile) put(f, profile); else fputs("null", f);
     fprintf(f, ",\"ids\":%s,\"recipes\":\"%s\"", ids_json, digest);
-    if (sdk_real) { fputs(",\"sdk\":", f); put(f, sdk_real); }
+    if (sdk_real) {
+        fputs(",\"sdk\":", f); put(f, sdk_real);
+        fputs(",\"given\":", f); put(f, given);
+        fputs(",\"out\":", f); put(f, out);
+    }
+}
+
+/* a path without its trailing slashes, so lstat sees a link as a link */
+void mz_strip(char *dst, size_t n, const char *src) {
+    if ((size_t)snprintf(dst, n, "%s", src) >= n) mz_fail("path too long: %s", src);
+    size_t len = strlen(dst);
+    while (len > 1 && dst[len - 1] == '/') dst[--len] = 0;
 }
 
 static int eq_str(const struct mz_json *v, const char *s) {
@@ -141,7 +153,7 @@ static int eq_str(const struct mz_json *v, const char *s) {
 
 /* the stamp's identity against this run's: 0 equal; otherwise the first key that differs */
 static const char *identity_differs(const struct mz_json *st, const char *profile, const struct mz_json *ids,
-                                    const char *digest, const char *sdk_real) {
+                                    const char *digest, const char *sdk_real, const char *given, const char *out) {
     const struct mz_json *f = mz_json_get(st, "format");
     if (!f || f->t != MZ_NUM || f->n != MZ_FORMAT) return "format";
     if (!eq_str(mz_json_get(st, "profile"), profile)) return "profile";
@@ -151,6 +163,9 @@ static const char *identity_differs(const struct mz_json *st, const char *profil
         if (!eq_str(si->v[i], ids->v[i]->s)) return "ids";
     if (!eq_str(mz_json_get(st, "recipes"), digest)) return "recipes";
     if (!eq_str(mz_json_get(st, "sdk"), sdk_real)) return "sdk";
+    /* the overlay names the SDK as given and --out: a tree made for another spelling or place maps other names */
+    if (!eq_str(mz_json_get(st, "given"), given)) return "given";
+    if (!eq_str(mz_json_get(st, "out"), out)) return "out";
     return NULL;
 }
 
@@ -168,7 +183,18 @@ static void verify_tree(const char *out, const struct mz_json *st) {
 /* 0: --out is absent and may be made; exits 0 when it holds a matching tree; refuses anything else */
 int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *digest, const char *sdk_real) {
     struct stat st;
-    if (lstat(a->out, &st)) {
+    char out[PATH_MAX], given[PATH_MAX], parent[PATH_MAX], preal[PATH_MAX];
+    mz_strip(out, sizeof out, a->out);
+    mz_strip(given, sizeof given, a->sdk);
+    /* spec: README.md "Materializing an SDK view" -- the SDK is never written, so --out may not lie inside it */
+    snprintf(parent, sizeof parent, "%s", out);
+    *strrchr(parent, '/') = 0;
+    if (realpath(*parent ? parent : "/", preal)) {
+        size_t sl = strlen(sdk_real);
+        if (!strncmp(preal, sdk_real, sl) && (preal[sl] == 0 || preal[sl] == '/'))
+            mz_fail("--out %s is inside the SDK %s, which is never written", a->out, sdk_real);
+    }
+    if (lstat(out, &st)) {
         if (errno != ENOENT) mz_fail("cannot inspect --out %s: %s", a->out, strerror(errno));
         return 0;
     }
@@ -182,7 +208,7 @@ int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *d
     struct mz_json *stj = mz_json_parse(buf, n, err, sizeof err);
     if (!stj) mz_fail("%s: %s", p, err);
     struct mz_json *ids = mz_json_parse(ids_json, strlen(ids_json), err, sizeof err);
-    const char *k = identity_differs(stj, a->profile, ids, digest, sdk_real);
+    const char *k = identity_differs(stj, a->profile, ids, digest, sdk_real, given, out);
     if (k) mz_fail("--out %s holds a tree made for another %s; remove it or use another --out", a->out, k);
     if (a->verify) verify_tree(a->out, stj);
     exit(0);
@@ -236,18 +262,11 @@ static void walk_files(const char *base, const char *rel, char ***v, size_t *n, 
     free(es);
 }
 
-static void strip_slashes(char *p) {
-    size_t n = strlen(p);
-    while (n > 1 && p[n - 1] == '/') p[--n] = 0;
-}
-
 void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header *h, size_t nh, const char *ids_json,
                 const char *digest) {
     char out[PATH_MAX], given[PATH_MAX], parent[PATH_MAX], tmp[PATH_MAX], p[PATH_MAX];
-    snprintf(out, sizeof out, "%s", a->out);
-    strip_slashes(out);
-    snprintf(given, sizeof given, "%s", a->sdk);
-    strip_slashes(given);
+    mz_strip(out, sizeof out, a->out);
+    mz_strip(given, sizeof given, a->sdk);
     snprintf(parent, sizeof parent, "%s", out);
     *strrchr(parent, '/') = 0;
     struct stat st;
@@ -328,7 +347,9 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     snprintf(p, sizeof p, "%s/stamp.json", stage);
     f = fopen(p, "wb");
     if (!f) mz_fail("cannot write %s: %s", p, strerror(errno));
-    mz_print_identity(f, a->profile, ids_json, digest, RECAULK_VERSION, sdk_real);
+    mz_print_identity(f, a->profile, ids_json, digest, RECAULK_VERSION, sdk_real, given, out);
+    fputs(",\"archive\":", f);
+    put(f, a->archive);
     fputs(",\"files\":{", f);
     for (size_t i = 0; i < nf; i++) {
         char full[PATH_MAX], hex[65];

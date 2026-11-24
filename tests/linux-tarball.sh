@@ -1,9 +1,10 @@
 #!/bin/sh
-# platform: Linux-only -- GNU tar packs the tarball, and the static Linux recaulk-materialize it carries runs only here
+# platform: host-agnostic -- skips (77) off Linux: the static recaulk-materialize it unpacks runs only there
 # spec: README.md "Materializing an SDK view" -- recaulk-<version>-linux-x86_64.tar.gz holds opt/mavergreen/recaulk/,
 #       the .pkg's usr/local/mavergreen/recaulk/ tree (lib, include, share) with a static Linux bin/recaulk-materialize
 #       that finds ../share/sdk-metadata; owned by 0:0, reproducible
 set -eu
+[ "$(uname -s)" = Linux ] || { echo "linux-tarball: skipped, not Linux"; exit 77; }
 cd "$(dirname "$0")/.."
 . build/lib.sh
 B="$(recaulk_build_dir)"

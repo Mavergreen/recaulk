@@ -300,17 +300,21 @@ jobs:
         with:
           name: recaulk
           path: dist
-      - name: Install this run's pkg
-        run: sudo installer -pkg "dist/recaulk-$VER.pkg" -target /
+      # spec: README.md "Materializing an SDK view" -- the pkg's own bytes, expanded, not installed: installing would
+      #       also run its 10.9 kext and LaunchDaemon steps, which this job does not test and macOS 26 need not accept
+      - name: Expand this run's pkg
+        run: pkgutil --expand-full "dist/recaulk-$VER.pkg" "$RUNNER_TEMP/pkg"
       - name: recaulk-materialize runs natively and materializes swift-foundation
         run: |
           set -eu
           got="$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)"
           [ "$got" = 1 ] || { echo "::error::hw.optional.arm64 is $got: this runner is not Apple Silicon"; exit 1; }
-          RM=/usr/local/mavergreen/recaulk/bin/recaulk-materialize
+          RM="$(find "$RUNNER_TEMP/pkg" -path '*/usr/local/mavergreen/recaulk/bin/recaulk-materialize' -type f)"
+          [ -n "$RM" ] && [ "$(printf '%s\n' "$RM" | wc -l)" -eq 1 ] || { echo "::error::the pkg holds no single recaulk-materialize: $RM"; exit 1; }
+          lipo -archs "$RM" | grep -qw arm64 || { echo "::error::recaulk-materialize has no arm64 slice: $(lipo -archs "$RM")"; exit 1; }
           arch -arm64 "$RM" --version
           v="$(arch -arm64 "$RM" --version)"
-          [ "$v" = "recaulk-materialize $VER" ] || { echo "::error::installed recaulk-materialize says '$v', this run built $VER"; exit 1; }
+          [ "$v" = "recaulk-materialize $VER" ] || { echo "::error::the pkg's recaulk-materialize says '$v', this run built $VER"; exit 1; }
           arch -arm64 "$RM" --print-stamp --profile swift-foundation
           SDK="$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")"
           arch -arm64 "$RM" --sdk "$SDK" --out "$RUNNER_TEMP/view" --profile swift-foundation
