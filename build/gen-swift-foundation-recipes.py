@@ -63,6 +63,25 @@ def umbrella(header):
     return header[len('usr/include/'):]
 
 
+BLOCK = re.compile(r'@(?:interface|protocol)\s+(\w+)(.*?)@end', re.S)
+PROP = re.compile(r'@property[^;]*?[\s*](\w+)\s*(?:\w+\([^()]*\)\s*)*;')
+
+
+def declared_props(sdk, header, cache={}):
+    """{container name: property names} over the pristine headers of header's directory: clang's -ast-dump-filter
+    matches any declaration whose name contains the filter, so a probe check another container already satisfies
+    on the pristine SDK proves nothing."""
+    root = os.path.join(sdk, os.path.dirname(header))
+    if root not in cache:
+        found = {}
+        for n in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+            if n.endswith('.h'):
+                for m in BLOCK.finditer(open(os.path.join(root, n), encoding='latin-1').read()):
+                    found.setdefault(m.group(1), set()).update(PROP.findall(m.group(2)))
+        cache[root] = found
+    return cache[root]
+
+
 def fact_edits(facts, base_props):
     """(start, end, new, check) per fact; a property a base recipe already declares drops the method instead."""
     out = []
@@ -126,6 +145,9 @@ def combine(text, base, facts, header):
                 if (f[0], f[1]) == (b[0], b[1]) and f[4] == 'property' and f[2] and retyped(f[2], f[5], b[2]):
                     b[2] = retyped(f[2], f[5], b[2])
                     f[2] = None
+                    continue
+                if f[2] == '' and piece not in b[2]:
+                    f[2] = None        # a method the base already turned into a property: already gone
                     continue
                 if b[2].count(piece) != 1:
                     fail('%s: cannot place a fact inside base replacement %r' % (header, b[2][:80]))
@@ -218,6 +240,8 @@ def main():
     base_edits = {}
     for e in hand.get('base_edits', []):
         base_edits.setdefault(e['header'], []).append(e)
+    for h in sorted(set(base_edits) - set(facts)):
+        fail('base_edit on %s, which has no facts: no recipe would carry it' % h)
     # every id this generator has ever made, so a chained recipe's released predecessor is never mistaken for
     # the hand-written base it was built on
     generated = set()
@@ -250,7 +274,9 @@ def main():
                 x['new'] = x['new'].replace(e['old'], e['new'])
         base_props = set(m.group(1) for r in base_reps for m in re.finditer(r'@property[^;]*?[\s*](\w+)\s*(?:\w+\([^()]*\)\s*)*;', r['new']))
         fe = fact_edits(facts[header], base_props)
-        checks = [f[3] for f in fe if f[3]]
+        others = declared_props(o.sdk, header)
+        checks = [f[3] for f in fe if f[3] and not (f[4] == 'property' and
+                  any(f[3][0] in c and c != f[3][0] and f[5] in ps for c, ps in others.items()))]
         reps = widen(text, combine(text, base_reps, fe, header))
         prev = mine[0] if mine else None
         if prev and prev['replacements'] == reps:

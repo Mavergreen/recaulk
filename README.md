@@ -793,6 +793,33 @@ These recipes are generated, not written by hand:
 `tests/swift-foundation-facts.sh` and `tests/swift-foundation-recipes.sh` prove both scripts on fixtures and
 check that the committed facts, recipes, probes and profile are current.
 
+`swift-appkit` is AppKit as swift-5.4's AppKit overlay needs it on 10.9, and it contains all of `swift-foundation`,
+so a Swift compile that uses AppKit selects this one profile. It covers the 30 AppKit headers of swift-gg's table
+(`sdk-metadata/swift-appkit-rows.tsv`), in the same ways as above, plus:
+- `NS_OPTIONS`/`NS_ENUM` types where 10.9 has a plain typedef or none: `NSWindowStyleMask`, `NSEventModifierFlags`,
+  `NSAutoresizingMaskOptions`, `NSTrackingAreaOptions` (one type for 10.9's three anonymous enums),
+  `NSFontDescriptorSymbolicTraits`, `NSTextAlignment`, `NSCompositingOperation`, `NSBackingStoreType`,
+  `NSWindowOrderingMode` and `NSLineBreakMode`, with 10.9's values. The one later value,
+  `NSWindowStyleMaskFullSizeContentView` (10.10), carries 10.10 availability;
+- `NSImageName` and `NSNibName` as `NS_SWIFT_BRIDGED_TYPEDEF`, and `NSFontDescriptorAttributeName` and
+  `NSUserInterfaceItemIdentifier` as extensible string enums;
+- `NS_DESIGNATED_INITIALIZER` on `NSView`'s and `NSViewController`'s initializers, and `controlTextDidChange:` and
+  its siblings as optional methods of `NSControlTextEditingDelegate`.
+
+No recipe carries `NS_SWIFT_NAME`: swift's own AppKit apinotes name things. Its recipes on headers that already had
+recipes contain them, so an Objective-C consumer can switch to them. Two changes reach such a consumer: an override
+of a getter whose type is now one of these types must use that type, as with the 10.12 and later SDKs
+(`- (NSWindowStyleMask)styleMask`), and an `NSView` or `NSViewController` subclass's initializers are checked
+against the designated ones.
+
+The same two scripts make it: `extract-swift-foundation-facts.py --import AppKit/AppKit.h --files <those headers>
+--hand sdk-metadata/swift-appkit-hand.json`, then `gen-swift-foundation-recipes.py --profile swift-appkit
+--base-profile swift-foundation --generated sdk-metadata/swift-appkit-generated.json`, after swift-foundation's
+run. The hand file's `base_edits` rewrite exact text of a header's existing recipe (a plain typedef into a tagged
+type) before the facts are combined. `tests/swift-appkit-facts.sh` checks the facts are current and that every row
+of the table has one; `tests/swift-appkit-recipes.sh` checks the recipes and both profiles are current;
+`tests/swift-appkit-availability.sh` checks `NSWindowStyleMaskFullSizeContentView`'s availability.
+
 ## Tests
 
 `sh build/build-lib.sh` builds Recaulk with clang22 (`components/clang22/version`, fetched by

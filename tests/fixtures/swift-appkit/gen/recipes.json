@@ -18,7 +18,7 @@
     {
       "id": "appkit-widget-mask-v1",
       "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h",
-      "sha256": "e9e2fa6fcb1deb45c123d9e24ac2c93e1269b9ae7f50e75a53c97165eb04864b",
+      "sha256": "b071b1c61da66bcfbde6a6f4d07cf4fb17b5deedca29d12cf5ba672959f85ef9",
       "aliases": [
         "System/Library/Frameworks/AppKit.framework/Headers/NSWidget.h"
       ],
@@ -32,7 +32,7 @@
     {
       "id": "appkit-widget-v2",
       "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h",
-      "sha256": "e9e2fa6fcb1deb45c123d9e24ac2c93e1269b9ae7f50e75a53c97165eb04864b",
+      "sha256": "b071b1c61da66bcfbde6a6f4d07cf4fb17b5deedca29d12cf5ba672959f85ef9",
       "aliases": [
         "System/Library/Frameworks/AppKit.framework/Headers/NSWidget.h"
       ],
@@ -40,6 +40,10 @@
         {
           "old": "@interface NSWidget : NSObject",
           "new": "typedef NSUInteger NSThingMask;\nenum { NSThingMaskA = 1 << 0 };\n@interface NSWidget : NSObject"
+        },
+        {
+          "old": "- (BOOL)isOpen;\n- (void)setOpen:(BOOL)flag;",
+          "new": "@property (getter=isOpen) BOOL open;"
         }
       ]
     }

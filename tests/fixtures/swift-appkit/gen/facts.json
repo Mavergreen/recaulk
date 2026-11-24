@@ -13,6 +13,30 @@
     "setter_decl": null,
     "setter_offset": null,
     "name": "title"
+   },
+   {
+    "kind": "property",
+    "class": "NSWidget",
+    "container": "interface",
+    "category": null,
+    "decl": "- (BOOL)isOpen;",
+    "offset": 105,
+    "property": "@property (getter=isOpen) BOOL open;",
+    "setter_decl": "- (void)setOpen:(BOOL)flag;",
+    "setter_offset": 121,
+    "name": "open"
+   },
+   {
+    "kind": "property",
+    "class": "NSWidget",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)name;",
+    "offset": 149,
+    "property": "@property (readonly, copy) NSString *name;",
+    "setter_decl": null,
+    "setter_offset": null,
+    "name": "name"
    }
   ]
  }
