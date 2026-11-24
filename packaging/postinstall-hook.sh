@@ -22,7 +22,8 @@ fi
 rm -f "$_wd" || echo "recaulk: could not remove $_wd" >&2
 rm -rf "$ROOT/Library/Extensions/KQueueScanContinuePatch.kext" || echo "recaulk: could not remove KQueueScanContinuePatch.kext" >&2
 # spec: README.md "The kernel-fixes kext" -- shipyard's generated postinstall (stage_product --boot-kext) has already
-#       listed RecaulkKernelFixes in OSKextSigExceptionList and restarted kextd on the boot volume
+#       listed RecaulkKernelFixes as an allowed unsigned kext and restarted kextd on the boot volume (shipyard's
+#       conformance refuses any other mention of Apple's exclude list in a pkg script, comments included)
 if [ -z "$ROOT" ]; then
   # spec: README.md "The kernel-fixes kext" -- on an upgrade the job and the kext already run; the kernel keeps the
   #       running kext (it cannot unload once applied), and the new one takes over at the next boot
