@@ -57,6 +57,7 @@ assert reps.pop('- (void)setURL:(NSString *)URL;') == '@property (copy) NSString
 assert reps.pop('- (void)setNames:(NSArray *)names;') == '@property (copy) NSArray<NSString *> *names;'  # fold_takes_getter_type
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXPlainA;') == 'FOUNDATION_EXPORT FXPlain const FXPlainA;'
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXKeyC;') == 'FOUNDATION_EXPORT FXKey const FXKeyC;'  # availability_in_type
+assert reps.pop('FOUNDATION_EXPORT NSString *FXKeyD;') == 'FOUNDATION_EXPORT FXKey FXKeyD;'                   # string_enum_nonconst
 assert reps.pop('FOUNDATION_EXPORT NSString * const FXKeyA;') == 'FOUNDATION_EXPORT FXKey const FXKeyA;'          # string_enum
 assert reps.pop('FOUNDATION_EXPORT NSString *const FXKeyB NS_AVAILABLE(10_6, 4_0);') == \
     'FOUNDATION_EXPORT FXKey const FXKeyB NS_AVAILABLE(10_6, 4_0);'
@@ -69,6 +70,11 @@ cf = [e for e in ins if '#ifndef CF_BRIDGED_TYPE' in e['text']]                 
 assert len(cf) == 1 and t[cf[0]['offset']:].startswith('typedef const struct __FXRef * FXRef;'), cf
 assert '#define CF_BRIDGED_MUTABLE_TYPE(T)\n' in cf[0]['text'], cf
 ins = [e for e in ins if e not in cf]
+br = [e for e in ins if 'FXBridged' in e['text']]                                                    # bridged_typedef
+assert len(br) == 1 and t[br[0]['offset']:].startswith('typedef const struct __FXRef * FXRef;'), br
+assert 'typedef NSString *FXBridged NS_SWIFT_BRIDGED_TYPEDEF;\n' in br[0]['text'], br
+assert '#define NS_SWIFT_BRIDGED_TYPEDEF __attribute__((swift_bridged_typedef))' in br[0]['text'], br
+ins = [e for e in ins if e not in br]
 assert len(ins) == 2, ins                                                                               # typedef inserts, one per anchor
 assert any('typedef NSString *FXPlain;\n' in e['text'] for e in ins), ins                                # plain_string_enum
 for e in ins:

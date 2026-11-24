@@ -12,6 +12,12 @@
    "header": "Fixture.framework/Headers/Fixture.h",
    "typedef": "FXOther",
    "before": "@interface FXMutableThing : FXThing"
+  },
+  {
+   "header": "Fixture.framework/Headers/Fixture.h",
+   "typedef": "FXBridged",
+   "kind": "bridged",
+   "before": "typedef const struct __FXRef * FXRef;"
   }
  ],
  "retypes": [

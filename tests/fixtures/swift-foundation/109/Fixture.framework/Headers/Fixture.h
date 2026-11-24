@@ -6,6 +6,7 @@ FOUNDATION_EXPORT NSString * const FXKeyA;
 FOUNDATION_EXPORT NSString *const FXKeyB NS_AVAILABLE(10_6, 4_0);
 FOUNDATION_EXPORT NSString * const FXPlainA;
 FOUNDATION_EXPORT NSString * const FXKeyC;
+FOUNDATION_EXPORT NSString *FXKeyD;
 enum {
     FXOptA = 1,
     FXOptB = 2

@@ -735,6 +735,17 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAppleEventManager.h": [
    {
+    "kind": "insert",
+    "offset": 172,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "replace",
+    "old": "extern NSString *NSAppleEventManagerWillProcessFirstEventNotification;",
+    "offset": 387,
+    "new": "extern NSNotificationName NSAppleEventManagerWillProcessFirstEventNotification;"
+   },
+   {
     "kind": "property",
     "name": "currentAppleEvent",
     "class": "NSAppleEventManager",
@@ -2227,6 +2238,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSClassDescription.h": [
    {
+    "kind": "insert",
+    "offset": 153,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "attributeKeys",
     "class": "NSClassDescription",
@@ -2309,6 +2325,12 @@
     "property": "@property (readonly, copy) NSArray *toManyRelationshipKeys;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "FOUNDATION_EXPORT NSString *NSClassDescriptionNeededForClassNotification;",
+    "offset": 882,
+    "new": "FOUNDATION_EXPORT NSNotificationName NSClassDescriptionNeededForClassNotification;"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCoder.h": [

@@ -1,0 +1,214 @@
+{
+ "schema": 1,
+ "string_enums": [
+  "NSNotificationName",
+  "NSFontDescriptorAttributeName",
+  "NSUserInterfaceItemIdentifier",
+  {
+   "name": "NSImageName",
+   "kind": "bridged"
+  }
+ ],
+ "typedef_inserts": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSImage.h",
+   "typedef": "NSImageName",
+   "kind": "bridged",
+   "before": "@interface NSImage : NSObject"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSUserInterfaceItemIdentification.h",
+   "typedef": "NSUserInterfaceItemIdentifier",
+   "before": "@protocol NSUserInterfaceItemIdentification"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSNib.h",
+   "typedef": "NSNibName",
+   "kind": "bridged",
+   "before": "@interface NSNib : NSObject <NSCoding> {"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSFontDescriptor.h",
+   "typedef": "NSFontDescriptorAttributeName",
+   "before": "@class NSMutableDictionary, NSDictionary, NSArray, NSSet, NSAffineTransform;"
+  }
+ ],
+ "retypes": [
+  {
+   "class": "NSFontCollection",
+   "selector": "matchingDescriptors"
+  },
+  {
+   "class": "NSFontCollection",
+   "selector": "fontCollectionWithAllAvailableDescriptors"
+  },
+  {
+   "class": "NSFontManager",
+   "selector": "availableFontFamilies"
+  },
+  {
+   "class": "NSFontManager",
+   "selector": "availableMembersOfFontFamily:"
+  },
+  {
+   "class": "NSMenu",
+   "selector": "itemArray"
+  },
+  {
+   "class": "NSTableView",
+   "selector": "viewAtColumn:row:makeIfNecessary:"
+  },
+  {
+   "class": "NSWindow",
+   "selector": "contentView"
+  },
+  {
+   "class": "NSWindow",
+   "selector": "styleMask"
+  },
+  {
+   "class": "NSWindow",
+   "selector": "initWithContentRect:styleMask:backing:defer:"
+  },
+  {
+   "class": "NSEvent",
+   "selector": "modifierFlags"
+  },
+  {
+   "class": "NSView",
+   "selector": "autoresizingMask"
+  },
+  {
+   "class": "NSFontDescriptor",
+   "selector": "symbolicTraits"
+  }
+ ],
+ "nonnull": [
+  {
+   "class": "NSButton",
+   "selector": "title"
+  },
+  {
+   "class": "NSMenuItem",
+   "selector": "initWithTitle:action:keyEquivalent:"
+  }
+ ],
+ "enum_shapes": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphics.h",
+   "typedef": "NSBackingStoreType",
+   "macro": "NS_ENUM"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphics.h",
+   "typedef": "NSWindowOrderingMode",
+   "macro": "NS_ENUM"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSParagraphStyle.h",
+   "typedef": "NSLineBreakMode",
+   "macro": "NS_ENUM"
+  }
+ ],
+ "replaces": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTrackingArea.h",
+   "old": "enum {\n    NSTrackingMouseEnteredAndExited     = 0x01, // owner receives mouseEntered when mouse enters area, and mouseExited when mouse leaves area\n    NSTrackingMouseMoved                = 0x02,\t// owner receives mouseMoved while mouse is within area.  Note that mouseMoved events do not contain userInfo \n    NSTrackingCursorUpdate \t\t= 0x04,\t// owner receives cursorUpdate when mouse enters area.  Cursor is set appropriately when mouse exits area\n};\n\n/* When tracking area is active.  You must specify one of the following in the NSTrackingAreaOptions argument of -initWithRect:options:owner:userInfo: */\nenum {\n    NSTrackingActiveWhenFirstResponder \t= 0x10,\t// owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when view is first responder\n    NSTrackingActiveInKeyWindow         = 0x20, // owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when view is in key window\n    NSTrackingActiveInActiveApp \t= 0x40,\t// owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when app is active\n    NSTrackingActiveAlways \t\t= 0x80,\t// owner receives mouseEntered/Exited or mouseMoved regardless of activation.  Not supported for NSTrackingCursorUpdate.\n};\n    \n/* Behavior of tracking area.  These values are used in NSTrackingAreaOptions.  You may specify any number of the following in the NSTrackingAreaOptions argument of -initWithRect:options:owner:userInfo: */\nenum {\n    NSTrackingAssumeInside              = 0x100,    // If set, generate mouseExited event when mouse leaves area (same as assumeInside argument in deprecated addTrackingRect:owner:userData:assumeInside:)\n    NSTrackingInVisibleRect             = 0x200,    // If set, tracking occurs in visibleRect of view and rect is ignored\n    NSTrackingEnabledDuringMouseDrag    = 0x400     // If set, mouseEntered events will be generated as mouse is dragged.  If not set, mouseEntered events will be generated as mouse is moved, and on mouseUp after a drag.  mouseExited events are paired with mouseEntered events so their delivery is affected indirectly.  That is, if a mouseEntered event is generated and the mouse subsequently moves out of the trackingArea, a mouseExited event will be generated whether the mouse is being moved or dragged, independent of this flag.\n}; \n\ntypedef NSUInteger NSTrackingAreaOptions;",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.9 splits the options over three anonymous enums; one NS_OPTIONS type holds all ten. */\ntypedef NS_OPTIONS(NSUInteger, NSTrackingAreaOptions) {\n    NSTrackingMouseEnteredAndExited     = 0x01, // owner receives mouseEntered when mouse enters area, and mouseExited when mouse leaves area\n    NSTrackingMouseMoved                = 0x02,\t// owner receives mouseMoved while mouse is within area.  Note that mouseMoved events do not contain userInfo \n    NSTrackingCursorUpdate \t\t= 0x04,\t// owner receives cursorUpdate when mouse enters area.  Cursor is set appropriately when mouse exits area\n\n/* When tracking area is active.  You must specify one of the following in the NSTrackingAreaOptions argument of -initWithRect:options:owner:userInfo: */\n    NSTrackingActiveWhenFirstResponder \t= 0x10,\t// owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when view is first responder\n    NSTrackingActiveInKeyWindow         = 0x20, // owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when view is in key window\n    NSTrackingActiveInActiveApp \t= 0x40,\t// owner receives mouseEntered/Exited, mouseMoved, or cursorUpdate when app is active\n    NSTrackingActiveAlways \t\t= 0x80,\t// owner receives mouseEntered/Exited or mouseMoved regardless of activation.  Not supported for NSTrackingCursorUpdate.\n    \n/* Behavior of tracking area.  These values are used in NSTrackingAreaOptions.  You may specify any number of the following in the NSTrackingAreaOptions argument of -initWithRect:options:owner:userInfo: */\n    NSTrackingAssumeInside              = 0x100,    // If set, generate mouseExited event when mouse leaves area (same as assumeInside argument in deprecated addTrackingRect:owner:userData:assumeInside:)\n    NSTrackingInVisibleRect             = 0x200,    // If set, tracking occurs in visibleRect of view and rect is ignored\n    NSTrackingEnabledDuringMouseDrag    = 0x400     // If set, mouseEntered events will be generated as mouse is dragged.  If not set, mouseEntered events will be generated as mouse is moved, and on mouseUp after a drag.  mouseExited events are paired with mouseEntered events so their delivery is affected indirectly.  That is, if a mouseEntered event is generated and the mouse subsequently moves out of the trackingArea, a mouseExited event will be generated whether the mouse is being moved or dragged, independent of this flag.\n};"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSView.h",
+   "old": "enum {\n    NSViewNotSizable\t\t\t=  0,\n    NSViewMinXMargin\t\t\t=  1,\n    NSViewWidthSizable\t\t\t=  2,\n    NSViewMaxXMargin\t\t\t=  4,\n    NSViewMinYMargin\t\t\t=  8,\n    NSViewHeightSizable\t\t\t= 16,\n    NSViewMaxYMargin\t\t\t= 32\n};\n",
+   "new": "typedef NS_OPTIONS(NSUInteger, NSAutoresizingMaskOptions) {\n    NSViewNotSizable\t\t\t=  0,\n    NSViewMinXMargin\t\t\t=  1,\n    NSViewWidthSizable\t\t\t=  2,\n    NSViewMaxXMargin\t\t\t=  4,\n    NSViewMinYMargin\t\t\t=  8,\n    NSViewHeightSizable\t\t\t= 16,\n    NSViewMaxYMargin\t\t\t= 32\n};\n"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSView.h",
+   "old": "- (id)initWithFrame:(NSRect)frameRect;",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_DESIGNATED_INITIALIZER\n#if __has_attribute(objc_designated_initializer)\n#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))\n#else\n#define NS_DESIGNATED_INITIALIZER\n#endif\n#endif\n- (nonnull instancetype)initWithFrame:(NSRect)frameRect NS_DESIGNATED_INITIALIZER;\n- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSViewController.h",
+   "old": "- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef NS_DESIGNATED_INITIALIZER\n#if __has_attribute(objc_designated_initializer)\n#define NS_DESIGNATED_INITIALIZER __attribute__((objc_designated_initializer))\n#else\n#define NS_DESIGNATED_INITIALIZER\n#endif\n#endif\n- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_DESIGNATED_INITIALIZER;\n- (instancetype)initWithCoder:(NSCoder *)coder NS_DESIGNATED_INITIALIZER;"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+   "old": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n",
+   "new": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSUserInterfaceItemIdentification.h",
+   "old": "@property (copy) NSString *identifier;",
+   "new": "@property (copy) NSUserInterfaceItemIdentifier identifier;"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSImage.h",
+   "old": "+ (id)imageNamed:(NSString *)name;",
+   "new": "+ (nullable NSImage *)imageNamed:(NSImageName)name;"
+  }
+ ],
+ "inserts": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSFontDescriptor.h",
+   "before": "@class NSMutableDictionary, NSDictionary, NSArray, NSSet, NSAffineTransform;",
+   "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.10 names, with 10.9's values. */\ntypedef NS_OPTIONS(uint32_t, NSFontDescriptorSymbolicTraits) {\n    NSFontDescriptorTraitItalic = 1u << 0,\n    NSFontDescriptorTraitBold = 1u << 1,\n    NSFontDescriptorTraitExpanded = 1u << 5,\n    NSFontDescriptorTraitCondensed = 1u << 6,\n    NSFontDescriptorTraitMonoSpace = 1u << 10,\n    NSFontDescriptorTraitVertical = 1u << 11,\n    NSFontDescriptorTraitUIOptimized = 1u << 12,\n    NSFontDescriptorClassMask = 0xF0000000\n};\n\n"
+  }
+ ],
+ "base_edits": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSText.h",
+   "old": "typedef NSUInteger NSTextAlignment;\n",
+   "new": ""
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSText.h",
+   "old": "enum {\n    NSTextAlignmentLeft",
+   "new": "typedef NS_ENUM(NSUInteger, NSTextAlignment) {\n    NSTextAlignmentLeft"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+   "old": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSWindowStyleMask;\n",
+   "new": ""
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+   "old": "enum {\n    NSWindowStyleMaskBorderless",
+   "new": "typedef NS_OPTIONS(NSUInteger, NSWindowStyleMask) {\n    NSWindowStyleMaskBorderless"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
+   "old": "    NSWindowStyleMaskUtilityWindow = 1 << 4,",
+   "new": "    NSWindowStyleMaskFullSizeContentView __attribute__((availability(macosx,introduced=10.10))) = 1 << 15,\n    NSWindowStyleMaskUtilityWindow = 1 << 4,"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSEvent.h",
+   "old": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\ntypedef NSUInteger NSEventModifierFlags;\n",
+   "new": ""
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSEvent.h",
+   "old": "enum {\n    NSEventModifierFlagCapsLock",
+   "new": "typedef NS_OPTIONS(NSUInteger, NSEventModifierFlags) {\n    NSEventModifierFlagCapsLock"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSView.h",
+   "old": "typedef NSUInteger NSAutoresizingMaskOptions;\n",
+   "new": ""
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphics.h",
+   "old": "typedef NSUInteger NSCompositingOperation;\n",
+   "new": ""
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphics.h",
+   "old": "enum {\n    NSCompositingOperationClear",
+   "new": "typedef NS_ENUM(NSUInteger, NSCompositingOperation) {\n    NSCompositingOperationClear"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSNib.h",
+   "old": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12 named nib names; they are NSStrings. */\ntypedef NSString *NSNibName;\n\n",
+   "new": ""
+  }
+ ]
+}

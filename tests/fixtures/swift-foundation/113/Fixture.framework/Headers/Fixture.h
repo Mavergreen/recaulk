@@ -7,6 +7,7 @@ FOUNDATION_EXPORT FXKey const FXKeyB;
 FOUNDATION_EXPORT const FXKey FXKeyC API_AVAILABLE(macos(10.9)) API_UNAVAILABLE(ios);
 typedef NSString *FXPlain;
 FOUNDATION_EXPORT FXPlain const FXPlainA;
+FOUNDATION_EXPORT FXKey FXKeyD;
 typedef NS_OPTIONS(NSUInteger, FXOptions) {
     FXOptA = 1,
     FXOptB = 2

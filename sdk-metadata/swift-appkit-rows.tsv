@@ -1,0 +1,100 @@
+header	class	objc_symbol	need	profile
+NSButton.h	nullability	-title	declaration	swift-appkit
+NSButton.h	R1-property	-title	declaration	swift-appkit
+NSCache.h	R4-generic	NSCache	declaration	swift-foundation v-next
+NSColor.h	R1-property	-CGColor	declaration	swift-appkit
+NSColor.h	R1-property	+clearColor	declaration	swift-appkit
+NSColor.h	R1-property	+lightGrayColor	declaration	swift-appkit
+NSColor.h	R1-property	+underPageBackgroundColor	declaration	swift-appkit
+NSColorSpace.h	R1-property	+genericRGBColorSpace	declaration	swift-appkit
+NSControl.h	formal-protocol	NSControlTextEditingDelegate	declaration	swift-appkit
+NSControl.h	R1-property	-action	declaration	swift-appkit
+NSControl.h	R1-property	-doubleValue	declaration	swift-appkit
+NSControl.h	R1-property	-font	declaration	swift-appkit
+NSControl.h	R1-property	-stringValue	declaration	swift-appkit
+NSControl.h	R1-property	-target	declaration	swift-appkit
+NSEvent.h	R1-property	-characters	declaration	swift-appkit
+NSEvent.h	R1-property	-charactersIgnoringModifiers	declaration	swift-appkit
+NSEvent.h	R1-property	-clickCount	declaration	swift-appkit
+NSEvent.h	R1-property	-keyCode	declaration	swift-appkit
+NSEvent.h	R1-property	-locationInWindow	declaration	swift-appkit
+NSEvent.h	R1-property	-modifierFlags	declaration	swift-appkit
+NSEvent.h	R5-enum	NSEventModifierFlags	declaration (new type name)	swift-appkit
+NSFont.h	R1-property	-familyName	declaration	swift-appkit
+NSFont.h	R1-property	-fontName	declaration	swift-appkit
+NSFont.h	R1-property	-pointSize	declaration	swift-appkit
+NSFont.h	R1-property	+systemFontSize	declaration	swift-appkit
+NSFont.h	R2-constant-type	NSFontSetChangedNotification	declaration	swift-appkit
+NSFontCollection.h	R4-generic	-matchingDescriptors	declaration	swift-appkit
+NSFontCollection.h	R4-generic	+fontCollectionWithAllAvailableDescriptors	declaration	swift-appkit
+NSFontDescriptor.h	R1-property	-symbolicTraits	declaration	swift-appkit
+NSFontDescriptor.h	R2-typedef	NSFontDescriptorAttributeName	declaration (new type name)	swift-appkit
+NSFontDescriptor.h	R5-enum	NSFontSymbolicTraits	declaration	swift-appkit
+NSFontManager.h	R1-property	-availableFontFamilies	declaration	swift-appkit
+NSFontManager.h	R1-property	+sharedFontManager	declaration	swift-appkit
+NSFontManager.h	R4-generic	-availableFontFamilies	declaration	swift-appkit
+NSFontManager.h	R4-generic	-availableMembersOfFontFamily:	declaration	swift-appkit
+NSGraphics.h	R5-enum	NSBackingStoreType	declaration	swift-appkit
+NSGraphics.h	R5-enum	NSCompositingOperation	declaration	swift-appkit
+NSGraphics.h	R5-enum	NSWindowOrderingMode	declaration	swift-appkit
+NSGraphicsContext.h	R1-property	-compositingOperation	declaration	swift-appkit
+NSGraphicsContext.h	R1-property	-graphicsPort	declaration	swift-appkit
+NSGraphicsContext.h	R1-property	+currentContext	declaration	swift-appkit
+NSImage.h	R2-typedef	NSImageName	declaration (new type name)	swift-appkit
+NSImage.h	R4-generic	+imageNamed:	declaration	swift-appkit
+NSImageView.h	R1-property	-image	declaration	swift-appkit
+NSLayoutConstraint.h	R1-property	-fittingSize	declaration	swift-appkit
+NSMenu.h	R4-generic	-itemArray	declaration	swift-appkit
+NSMenuItem.h	nullability	-initWithTitle:action:keyEquivalent:	declaration	swift-appkit
+NSMenuItem.h	R1-property	-tag	declaration	swift-appkit
+NSNib.h	R2-typedef	NSNibName	declaration (new type name)	swift-appkit
+NSNotification.h	R2-typedef	-addObserverForName:object:queue:usingBlock:	declaration	swift-foundation v-next
+NSNotification.h	R2-typedef	-postNotificationName:object:	declaration	swift-foundation v-next
+NSParagraphStyle.h	R5-enum	NSLineBreakMode	declaration	swift-appkit
+NSPopUpButton.h	R1-property	-menu	declaration	swift-appkit
+NSScreen.h	R1-property	-visibleFrame	declaration	swift-appkit
+NSScrollView.h	R1-property	-borderType	declaration	swift-appkit
+NSStepper.h	R1-property	-maxValue	declaration	swift-appkit
+NSStepper.h	R1-property	-minValue	declaration	swift-appkit
+NSStepper.h	R1-property	-valueWraps	declaration	swift-appkit
+NSTableView.h	R1-property	-backgroundColor	declaration	swift-appkit
+NSTableView.h	R1-property	-dataSource	declaration	swift-appkit
+NSTableView.h	R1-property	-delegate	declaration	swift-appkit
+NSTableView.h	R1-property	-floatsGroupRows	declaration	swift-appkit
+NSTableView.h	R1-property	-intercellSpacing	declaration	swift-appkit
+NSTableView.h	R1-property	-selectedRow	declaration	swift-appkit
+NSTableView.h	R1-property	-selectedRowIndexes	declaration	swift-appkit
+NSTableView.h	R4-generic	-viewAtColumn:row:makeIfNecessary:	declaration	swift-appkit
+NSText.h	R5-enum	NSTextAlignment	declaration	swift-appkit
+NSTextField.h	R1-property	-delegate	declaration	swift-appkit
+NSTextField.h	R1-property	-drawsBackground	declaration	swift-appkit
+NSTextField.h	R1-property	-isBezeled	declaration	swift-appkit
+NSTextField.h	R1-property	-isEditable	declaration	swift-appkit
+NSTextField.h	R1-property	-isSelectable	declaration	swift-appkit
+NSTextField.h	R1-property	-textColor	declaration	swift-appkit
+NSTrackingArea.h	R5-enum	NSTrackingAreaOptions	declaration	swift-appkit
+NSUserInterfaceItemIdentification.h	R2-typedef	NSUserInterfaceItemIdentifier	declaration (new type name)	swift-appkit
+NSView.h	designated-init	-initWithFrame:	declaration	swift-appkit
+NSView.h	nullability	-initWithFrame:	declaration	swift-appkit
+NSView.h	R1-property	-autoresizingMask	declaration	swift-appkit
+NSView.h	R1-property	-bounds	declaration	swift-appkit
+NSView.h	R1-property	-enclosingScrollView	declaration	swift-appkit
+NSView.h	R1-property	-frame	declaration	swift-appkit
+NSView.h	R1-property	-isHidden	declaration	swift-appkit
+NSView.h	R1-property	-layer	declaration	swift-appkit
+NSView.h	R1-property	-superview	declaration	swift-appkit
+NSView.h	R1-property	-wantsLayer	declaration	swift-appkit
+NSView.h	R1-property	-window	declaration	swift-appkit
+NSView.h	R2-constant-type	NSViewFrameDidChangeNotification	declaration	swift-appkit
+NSView.h	R5-enum	NSAutoresizingMaskOptions	declaration (new type name)	swift-appkit
+NSViewController.h	designated-init	-initWithNibName:bundle:	declaration	swift-appkit
+NSViewController.h	R1-property	-view	declaration	swift-appkit
+NSWindow.h	R1-property	-backingScaleFactor	declaration	swift-appkit
+NSWindow.h	R1-property	-canBecomeKeyWindow	declaration	swift-appkit
+NSWindow.h	R1-property	-contentView	declaration	swift-appkit
+NSWindow.h	R1-property	-firstResponder	declaration	swift-appkit
+NSWindow.h	R1-property	-frame	declaration	swift-appkit
+NSWindow.h	R1-property	-parentWindow	declaration	swift-appkit
+NSWindow.h	R1-property	-screen	declaration	swift-appkit
+NSWindow.h	R4-generic	-contentView	declaration	swift-appkit
+NSWindow.h	R5-enum	NSWindowStyleMask	declaration (new type name)	swift-appkit

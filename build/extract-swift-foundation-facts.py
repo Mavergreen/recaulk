@@ -30,14 +30,24 @@ CF_ENUM_FALLBACK = ('#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\
                     '#define CF_STRING_ENUM\n#endif\n#endif\n')
 
 
+# spec: .superpowers/specs/2026-11-24-swift-appkit-recipes-design.md -- AppKit's NSImageName and NSNibName are
+#       NS_SWIFT_BRIDGED_TYPEDEF in 11.3, which 10.9 lacks; the fallback carries the attribute itself
+BRIDGED_FALLBACK = ('#ifndef NS_SWIFT_BRIDGED_TYPEDEF\n#if __has_attribute(swift_bridged_typedef)\n'
+                    '#define NS_SWIFT_BRIDGED_TYPEDEF __attribute__((swift_bridged_typedef))\n#else\n'
+                    '#define NS_SWIFT_BRIDGED_TYPEDEF\n#endif\n#endif\n')
+
+
 def typedef_text(name, kind='extensible'):
     """A string enum's typedef, guarded so that two recipes may each declare it. kind is extensible
-    (NS_EXTENSIBLE_STRING_ENUM), plain (11.3 declares a bare NSString typedef), or cf (CF_STRING_ENUM)."""
+    (NS_EXTENSIBLE_STRING_ENUM), plain (11.3 declares a bare NSString typedef), bridged
+    (NS_SWIFT_BRIDGED_TYPEDEF), or cf (CF_STRING_ENUM)."""
     guard = '#ifndef __RECAULK_TYPEDEF_%s\n#define __RECAULK_TYPEDEF_%s 1\n' % (name, name)
     if kind == 'cf':
         return HEAD + CF_ENUM_FALLBACK + guard + 'typedef CFStringRef %s CF_STRING_ENUM;\n#endif\n' % name
     if kind == 'plain':
         return HEAD + '@class NSString;\n' + guard + 'typedef NSString *%s;\n#endif\n' % name
+    if kind == 'bridged':
+        return HEAD + '@class NSString;\n' + BRIDGED_FALLBACK + guard + 'typedef NSString *%s NS_SWIFT_BRIDGED_TYPEDEF;\n#endif\n' % name
     if kind != 'extensible':
         sys.exit('extract: unknown string enum kind %r' % kind)
     return HEAD + '@class NSString;\n' + FALLBACK + guard + 'typedef NSString *%s NS_EXTENSIBLE_STRING_ENUM;\n#endif\n' % name
@@ -424,7 +434,8 @@ def main():
         if string_enums[typ] == 'cf':
             new = re.sub(r'const\s+CFStringRef\b', 'const ' + typ, old, count=1)
         else:
-            new = re.sub(r'NSString\s*\*\s*const', typ + ' const', old, count=1)
+            # platform: AppKit declares many constants without const (APPKIT_EXTERN NSString *NSFontNameAttribute;)
+            new = re.sub(r'NSString\s*\*\s*(const\b)?\s*', lambda m: typ + (' const ' if m.group(1) else ' '), old, count=1)
         if new == old:
             continue
         add(key, {'kind': 'replace', 'old': old, 'offset': off, 'new': new})

@@ -8736,6 +8736,58 @@
           "new": "- (id<NSObject>)addObserverForName:(NSNotificationName)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification * _Nonnull))block NS_AVAILABLE(10_6, 4_0);"
         }
       ]
+    },
+    {
+      "id": "foundation-appleeventmanager-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSAppleEventManager.h",
+      "sha256": "69ebe2ad186543ef2b18e46dad5924431ebfa580fb65cf0c7d487b4e93ccd7dc",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSAppleEventManager.h"
+      ],
+      "replacements": [
+        {
+          "old": "\n@class NSAppleEventDescriptor;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSAppleEventDescriptor;\n"
+        },
+        {
+          "old": "extern NSString *NSAppleEventManagerWillProcessFirstEventNotification;",
+          "new": "extern NSNotificationName NSAppleEventManagerWillProcessFirstEventNotification;"
+        },
+        {
+          "old": "- (NSAppleEventDescriptor *)currentAppleEvent;",
+          "new": "@property (readonly, strong) NSAppleEventDescriptor *currentAppleEvent;"
+        },
+        {
+          "old": "- (NSAppleEventDescriptor *)currentReplyAppleEvent;",
+          "new": "@property (readonly, strong) NSAppleEventDescriptor *currentReplyAppleEvent;"
+        }
+      ]
+    },
+    {
+      "id": "foundation-classdescription-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSClassDescription.h",
+      "sha256": "010d6f227cc44abb7737f0631dac3780f6dc3008e6a3e4184f357ba34302ae99",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSClassDescription.h"
+      ],
+      "replacements": [
+        {
+          "old": "\n@class NSString, NSArray, NSDictionary;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSString, NSArray, NSDictionary;\n"
+        },
+        {
+          "old": "- (NSArray *)attributeKeys;\n- (NSArray *)toOneRelationshipKeys;\n- (NSArray *)toManyRelationshipKeys;\n- (NSString *)inverseForRelationshipKey:(NSString *)relationshipKey;\n\n@end\n\n@interface NSObject (NSClassDescriptionPrimitives)\n",
+          "new": "@property (readonly, copy) NSArray *attributeKeys;\n@property (readonly, copy) NSArray *toOneRelationshipKeys;\n@property (readonly, copy) NSArray *toManyRelationshipKeys;\n- (NSString *)inverseForRelationshipKey:(NSString *)relationshipKey;\n\n@end\n\n@interface NSObject (NSClassDescriptionPrimitives)\n"
+        },
+        {
+          "old": "- (NSClassDescription *)classDescription;",
+          "new": "@property (readonly, copy) NSClassDescription *classDescription;"
+        },
+        {
+          "old": "- (NSArray *)attributeKeys;\n- (NSArray *)toOneRelationshipKeys;\n- (NSArray *)toManyRelationshipKeys;\n- (NSString *)inverseForRelationshipKey:(NSString *)relationshipKey;\n\n@end\n\nFOUNDATION_EXPORT NSString *NSClassDescriptionNeededForClassNotification;\n",
+          "new": "@property (readonly, copy) NSArray *attributeKeys;\n@property (readonly, copy) NSArray *toOneRelationshipKeys;\n@property (readonly, copy) NSArray *toManyRelationshipKeys;\n- (NSString *)inverseForRelationshipKey:(NSString *)relationshipKey;\n\n@end\n\nFOUNDATION_EXPORT NSNotificationName NSClassDescriptionNeededForClassNotification;\n"
+        }
+      ]
     }
   ]
 }
