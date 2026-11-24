@@ -1,8 +1,9 @@
 #!/bin/sh
 # platform: macOS-only -- Drydock's strict Objective-C analyzer (drydock-objc analyze) runs on macOS only; elsewhere this skips
 # spec: README.md "Objective-C methods" -- objc-providers.json is schema 2, and the Drydock shipyard pins (0.7.0 or
-#       later) credits each class-method group whole: a consumer linked as `drydock-objc link-args` says, with build
-#       evidence, has every member's send provided and every group active. Nothing built here is executed.
+#       later) credits each group (the class methods, and NSView's and NSCell's accessibility) whole: a consumer
+#       linked as `drydock-objc link-args` says, with build evidence, has every member's send provided and every group
+#       active. Nothing built here is executed.
 set -eu
 cd "$(dirname "$0")/.."
 RECAULK_TEST_PHASE=build
@@ -18,7 +19,8 @@ mkdir "$d/root" "$d/src"
 DRYDOCK="$(sh "$SHIPYARD_SCRIPTS/fetch_drydock.sh" "$SHIPYARD_SCRIPTS/../components/drydock" | tail -1)"
 REF="$(sh "$SHIPYARD_SCRIPTS/objc-reference-dir.sh")"
 X="$DRYDOCK/bin/drydock-objc"
-GIDS="recaulk.nstimer.block-timers.v1 recaulk.nscolor.label-colors.v1 recaulk.nsgraphicscontext.cgcontext.v1"
+GIDS="recaulk.nstimer.block-timers.v1 recaulk.nscolor.label-colors.v1 recaulk.nsgraphicscontext.cgcontext.v1
+recaulk.nsview.accessibility.v1 recaulk.nscell.accessibility.v1"
 set --
 for g in $GIDS; do set -- "$@" --provider "$g"; done
 "$X" link-args --prefix "$T" --link-map "$d/root/consumer.map" "$@" > "$d/args" 2> "$d/err" \
@@ -31,12 +33,17 @@ cp tests/c/objc_group_consumer.m "$d/src/"
   --link-map "$d/root/consumer.map" --provider-prefix "$T" --references "$REF" --output "$d/evidence.json" 2> "$d/err" \
   || { echo "FAIL: drydock-objc evidence: $(cat "$d/err")"; exit 1; }
 rc=0
+# spec: tests/objc-source-receipt.sh -- as a consumer's guard does (shipyard assert_binary_compatible.sh), the analysis
+#       closes the provider bodies' own sends from the stage's source receipt
 "$X" analyze --artifact "$d/root/consumer" --root "$d/root" --references "$REF" --report "$d/report" --mode strict \
-  --build-evidence "$d/evidence.json" --provider-prefix "$T" 2> "$d/err" || rc=$?
+  --build-evidence "$d/evidence.json" --provider-prefix "$T" --source-receipt "$T/share/recaulk/objc-source.receipt" \
+  2> "$d/err" || rc=$?
 for sel in scheduledTimerWithTimeInterval:repeats:block: timerWithTimeInterval:repeats:block: labelColor linkColor \
-  graphicsContextWithCGContext:flipped:; do
+  graphicsContextWithCGContext:flipped: setAccessibilityLabel: accessibilityLabel setAccessibilityRole: \
+  accessibilityRole setAccessibilityChildren: accessibilityChildren setAccessibilitySelectedTextRange: \
+  accessibilitySelectedTextRange accessibilityFrame; do
   v=$(grep "\"selector\": \"$sel\"" "$d/report" | sed -n 's/.*"verdict": "\([^"]*\)".*/\1/p' | sort -u | tr '\n' ' ')
-  [ "$v" = "provided " ] || bad "+$sel is '${v:-no finding}', not provided (analyze exit $rc)"
+  [ "$v" = "provided " ] || bad "$sel is '${v:-no finding}', not provided (analyze exit $rc)"
 done
 for g in $GIDS; do
   grep "\"$g\"" "$d/report" | grep -q '"status": "active"' || bad "group $g is not reported active"

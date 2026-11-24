@@ -36,7 +36,8 @@ sh "$G" header "$D" "$W/generated/providers-generated.h"
 # spec: tests/objc-archive-reproducible.sh -- the prefix maps make every checkout and work directory build the same
 #       bytes, and name each source by the relative label source-inputs.txt records (the receipt's labels)
 # spec: tests/objc-source-receipt.sh -- -g keeps each member's line table, which the source receipt maps sends through
-for f in workspace workspace-events workspace-recents voiceover reduce-motion control window tablecolumn register register-common locale string register-foundation timer color graphics-context; do
+for f in workspace workspace-events workspace-recents voiceover reduce-motion control window tablecolumn register register-common locale string register-foundation timer color graphics-context \
+    accessibility-common accessibility-view accessibility-cell; do
   "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations \
     -ffile-prefix-map="$ROOT/"= -ffile-prefix-map="$W/"= \
     -ffile-prefix-map="$SDK"="$(basename "$SDK")" -fdebug-compilation-dir=. \
@@ -45,12 +46,13 @@ done
 recaulk_archive "$W/librecaulk-objc.a" "$W/objects/workspace.o" "$W/objects/workspace-events.o" \
   "$W/objects/workspace-recents.o" "$W/objects/voiceover.o" "$W/objects/reduce-motion.o" "$W/objects/control.o" "$W/objects/window.o" "$W/objects/tablecolumn.o" "$W/objects/register.o" "$W/objects/register-common.o" \
   "$W/objects/locale.o" "$W/objects/string.o" "$W/objects/register-foundation.o" "$W/objects/timer.o" "$W/objects/color.o" \
-  "$W/objects/graphics-context.o"
+  "$W/objects/graphics-context.o" "$W/objects/accessibility-common.o" "$W/objects/accessibility-view.o" \
+  "$W/objects/accessibility-cell.o"
 sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else shasum -a 256 "$@"; fi; }
 (cd "$ROOT" && sha256 src/objc/workspace.m src/objc/workspace-events.m src/objc/workspace-recents.m \
   src/objc/voiceover.m src/objc/reduce-motion.m src/objc/control.m src/objc/window.m src/objc/tablecolumn.m src/objc/register.m src/objc/register-common.m src/objc/register-common.h src/objc/locale.m src/objc/string.m \
   src/objc/register-foundation.m src/objc/foundation-private.h src/objc/timer.m src/objc/color.m src/objc/graphics-context.m \
-  src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
+  src/objc/accessibility-common.m src/objc/accessibility-view.m src/objc/accessibility-cell.m src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
   build/objc-provider-manifest.sh) > "$W/source-inputs.txt"
 (cd "$W" && sha256 generated/providers-generated.h) >> "$W/source-inputs.txt"
 sh "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" \
@@ -67,7 +69,9 @@ if [ "$role" = shipping ]; then
     --root "$ROOT" --root "$W" --unit src/objc/workspace.m --unit src/objc/workspace-events.m \
     --unit src/objc/workspace-recents.m --unit src/objc/voiceover.m --unit src/objc/reduce-motion.m --unit src/objc/control.m --unit src/objc/window.m --unit src/objc/tablecolumn.m --unit src/objc/register.m --unit src/objc/register-common.m \
     --unit src/objc/locale.m --unit src/objc/string.m --unit src/objc/register-foundation.m \
-    --unit src/objc/timer.m --unit src/objc/color.m --unit src/objc/graphics-context.m --include generated \
+    --unit src/objc/timer.m --unit src/objc/color.m --unit src/objc/graphics-context.m \
+    --unit src/objc/accessibility-common.m --unit src/objc/accessibility-view.m --unit src/objc/accessibility-cell.m \
+    --include generated \
     --output "$W/objc-source.receipt"
 fi
 # spec: tests/objc-provider-symbols.sh -- a declared implementation the analyzer could not resolve fails the build,

@@ -61,7 +61,61 @@ groups() {
     __recaulk_objc_color_link __recaulk_objc_activate_color AppKit \
     GRAPHICS_CONTEXT_CGCONTEXT recaulk.nsgraphicscontext.cgcontext.v1 NSGraphicsContext + \
     'graphicsContextWithCGContext:flipped:' '@28@0:8^{CGContext=}16c24' \
-    __recaulk_objc_graphics_context_with_cgcontext __recaulk_objc_activate_graphics_context AppKit
+    __recaulk_objc_graphics_context_with_cgcontext __recaulk_objc_activate_graphics_context AppKit \
+    VIEW_SET_AX_LABEL recaulk.nsview.accessibility.v1 NSView - setAccessibilityLabel: \
+    'v24@0:8@16' __recaulk_objc_view_set_accessibility_label \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_AX_LABEL recaulk.nsview.accessibility.v1 NSView - accessibilityLabel \
+    '@16@0:8' __recaulk_objc_view_accessibility_label \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_SET_AX_ROLE recaulk.nsview.accessibility.v1 NSView - setAccessibilityRole: \
+    'v24@0:8@16' __recaulk_objc_view_set_accessibility_role \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_AX_ROLE recaulk.nsview.accessibility.v1 NSView - accessibilityRole \
+    '@16@0:8' __recaulk_objc_view_accessibility_role \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_SET_AX_CHILDREN recaulk.nsview.accessibility.v1 NSView - setAccessibilityChildren: \
+    'v24@0:8@16' __recaulk_objc_view_set_accessibility_children \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_AX_CHILDREN recaulk.nsview.accessibility.v1 NSView - accessibilityChildren \
+    '@16@0:8' __recaulk_objc_view_accessibility_children \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_SET_AX_SELECTED_TEXT_RANGE recaulk.nsview.accessibility.v1 NSView - setAccessibilitySelectedTextRange: \
+    'v32@0:8{_NSRange=QQ}16' __recaulk_objc_view_set_accessibility_selected_text_range \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_AX_SELECTED_TEXT_RANGE recaulk.nsview.accessibility.v1 NSView - accessibilitySelectedTextRange \
+    '{_NSRange=QQ}16@0:8' __recaulk_objc_view_accessibility_selected_text_range \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    VIEW_AX_FRAME recaulk.nsview.accessibility.v1 NSView - accessibilityFrame \
+    '{CGRect={CGPoint=dd}{CGSize=dd}}16@0:8' __recaulk_objc_view_accessibility_frame \
+    __recaulk_objc_activate_view_accessibility AppKit \
+    CELL_SET_AX_LABEL recaulk.nscell.accessibility.v1 NSCell - setAccessibilityLabel: \
+    'v24@0:8@16' __recaulk_objc_cell_set_accessibility_label \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_AX_LABEL recaulk.nscell.accessibility.v1 NSCell - accessibilityLabel \
+    '@16@0:8' __recaulk_objc_cell_accessibility_label \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_SET_AX_ROLE recaulk.nscell.accessibility.v1 NSCell - setAccessibilityRole: \
+    'v24@0:8@16' __recaulk_objc_cell_set_accessibility_role \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_AX_ROLE recaulk.nscell.accessibility.v1 NSCell - accessibilityRole \
+    '@16@0:8' __recaulk_objc_cell_accessibility_role \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_SET_AX_CHILDREN recaulk.nscell.accessibility.v1 NSCell - setAccessibilityChildren: \
+    'v24@0:8@16' __recaulk_objc_cell_set_accessibility_children \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_AX_CHILDREN recaulk.nscell.accessibility.v1 NSCell - accessibilityChildren \
+    '@16@0:8' __recaulk_objc_cell_accessibility_children \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_SET_AX_SELECTED_TEXT_RANGE recaulk.nscell.accessibility.v1 NSCell - setAccessibilitySelectedTextRange: \
+    'v32@0:8{_NSRange=QQ}16' __recaulk_objc_cell_set_accessibility_selected_text_range \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_AX_SELECTED_TEXT_RANGE recaulk.nscell.accessibility.v1 NSCell - accessibilitySelectedTextRange \
+    '{_NSRange=QQ}16@0:8' __recaulk_objc_cell_accessibility_selected_text_range \
+    __recaulk_objc_activate_cell_accessibility AppKit \
+    CELL_AX_FRAME recaulk.nscell.accessibility.v1 NSCell - accessibilityFrame \
+    '{CGRect={CGPoint=dd}{CGSize=dd}}16@0:8' __recaulk_objc_cell_accessibility_frame \
+    __recaulk_objc_activate_cell_accessibility AppKit
 }
 # spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for
 #       it: a legacy provider by its id, a group's member by ID:SELECTOR
@@ -118,6 +172,186 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 + (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:setAccessibilityLabel:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityLabel:(NSString *)label;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityLabel:(NSString *)label { (void)label; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:accessibilityLabel) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)accessibilityLabel;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)accessibilityLabel { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:setAccessibilityRole:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityRole:(NSString *)role;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityRole:(NSString *)role { (void)role; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:accessibilityRole) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)accessibilityRole;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)accessibilityRole { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:setAccessibilityChildren:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityChildren:(NSArray *)children;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityChildren:(NSArray *)children { (void)children; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:accessibilityChildren) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSArray *)accessibilityChildren;
+@end
+@implementation RecaulkProviderEncoding
+- (NSArray *)accessibilityChildren { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:setAccessibilitySelectedTextRange:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilitySelectedTextRange:(NSRange)range;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilitySelectedTextRange:(NSRange)range { (void)range; }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:accessibilitySelectedTextRange) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSRange)accessibilitySelectedTextRange;
+@end
+@implementation RecaulkProviderEncoding
+- (NSRange)accessibilitySelectedTextRange { return NSMakeRange(NSNotFound, 0); }
+@end
+EOF
+    ;;
+    recaulk.nsview.accessibility.v1:accessibilityFrame) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSRect)accessibilityFrame;
+@end
+@implementation RecaulkProviderEncoding
+- (NSRect)accessibilityFrame { return NSZeroRect; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:setAccessibilityLabel:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityLabel:(NSString *)label;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityLabel:(NSString *)label { (void)label; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:accessibilityLabel) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)accessibilityLabel;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)accessibilityLabel { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:setAccessibilityRole:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityRole:(NSString *)role;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityRole:(NSString *)role { (void)role; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:accessibilityRole) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSString *)accessibilityRole;
+@end
+@implementation RecaulkProviderEncoding
+- (NSString *)accessibilityRole { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:setAccessibilityChildren:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilityChildren:(NSArray *)children;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilityChildren:(NSArray *)children { (void)children; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:accessibilityChildren) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSArray *)accessibilityChildren;
+@end
+@implementation RecaulkProviderEncoding
+- (NSArray *)accessibilityChildren { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:setAccessibilitySelectedTextRange:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setAccessibilitySelectedTextRange:(NSRange)range;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setAccessibilitySelectedTextRange:(NSRange)range { (void)range; }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:accessibilitySelectedTextRange) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSRange)accessibilitySelectedTextRange;
+@end
+@implementation RecaulkProviderEncoding
+- (NSRange)accessibilitySelectedTextRange { return NSMakeRange(NSNotFound, 0); }
+@end
+EOF
+    ;;
+    recaulk.nscell.accessibility.v1:accessibilityFrame) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (NSRect)accessibilityFrame;
+@end
+@implementation RecaulkProviderEncoding
+- (NSRect)accessibilityFrame { return NSZeroRect; }
 @end
 EOF
     ;;

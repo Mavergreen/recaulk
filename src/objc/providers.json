@@ -246,6 +246,138 @@
           "implementation_symbol": "__recaulk_objc_graphics_context_with_cgcontext"
         }
       ]
+    },
+    {
+      "provider_id": "recaulk.nsview.accessibility.v1",
+      "class": "NSView",
+      "guard": "absent-only",
+      "activation_root": "__recaulk_objc_activate_view_accessibility",
+      "required_frameworks": [
+        "AppKit"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "methods": [
+        {
+          "kind": "-",
+          "selector": "setAccessibilityLabel:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_view_set_accessibility_label"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityLabel",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_view_accessibility_label"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilityRole:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_view_set_accessibility_role"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityRole",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_view_accessibility_role"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilityChildren:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_view_set_accessibility_children"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityChildren",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_view_accessibility_children"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilitySelectedTextRange:",
+          "encoding": "v32@0:8{_NSRange=QQ}16",
+          "implementation_symbol": "__recaulk_objc_view_set_accessibility_selected_text_range"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilitySelectedTextRange",
+          "encoding": "{_NSRange=QQ}16@0:8",
+          "implementation_symbol": "__recaulk_objc_view_accessibility_selected_text_range"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityFrame",
+          "encoding": "{CGRect={CGPoint=dd}{CGSize=dd}}16@0:8",
+          "implementation_symbol": "__recaulk_objc_view_accessibility_frame"
+        }
+      ]
+    },
+    {
+      "provider_id": "recaulk.nscell.accessibility.v1",
+      "class": "NSCell",
+      "guard": "absent-only",
+      "activation_root": "__recaulk_objc_activate_cell_accessibility",
+      "required_frameworks": [
+        "AppKit"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "methods": [
+        {
+          "kind": "-",
+          "selector": "setAccessibilityLabel:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_cell_set_accessibility_label"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityLabel",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_cell_accessibility_label"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilityRole:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_cell_set_accessibility_role"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityRole",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_cell_accessibility_role"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilityChildren:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_cell_set_accessibility_children"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityChildren",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_cell_accessibility_children"
+        },
+        {
+          "kind": "-",
+          "selector": "setAccessibilitySelectedTextRange:",
+          "encoding": "v32@0:8{_NSRange=QQ}16",
+          "implementation_symbol": "__recaulk_objc_cell_set_accessibility_selected_text_range"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilitySelectedTextRange",
+          "encoding": "{_NSRange=QQ}16@0:8",
+          "implementation_symbol": "__recaulk_objc_cell_accessibility_selected_text_range"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityFrame",
+          "encoding": "{CGRect={CGPoint=dd}{CGSize=dd}}16@0:8",
+          "implementation_symbol": "__recaulk_objc_cell_accessibility_frame"
+        }
+      ]
     }
   ]
 }

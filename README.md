@@ -79,7 +79,7 @@ cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
    -Wl,-u,___recaulk_objc_activate_foundation -framework Foundation
 ```
 
-Three groups of class methods each have a root of their own:
+Five groups each have a root of their own, three of class methods and two of instance methods:
 
 - `___recaulk_objc_activate_timer` (Foundation): `NSTimer`'s `scheduledTimerWithTimeInterval:repeats:block:` and
   `timerWithTimeInterval:repeats:block:` (10.12), as 10.9's `CFRunLoopTimerCreateWithHandler` timers, which are
@@ -89,13 +89,25 @@ Three groups of class methods each have a root of their own:
   `controlTextColor`, and `linkColor` (10.10), sRGB 0, 0.408, 0.855.
 - `___recaulk_objc_activate_graphics_context` (AppKit): `NSGraphicsContext`'s
   `graphicsContextWithCGContext:flipped:` (10.10), through 10.9's `graphicsContextWithGraphicsPort:flipped:`.
+- `___recaulk_objc_activate_view_accessibility` and `___recaulk_objc_activate_cell_accessibility` (AppKit):
+  `NSView`'s and `NSCell`'s 10.10 accessibility properties `accessibilityLabel`, `accessibilityRole`,
+  `accessibilityChildren` and `accessibilitySelectedTextRange` (each getter and setter) and `accessibilityFrame`.
+  10.9's VoiceOver reads the attribute API, so a setter overrides the attribute (`AXDescription`, `AXRole`,
+  `AXChildren`, `AXSelectedTextRange`) with 10.9's `accessibilitySetOverrideValue:forAttribute:`, and a getter
+  returns the override, else 10.9's value of the attribute, else nil (10.9 throws for an attribute the element lacks);
+  an absent text range is `{NSNotFound, 0}`, and the frame is 10.9's `AXPosition` and `AXSize` in screen coordinates,
+  or `NSZeroRect`. A control's (`NSControl`'s) properties are its cell's, the element 10.9 exposes, as 10.10's
+  `NSControl` forwards them. A program that subclasses with its own getters (10.10's way of being accessible) is
+  not seen by 10.9's VoiceOver through these: 10.9 asks `accessibilityAttributeValue:`, which nothing here answers
+  from them.
 
 A group is added whole or not at all: if its class already has any of its methods, none of them is added.
 
 ```sh
 cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
    -Wl,-u,___recaulk_objc_activate_timer -Wl,-u,___recaulk_objc_activate_color \
-   -Wl,-u,___recaulk_objc_activate_graphics_context -framework AppKit
+   -Wl,-u,___recaulk_objc_activate_graphics_context -Wl,-u,___recaulk_objc_activate_view_accessibility \
+   -Wl,-u,___recaulk_objc_activate_cell_accessibility -framework AppKit
 ```
 
 shipyard's `objc-provider-link-args.sh` prints the roots and frameworks of every
@@ -107,9 +119,9 @@ load, each method is added only where the class doesn't already have it, so a
 native or inherited implementation on newer macOS is left alone.
 `share/recaulk/objc-providers.json` lists the methods, their ABI encodings and
 the build that produced the archive (source hashes, archive hash, compiler, SDK). It is Drydock's schema 2: the
-instance methods, one per entry as schema 1 had them, under `legacy_providers`, and the class-method groups under
-`providers`. Reading it takes Drydock 0.7.0 or later, which shipyard pins from 1.0.888 (`@v1` has it); an older
-Drydock refuses the file rather than skip it. Drydock credits a group only from a root that registers its
+instance methods registered before groups existed, one per entry as schema 1 had them, under `legacy_providers`, and
+the groups under `providers`. Reading it takes Drydock 0.7.0 or later, which shipyard pins from 1.0.888 (`@v1` has
+it); an older Drydock refuses the file rather than skip it. Drydock credits a group only from a root that registers its
 members and nothing else, every member looked up before any is added, which is why each group has its own root.
 
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
