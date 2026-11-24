@@ -757,6 +757,12 @@ else (`build/sdk-metadata-profiles-validate.cmake`). A profile's list is fixed f
 consumer that also selects recipes of its own may select only recipes on headers the profile does not touch.
 If it needs more on such a header, it asks for a v-next of the profile's recipe.
 
+A profile may name a `base`: another profile whose every recipe id it carries too, as `swift-appkit` does
+`swift-foundation`. Staging refuses a base that is not a profile, a chain of bases that loops, and a profile
+missing any of its base's ids, and `recaulk-materialize` checks the same before it reads the SDK, so a client of
+the larger view always sees the smaller one's headers unchanged. No recipe edits `usr/include/dispatch/` or
+`usr/include/pthread/qos.h`: toolchains map those through overlays of their own.
+
 `swift-foundation` is Foundation as swift-5.4's Foundation overlay needs it on 10.9. It covers 144 headers
 in Foundation, CoreFoundation, `objc/NSObject.h` and `objc/runtime.h`:
 - 10.9's getters redeclared as the properties the macOS 11.3 SDK declares, keeping 10.9's types and adding

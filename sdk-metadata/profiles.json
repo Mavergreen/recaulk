@@ -180,7 +180,8 @@
         "foundation-xpcconnection-v1",
         "objc-nsobject-v1",
         "objc-runtime-v1"
-      ]
+      ],
+      "base": "swift-foundation"
     },
     "swift-foundation": {
       "description": "Foundation as swift-5.4's Foundation overlay needs it on 10.9",

@@ -60,6 +60,23 @@ int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, con
         const struct mz_json *p = mz_json_get(ps, a->profile);
         if (!p) mz_fail("no profile '%s'", a->profile);
         const struct mz_json *pids = arr(p, "recipes", a->profile);
+        /* spec: the design's "Layering" -- a profile carries every recipe id of the profile it names as its base */
+        const struct mz_json *base = mz_json_get(p, "base");
+        if (base) {
+            if (base->t != MZ_STR) mz_fail("profile '%s' has a base that is not a string", a->profile);
+            const struct mz_json *bp = mz_json_get(ps, base->s);
+            if (!bp || !strcmp(base->s, a->profile)) mz_fail("base '%s' of '%s' is not a profile", base->s, a->profile);
+            const struct mz_json *bids = arr(bp, "recipes", base->s);
+            for (size_t i = 0; i < bids->len; i++) {
+                size_t k = 0;
+                while (k < pids->len && !(pids->v[k]->t == MZ_STR && bids->v[i]->t == MZ_STR &&
+                                           !strcmp(pids->v[k]->s, bids->v[i]->s)))
+                    k++;
+                if (k == pids->len)
+                    mz_fail("profile '%s' lacks '%s' from its base '%s'", a->profile,
+                            bids->v[i]->t == MZ_STR ? bids->v[i]->s : "?", base->s);
+            }
+        }
         n = pids->len;
         ids = mz_xmalloc(n * sizeof *ids);
         for (size_t i = 0; i < n; i++) {

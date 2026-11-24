@@ -75,6 +75,21 @@ echo "== unknown_ids"
 R= run --recipe t-nope-v1; refuse unknown_recipe t-nope-v1
 R= run --profile nope; refuse unknown_profile nope
 
+echo "== layering"
+sed 's|"profiles": {|"profiles": {"t-top": {"description": "over t", "base": "t", "recipes": ["t-array-v1"]},|' \
+  "$F/profiles.json" > "$d/layered.json"
+"$d/rm" --dry-run --sdk "$SDK" --out "$d/out" --recipes "$F/recipes.json" --profiles "$d/layered.json" --profile t-top \
+  >/dev/null 2>"$d/err" && rc=0 || rc=$?
+refuse base_missing_id "profile 't-top' lacks 't-stdio-v1' from its base 't'"
+sed 's|"t-top": {"description": "over t", "base": "t", "recipes": \["t-array-v1"\]}|"t-top": {"description": "over t", "base": "t", "recipes": ["t-array-v1", "t-stdio-v1"]}|' \
+  "$d/layered.json" > "$d/layered-ok.json"
+"$d/rm" --dry-run --sdk "$SDK" --out "$d/out" --recipes "$F/recipes.json" --profiles "$d/layered-ok.json" --profile t-top \
+  >/dev/null 2>"$d/err" || bad "a profile carrying its base's ids was refused: $(cat "$d/err")"
+sed 's|"base": "t"|"base": "nope"|' "$d/layered.json" > "$d/layered-bad.json"
+"$d/rm" --dry-run --sdk "$SDK" --out "$d/out" --recipes "$F/recipes.json" --profiles "$d/layered-bad.json" --profile t-top \
+  >/dev/null 2>"$d/err" && rc=0 || rc=$?
+refuse base_unknown "base 'nope' of 't-top' is not a profile"
+
 echo "== reserved_paths"
 mkdir -p "$SDK/usr/include/dispatch" "$SDK/usr/include/pthread"
 cp "$SDK/usr/include/stdio.h" "$SDK/usr/include/dispatch/dispatch.h"

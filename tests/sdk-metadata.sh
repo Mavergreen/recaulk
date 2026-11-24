@@ -66,6 +66,12 @@ refuse unknown-key "$(sub "$(printf '%s' "$r" | sed 's|"aliases"|"eval":"x","ali
 refuse empty-replacements "$(sub "$(printf '%s' "$r" | sed 's|\[{"old":"a","new":"b"}\]|[]|')")"
 refuse empty-old "$(sub "$(printf '%s' "$r" | sed 's|"old":"a"|"old":""|')")"
 refuse identical-old-new "$(sub "$(printf '%s' "$r" | sed 's|"new":"b"|"new":"a"|')")"
+# spec: the materializer design's "Consumer review" -- swift's importer overlay owns these paths
+refuse reserved-dispatch "$(sub "$(printf '%s' "$r" | sed 's|"header":"A/B.h"|"header":"usr/include/dispatch/dispatch.h"|')")"
+refuse reserved-qos-alias "$(sub "$(printf '%s' "$r" | sed 's|"C/B.h"|"usr/include/pthread/qos.h"|')")"
+for _e in reserved-dispatch reserved-qos-alias; do
+  grep -q reserved "$d/err-$_e" || bad "$_e: the refusal does not say reserved: $(cat "$d/err-$_e")"
+done
 refuse replacement-extra-key "$(sub "$(printf '%s' "$r" | sed 's|"new":"b"|"new":"b","regex":true|')")"
 echo "== profiles_refused"
 r2='{"id":"y-v1","header":"A/B.h","sha256":"62c14ca4c2ab6fc0194328585cce9d18aab0b65338bd0aab2146ad9b0053c585","aliases":[],"replacements":[{"old":"a","new":"b"}]}'
@@ -88,9 +94,19 @@ refuse_profile profiles-wrong-schema "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s
 refuse_profile profiles-empty "$(printf '%s' "$p" | sed 's|IDS||')"
 refuse_profile profiles-unknown-key "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s|"description"|"extra":1,"description"|')"
 refuse_profile profiles-duplicate-id "$(printf '%s' "$p" | sed 's|IDS|"x-v1","x-v1"|')"
+# spec: the materializer design's "Layering" -- a profile may name its base, and carries all of the base's ids
+q='{"schema":1,"profiles":{"a":{"description":"d","recipes":["x-v1"]},"b":{"description":"d",BASE"recipes":[IDS]}}}'
+refuse_profile profiles-base-not-string "$(printf '%s' "$q" | sed 's|BASE|"base":1,|; s|IDS|"x-v1","z-v1"|')"
+refuse_profile profiles-base-unknown "$(printf '%s' "$q" | sed 's|BASE|"base":"nope",|; s|IDS|"x-v1","z-v1"|')"
+refuse_profile profiles-base-self "$(printf '%s' "$q" | sed 's|BASE|"base":"b",|; s|IDS|"x-v1","z-v1"|')"
+refuse_profile profiles-base-missing-id "$(printf '%s' "$q" | sed 's|BASE|"base":"a",|; s|IDS|"z-v1"|')"
+refuse_profile profiles-base-cycle "$(printf '%s' "$q" | sed 's|BASE|"base":"a",|; s|IDS|"x-v1","z-v1"|; s|"a":{"description":"d",|"a":{"description":"d","base":"b",|')"
+for _e in base-missing-id base-cycle base-self base-unknown; do
+  grep -q base "$d/err-profiles-$_e" || bad "profiles-$_e: the refusal does not mention base: $(cat "$d/err-profiles-$_e")"
+done
 mkdir -p "$d/in-profile-ok"
 printf '%s\n' "$(sub "$r,$r2,$r3")" > "$d/in-profile-ok/recipes.json"
-printf '%s\n' "$(printf '%s' "$p" | sed 's|IDS|"x-v1","z-v1"|')" > "$d/in-profile-ok/profiles.json"
+printf '%s\n' "$(printf '%s' "$q" | sed 's|BASE|"base":"a",|; s|IDS|"x-v1","z-v1"|')" > "$d/in-profile-ok/profiles.json"
 sh build/stage-sdk-metadata.sh "$d/in-profile-ok" "$d/out-profile-ok" 2>"$d/err-profile-ok" \
   || bad "a well-formed profile was refused: $(cat "$d/err-profile-ok")"
 

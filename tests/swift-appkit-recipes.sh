@@ -41,6 +41,8 @@ seed = json.load(open(os.path.join(G, 'profiles.json')))['profiles']
 assert p['swift-foundation'] == seed['swift-foundation'], p                        # keeps_other_profiles
 assert set(p['swift-appkit']['recipes']) >= set(p['swift-foundation']['recipes']), p  # superset
 assert p['swift-appkit']['description'] == 'A', p
+assert p['swift-appkit'].get('base') == 'swift-foundation', p                       # names_its_base
+assert 'base' not in p['swift-foundation'], p
 r = {x['id']: x for x in json.load(open(os.path.join(d, 'recipes.json')))['recipes']}
 assert 'appkit-widget-v3' in r and 'appkit-widget-v3' in p['swift-appkit']['recipes'], sorted(r)   # appkit_chain
 new = ''.join(x['new'] for x in r['appkit-widget-v3']['replacements'])
