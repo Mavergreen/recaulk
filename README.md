@@ -289,7 +289,10 @@ signal sent to one thread (`pthread_kill`) is no better covered than by 10.9's o
 thread handles can end the wait with `EINTR`; one under way as a thread's first wait begins (the main thread's too, in a program linking
 `librecaulk.a`: `libRecaulkSystem.dylib` registers it as it loads), or as a fork's child registers its
 kqueue, is not seen; and a signal can end a wait a moment before its handler
-runs, which it then does as the caller next unblocks it. Where no kqueue can be had (descriptors or
+runs, which it then does as the caller next unblocks it. xnu tells the kqueue of a signal before it picks
+the thread that takes it, so in a program with other threads a wait that signal ends stays one it can be
+delivered to for up to 10 ms more (ending as the handler runs); a signal xnu picks a thread for later than
+that, with every other thread blocking it, waits on the first thread until that one unblocks it. Where no kqueue can be had (descriptors or
 memory exhausted), a wait falls back to 10.9's own `pselect` rather than fail. A program may close the
 kqueue's descriptor, as sshd's `closefrom` does: the next wait notices and registers another. Callers
 already loop on `EINTR`. `librecaulk.a` must come before libSystem in the link, as clang

@@ -50,6 +50,8 @@
 #define RECAULK_PSELECT_EXTSN 1    /* $DARWIN_EXTSN: nfds unlimited */
 #define RECAULK_PSELECT_NOCANCEL 2 /* $NOCANCEL: not a cancellation point */
 #define RECAULK_PSELECT_LEGACY 4   /* plain _pselect: nfds unlimited, as 10.9's is */
+#define GRACE_USEC 10000           /* a scheduler quantum: the longest a poster preempted by this wait's wake-up
+                                      usually waits to run again */
 
 typedef int pselect_fn(int, fd_set *, fd_set *, fd_set *, const struct timespec *, const sigset_t *);
 typedef int select_fn(int, fd_set *, fd_set *, fd_set *, struct timeval *);
@@ -305,18 +307,34 @@ int __recaulk_pselect(int variant, int nfds, fd_set *r, fd_set *w, fd_set *e,
         copy_in(pe, e, nfds, words);
         pr[kq / NFDBITS] |= (fd_mask)(1u << (kq % NFDBITS));
         struct masked m = {&saved};
+        int posted = 0, watched_posted = 0; /* outside the cleanup block, which pthread_cleanup_push opens */
         pthread_sigmask(SIG_SETMASK, mask, &saved);
         pthread_cleanup_push(unmask_on_cancel, &m);
         rv = sel(width, (fd_set *)pr, w ? (fd_set *)pw : NULL, e ? (fd_set *)pe : NULL, tvp);
         err = errno;
-        pthread_cleanup_pop(0);
-        pthread_sigmask(SIG_SETMASK, &saved, NULL);
-        int posted = 0, watched_posted = 0;
         if (rv > 0 && (pr[kq / NFDBITS] & (fd_mask)(1u << (kq % NFDBITS)))) {
             pr[kq / NFDBITS] &= ~(fd_mask)(1u << (kq % NFDBITS));
             rv--;
             posted = 1;
+            /* Drained with the caller's mask still in place: see the grace wait below. */
+            while ((n = kevent(kq, NULL, 0, evs, 32, &zero)) > 0)
+                for (int i = 0; i < n; i++)
+                    if (sigismember(&watched, (int)evs[i].ident)) watched_posted = 1;
+            /* platform: xnu posts the knote before it picks the thread that takes the signal (xnu-2422
+             * bsd/kern/kern_sig.c, psignal_internal: proc_knote, then get_signalthread), so a wait the knote
+             * woke can block the signal again before the pick. In a process with other threads that block it,
+             * xnu then parks it on the first thread and this wait's handler never runs (CI runs 45077977740,
+             * 45193580816, 45330111036; MEASURED 2026-11-24 on a 12-core 10.9 box under 24 spinning threads, a new
+             * thread's wait for its child's SIGCHLD: 20 lost in 6000 without this, 0 with it). Stay a thread the signal can be delivered to a little longer: the wait ends with
+             * EINTR as the signal arrives, at once if the poster is waiting for this CPU, and after the grace
+             * if the handler already ran. A lone thread is the one xnu falls back to, so it skips this. */
+            if (watched_posted && pthread_is_threaded_np()) {
+                struct timeval grace = {0, GRACE_USEC};
+                select_unlimited_nocancel(0, NULL, NULL, NULL, &grace);
+            }
         }
+        pthread_cleanup_pop(0);
+        pthread_sigmask(SIG_SETMASK, &saved, NULL);
         if (posted || (rv < 0 && err == EINTR)) {
             /* Drain what this wait saw, so it does not end the next one too. */
             while ((n = kevent(kq, NULL, 0, evs, 32, &zero)) > 0)
