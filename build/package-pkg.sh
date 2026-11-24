@@ -31,6 +31,10 @@ recaulk_tools
 mkdir -p "$TREE/bin"
 RECAULK_VERSION="$VERSION" sh "$MAVERICKS_ROOT/build/build-materialize.sh" mac "$TREE/bin/recaulk-materialize" >&2
 chmod 755 "$TREE/bin/recaulk-materialize"
+# spec: tests/package-pkg.sh -- consumers read share/ as themselves: drydock-objc receipt (via objc-source-inventory.sh) writes the
+#       receipt owner-only, and a mode in the staged tree is what the pkg installs, so every file there is made 0644
+find "$TREE/share" -type d -exec chmod 755 {} +
+find "$TREE/share" -type f -exec chmod 644 {} +
 sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/libRecaulkSystem.dylib" >&2
 # spec: INGREDIENTS.md "Conformance deviations", arm64 -- recaulk-materialize is universal wherever the compiler
 #       targets arm64 (tests/package-pkg.sh demands that slice then); the guard checks each slice it carries

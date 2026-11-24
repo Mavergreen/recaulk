@@ -74,6 +74,12 @@ fi
 modes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'share/sdk-metadata' | cut -c1-10 | tr '\n' ' ')"
 [ "$modes" = "drwxr-xr-x -rw-r--r-- -rw-r--r-- " ] || { echo "FAIL: share/sdk-metadata is not world-readable in the payload: $modes"; exit 1; }
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
+# spec: README.md "Objective-C methods" -- consumers' strict compat guard reads share/recaulk (the provider
+#       declaration and the source receipt) as themselves, not root: every file there is world-readable
+need 'usr/local/mavergreen/recaulk/share/recaulk/objc-source.receipt'
+unreadable="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'usr/local/mavergreen/recaulk/share/' \
+  | awk '($1 ~ /^-/ && substr($1, 8, 1) != "r") || ($1 ~ /^d/ && substr($1, 8, 3) !~ /^r.x$/) { print $NF }')"
+[ -z "$unreadable" ] || { echo "FAIL: not world-readable in the payload: $unreadable"; exit 1; }
 need 'usr/local/mavergreen/recaulk/share/recaulk/notices.tsv'
 need 'usr/local/mavergreen/recaulk/share/recaulk/unexported-symbols.txt'
 need 'usr/local/mavergreen/recaulk/share/recaulk/image-local-shadows.txt'
