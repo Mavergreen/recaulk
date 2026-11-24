@@ -338,7 +338,7 @@ def main():
         f.write(json.dumps({'schema': 1, 'generated': sorted(generated | set(made))}, indent=2) + '\n')
     profiles[PROFILE] = {'description': o.description, 'recipes': ids}
     if o.base_profile:
-        profiles[PROFILE]['base'] = o.base_profile   # spec: the materializer design's "Layering"
+        profiles[PROFILE]['base'] = o.base_profile   # spec: README.md "Profiles"
 
     prof = {'schema': 1, 'profiles': {k: profiles[k] for k in sorted(profiles)}}
     with open(o.profiles, 'w') as f:

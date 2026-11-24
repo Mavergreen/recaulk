@@ -5,7 +5,7 @@
 #        host:  for this machine, to run the tests (clang22 for the host arch on Darwin, ${HOST_CC:-cc} elsewhere)
 #        mac:   universal x86_64 (10.9) + arm64 (11.0), what the .pkg ships
 #        linux: static x86_64, what the Linux tarball ships (${HOST_CC:-cc} -static)
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Delivery"
+# spec: README.md "Materializing an SDK view" "Delivery"
 set -eu
 [ $# -eq 2 ] || { [ $# -eq 3 ] && [ "$1" = unit ]; } \
   || { echo "build-materialize: usage: build-materialize.sh host|mac|linux OUTFILE | unit OUTFILE TEST_MAIN.c" >&2; exit 2; }

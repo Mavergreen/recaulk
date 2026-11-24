@@ -53,7 +53,7 @@ need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/recipes.json'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/profiles.json'
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Delivery" -- the materializer beside the recipes it
+# spec: README.md "Materializing an SDK view" -- the materializer beside the recipes it
 #       reads: universal where the compiler can target arm64 (every release build), and it finds ../share/sdk-metadata
 need 'usr/local/mavergreen/recaulk/bin/recaulk-materialize'
 RM="$tmp/files/usr/local/mavergreen/recaulk/bin/recaulk-materialize"

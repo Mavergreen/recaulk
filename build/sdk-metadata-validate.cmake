@@ -47,7 +47,7 @@ function(rel_path p where)
   if(p STREQUAL "" OR p MATCHES "^/" OR p MATCHES "(^|/)\\.\\.?(/|$)" OR p MATCHES "//" OR p MATCHES "/$")
     refuse("${where} '${p}' is not a plain path relative to the SDK")
   endif()
-  # spec: the materializer design's "Consumer review" -- swift's importer overlay owns these
+  # spec: README.md "Profiles" -- swift's importer overlay owns these
   if(p MATCHES "^usr/include/dispatch/" OR p STREQUAL "usr/include/pthread/qos.h")
     refuse("${where} '${p}' is reserved for the toolchain's own overlay")
   endif()

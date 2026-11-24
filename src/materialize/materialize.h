@@ -1,5 +1,5 @@
 /* recaulk-materialize: applies Recaulk's SDK recipes to a user's own SDK.
-   spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md */
+   spec: README.md "Materializing an SDK view" */
 #ifndef RECAULK_MATERIALIZE_H
 #define RECAULK_MATERIALIZE_H
 #include <stddef.h>

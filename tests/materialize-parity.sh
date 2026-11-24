@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic -- the pinned 10.9 SDK, clang22, and shipyard's module through shipyard-cmake (or cmake)
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Constraints" -- shipyard's
+# spec: README.md "Materializing an SDK view" "Constraints" -- shipyard's
 #       MavericksSDKMetadata.cmake is the reference: for each shipped profile, recaulk-materialize writes the same
 #       header bytes and maps the same names under the SDK as given; it takes seconds, a cached run less than one,
 #       and code compiles through its view whether the sysroot is the view or the SDK itself
@@ -33,14 +33,13 @@ for profile in swift-foundation swift-appkit; do
   t2=$(date +%s)
   [ $((t2 - t1)) -le 1 ] || bad "a cached $profile took $((t2 - t1)) s, want under 1"
 
-  # the same header bytes
   (cd "$d/module-$profile/headers" && find . -type f | LC_ALL=C sort) > "$d/module.files"
   (cd "$d/rm-$profile/headers" && find . -type f | LC_ALL=C sort) > "$d/rm.files"
   cmp -s "$d/module.files" "$d/rm.files" || bad "$profile: the two rewrite different headers"
   while read -r f; do
     cmp -s "$d/module-$profile/headers/$f" "$d/rm-$profile/headers/$f" || bad "$profile: $f differs from shipyard's module"
   done < "$d/rm.files"
-  # the same names under the SDK as given and its real path (the module maps those two roots)
+  # spec: README.md "Materializing an SDK view" -- the same names under the SDK as given and its real path, the module's two roots
   for o in module rm; do
     # platform: the module pretty-prints ("name" : "..."), recaulk-materialize writes one entry a line
     tr ',{}' '\n\n\n' < "$d/$o-$profile/overlay.json" | sed -n 's/^ *"name" *: *"\(.*\)" *$/\1/p' \

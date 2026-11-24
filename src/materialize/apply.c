@@ -1,5 +1,5 @@
 /* Selecting recipes and applying them to the SDK's headers, in memory.
-   spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Applying recipes" -- shipyard's
+   spec: README.md "Materializing an SDK view" "Applying recipes" -- shipyard's
    MavericksSDKMetadata.cmake's semantics: every replacement's old text occurs exactly once in the header as the SDK
    has it, replacements may not overlap, and all of a recipe's replacements apply to that original text. */
 #include "materialize.h"
@@ -60,7 +60,7 @@ int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, con
         const struct mz_json *p = mz_json_get(ps, a->profile);
         if (!p) mz_fail("no profile '%s'", a->profile);
         const struct mz_json *pids = arr(p, "recipes", a->profile);
-        /* spec: the design's "Layering" -- a profile carries every recipe id of the profile it names as its base */
+        /* spec: README.md "Profiles" -- a profile carries every recipe id of the profile it names as its base */
         const struct mz_json *base = mz_json_get(p, "base");
         if (base) {
             if (base->t != MZ_STR) mz_fail("profile '%s' has a base that is not a string", a->profile);
@@ -125,7 +125,7 @@ static char *sdk_file(const char *sdk_real, const char *rel, const char *where) 
         strstr(rel, "/./") || strstr(rel, "/../") || (n >= 2 && !strcmp(rel + n - 2, "/.")) ||
         (n >= 3 && !strcmp(rel + n - 3, "/..")))
         mz_fail("%s '%s' is not a plain path relative to the SDK", where, rel);
-    /* spec: the consumer review -- swift's importer overlay owns these */
+    /* spec: README.md "Profiles" -- swift's importer overlay owns these */
     if (!strncmp(rel, "usr/include/dispatch/", 21) || !strcmp(rel, "usr/include/pthread/qos.h"))
         mz_fail("%s '%s' is reserved for the toolchain's own overlay", where, rel);
     char joined[PATH_MAX], real[PATH_MAX];

@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Command line" -- usage, absolute paths, exit codes
+# spec: README.md "Materializing an SDK view" "Command line" -- usage, absolute paths, exit codes
 set -eu
 cd "$(dirname "$0")/.."
 d="$(mktemp -d "${TMPDIR:-/tmp}/materialize-cli.XXXXXX")"

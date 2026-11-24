@@ -66,7 +66,7 @@ refuse unknown-key "$(sub "$(printf '%s' "$r" | sed 's|"aliases"|"eval":"x","ali
 refuse empty-replacements "$(sub "$(printf '%s' "$r" | sed 's|\[{"old":"a","new":"b"}\]|[]|')")"
 refuse empty-old "$(sub "$(printf '%s' "$r" | sed 's|"old":"a"|"old":""|')")"
 refuse identical-old-new "$(sub "$(printf '%s' "$r" | sed 's|"new":"b"|"new":"a"|')")"
-# spec: the materializer design's "Consumer review" -- swift's importer overlay owns these paths
+# spec: README.md "Profiles" -- swift's importer overlay owns these paths
 refuse reserved-dispatch "$(sub "$(printf '%s' "$r" | sed 's|"header":"A/B.h"|"header":"usr/include/dispatch/dispatch.h"|')")"
 refuse reserved-qos-alias "$(sub "$(printf '%s' "$r" | sed 's|"C/B.h"|"usr/include/pthread/qos.h"|')")"
 for _e in reserved-dispatch reserved-qos-alias; do
@@ -94,7 +94,7 @@ refuse_profile profiles-wrong-schema "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s
 refuse_profile profiles-empty "$(printf '%s' "$p" | sed 's|IDS||')"
 refuse_profile profiles-unknown-key "$(printf '%s' "$p" | sed 's|IDS|"x-v1"|; s|"description"|"extra":1,"description"|')"
 refuse_profile profiles-duplicate-id "$(printf '%s' "$p" | sed 's|IDS|"x-v1","x-v1"|')"
-# spec: the materializer design's "Layering" -- a profile may name its base, and carries all of the base's ids
+# spec: README.md "Profiles" -- a profile may name its base, and carries all of the base's ids
 q='{"schema":1,"profiles":{"a":{"description":"d","recipes":["x-v1"]},"b":{"description":"d",BASE"recipes":[IDS]}}}'
 refuse_profile profiles-base-not-string "$(printf '%s' "$q" | sed 's|BASE|"base":1,|; s|IDS|"x-v1","z-v1"|')"
 refuse_profile profiles-base-unknown "$(printf '%s' "$q" | sed 's|BASE|"base":"nope",|; s|IDS|"x-v1","z-v1"|')"

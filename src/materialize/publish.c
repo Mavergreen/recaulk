@@ -1,6 +1,6 @@
 /* The published tree: an SDK-shaped directory, the rewritten headers, a clang VFS overlay and a stamp, staged beside
    --out and published with one rename(2).
-   spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Output layout", "Stamp and caching",
+   spec: README.md "Materializing an SDK view" "Output layout", "Stamp and caching",
    "Concurrency and atomicity", "Consumer review" */
 #include "materialize.h"
 #include <dirent.h>
@@ -82,7 +82,7 @@ static void write_file(const char *path, const char *buf, size_t n) {
     chmod(path, 0644);
 }
 
-/* spec: the design's "SDKSettings.json" -- three string values from the SDK's own XML plist */
+/* spec: README.md "Materializing an SDK view" -- three string values from the SDK's own XML plist */
 static int plist_string(const char *plist, const char *key, char *out, size_t outlen) {
     char k[128];
     snprintf(k, sizeof k, "<key>%s</key>", key);

@@ -70,7 +70,7 @@ foreach(i RANGE ${lp})
     refuse("profile name '${name}' is not lower-case letters, digits and hyphens")
   endif()
   string(JSON p GET "${pj}" profiles "${name}")
-  # spec: the materializer design's "Layering" -- base is the one optional key
+  # spec: README.md "Profiles" -- base is the one optional key
   string(JSON t ERROR_VARIABLE nobase TYPE "${p}" base)
   if(nobase)
     only_keys("${p}" "profile ${name}" description recipes)
@@ -113,7 +113,7 @@ foreach(i RANGE ${lp})
   list(APPEND names "${name}")
 endforeach()
 
-# spec: the materializer design's "Layering" -- a base names another profile, never forms a cycle, and its
+# spec: README.md "Profiles" -- a base names another profile, never forms a cycle, and its
 #       profile carries every one of the base's recipe ids
 foreach(name IN LISTS names)
   string(JSON p GET "${pj}" profiles "${name}")

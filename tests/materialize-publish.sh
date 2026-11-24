@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Output layout", "Stamp and caching",
+# spec: README.md "Materializing an SDK view" "Output layout", "Stamp and caching",
 #       "Concurrency and atomicity", "Consumer review" -- the published tree, its identity and its one-rename publish
 set -eu
 cd "$(dirname "$0")/.."
@@ -72,7 +72,7 @@ grep -q '"sdk"\|"recaulk"' "$d/ps" && bad "--print-stamp carries sdk or recaulk"
 
 echo "== deterministic"
 mz --sdk "$GIVEN" --out "$d/o2" --profile t
-# the stamp's files hash overlay.json, which names --out, so only the stamp's identity compares across two --out
+# spec: README.md "Materializing an SDK view" -- byte-identical per --out; the stamp's files hash overlay.json, which names --out
 for f in overlay.json stamp.json; do
   sed -e "s|$O|OUT|g" -e 's/,"files":.*$//' "$O/$f" > "$d/a"; sed -e "s|$d/o2|OUT|g" -e 's/,"files":.*$//' "$d/o2/$f" > "$d/b"
   cmp -s "$d/a" "$d/b" || bad "$f differs between two --out with the same inputs"
@@ -85,7 +85,7 @@ cmp -s "$O/overlay.json" "$d/overlay.json" && cmp -s "$O/stamp.json" "$d/stamp.j
 echo "== golden (format discipline)"
 rel() { sed -e "s|$O|OUT|g" -e "s|$REAL|SDK|g" -e "s|$GIVEN|GIVEN|g" -e 's/"recaulk":"[^"]*"/"recaulk":"VER"/' "$1"; }
 mkdir -p "$d/golden"
-# the stamp's files hash overlay.json, which names this run's --out; tree.txt and the other files cover them
+# spec: README.md "Materializing an SDK view" -- the golden stamp drops files (they hash overlay.json, which names --out)
 rel "$O/stamp.json" | sed 's/,"files":.*$/}/' > "$d/golden/stamp.json"; rel "$O/overlay.json" > "$d/golden/overlay.json"
 (cd "$O" && find . | LC_ALL=C sort) > "$d/golden/tree.txt"
 cp "$V/SDKSettings.json" "$d/golden/SDKSettings.json"

@@ -1,4 +1,4 @@
-/* recaulk-materialize's command line. spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md
+/* recaulk-materialize's command line. spec: README.md "Materializing an SDK view"
    "Command line" -- exit 0 complete, 1 refused (one stderr line), 2 usage. */
 #include "materialize.h"
 #include <libgen.h>
@@ -64,7 +64,7 @@ static struct mz_json *load(const char *path, const char *what) {
     return j;
 }
 
-/* spec: the design's "Command line" -- the data installed beside the binary, ../share/sdk-metadata/ */
+/* spec: README.md "Materializing an SDK view" -- the data installed beside the binary, ../share/sdk-metadata/ */
 static const char *beside(const char *argv0, const char *name) {
     char self[PATH_MAX];
     if (!realpath(argv0, self)) mz_fail("cannot find this program's own path to look up %s; pass it", name);

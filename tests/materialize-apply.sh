@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: host-agnostic
-# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Applying recipes" -- shipyard's module's
+# spec: README.md "Materializing an SDK view" "Applying recipes" -- shipyard's module's
 #       semantics and refusals, the reserved paths, and never a write into the SDK
 set -eu
 cd "$(dirname "$0")/.."
@@ -16,7 +16,7 @@ snap() { (cd "$SDK" && find . | sort && find . -type f | sort | xargs cat) | cks
 before="$(snap)"
 run() { "$d/rm" --dry-run --sdk "$SDK" --out "$d/out" --recipes "${R:-$F/recipes.json}" --profiles "$F/profiles.json" "$@" \
           >"$d/stdout" 2>"$d/err" && rc=0 || rc=$?; }
-# refuse WORDS... -- the run exited 1 with one stderr line holding every word
+# spec: README.md "Materializing an SDK view" -- a refusal exits 1 with one stderr line naming what is at fault
 refuse() {
   what="$1"; shift
   [ "$rc" = 1 ] || { bad "$what: exited $rc, want 1 ($(cat "$d/err"))"; return; }

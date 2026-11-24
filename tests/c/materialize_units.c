@@ -1,4 +1,4 @@
-/* spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Left to the builder" -- our own SHA-256 and
+/* spec: README.md "Materializing an SDK view" "Left to the builder" -- our own SHA-256 and
    JSON reader, checked against FIPS 180-4's vectors and Recaulk's own recipes.json.
    usage: materialize_units RECIPES_JSON RECIPES_SHA256 */
 #include "../../src/materialize/materialize.h"
