@@ -31,6 +31,11 @@ providers() {
     __recaulk_objc_control_uses_single_line_mode __recaulk_objc_activate AppKit,Carbon \
     CONTROL_SET_SINGLE_LINE recaulk.nscontrol.set-uses-single-line-mode.v1 NSControl - setUsesSingleLineMode: \
     'v20@0:8c16' __recaulk_objc_control_set_uses_single_line_mode __recaulk_objc_activate AppKit,Carbon \
+    WINDOW_TITLEBAR_TRANSPARENT recaulk.nswindow.titlebar-appears-transparent.v1 NSWindow - titlebarAppearsTransparent \
+    'c16@0:8' __recaulk_objc_window_titlebar_appears_transparent __recaulk_objc_activate AppKit,Carbon \
+    WINDOW_SET_TITLEBAR_TRANSPARENT recaulk.nswindow.set-titlebar-appears-transparent.v1 NSWindow - \
+    setTitlebarAppearsTransparent: 'v20@0:8c16' __recaulk_objc_window_set_titlebar_appears_transparent \
+    __recaulk_objc_activate AppKit,Carbon \
     LOCALE_LANGUAGE_CODE recaulk.nslocale.language-code.v1 NSLocale - languageCode '@16@0:8' \
     __recaulk_objc_locale_language_code __recaulk_objc_activate_foundation Foundation \
     LOCALE_COUNTRY_CODE recaulk.nslocale.country-code.v1 NSLocale - countryCode '@16@0:8' \
@@ -132,6 +137,26 @@ EOF
 @end
 @implementation RecaulkProviderEncoding
 - (void)setUsesSingleLineMode:(BOOL)flag { (void)flag; }
+@end
+EOF
+    ;;
+    recaulk.nswindow.titlebar-appears-transparent.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (BOOL)titlebarAppearsTransparent;
+@end
+@implementation RecaulkProviderEncoding
+- (BOOL)titlebarAppearsTransparent { return NO; }
+@end
+EOF
+    ;;
+    recaulk.nswindow.set-titlebar-appears-transparent.v1) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
+- (void)setTitlebarAppearsTransparent:(BOOL)flag;
+@end
+@implementation RecaulkProviderEncoding
+- (void)setTitlebarAppearsTransparent:(BOOL)flag { (void)flag; }
 @end
 EOF
     ;;

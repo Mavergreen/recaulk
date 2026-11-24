@@ -27,6 +27,9 @@ void __recaulk_objc_register_tablecolumn_class(Class);
 BOOL __recaulk_objc_control_uses_single_line_mode(NSControl *, SEL);
 void __recaulk_objc_control_set_uses_single_line_mode(NSControl *, SEL, BOOL);
 void __recaulk_objc_register_control_class(Class);
+BOOL __recaulk_objc_window_titlebar_appears_transparent(NSWindow *, SEL);
+void __recaulk_objc_window_set_titlebar_appears_transparent(NSWindow *, SEL, BOOL);
+void __recaulk_objc_register_window_class(Class);
 void __recaulk_objc_activate(void);
 void __recaulk_objc_register_workspace_class(Class);
 #endif

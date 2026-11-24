@@ -22,9 +22,16 @@ __attribute__((noinline)) void __recaulk_objc_register_tablecolumn_class(Class r
     __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_TABLECOLUMN_SET_TITLE_SELECTOR),
         (IMP)__recaulk_objc_tablecolumn_set_title,RECAULK_TABLECOLUMN_SET_TITLE_ENCODING);
 }
+__attribute__((noinline)) void __recaulk_objc_register_window_class(Class receiver) {
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_WINDOW_TITLEBAR_TRANSPARENT_SELECTOR),
+        (IMP)__recaulk_objc_window_titlebar_appears_transparent,RECAULK_WINDOW_TITLEBAR_TRANSPARENT_ENCODING);
+    __recaulk_objc_add_method(receiver,sel_registerName(RECAULK_WINDOW_SET_TITLEBAR_TRANSPARENT_SELECTOR),
+        (IMP)__recaulk_objc_window_set_titlebar_appears_transparent,RECAULK_WINDOW_SET_TITLEBAR_TRANSPARENT_ENCODING);
+}
 void __recaulk_objc_activate(void) {
     __recaulk_objc_register_workspace_class(objc_getClass(RECAULK_WORKSPACE_CLASS));
     __recaulk_objc_register_tablecolumn_class(objc_getClass(RECAULK_TABLECOLUMN_TITLE_CLASS));
     __recaulk_objc_register_control_class(objc_getClass(RECAULK_CONTROL_SINGLE_LINE_CLASS));
+    __recaulk_objc_register_window_class(objc_getClass(RECAULK_WINDOW_TITLEBAR_TRANSPARENT_CLASS));
 }
 __attribute__((constructor)) static void activateAtLoad(void) { __recaulk_objc_activate(); }

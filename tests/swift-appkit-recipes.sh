@@ -125,7 +125,9 @@ for h, decl, label in [
         ('NSControl.h', '- (nonnull instancetype)initWithFrame:(NSRect)frameRect;', 'gg_rows 8'),
         ('NSControl.h', '@property BOOL usesSingleLineMode;', 'gg_rulings'),
         ('NSColor.h', '@property (class, readonly, strong) NSColor *labelColor' + AV('10.10'), 'gg_rulings'),
-        ('NSImageView.h', '@property (nullable, copy) NSColor *contentTintColor' + AV('10.14'), 'gg_rulings')]:
+        ('NSImageView.h', '@property (nullable, copy) NSColor *contentTintColor' + AV('10.14'), 'gg_rulings'),
+        # spec: README.md "Objective-C methods" -- librecaulk-objc.a back-fills it on 10.9 (iterm_titlebar)
+        ('NSWindow.h', '@property BOOL titlebarAppearsTransparent;', 'iterm_titlebar')]:
     assert decl in text.get(h, ''), (label, h, decl)
 assert '+ (nonnull NSBundle *)bundleForClass:(Class)aClass;' in fnd['NSBundle.h'], 'gg_rows 4'
 assert 'designated' not in text['NSWindow.h'].split('initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)')[1].split(';')[0].lower(), \

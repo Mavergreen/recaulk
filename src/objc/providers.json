@@ -79,6 +79,28 @@
       "framework_policy": "strong-linked-before-root"
     },
     {
+      "provider_id": "recaulk.nswindow.titlebar-appears-transparent.v1",
+      "class": "NSWindow",
+      "method_kind": "-",
+      "selector": "titlebarAppearsTransparent",
+      "encoding": "c16@0:8",
+      "implementation_symbol": "__recaulk_objc_window_titlebar_appears_transparent",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
+      "provider_id": "recaulk.nswindow.set-titlebar-appears-transparent.v1",
+      "class": "NSWindow",
+      "method_kind": "-",
+      "selector": "setTitlebarAppearsTransparent:",
+      "encoding": "v20@0:8c16",
+      "implementation_symbol": "__recaulk_objc_window_set_titlebar_appears_transparent",
+      "activation_root": "__recaulk_objc_activate",
+      "required_frameworks": ["AppKit", "Carbon"],
+      "framework_policy": "strong-linked-before-root"
+    },
+    {
       "provider_id": "recaulk.nslocale.language-code.v1",
       "class": "NSLocale",
       "method_kind": "-",

@@ -8293,6 +8293,11 @@
     "setter_offset": 18522
    },
    {
+    "kind": "insert",
+    "offset": 18587,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's AppKit root provides it on 10.9, where it reads NO and ignores YES. */\n@property BOOL titlebarAppearsTransparent;\n"
+   },
+   {
     "kind": "property",
     "name": "miniwindowImage",
     "class": "NSWindow",

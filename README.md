@@ -56,7 +56,8 @@ Apple's 10.13 property, it posts no key-value observing change when VoiceOver tu
 `accessibilityDisplayShouldReduceMotion` answers NO: 10.9 has no reduce-motion setting (it arrived in 10.12).
 `NSControl`'s `usesSingleLineMode` and its setter (10.10) are the control's cell's, which 10.9 has; a control with no
 cell reads NO. `NSTableColumn`'s `title` and `setTitle:` (10.10) are its header cell's string; a nil title is stored
-as `@""`, since 10.10 declares it non-null. It is separate from
+as `@""`, since 10.10 declares it non-null. `NSWindow`'s `titlebarAppearsTransparent` (10.10) reads NO and its
+setter changes nothing, as 10.9 draws no transparent titlebar. It is separate from
 `librecaulk.a` and does nothing unless you ask for it: link it and keep its
 activation root, and AppKit and Carbon strong-linked:
 
@@ -690,7 +691,10 @@ which `librecaulk-objc.a`'s AppKit root provides. `appkit-color-separator-v1` de
 at 10.14: nothing provides it on 10.9, so a caller checks `@available` first. `appkit-appearance-name-v1` and
 `appkit-menuitem-identifier-v1` declare `NSAppearance`'s `name` and `NSMenuItem`'s `identifier` as properties: 10.9
 answers both, and its SDK does not declare them. `appkit-tablecolumn-title-v1` declares `NSTableColumn`'s `title`
-(10.10), which `librecaulk-objc.a`'s AppKit root provides.
+(10.10), which `librecaulk-objc.a`'s AppKit root provides. `appkit-appearance-name-v2` is `appkit-appearance-name-v1`
+with `-[NSAppearance bestMatchFromAppearancesWithNames:]` at 10.14, which nothing provides on 10.9.
+`appkit-window-v5` (in the `swift-appkit` profile) declares `NSWindow`'s `titlebarAppearsTransparent` with no
+availability, as `librecaulk-objc.a`'s AppKit root provides it.
 
 `foundation-filemanager-keys-v1` adds the 10.12 typedefs `NSFileAttributeKey` and `NSFileAttributeType`
 (`NSString *`); `foundation-filemanager-v2` is it and `foundation-directoryenumerator-generics-v1` together.

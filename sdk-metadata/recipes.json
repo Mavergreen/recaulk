@@ -796,6 +796,20 @@
       ]
     },
     {
+      "id": "appkit-appearance-name-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAppearance.h",
+      "sha256": "7a08348db1dff47075ec78699487bf2c7ce6cce76f395b998c48e258749bc1ea",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSAppearance.h"
+      ],
+      "replacements": [
+        {
+          "old": "+ (NSAppearance *)appearanceNamed:(NSString *)name;",
+          "new": "+ (NSAppearance *)appearanceNamed:(NSString *)name;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.9's NSAppearance answers name; its SDK does not declare it. */\n@property (readonly, copy) NSString *name;\n/* 10.14; 10.9's NSAppearance has no best match, so a caller checks availability first. */\n- (NSString *)bestMatchFromAppearancesWithNames:(NSArray *)appearances __attribute__((availability(macosx,introduced=10.14)));"
+        }
+      ]
+    },
+    {
       "id": "appkit-tablecolumn-title-v1",
       "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableColumn.h",
       "sha256": "79ddafd6d6b25d6b816eef6cb1b117c9422f1a93577f95b6bb1bccc75180197d",
@@ -13148,6 +13162,10 @@
         {
           "old": "- (BOOL)canHide;",
           "new": "@property BOOL canHide;"
+        },
+        {
+          "old": "- (void)makeKeyAndOrderFront:(id)sender;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's AppKit root provides it on 10.9, where it reads NO and ignores YES. */\n@property BOOL titlebarAppearsTransparent;\n- (void)makeKeyAndOrderFront:(id)sender;\n"
         },
         {
           "old": "- (void)setMiniwindowImage:(NSImage *)image;\n",
