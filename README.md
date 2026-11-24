@@ -522,10 +522,10 @@ reboot, and RecaulkKernelFixes reports that fix as state 2 meanwhile.
 
 10.9 loads an unsigned kext from `/Library/Extensions` only when its bundle id is in `OSKextSigExceptionList`, in
 `/System/Library/Extensions/AppleKextExcludeList.kext/Contents/Info.plist`. Otherwise kextd logs `invalid
-signature ... will not load`, unless the Mac boots with `kext-dev-mode=1`. So the postinstall adds
-`dev.mavergreen.recaulk.kernelfixes` there at the installed version, changing no other byte of Apple's file, and
-restarts kextd so it reads the list again. Uninstalling Recaulk removes the entry. This is Wowfunhappy's mechanism
-(gist ee66f57e5e7a04e42a7a5e2b98a10874). It is done here until shipyard offers it to every family product with a kext.
+signature ... will not load`, unless the Mac boots with `kext-dev-mode=1`. So the package declares
+`dev.mavergreen.recaulk.kernelfixes` with shipyard's `stage_product.sh --boot-kext`: shipyard's postinstall adds it
+there at the installed version and restarts kextd so it reads the list again, and uninstalling Recaulk removes the
+entry. This is Wowfunhappy's mechanism (gist ee66f57e5e7a04e42a7a5e2b98a10874).
 
 `KEXT_SRC=src/kfix KEXT_NAME=RecaulkKernelFixes sh build/build-kext.sh OUT` builds it like RecaulkKPI.
 `tests/kfix-engine-test.sh` checks the engine on synthetic bytes, and on 13F1911 checks the pinned sites in

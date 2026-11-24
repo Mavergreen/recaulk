@@ -21,21 +21,8 @@ if [ -z "$ROOT" ] && [ -f "$_wd" ]; then
 fi
 rm -f "$_wd" || echo "recaulk: could not remove $_wd" >&2
 rm -rf "$ROOT/Library/Extensions/KQueueScanContinuePatch.kext" || echo "recaulk: could not remove KQueueScanContinuePatch.kext" >&2
-# spec: README.md "The kernel-fixes kext" -- 10.9's kextd refuses an unsigned kext in /Library/Extensions unless its
-#       bundle id is in OSKextSigExceptionList; list RecaulkKernelFixes at its installed version. kextd reads that list
-#       once, so on the boot volume it is restarted (launchd starts it again) before the kext's job loads it.
-_kl="$ROOT/System/Library/Extensions/AppleKextExcludeList.kext/Contents/Info.plist"
-_kv="$(awk '/<key>CFBundleVersion<\/key>/ { getline; gsub(/.*<string>|<\/string>.*/, ""); print; exit }' \
-  "$ROOT/Library/Extensions/RecaulkKernelFixes.kext/Contents/Info.plist" 2>/dev/null || :)"
-if [ -n "$_kv" ] && sh "$ROOT/usr/local/mavergreen/recaulk/libexec/recaulk/kext-exception.sh" add "$_kl" \
-  dev.mavergreen.recaulk.kernelfixes "$_kv"; then
-  if [ -z "$ROOT" ]; then
-    # platform: guarded macOS-only call -- only when $ROOT is empty: the boot volume, where installer runs on 10.9
-    /bin/launchctl stop com.apple.kextd 2>/dev/null || echo "recaulk: could not restart kextd; RecaulkKernelFixes loads at the next boot" >&2
-  fi
-else
-  echo "recaulk: could not list RecaulkKernelFixes in $_kl; 10.9 loads it only with kext-dev-mode=1" >&2
-fi
+# spec: README.md "The kernel-fixes kext" -- shipyard's generated postinstall (stage_product --boot-kext) has already
+#       listed RecaulkKernelFixes in OSKextSigExceptionList and restarted kextd on the boot volume
 if [ -z "$ROOT" ]; then
   # spec: README.md "The kernel-fixes kext" -- on an upgrade the job and the kext already run; the kernel keeps the
   #       running kext (it cannot unload once applied), and the new one takes over at the next boot
