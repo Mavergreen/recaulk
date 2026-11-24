@@ -523,7 +523,8 @@ UUID matches the file's. It writes only over the bytes it expects, with every CP
   bytes it rewrites test the same bits, in one comparison, to make room for the store. Found by Wowfunhappy and
   krackers (gist 8212f5bea4c601ac9a6297789f232321, comment 6490893). `tests/kfix-wait-result-kit.sh` builds the
   kit that proves it on a disposable guest: the bug reproduced without the fix, the panic turned to `EBADF` by
-  the backstop alone, and neither with both.
+  the backstop alone, and neither with both. Its silent race needs no privileges: on a 12-core 10.9.5 Mac with
+  only the backstop, about 25 of 14,600 untimed `kevent`s in 20 seconds returned 0 events.
 - **`signal_target_exit`**: `psignal_internal` picks a thread to signal without a reference, then calls
   `thread_abort_safely` on it (`bsd/kern/kern_sig.c`). If the thread exits and is freed in between, the
   kernel panics `trying to interlock destroyed mutex`. It takes a thread asleep in the kernel, picked for a
