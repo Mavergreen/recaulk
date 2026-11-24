@@ -892,6 +892,36 @@
       ]
     },
     {
+      "id": "appkit-cell-properties-v5",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSCell.h",
+      "sha256": "b44392f3a430fae14972160cc6965b96b34aa826cb732e36129271746389eb54",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSCell.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (BOOL)isHighlighted;\n- (void)setHighlighted:(BOOL)flag;",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@property (getter=isHighlighted) BOOL highlighted;"
+        },
+        {
+          "old": "typedef NSUInteger NSControlSize;",
+          "new": "typedef NSUInteger NSControlSize;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.12 names, with the same values. */\nenum {\n    NSControlSizeRegular = NSRegularControlSize,\n    NSControlSizeSmall = NSSmallControlSize,\n    NSControlSizeMini = NSMiniControlSize\n};"
+        },
+        {
+          "old": "    NSBackgroundStyleLight = 0,",
+          "new": "    /* Recaulk: the 10.14 names, with the same values, declared from a later SDK. */\n    NSBackgroundStyleNormal = 0,\n    NSBackgroundStyleEmphasized = 1,\n    NSBackgroundStyleLight = 0,"
+        },
+        {
+          "old": "- (BOOL)usesSingleLineMode NS_AVAILABLE_MAC(10_6);",
+          "new": "- (BOOL)usesSingleLineMode NS_AVAILABLE_MAC(10_6);\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10's NSAccessibility properties. 10.9 has no such methods: a subclass's override of one compiles and\n   runs only where called, and calling super's or setting one on 10.9 needs respondsToSelector: first. */\n@property (copy) NSString *accessibilityLabel __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSString *accessibilityRole __attribute__((availability(macosx,introduced=10.10)));\n@property (copy) NSArray *accessibilityChildren __attribute__((availability(macosx,introduced=10.10)));"
+        },
+        {
+          "old": "typedef NSInteger NSCellStateValue;",
+          "new": "typedef NSInteger NSCellStateValue;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* The 10.13 names, with the same values. */\n#ifndef NS_TYPED_EXTENSIBLE_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_TYPED_EXTENSIBLE_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_TYPED_EXTENSIBLE_ENUM\n#endif\n#endif\ntypedef NSInteger NSControlStateValue NS_TYPED_EXTENSIBLE_ENUM;\nstatic const NSControlStateValue NSControlStateValueMixed = NSMixedState;\nstatic const NSControlStateValue NSControlStateValueOff = NSOffState;\nstatic const NSControlStateValue NSControlStateValueOn = NSOnState;"
+        }
+      ]
+    },
+    {
       "id": "appkit-accessibility-v3",
       "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSAccessibility.h",
       "sha256": "dd2607f8800a6ea9d900129566bf590ef070f5dd9af2b575b4817d715e5e8f38",

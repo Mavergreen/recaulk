@@ -648,6 +648,8 @@ code compiled is the same:
 - `appkit-cell-properties-v3`: `appkit-cell-properties-v2` plus the 10.14 names `NSBackgroundStyleNormal` and
   `NSBackgroundStyleEmphasized` (10.9's `Light` and `Dark`);
 - `appkit-cell-properties-v4`: `appkit-cell-properties-v3` plus the accessibility properties below;
+- `appkit-cell-properties-v5`: `appkit-cell-properties-v4` plus the 10.13 names `NSControlStateValue`,
+  `NSControlStateValueOff`, `NSControlStateValueOn` and `NSControlStateValueMixed` (10.9's `NSOffState` and kin);
 - `appkit-view-properties-v2`: `appkit-view-properties-v1` plus the accessibility properties below;
 - `appkit-view-v3`: `appkit-view-properties-v2` plus 10.10's `NSVisualEffectView`, declared in `NSView.h`
   because 10.9 has no `NSVisualEffectView.h`. It includes its material, blending-mode and state enums, with
