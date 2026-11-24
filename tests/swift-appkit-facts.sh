@@ -1,5 +1,6 @@
 #!/bin/sh
-# platform: host-agnostic -- any host with clang22, the pinned 10.9 SDK and the sdk113 product.
+# platform: macOS-only -- runs clang22 against the pinned 10.9 SDK and the family's macOS 11.3 SDK (sdk113), a
+#   macOS product; as tests/swift-foundation-facts.sh.
 # spec: .superpowers/specs/2026-11-24-swift-appkit-recipes-design.md -- the committed swift-appkit facts are what the
 #       extractor makes from both SDKs and sdk-metadata/swift-appkit-hand.json (facts_current), every fact's offset
 #       locates its 10.9 text, and every swift-appkit row of swift-gg's table has a fact or a base_edit (rows_covered).
