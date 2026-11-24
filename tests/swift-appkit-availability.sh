@@ -8,7 +8,8 @@ cd "$(dirname "$0")/.."
 SDK=$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch x86_64)
 d="$(mktemp -d "${TMPDIR:-/tmp}/swift-appkit-availability.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
-# spec: NSWindowStyleMaskFullSizeContentView is 10.10's; 10.9-targeted code that uses it is told so (fullsize_availability)
+# spec: README.md "Profiles" -- NSWindowStyleMaskFullSizeContentView is 10.10's; 10.9-targeted code that uses it is told
+#       so (fullsize_availability)
 SC="$(command -v shipyard-cmake || echo /usr/local/mavergreen/bin/shipyard-cmake)"
 for c in /usr/local/mavergreen/clang22/bin/clang /usr/local/mavergreen/clang22-cross/bin/clang; do
   [ -x "$c" ] && CLANG22=$c && break
