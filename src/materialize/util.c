@@ -47,3 +47,12 @@ int mz_read_file(const char *path, char **buf, size_t *n) {
     *n = len;
     return 0;
 }
+
+/* a formatted path that fits, or a refusal: a truncated path would name another file */
+void mz_path(char *buf, size_t n, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int r = vsnprintf(buf, n, fmt, ap);
+    va_end(ap);
+    if (r < 0 || (size_t)r >= n) mz_fail("a path is longer than %zu bytes: %.80s...", n - 1, buf);
+}

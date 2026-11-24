@@ -44,7 +44,7 @@ static void check_shape(const struct mz_json *r) {
     static const char *const rkeys[] = {"id", "header", "sha256", "aliases", "replacements", NULL};
     static const char *const ekeys[] = {"old", "new", NULL};
     char w[512];
-    snprintf(w, sizeof w, "recipe '%s'", str(r, "id", "a recipe"));
+    mz_path(w, sizeof w, "recipe '%s'", str(r, "id", "a recipe"));
     only_keys(r, w, rkeys);
     str(r, "header", w);
     str(r, "sha256", w);
@@ -55,7 +55,7 @@ static void check_shape(const struct mz_json *r) {
     if (!reps->len) mz_fail("%s has no replacements", w);
     for (size_t k = 0; k < reps->len; k++) {
         char ew[600];
-        snprintf(ew, sizeof ew, "%s replacements[%zu]", w, k);
+        mz_path(ew, sizeof ew, "%s replacements[%zu]", w, k);
         only_keys(reps->v[k], ew, ekeys);
         const struct mz_json *old = mz_json_get(reps->v[k], "old"), *nw = mz_json_get(reps->v[k], "new");
         if (!old || old->t != MZ_STR || !old->slen || !nw || nw->t != MZ_STR) mz_fail("%s needs old and new strings", ew);
@@ -153,7 +153,7 @@ static char *sdk_file(const char *sdk_real, const char *rel, const char *where) 
     if (!strncmp(rel, "usr/include/dispatch/", 21) || !strcmp(rel, "usr/include/pthread/qos.h"))
         mz_fail("%s '%s' is reserved for the toolchain's own overlay", where, rel);
     char joined[PATH_MAX], real[PATH_MAX];
-    snprintf(joined, sizeof joined, "%s/%s", sdk_real, rel);
+    mz_path(joined, sizeof joined, "%s/%s", sdk_real, rel);
     if (!realpath(joined, real)) mz_fail("%s '%s' does not exist in the SDK", where, rel);
     size_t sl = strlen(sdk_real);
     if (strncmp(real, sdk_real, sl) || real[sl] != '/')
@@ -186,11 +186,11 @@ void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, str
         const struct mz_json *r = sel[i];
         const char *id = str(r, "id", "a recipe");
         char w[512];
-        snprintf(w, sizeof w, "recipe '%s'", id);
+        mz_path(w, sizeof w, "recipe '%s'", id);
         only_keys(r, w, rkeys);
         const char *header = str(r, "header", w), *want = str(r, "sha256", w);
         char hw[600];
-        snprintf(hw, sizeof hw, "%s header", w);
+        mz_path(hw, sizeof hw, "%s header", w);
         char *real = sdk_file(sdk_real, header, hw);
         for (size_t k = 0; k < i; k++)
             if (!strcmp(reals[k], real)) mz_fail("%s edits %s, which recipe '%s' also edits", w, header, owner[k]);
@@ -208,7 +208,7 @@ void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, str
         for (size_t k = 0; k < al->len; k++) {
             if (al->v[k]->t != MZ_STR) mz_fail("%s aliases[%zu] is not a string", w, k);
             char aw[600];
-            snprintf(aw, sizeof aw, "%s alias", w);
+            mz_path(aw, sizeof aw, "%s alias", w);
             char *areal = sdk_file(sdk_real, al->v[k]->s, aw);
             if (strcmp(areal, real))
                 mz_fail("%s alias '%s' resolves to %s, not to the header %s", w, al->v[k]->s, areal, real);
@@ -225,7 +225,7 @@ void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, str
         size_t total = tn;
         for (size_t k = 0; k < reps->len; k++) {
             char ew[700];
-            snprintf(ew, sizeof ew, "%s replacements[%zu]", w, k);
+            mz_path(ew, sizeof ew, "%s replacements[%zu]", w, k);
             only_keys(reps->v[k], ew, ekeys);
             const struct mz_json *old = mz_json_get(reps->v[k], "old"), *nw = mz_json_get(reps->v[k], "new");
             if (!old || old->t != MZ_STR || !old->slen || !nw || nw->t != MZ_STR) mz_fail("%s needs old and new strings", ew);

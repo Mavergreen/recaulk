@@ -51,5 +51,19 @@ mkdir "$d/elsewhere"
 ln -s "$d/p/bin/recaulk-materialize" "$d/linked"
 "$d/linked" --print-stamp --profile t >/dev/null 2>"$d/err" || bad "run through a symlink it failed: $(cat "$d/err")"
 
+echo "== builds_with_gcc"
+# platform: Linux builds with gcc, whose -Wformat-truncation clang lacks; MZ_GCC names one here
+#           (pkgsrc's /opt/pkg/gcc14/bin/gcc on the 10.9 box), else a gcc on PATH that is really GCC
+g="${MZ_GCC:-}"
+[ -n "$g" ] || { command -v gcc >/dev/null 2>&1 && gcc --version 2>/dev/null | grep -q 'Free Software' && g=gcc; } || true
+if [ -n "$g" ]; then
+  for f in src/materialize/*.c; do
+    "$g" -std=c99 -O2 -Wall -Wextra -Werror -D_XOPEN_SOURCE=700 -D_DARWIN_C_SOURCE -c "$f" -o "$d/gcc.o" 2>"$d/gcc.err" \
+      || bad "$g refuses $f: $(grep -m1 error: "$d/gcc.err")"
+  done
+else
+  echo "   (no GCC here; set MZ_GCC to check)"
+fi
+
 [ "$fail" = 0 ] && echo "materialize-cli OK"
 exit "$fail"

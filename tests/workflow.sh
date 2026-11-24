@@ -118,7 +118,13 @@ done
   && printf '%s\n' "$om" | grep -qxF "    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository" \
   || { echo "on-mavericks may be skipped only for a fork's pull request"; exit 1; }
 ! printf '%s\n' "$om" | grep -q 'continue-on-error' || { echo "on-mavericks must not continue on error: publish needs it to pass"; exit 1; }
-! grep -Eq '^ +runs-on: .*macos' "$w" || { echo "no job runs on a macOS runner"; exit 1; }
+# spec: INGREDIENTS.md "Conformance deviations", macos-runner -- modern-smoke alone runs on macOS, late, and publish
+#       waits for it
+[ "$(grep -Ec '^ +runs-on: .*macos' "$w")" -eq 1 ] && job modern-smoke | grep -q '^    runs-on: macos-26$' \
+  || { echo "only modern-smoke runs on a macOS runner (macos-26)"; exit 1; }
+job modern-smoke | grep -qxF '    needs: [build, on-mavericks]' || { echo "modern-smoke starts after build and on-mavericks"; exit 1; }
+job modern-smoke | grep -q 'installer' && { echo "modern-smoke expands the pkg; it never installs it on macOS 26"; exit 1; }
+job publish | grep -q '^    needs: .*modern-smoke' || { echo "publish needs modern-smoke"; exit 1; }
 job build | grep -q '^    runs-on: ubuntu-latest$' || { echo "the build job runs on Linux"; exit 1; }
 job build | grep -q 'run-repo-tests.sh" --strict-host$' || { echo "the build job runs every host-agnostic test with --strict-host"; exit 1; }
 req="$(job required | sed -n 's/^    needs: \[\(.*\)\]$/\1/p' | tr -d ' ' | tr ',' '\n' | LC_ALL=C sort)"

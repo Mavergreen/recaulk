@@ -24,7 +24,7 @@ static void rm_tree(const char *path) {
             while ((e = readdir(d))) {
                 if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) continue;
                 char p[PATH_MAX];
-                snprintf(p, sizeof p, "%s/%s", path, e->d_name);
+                mz_path(p, sizeof p, "%s/%s", path, e->d_name);
                 rm_tree(p);
             }
             closedir(d);
@@ -65,7 +65,7 @@ static char **list_dir(const char *dir, size_t *n) {
 
 static void mkdirs(const char *path) {
     char p[PATH_MAX];
-    snprintf(p, sizeof p, "%s", path);
+    mz_path(p, sizeof p, "%s", path);
     for (char *s = p + 1; *s; s++)
         if (*s == '/') {
             *s = 0;
@@ -85,7 +85,7 @@ static void write_file(const char *path, const char *buf, size_t n) {
 /* spec: README.md "Materializing an SDK view" -- three string values from the SDK's own XML plist */
 static int plist_string(const char *plist, const char *key, char *out, size_t outlen) {
     char k[128];
-    snprintf(k, sizeof k, "<key>%s</key>", key);
+    mz_path(k, sizeof k, "<key>%s</key>", key);
     const char *at = strstr(plist, k);
     if (!at) return -1;
     at += strlen(k);
@@ -103,9 +103,9 @@ static int plist_string(const char *plist, const char *key, char *out, size_t ou
 int mz_settings_json(const char *sdk_real, char **json) {
     char p[PATH_MAX];
     struct stat st;
-    snprintf(p, sizeof p, "%s/SDKSettings.json", sdk_real);
+    mz_path(p, sizeof p, "%s/SDKSettings.json", sdk_real);
     if (!lstat(p, &st)) return 1;
-    snprintf(p, sizeof p, "%s/SDKSettings.plist", sdk_real);
+    mz_path(p, sizeof p, "%s/SDKSettings.plist", sdk_real);
     char *plist;
     size_t n;
     if (mz_read_file(p, &plist, &n)) mz_fail("the SDK has neither SDKSettings.json nor %s", p);
@@ -117,7 +117,7 @@ int mz_settings_json(const char *sdk_real, char **json) {
     free(plist);
     size_t len = 128 + strlen(vals[0]) + strlen(vals[1]) + strlen(vals[2]);
     *json = mz_xmalloc(len);
-    snprintf(*json, len, "{\"CanonicalName\":\"%s\",\"MaximumDeploymentTarget\":\"%s\",\"Version\":\"%s\"}\n",
+    mz_path(*json, len, "{\"CanonicalName\":\"%s\",\"MaximumDeploymentTarget\":\"%s\",\"Version\":\"%s\"}\n",
              vals[0], vals[1], vals[2]);
     return 0;
 }
@@ -174,7 +174,7 @@ static void verify_tree(const char *out, const struct mz_json *st) {
     if (!files || files->t != MZ_OBJ) mz_fail("%s/stamp.json has no files", out);
     for (size_t i = 0; i < files->len; i++) {
         char p[PATH_MAX], hex[65];
-        snprintf(p, sizeof p, "%s/%s", out, files->k[i]);
+        mz_path(p, sizeof p, "%s/%s", out, files->k[i]);
         if (mz_sha256_file(p, hex) || files->v[i]->t != MZ_STR || strcmp(hex, files->v[i]->s))
             mz_fail("%s/%s does not match its stamp; remove %s to regenerate", out, files->k[i], out);
     }
@@ -187,7 +187,7 @@ int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *d
     mz_strip(out, sizeof out, a->out);
     mz_strip(given, sizeof given, a->sdk);
     /* spec: README.md "Materializing an SDK view" -- the SDK is never written, so --out may not lie inside it */
-    snprintf(parent, sizeof parent, "%s", out);
+    mz_path(parent, sizeof parent, "%s", out);
     *strrchr(parent, '/') = 0;
     if (realpath(*parent ? parent : "/", preal)) {
         size_t sl = strlen(sdk_real);
@@ -202,7 +202,7 @@ int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *d
     if (!S_ISDIR(st.st_mode)) mz_fail("--out %s exists and is not a directory", a->out);
     char p[PATH_MAX], err[256], *buf;
     size_t n;
-    snprintf(p, sizeof p, "%s/stamp.json", a->out);
+    mz_path(p, sizeof p, "%s/stamp.json", a->out);
     if (mz_read_file(p, &buf, &n))
         mz_fail("--out %s exists without a stamp; give a path that does not exist", a->out);
     struct mz_json *stj = mz_json_parse(buf, n, err, sizeof err);
@@ -218,7 +218,7 @@ struct names { char **name, **ext; size_t n, cap; };
 
 static void add_name(struct names *ns, const char *root, const char *rel, const char *ext) {
     char p[PATH_MAX];
-    snprintf(p, sizeof p, "%s/%s", root, rel);
+    mz_path(p, sizeof p, "%s/%s", root, rel);
     for (size_t i = 0; i < ns->n; i++)
         if (!strcmp(ns->name[i], p)) return;
     if (ns->n == ns->cap) {
@@ -239,13 +239,13 @@ static int by_name(const void *a, const void *b) {
 /* every regular file under dir (relative to base), sorted */
 static void walk_files(const char *base, const char *rel, char ***v, size_t *n, size_t *cap) {
     char dir[PATH_MAX];
-    snprintf(dir, sizeof dir, "%s%s%s", base, *rel ? "/" : "", rel);
+    mz_path(dir, sizeof dir, "%s%s%s", base, *rel ? "/" : "", rel);
     size_t ne;
     char **es = list_dir(dir, &ne);
     for (size_t i = 0; i < ne; i++) {
         char r[PATH_MAX], full[PATH_MAX];
-        snprintf(r, sizeof r, "%s%s%s", rel, *rel ? "/" : "", es[i]);
-        snprintf(full, sizeof full, "%s/%s", base, r);
+        mz_path(r, sizeof r, "%s%s%s", rel, *rel ? "/" : "", es[i]);
+        mz_path(full, sizeof full, "%s/%s", base, r);
         struct stat st;
         if (lstat(full, &st)) mz_fail("cannot inspect %s", full);
         if (S_ISDIR(st.st_mode)) walk_files(base, r, v, n, cap);
@@ -267,13 +267,13 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     char out[PATH_MAX], given[PATH_MAX], parent[PATH_MAX], tmp[PATH_MAX], p[PATH_MAX];
     mz_strip(out, sizeof out, a->out);
     mz_strip(given, sizeof given, a->sdk);
-    snprintf(parent, sizeof parent, "%s", out);
+    mz_path(parent, sizeof parent, "%s", out);
     *strrchr(parent, '/') = 0;
     struct stat st;
     if (stat(*parent ? parent : "/", &st) || !S_ISDIR(st.st_mode))
         mz_fail("--out's parent %s does not exist", *parent ? parent : "/");
 
-    snprintf(tmp, sizeof tmp, "%s.tmp.XXXXXX", out);
+    mz_path(tmp, sizeof tmp, "%s.tmp.XXXXXX", out);
     if (!mkdtemp(tmp)) mz_fail("cannot make a staging directory beside %s: %s", out, strerror(errno));
     stage = mz_xstrdup(tmp);
     atexit(cleanup);
@@ -281,31 +281,31 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
 
     /* the rewritten headers */
     for (size_t i = 0; i < nh; i++) {
-        snprintf(p, sizeof p, "%s/headers/%s", stage, h[i].rel);
+        mz_path(p, sizeof p, "%s/headers/%s", stage, h[i].rel);
         *strrchr(p, '/') = 0;
         mkdirs(p);
-        snprintf(p, sizeof p, "%s/headers/%s", stage, h[i].rel);
+        mz_path(p, sizeof p, "%s/headers/%s", stage, h[i].rel);
         write_file(p, h[i].text, h[i].len);
     }
-    if (!nh) mkdirs((snprintf(p, sizeof p, "%s/headers", stage), p));
+    if (!nh) { mz_path(p, sizeof p, "%s/headers", stage); mkdirs(p); }
 
     /* the SDK-shaped directory: one link per top-level SDK entry, and SDKSettings.json */
     const char *sdk_name = strrchr(sdk_real, '/') + 1;
     char view[PATH_MAX], view_out[PATH_MAX];
-    snprintf(view, sizeof view, "%s/sdk/%s", stage, sdk_name);
-    snprintf(view_out, sizeof view_out, "%s/sdk/%s", out, sdk_name);
+    mz_path(view, sizeof view, "%s/sdk/%s", stage, sdk_name);
+    mz_path(view_out, sizeof view_out, "%s/sdk/%s", out, sdk_name);
     mkdirs(view);
     size_t ne;
     char **es = list_dir(sdk_real, &ne);
     for (size_t i = 0; i < ne; i++) {
         char target[PATH_MAX];
-        snprintf(target, sizeof target, "%s/%s", sdk_real, es[i]);
-        snprintf(p, sizeof p, "%s/%s", view, es[i]);
+        mz_path(target, sizeof target, "%s/%s", sdk_real, es[i]);
+        mz_path(p, sizeof p, "%s/%s", view, es[i]);
         if (symlink(target, p)) mz_fail("cannot link %s: %s", p, strerror(errno));
     }
     char *settings;
     if (!mz_settings_json(sdk_real, &settings)) {
-        snprintf(p, sizeof p, "%s/SDKSettings.json", view);
+        mz_path(p, sizeof p, "%s/SDKSettings.json", view);
         write_file(p, settings, strlen(settings));
     }
 
@@ -315,7 +315,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     const char *roots[] = {view_out, given, sdk_real};
     for (size_t i = 0; i < nh; i++) {
         char ext[PATH_MAX];
-        snprintf(ext, sizeof ext, "%s/headers/%s", out, h[i].rel);
+        mz_path(ext, sizeof ext, "%s/headers/%s", out, h[i].rel);
         for (size_t r = 0; r < 3; r++) {
             add_name(&ns, roots[r], h[i].rel, ext);
             for (size_t k = 0; k < h[i].naliases; k++) add_name(&ns, roots[r], h[i].aliases[k], ext);
@@ -325,7 +325,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     for (size_t i = 0; i < ns.n; i++) order[i] = i;
     sort_ns = &ns;
     qsort(order, ns.n, sizeof *order, by_name);
-    snprintf(p, sizeof p, "%s/overlay.json", stage);
+    mz_path(p, sizeof p, "%s/overlay.json", stage);
     FILE *f = fopen(p, "wb");
     if (!f) mz_fail("cannot write %s: %s", p, strerror(errno));
     fputs("{\"version\":0,\"case-sensitive\":\"true\",\"roots\":[", f);
@@ -344,7 +344,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     char **files = NULL;
     size_t nf = 0, cap = 0;
     walk_files(stage, "", &files, &nf, &cap);
-    snprintf(p, sizeof p, "%s/stamp.json", stage);
+    mz_path(p, sizeof p, "%s/stamp.json", stage);
     f = fopen(p, "wb");
     if (!f) mz_fail("cannot write %s: %s", p, strerror(errno));
     mz_print_identity(f, a->profile, ids_json, digest, RECAULK_VERSION, sdk_real, given, out);
@@ -353,7 +353,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     fputs(",\"files\":{", f);
     for (size_t i = 0; i < nf; i++) {
         char full[PATH_MAX], hex[65];
-        snprintf(full, sizeof full, "%s/%s", stage, files[i]);
+        mz_path(full, sizeof full, "%s/%s", stage, files[i]);
         if (mz_sha256_file(full, hex)) mz_fail("cannot read %s", full);
         if (i) fputc(',', f);
         put(f, files[i]);

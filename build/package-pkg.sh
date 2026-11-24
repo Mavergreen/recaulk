@@ -31,7 +31,11 @@ recaulk_tools
 mkdir -p "$TREE/bin"
 RECAULK_VERSION="$VERSION" sh "$MAVERICKS_ROOT/build/build-materialize.sh" mac "$TREE/bin/recaulk-materialize" >&2
 chmod 755 "$TREE/bin/recaulk-materialize"
-sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/libRecaulkSystem.dylib" "$TREE/bin/recaulk-materialize" >&2
+sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/libRecaulkSystem.dylib" >&2
+# spec: INGREDIENTS.md "Conformance deviations", arm64 -- recaulk-materialize is universal wherever the compiler
+#       targets arm64 (tests/package-pkg.sh demands that slice then); the guard checks each slice it carries
+MAVERICKS_ALLOW_ARCHS="$("$LIPO" -archs "$TREE/bin/recaulk-materialize")" \
+  sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/bin/recaulk-materialize" >&2
 
 # spec: README.md "The kernel back-fill kext" -- built here, where the release's VERSION is known, since its
 #       CFBundleVersion is the release; staged where 10.9 loads third-party kexts, so the manifest's outside list has it
