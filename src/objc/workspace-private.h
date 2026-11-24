@@ -31,5 +31,10 @@ BOOL __recaulk_objc_window_titlebar_appears_transparent(NSWindow *, SEL);
 void __recaulk_objc_window_set_titlebar_appears_transparent(NSWindow *, SEL, BOOL);
 void __recaulk_objc_register_window_class(Class);
 void __recaulk_objc_activate(void);
+NSColor *__recaulk_objc_color_label(Class, SEL);
+NSColor *__recaulk_objc_color_link(Class, SEL);
+void __recaulk_objc_activate_color(void);
+NSGraphicsContext *__recaulk_objc_graphics_context_with_cgcontext(Class, SEL, CGContextRef, BOOL);
+void __recaulk_objc_activate_graphics_context(void);
 void __recaulk_objc_register_workspace_class(Class);
 #endif

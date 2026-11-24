@@ -15,9 +15,9 @@ if compiling; then
   D="$(dirname "$(tbin x)")"
   "$NM" -u "$W/objc-companion/objects/register.o" > "$D/register-imports.txt"
   if grep -q objc_msgSend "$D/register-imports.txt"; then bad "register.o sends messages; registration must use the runtime's C API only"; fi
-  awk '{ sub(/"schema": 1/, "\"schema\": true"); print }' src/objc/providers.json > "$D/boolean-schema.json"
+  awk '{ sub(/"schema": 2/, "\"schema\": true"); print }' src/objc/providers.json > "$D/boolean-schema.json"
   if CC="$CC" TARGET_FLAGS="$TARGET_FLAGS" SDK="$SDK" sh build/objc-provider-manifest.sh header "$D/boolean-schema.json" "$D/bad-header.h" > "$D/bad-schema.log" 2>&1; then
-    bad "the manifest generator accepted a boolean schema as the integer 1"
+    bad "the manifest generator accepted a boolean schema as the integer 2"
   fi
   [ ! -f "$D/bad-header.h" ] || bad "a refused declaration still produced a header"
 

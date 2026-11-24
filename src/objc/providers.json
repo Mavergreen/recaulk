@@ -1,6 +1,6 @@
 {
-  "schema": 1,
-  "providers": [
+  "schema": 2,
+  "legacy_providers": [
     {
       "provider_id": "recaulk.nsworkspace.open-urls.v1",
       "class": "NSWorkspace",
@@ -9,7 +9,10 @@
       "encoding": "@56@0:8@16@24Q32@40^@48",
       "implementation_symbol": "__recaulk_objc_workspace_open_urls",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -20,7 +23,10 @@
       "encoding": "c16@0:8",
       "implementation_symbol": "__recaulk_objc_workspace_is_voiceover_enabled",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -31,7 +37,10 @@
       "encoding": "c16@0:8",
       "implementation_symbol": "__recaulk_objc_workspace_should_reduce_motion",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -42,7 +51,10 @@
       "encoding": "@16@0:8",
       "implementation_symbol": "__recaulk_objc_tablecolumn_title",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -53,7 +65,10 @@
       "encoding": "v24@0:8@16",
       "implementation_symbol": "__recaulk_objc_tablecolumn_set_title",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -64,7 +79,10 @@
       "encoding": "c16@0:8",
       "implementation_symbol": "__recaulk_objc_control_uses_single_line_mode",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -75,7 +93,10 @@
       "encoding": "v20@0:8c16",
       "implementation_symbol": "__recaulk_objc_control_set_uses_single_line_mode",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -86,7 +107,10 @@
       "encoding": "c16@0:8",
       "implementation_symbol": "__recaulk_objc_window_titlebar_appears_transparent",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -97,7 +121,10 @@
       "encoding": "v20@0:8c16",
       "implementation_symbol": "__recaulk_objc_window_set_titlebar_appears_transparent",
       "activation_root": "__recaulk_objc_activate",
-      "required_frameworks": ["AppKit", "Carbon"],
+      "required_frameworks": [
+        "AppKit",
+        "Carbon"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -108,7 +135,9 @@
       "encoding": "@16@0:8",
       "implementation_symbol": "__recaulk_objc_locale_language_code",
       "activation_root": "__recaulk_objc_activate_foundation",
-      "required_frameworks": ["Foundation"],
+      "required_frameworks": [
+        "Foundation"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -119,7 +148,9 @@
       "encoding": "@16@0:8",
       "implementation_symbol": "__recaulk_objc_locale_country_code",
       "activation_root": "__recaulk_objc_activate_foundation",
-      "required_frameworks": ["Foundation"],
+      "required_frameworks": [
+        "Foundation"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -130,7 +161,9 @@
       "encoding": "c24@0:8@16",
       "implementation_symbol": "__recaulk_objc_string_contains_string",
       "activation_root": "__recaulk_objc_activate_foundation",
-      "required_frameworks": ["Foundation"],
+      "required_frameworks": [
+        "Foundation"
+      ],
       "framework_policy": "strong-linked-before-root"
     },
     {
@@ -141,8 +174,78 @@
       "encoding": "c24@0:8@16",
       "implementation_symbol": "__recaulk_objc_string_localized_case_insensitive_contains_string",
       "activation_root": "__recaulk_objc_activate_foundation",
-      "required_frameworks": ["Foundation"],
+      "required_frameworks": [
+        "Foundation"
+      ],
       "framework_policy": "strong-linked-before-root"
+    }
+  ],
+  "providers": [
+    {
+      "provider_id": "recaulk.nstimer.block-timers.v1",
+      "class": "NSTimer",
+      "guard": "absent-only",
+      "activation_root": "__recaulk_objc_activate_timer",
+      "required_frameworks": [
+        "Foundation"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "methods": [
+        {
+          "kind": "+",
+          "selector": "scheduledTimerWithTimeInterval:repeats:block:",
+          "encoding": "@36@0:8d16c24@?28",
+          "implementation_symbol": "__recaulk_objc_timer_scheduled_with_interval_block"
+        },
+        {
+          "kind": "+",
+          "selector": "timerWithTimeInterval:repeats:block:",
+          "encoding": "@36@0:8d16c24@?28",
+          "implementation_symbol": "__recaulk_objc_timer_with_interval_block"
+        }
+      ]
+    },
+    {
+      "provider_id": "recaulk.nscolor.label-colors.v1",
+      "class": "NSColor",
+      "guard": "absent-only",
+      "activation_root": "__recaulk_objc_activate_color",
+      "required_frameworks": [
+        "AppKit"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "methods": [
+        {
+          "kind": "+",
+          "selector": "labelColor",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_color_label"
+        },
+        {
+          "kind": "+",
+          "selector": "linkColor",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_color_link"
+        }
+      ]
+    },
+    {
+      "provider_id": "recaulk.nsgraphicscontext.cgcontext.v1",
+      "class": "NSGraphicsContext",
+      "guard": "absent-only",
+      "activation_root": "__recaulk_objc_activate_graphics_context",
+      "required_frameworks": [
+        "AppKit"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "methods": [
+        {
+          "kind": "+",
+          "selector": "graphicsContextWithCGContext:flipped:",
+          "encoding": "@28@0:8^{CGContext=}16c24",
+          "implementation_symbol": "__recaulk_objc_graphics_context_with_cgcontext"
+        }
+      ]
     }
   ]
 }

@@ -196,6 +196,11 @@
  ],
  "inserts": [
   {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphicsContext.h",
+   "before": "+ (NSGraphicsContext *)graphicsContextWithGraphicsPort:(void *)graphicsPort flipped:(BOOL)initialFlippedState;",
+   "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's graphics-context group provides it on 10.9, through graphicsContextWithGraphicsPort:flipped:. */\n+ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;\n"
+  },
+  {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWindow.h",
    "before": "- (void)makeKeyAndOrderFront:(id)sender;",
    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's AppKit root provides it on 10.9, where it reads NO and ignores YES. */\n@property BOOL titlebarAppearsTransparent;\n"
@@ -265,7 +270,7 @@
   {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSColor.h",
    "old": "+ (NSColor *)separatorColor __attribute__((availability(macosx,introduced=10.14)));",
-   "new": "@property (class, readonly, strong) NSColor *separatorColor __attribute__((availability(macosx,introduced=10.14)));\n/* 10.10; 10.9's NSColor has no labelColor, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *labelColor __attribute__((availability(macosx,introduced=10.10)));"
+   "new": "@property (class, readonly, strong) NSColor *separatorColor __attribute__((availability(macosx,introduced=10.14)));\n/* 10.10; librecaulk-objc.a's color group provides labelColor (10.9's controlTextColor) and linkColor on 10.9. */\n@property (class, readonly, strong) NSColor *labelColor;\n@property (class, readonly, strong) NSColor *linkColor;\n/* 10.10 and 10.14; nothing provides these on 10.9, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *secondaryLabelColor __attribute__((availability(macosx,introduced=10.10)));\n@property (class, readonly, strong) NSColor *unemphasizedSelectedTextColor __attribute__((availability(macosx,introduced=10.14)));"
   },
   {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",

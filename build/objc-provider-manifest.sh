@@ -46,9 +46,81 @@ providers() {
     localizedCaseInsensitiveContainsString: 'c24@0:8@16' \
     __recaulk_objc_string_localized_case_insensitive_contains_string __recaulk_objc_activate_foundation Foundation
 }
-# spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for it
+# spec: README.md "Objective-C methods" -- each schema-2 group's members, in providers()'s columns: a group is the run
+#       of rows sharing its id, with one class, one root and one framework list. Each group has a root of its own,
+#       since Drydock credits a group only from a root that adds nothing but its members.
+groups() {
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    TIMER_SCHEDULED_BLOCK recaulk.nstimer.block-timers.v1 NSTimer + 'scheduledTimerWithTimeInterval:repeats:block:' \
+    '@36@0:8d16c24@?28' __recaulk_objc_timer_scheduled_with_interval_block __recaulk_objc_activate_timer Foundation \
+    TIMER_BLOCK recaulk.nstimer.block-timers.v1 NSTimer + 'timerWithTimeInterval:repeats:block:' \
+    '@36@0:8d16c24@?28' __recaulk_objc_timer_with_interval_block __recaulk_objc_activate_timer Foundation \
+    COLOR_LABEL recaulk.nscolor.label-colors.v1 NSColor + labelColor '@16@0:8' \
+    __recaulk_objc_color_label __recaulk_objc_activate_color AppKit \
+    COLOR_LINK recaulk.nscolor.label-colors.v1 NSColor + linkColor '@16@0:8' \
+    __recaulk_objc_color_link __recaulk_objc_activate_color AppKit \
+    GRAPHICS_CONTEXT_CGCONTEXT recaulk.nsgraphicscontext.cgcontext.v1 NSGraphicsContext + \
+    'graphicsContextWithCGContext:flipped:' '@28@0:8^{CGContext=}16c24' \
+    __recaulk_objc_graphics_context_with_cgcontext __recaulk_objc_activate_graphics_context AppKit
+}
+# spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for
+#       it: a legacy provider by its id, a group's member by ID:SELECTOR
 probe_source() {
   case "$1" in
+    recaulk.nstimer.block-timers.v1:scheduledTimerWithTimeInterval:repeats:block:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
++ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;
+@end
+@implementation RecaulkProviderEncoding
++ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nstimer.block-timers.v1:timerWithTimeInterval:repeats:block:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@interface RecaulkProviderEncoding : NSObject
++ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;
+@end
+@implementation RecaulkProviderEncoding
++ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nscolor.label-colors.v1:labelColor) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@class NSColor;
+@interface RecaulkProviderEncoding : NSObject
++ (NSColor *)labelColor;
+@end
+@implementation RecaulkProviderEncoding
++ (NSColor *)labelColor { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nscolor.label-colors.v1:linkColor) cat <<'EOF'
+#import <Foundation/Foundation.h>
+@class NSColor;
+@interface RecaulkProviderEncoding : NSObject
++ (NSColor *)linkColor;
+@end
+@implementation RecaulkProviderEncoding
++ (NSColor *)linkColor { return nil; }
+@end
+EOF
+    ;;
+    recaulk.nsgraphicscontext.cgcontext.v1:graphicsContextWithCGContext:flipped:) cat <<'EOF'
+#import <Foundation/Foundation.h>
+#import <ApplicationServices/ApplicationServices.h>
+@class NSGraphicsContext;
+@interface RecaulkProviderEncoding : NSObject
++ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;
+@end
+@implementation RecaulkProviderEncoding
++ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState { return nil; }
+@end
+EOF
+    ;;
     recaulk.nsworkspace.open-urls.v1) cat <<'EOF'
 #import <Foundation/Foundation.h>
 @class NSRunningApplication;
@@ -183,25 +255,47 @@ EOF
     *) die "InvalidDeclaration: no encoding probe for provider $1" ;;
   esac
 }
-expected=$(providers | awk -F'\t' 'BEGIN { printf "{\"schema\":1,\"providers\":[" }
+legacy=$(providers | awk -F'\t' '
   { split($9, f, ","); fw = ""; for (i = 1; i in f; i++) fw = fw (i > 1 ? "," : "") "\"" f[i] "\""
-    printf "%s{\"provider_id\":\"%s\",\"class\":\"%s\",\"method_kind\":\"%s\",\"selector\":\"%s\",\"encoding\":\"%s\",\"implementation_symbol\":\"%s\",\"activation_root\":\"%s\",\"required_frameworks\":[%s],\"framework_policy\":\"strong-linked-before-root\"}", (NR > 1 ? "," : ""), $2, $3, $4, $5, $6, $7, $8, fw }
-  END { printf "]}" }')
+    printf "%s{\"provider_id\":\"%s\",\"class\":\"%s\",\"method_kind\":\"%s\",\"selector\":\"%s\",\"encoding\":\"%s\",\"implementation_symbol\":\"%s\",\"activation_root\":\"%s\",\"required_frameworks\":[%s],\"framework_policy\":\"strong-linked-before-root\"}", (NR > 1 ? "," : ""), $2, $3, $4, $5, $6, $7, $8, fw }')
+# spec: README.md "Objective-C methods" -- a group's rows agree on its class, root and frameworks, and are adjacent
+grouped=$(groups | awk -F'\t' '
+  $2 != id { if (seen[$2]++) { print "group " $2 " is not one run of rows" > "/dev/stderr"; exit 1 }
+             split($9, f, ","); fw = ""; for (i = 1; i in f; i++) fw = fw (i > 1 ? "," : "") "\"" f[i] "\""
+             if (NR > 1) printf "]},"
+             printf "{\"provider_id\":\"%s\",\"class\":\"%s\",\"guard\":\"absent-only\",\"activation_root\":\"%s\",\"required_frameworks\":[%s],\"framework_policy\":\"strong-linked-before-root\",\"methods\":[", $2, $3, $8, fw
+             id = $2; cls = $3; root = $8; fws = $9; n = 0 }
+  $3 != cls || $8 != root || $9 != fws { print "group " $2 " mixes classes, roots or frameworks" > "/dev/stderr"; exit 1 }
+  { printf "%s{\"kind\":\"%s\",\"selector\":\"%s\",\"encoding\":\"%s\",\"implementation_symbol\":\"%s\"}", (n++ ? "," : ""), $4, $5, $6, $7 }
+  END { if (NR) printf "]}" }') || die "InvalidDeclaration: build/objc-provider-manifest.sh's groups are malformed"
+expected="{\"schema\":2,\"legacy_providers\":[$legacy],\"providers\":[$grouped]}"
 [ -f "$decl" ] || die "InvalidDeclaration: $decl is missing"
 [ "$(tr -d ' \t\r\n' < "$decl")" = "$expected" ] \
-  || die "InvalidDeclaration: $decl is not the providers Recaulk ships (schema 1; build/objc-provider-manifest.sh lists them, each strong-linked-before-root)"
+  || die "InvalidDeclaration: $decl is not the providers Recaulk ships (schema 2; build/objc-provider-manifest.sh lists them, each strong-linked-before-root)"
 
 probe=$(mktemp -d "${TMPDIR:-/tmp}/objc-provider-manifest.XXXXXX")
 trap 'rm -rf "$probe"' EXIT
 providers > "$probe/providers.tsv"
+groups > "$probe/groups.tsv"
+n=0
 while IFS='	' read -r macro id class kind selector encoding impl root frameworks; do
-  probe_source "$id" > "$probe/$id.m"
-  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -S -o "$probe/$id.s" "$probe/$id.m" \
-    || die "CannotMeasure: clang22 could not compile the encoding probe for $id"
-  compiled=$(awk '/^[ \t]*\.section[ \t]/ { m = ($0 ~ /__objc_methtype/) } m && /\.asciz/ { sub(/^[^"]*"/, ""); sub(/"[^"]*$/, ""); print }' "$probe/$id.s")
+  n=$((n + 1)) key=$id
+  probe_source "$key" > "$probe/$n.m"
+  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -fblocks -S -o "$probe/$n.s" "$probe/$n.m" \
+    || die "CannotMeasure: clang22 could not compile the encoding probe for $key"
+  compiled=$(awk '/^[ \t]*\.section[ \t]/ { m = ($0 ~ /__objc_methtype/) } m && /\.asciz/ { sub(/^[^"]*"/, ""); sub(/"[^"]*$/, ""); print }' "$probe/$n.s")
   [ "$compiled" = "$encoding" ] \
-    || die "InvalidDeclaration: $id's declared encoding $encoding is not the compiled one, '$compiled'"
+    || die "InvalidDeclaration: $key's declared encoding $encoding is not the compiled one, '$compiled'"
 done < "$probe/providers.tsv"
+while IFS='	' read -r macro id class kind selector encoding impl root frameworks; do
+  n=$((n + 1))
+  probe_source "$id:$selector" > "$probe/$n.m"
+  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -fblocks -S -o "$probe/$n.s" "$probe/$n.m" \
+    || die "CannotMeasure: clang22 could not compile the encoding probe for $id:$selector"
+  compiled=$(awk '/^[ \t]*\.section[ \t]/ { m = ($0 ~ /__objc_methtype/) } m && /\.asciz/ { sub(/^[^"]*"/, ""); sub(/"[^"]*$/, ""); print }' "$probe/$n.s")
+  [ "$compiled" = "$encoding" ] \
+    || die "InvalidDeclaration: $id:$selector's declared encoding $encoding is not the compiled one, '$compiled'"
+done < "$probe/groups.tsv"
 
 sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 json_string() {
@@ -220,6 +314,11 @@ case "$mode:$#" in
         printf '#define RECAULK_%s_SELECTOR "%s"\n' "$macro" "$selector"
         printf '#define RECAULK_%s_ENCODING "%s"\n' "$macro" "$encoding"
       done < "$probe/providers.tsv"
+      while IFS='	' read -r macro id class kind selector encoding impl root frameworks; do
+        printf '#define RECAULK_%s_CLASS "%s"\n' "$macro" "$class"
+        printf '#define RECAULK_%s_SELECTOR "%s"\n' "$macro" "$selector"
+        printf '#define RECAULK_%s_ENCODING "%s"\n' "$macro" "$encoding"
+      done < "$probe/groups.tsv"
     } > "$3.tmp" && mv "$3.tmp" "$3"
     ;;
   manifest:9)
@@ -232,7 +331,9 @@ case "$mode:$#" in
     [ -s "$compiler" ] && [ -s "$sources" ] && [ -f "$settings" ] || die "CannotMeasure: build evidence missing"
     case "$arch" in arm64) minimum=11.0 ;; *) minimum=10.9 ;; esac
     {
-      printf '{\n  "schema" : 1,\n  "providers" : [\n'
+      # spec: README.md "Objective-C methods" -- schema 2: legacy_providers first, as schema 1 listed them (a reader
+      #       taking the first implementation_symbol still finds openURLs), then the groups
+      printf '{\n  "schema" : 2,\n  "legacy_providers" : [\n'
       n=0
       while IFS='	' read -r macro id class kind selector encoding impl root frameworks; do
         [ "$n" = 0 ] || printf '    },\n'
@@ -247,7 +348,28 @@ case "$mode:$#" in
         printf '      ],\n'
         printf '      "framework_policy" : "strong-linked-before-root"\n'
       done < "$probe/providers.tsv"
-      printf '    }\n  ],\n'
+      printf '    }\n  ],\n  "providers" : [\n'
+      gid=
+      while IFS='	' read -r macro id class kind selector encoding impl root frameworks; do
+        if [ "$id" != "$gid" ]; then
+          [ -z "$gid" ] || printf '\n      ]\n    },\n'
+          gid=$id
+          printf '    {\n      "provider_id" : "%s",\n' "$id"
+          printf '      "class" : "%s",\n      "guard" : "absent-only",\n' "$class"
+          printf '      "activation_root" : "%s",\n' "$root"
+          printf '      "required_frameworks" : [\n'
+          printf '%s\n' "$frameworks" | tr ',' '\n' | awk '{ printf "%s        \"%s\"", (NR > 1 ? ",\n" : ""), $0 } END { print "" }'
+          printf '      ],\n'
+          printf '      "framework_policy" : "strong-linked-before-root",\n'
+          printf '      "methods" : [\n'
+        else
+          printf ',\n'
+        fi
+        printf '        {\n          "kind" : "%s",\n          "selector" : "%s",\n' "$kind" "$selector"
+        printf '          "encoding" : "%s",\n          "implementation_symbol" : "%s"\n        }' "$encoding" "$impl"
+      done < "$probe/groups.tsv"
+      [ -z "$gid" ] || printf '\n      ]\n    }\n'
+      printf '  ],\n'
       printf '  "build" : {\n'
       printf '    "archive_path" : "lib/librecaulk-objc.a",\n'
       printf '    "archive_sha256" : "%s",\n' "$(sha256 "$archive")"

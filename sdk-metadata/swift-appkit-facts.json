@@ -3131,6 +3131,11 @@
   ],
   "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphicsContext.h": [
    {
+    "kind": "insert",
+    "offset": 2356,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's graphics-context group provides it on 10.9, through graphicsContextWithGraphicsPort:flipped:. */\n+ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;\n"
+   },
+   {
     "kind": "property",
     "name": "currentContext",
     "class": "NSGraphicsContext",

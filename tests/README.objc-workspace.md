@@ -283,7 +283,7 @@ Consumer linkage requires strong AppKit and Carbon plus
 ordinary Recaulk C libraries. `build-lib.sh` merely stages the separate companion
 after the unchanged C archive/dylib links. No companion objects enter those links.
 
-The checked-in schema1 document is `{schema, providers:[declaration]}`; generated
+The checked-in schema-2 document is `{schema, legacy_providers:[declaration], providers:[group]}`; generated
 metadata adds a root `build` object with the actual archive digest/thin slice,
 role, target SDKSettings hash, compiler identity and hashed source/generated
 header receipts. A host Foundation-only tool validates the fixed declaration

@@ -10043,6 +10043,11 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimer.h": [
    {
+    "kind": "insert",
+    "offset": 409,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12; librecaulk-objc.a's timer group provides both on 10.9, through CFRunLoopTimerCreateWithHandler. */\n+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n"
+   },
+   {
     "kind": "property",
     "name": "fireDate",
     "class": "NSTimer",

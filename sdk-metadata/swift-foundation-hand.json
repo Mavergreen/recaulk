@@ -436,6 +436,11 @@
  ],
  "inserts": [
   {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimer.h",
+   "before": "+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)yesOrNo;",
+   "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12; librecaulk-objc.a's timer group provides both on 10.9, through CFRunLoopTimerCreateWithHandler. */\n+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n"
+  },
+  {
    "header": "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFBase.h",
    "before": "typedef const struct __CFString * CFStringRef;",
    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#ifndef CF_BRIDGED_TYPE\n#if __has_attribute(objc_bridge) && __has_feature(objc_bridge_id) && __has_feature(objc_bridge_id_on_typedefs)\n\n#ifdef __OBJC__\n@class NSArray;\n@class NSAttributedString;\n@class NSString;\n@class NSNull;\n@class NSCharacterSet;\n@class NSData;\n@class NSDate;\n@class NSTimeZone;\n@class NSDictionary;\n@class NSError;\n@class NSLocale;\n@class NSNumber;\n@class NSSet;\n@class NSURL;\n#endif\n\n#define CF_BRIDGED_TYPE(T)\t\t__attribute__((objc_bridge(T)))\n#define CF_BRIDGED_MUTABLE_TYPE(T)\t__attribute__((objc_bridge_mutable(T)))\n#define CF_RELATED_TYPE(T,C,I)\t\t__attribute__((objc_bridge_related(T,C,I)))\n#else\n#define CF_BRIDGED_TYPE(T)\n#define CF_BRIDGED_MUTABLE_TYPE(T)\n#define CF_RELATED_TYPE(T,C,I)\n#endif\n#endif\n\n"

@@ -14736,6 +14736,436 @@
           "new": "APPKIT_EXTERN NSImageName const NSImageNameShareTemplate NS_AVAILABLE_MAC(10_8);"
         }
       ]
+    },
+    {
+      "id": "foundation-timer-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSTimer.h",
+      "sha256": "e15003faf668362a5f2545796e5233a76d1a85ddb0f1c458cabdda44c1a2fd1a",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSTimer.h"
+      ],
+      "replacements": [
+        {
+          "old": "+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)yesOrNo;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.12; librecaulk-objc.a's timer group provides both on 10.9, through CFRunLoopTimerCreateWithHandler. */\n+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;\n+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)yesOrNo;\n"
+        },
+        {
+          "old": "- (NSDate *)fireDate;",
+          "new": "@property (copy) NSDate *fireDate;"
+        },
+        {
+          "old": "- (void)setFireDate:(NSDate *)date;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSTimeInterval)timeInterval;",
+          "new": "@property (readonly) NSTimeInterval timeInterval;"
+        },
+        {
+          "old": "- (NSTimeInterval)tolerance NS_AVAILABLE(10_9, 7_0);",
+          "new": "@property NSTimeInterval tolerance NS_AVAILABLE(10_9, 7_0);"
+        },
+        {
+          "old": "- (void)setTolerance:(NSTimeInterval)tolerance NS_AVAILABLE(10_9, 7_0);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (BOOL)isValid;",
+          "new": "@property (readonly, getter=isValid) BOOL valid;"
+        },
+        {
+          "old": "- (id)userInfo;",
+          "new": "@property (readonly, strong) id userInfo;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-color-v3",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSColor.h",
+      "sha256": "011fb814a610d8ea86065e7596ec2b1abcb25bc9f02fd38ab1aa5a09cd6d4ea8",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSColor.h"
+      ],
+      "replacements": [
+        {
+          "old": "\n@class NSDictionary, NSImage, NSColorSpace;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSDictionary, NSImage, NSColorSpace;\n"
+        },
+        {
+          "old": "+ (NSColor *)blackColor;",
+          "new": "@property (class, readonly, strong) NSColor *blackColor;"
+        },
+        {
+          "old": "+ (NSColor *)darkGrayColor;",
+          "new": "@property (class, readonly, strong) NSColor *darkGrayColor;"
+        },
+        {
+          "old": "+ (NSColor *)lightGrayColor;",
+          "new": "@property (class, readonly, strong) NSColor *lightGrayColor;"
+        },
+        {
+          "old": "+ (NSColor *)whiteColor;",
+          "new": "@property (class, readonly, strong) NSColor *whiteColor;"
+        },
+        {
+          "old": "+ (NSColor *)grayColor;",
+          "new": "@property (class, readonly, strong) NSColor *grayColor;"
+        },
+        {
+          "old": "+ (NSColor *)redColor;",
+          "new": "@property (class, readonly, strong) NSColor *redColor;"
+        },
+        {
+          "old": "+ (NSColor *)greenColor;",
+          "new": "@property (class, readonly, strong) NSColor *greenColor;"
+        },
+        {
+          "old": "+ (NSColor *)blueColor;",
+          "new": "@property (class, readonly, strong) NSColor *blueColor;"
+        },
+        {
+          "old": "+ (NSColor *)cyanColor;",
+          "new": "@property (class, readonly, strong) NSColor *cyanColor;"
+        },
+        {
+          "old": "+ (NSColor *)yellowColor;",
+          "new": "@property (class, readonly, strong) NSColor *yellowColor;"
+        },
+        {
+          "old": "+ (NSColor *)magentaColor;",
+          "new": "@property (class, readonly, strong) NSColor *magentaColor;"
+        },
+        {
+          "old": "+ (NSColor *)orangeColor;",
+          "new": "@property (class, readonly, strong) NSColor *orangeColor;"
+        },
+        {
+          "old": "+ (NSColor *)purpleColor;",
+          "new": "@property (class, readonly, strong) NSColor *purpleColor;"
+        },
+        {
+          "old": "+ (NSColor *)brownColor;",
+          "new": "@property (class, readonly, strong) NSColor *brownColor;"
+        },
+        {
+          "old": "+ (NSColor *)clearColor;",
+          "new": "@property (class, readonly, strong) NSColor *clearColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlShadowColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlShadowColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlDarkShadowColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlDarkShadowColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlHighlightColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlHighlightColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlLightHighlightColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlLightHighlightColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)controlBackgroundColor;",
+          "new": "@property (class, readonly, strong) NSColor *controlBackgroundColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedControlColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedControlColor;"
+        },
+        {
+          "old": "+ (NSColor *)secondarySelectedControlColor;",
+          "new": "@property (class, readonly, strong) NSColor *secondarySelectedControlColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedControlTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedControlTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)disabledControlTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *disabledControlTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)textColor;",
+          "new": "@property (class, readonly, strong) NSColor *textColor;"
+        },
+        {
+          "old": "+ (NSColor *)textBackgroundColor;",
+          "new": "@property (class, readonly, strong) NSColor *textBackgroundColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedTextBackgroundColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedTextBackgroundColor;"
+        },
+        {
+          "old": "+ (NSColor *)gridColor;",
+          "new": "@property (class, readonly, strong) NSColor *gridColor;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.14; 10.9's NSColor has no separatorColor, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *separatorColor __attribute__((availability(macosx,introduced=10.14)));\n/* 10.10; librecaulk-objc.a's color group provides labelColor (10.9's controlTextColor) and linkColor on 10.9. */\n@property (class, readonly, strong) NSColor *labelColor;\n@property (class, readonly, strong) NSColor *linkColor;\n/* 10.10 and 10.14; nothing provides these on 10.9, so a caller checks availability first. */\n@property (class, readonly, strong) NSColor *secondaryLabelColor __attribute__((availability(macosx,introduced=10.10)));\n@property (class, readonly, strong) NSColor *unemphasizedSelectedTextColor __attribute__((availability(macosx,introduced=10.14)));"
+        },
+        {
+          "old": "+ (NSColor *)keyboardFocusIndicatorColor;",
+          "new": "@property (class, readonly, strong) NSColor *keyboardFocusIndicatorColor;"
+        },
+        {
+          "old": "+ (NSColor *)windowBackgroundColor;",
+          "new": "@property (class, readonly, strong) NSColor *windowBackgroundColor;"
+        },
+        {
+          "old": "+ (NSColor *)underPageBackgroundColor NS_AVAILABLE_MAC(10_8);",
+          "new": "@property (class, readonly, strong) NSColor *underPageBackgroundColor NS_AVAILABLE_MAC(10_8);"
+        },
+        {
+          "old": "+ (NSColor *)scrollBarColor;",
+          "new": "@property (class, readonly, strong) NSColor *scrollBarColor;"
+        },
+        {
+          "old": "+ (NSColor *)knobColor;",
+          "new": "@property (class, readonly, strong) NSColor *knobColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedKnobColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedKnobColor;"
+        },
+        {
+          "old": "+ (NSColor *)windowFrameColor;",
+          "new": "@property (class, readonly, strong) NSColor *windowFrameColor;"
+        },
+        {
+          "old": "+ (NSColor *)windowFrameTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *windowFrameTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedMenuItemColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedMenuItemColor;"
+        },
+        {
+          "old": "+ (NSColor *)selectedMenuItemTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *selectedMenuItemTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)highlightColor;",
+          "new": "@property (class, readonly, strong) NSColor *highlightColor;"
+        },
+        {
+          "old": "+ (NSColor *)shadowColor;",
+          "new": "@property (class, readonly, strong) NSColor *shadowColor;"
+        },
+        {
+          "old": "+ (NSColor *)headerColor;",
+          "new": "@property (class, readonly, strong) NSColor *headerColor;"
+        },
+        {
+          "old": "+ (NSColor *)headerTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *headerTextColor;"
+        },
+        {
+          "old": "+ (NSColor *)alternateSelectedControlColor;",
+          "new": "@property (class, readonly, strong) NSColor *alternateSelectedControlColor;"
+        },
+        {
+          "old": "+ (NSColor *)alternateSelectedControlTextColor;",
+          "new": "@property (class, readonly, strong) NSColor *alternateSelectedControlTextColor;"
+        },
+        {
+          "old": "+ (NSArray *)controlAlternatingRowBackgroundColors;",
+          "new": "@property (class, readonly, strong) NSArray *controlAlternatingRowBackgroundColors;"
+        },
+        {
+          "old": "+ (NSControlTint) currentControlTint;",
+          "new": "@property (class, readonly) NSControlTint currentControlTint;"
+        },
+        {
+          "old": "- (NSString *)colorSpaceName;",
+          "new": "@property (readonly, copy) NSString *colorSpaceName;"
+        },
+        {
+          "old": "- (NSString *)catalogNameComponent;",
+          "new": "@property (readonly, copy) NSString *catalogNameComponent;"
+        },
+        {
+          "old": "- (NSString *)colorNameComponent;",
+          "new": "@property (readonly, copy) NSString *colorNameComponent;"
+        },
+        {
+          "old": "- (NSString *)localizedCatalogNameComponent;",
+          "new": "@property (readonly, copy) NSString *localizedCatalogNameComponent;"
+        },
+        {
+          "old": "- (NSString *)localizedColorNameComponent;",
+          "new": "@property (readonly, copy) NSString *localizedColorNameComponent;"
+        },
+        {
+          "old": "- (CGFloat)redComponent;",
+          "new": "@property (readonly) CGFloat redComponent;"
+        },
+        {
+          "old": "- (CGFloat)greenComponent;",
+          "new": "@property (readonly) CGFloat greenComponent;"
+        },
+        {
+          "old": "- (CGFloat)blueComponent;",
+          "new": "@property (readonly) CGFloat blueComponent;"
+        },
+        {
+          "old": "- (CGFloat)hueComponent;",
+          "new": "@property (readonly) CGFloat hueComponent;"
+        },
+        {
+          "old": "- (CGFloat)saturationComponent;",
+          "new": "@property (readonly) CGFloat saturationComponent;"
+        },
+        {
+          "old": "- (CGFloat)brightnessComponent;",
+          "new": "@property (readonly) CGFloat brightnessComponent;"
+        },
+        {
+          "old": "- (CGFloat)whiteComponent;",
+          "new": "@property (readonly) CGFloat whiteComponent;"
+        },
+        {
+          "old": "- (CGFloat)cyanComponent;",
+          "new": "@property (readonly) CGFloat cyanComponent;"
+        },
+        {
+          "old": "- (CGFloat)magentaComponent;",
+          "new": "@property (readonly) CGFloat magentaComponent;"
+        },
+        {
+          "old": "- (CGFloat)yellowComponent;",
+          "new": "@property (readonly) CGFloat yellowComponent;"
+        },
+        {
+          "old": "- (CGFloat)blackComponent;",
+          "new": "@property (readonly) CGFloat blackComponent;"
+        },
+        {
+          "old": "- (NSColorSpace *)colorSpace;",
+          "new": "@property (readonly, strong) NSColorSpace *colorSpace;"
+        },
+        {
+          "old": "- (NSInteger)numberOfComponents;",
+          "new": "@property (readonly) NSInteger numberOfComponents;"
+        },
+        {
+          "old": "- (CGFloat)alphaComponent;",
+          "new": "@property (readonly) CGFloat alphaComponent;"
+        },
+        {
+          "old": "- (NSImage *)patternImage;",
+          "new": "@property (readonly, strong) NSImage *patternImage;"
+        },
+        {
+          "old": "- (CGColorRef)CGColor NS_RETURNS_INNER_POINTER NS_AVAILABLE_MAC(10_8);",
+          "new": "@property (readonly) CGColorRef CGColor NS_RETURNS_INNER_POINTER NS_AVAILABLE_MAC(10_8);"
+        },
+        {
+          "old": "+ (void)setIgnoresAlpha:(BOOL)flag;\n",
+          "new": "\n"
+        },
+        {
+          "old": "+ (BOOL)ignoresAlpha;",
+          "new": "@property (class) BOOL ignoresAlpha;"
+        },
+        {
+          "old": "APPKIT_EXTERN NSString *NSSystemColorsDidChangeNotification;",
+          "new": "APPKIT_EXTERN NSNotificationName NSSystemColorsDidChangeNotification;"
+        }
+      ]
+    },
+    {
+      "id": "appkit-graphicscontext-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSGraphicsContext.h",
+      "sha256": "8a7c4c0a1fd5a1e97fa5c6684468fcc64e1f37cbc6d36ac0b0ced74608263b98",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSGraphicsContext.h"
+      ],
+      "replacements": [
+        {
+          "old": "+ (NSGraphicsContext *)graphicsContextWithGraphicsPort:(void *)graphicsPort flipped:(BOOL)initialFlippedState;\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.10; librecaulk-objc.a's graphics-context group provides it on 10.9, through graphicsContextWithGraphicsPort:flipped:. */\n+ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;\n+ (NSGraphicsContext *)graphicsContextWithGraphicsPort:(void *)graphicsPort flipped:(BOOL)initialFlippedState;\n"
+        },
+        {
+          "old": "+ (NSGraphicsContext *)currentContext;",
+          "new": "@property (class, strong) NSGraphicsContext *currentContext;"
+        },
+        {
+          "old": "+ (void)setCurrentContext:(NSGraphicsContext *)context;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSDictionary *)attributes;",
+          "new": "@property (readonly, copy) NSDictionary *attributes;"
+        },
+        {
+          "old": "- (BOOL)isDrawingToScreen;",
+          "new": "@property (readonly, getter=isDrawingToScreen) BOOL drawingToScreen;"
+        },
+        {
+          "old": "- (void *)graphicsPort NS_RETURNS_INNER_POINTER;",
+          "new": "@property (readonly) void *graphicsPort NS_RETURNS_INNER_POINTER;"
+        },
+        {
+          "old": "- (BOOL)isFlipped;",
+          "new": "@property (readonly, getter=isFlipped) BOOL flipped;"
+        },
+        {
+          "old": "- (void)setShouldAntialias:(BOOL)antialias;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (BOOL)shouldAntialias;",
+          "new": "@property BOOL shouldAntialias;"
+        },
+        {
+          "old": "- (void)setImageInterpolation:(NSImageInterpolation)interpolation;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSImageInterpolation)imageInterpolation;",
+          "new": "@property NSImageInterpolation imageInterpolation;"
+        },
+        {
+          "old": "- (void)setPatternPhase:(NSPoint)phase;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSPoint)patternPhase;",
+          "new": "@property NSPoint patternPhase;"
+        },
+        {
+          "old": "- (void)setCompositingOperation:(NSCompositingOperation)operation;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSCompositingOperation)compositingOperation;",
+          "new": "@property NSCompositingOperation compositingOperation;"
+        },
+        {
+          "old": "- (NSColorRenderingIntent)colorRenderingIntent NS_AVAILABLE_MAC(10_5);",
+          "new": "@property NSColorRenderingIntent colorRenderingIntent NS_AVAILABLE_MAC(10_5);"
+        },
+        {
+          "old": "- (void)setColorRenderingIntent:(NSColorRenderingIntent)renderingIntent NS_AVAILABLE_MAC(10_5);\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (CIContext *)CIContext;",
+          "new": "@property (readonly, strong) CIContext *CIContext;"
+        }
+      ]
     }
   ]
 }

@@ -79,15 +79,38 @@ cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
    -Wl,-u,___recaulk_objc_activate_foundation -framework Foundation
 ```
 
+Three groups of class methods each have a root of their own:
+
+- `___recaulk_objc_activate_timer` (Foundation): `NSTimer`'s `scheduledTimerWithTimeInterval:repeats:block:` and
+  `timerWithTimeInterval:repeats:block:` (10.12), as 10.9's `CFRunLoopTimerCreateWithHandler` timers, which are
+  `NSTimer`s whose block is passed the timer. An interval of 0 or less is 0.0001 s, as `NSTimer` documents, and the
+  scheduled one runs in the current run loop's default mode.
+- `___recaulk_objc_activate_color` (AppKit): `NSColor`'s `labelColor` (10.10), which is 10.9's
+  `controlTextColor`, and `linkColor` (10.10), sRGB 0, 0.408, 0.855.
+- `___recaulk_objc_activate_graphics_context` (AppKit): `NSGraphicsContext`'s
+  `graphicsContextWithCGContext:flipped:` (10.10), through 10.9's `graphicsContextWithGraphicsPort:flipped:`.
+
+A group is added whole or not at all: if its class already has any of its methods, none of them is added.
+
+```sh
+cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
+   -Wl,-u,___recaulk_objc_activate_timer -Wl,-u,___recaulk_objc_activate_color \
+   -Wl,-u,___recaulk_objc_activate_graphics_context -framework AppKit
+```
+
 shipyard's `objc-provider-link-args.sh` prints the roots and frameworks of every
-provider the declaration lists, so a link made with it activates both roots and
-links AppKit and Carbon; link by hand, as above, to take Foundation's root alone.
+provider the declaration lists, so a link made with it activates every root and
+links AppKit and Carbon; link by hand, as above, to take some roots alone.
 
 Don't use `-force_load`; `-u` is enough, and survives `-dead_strip` and LTO. At
 load, each method is added only where the class doesn't already have it, so a
 native or inherited implementation on newer macOS is left alone.
 `share/recaulk/objc-providers.json` lists the methods, their ABI encodings and
-the build that produced the archive (source hashes, archive hash, compiler, SDK).
+the build that produced the archive (source hashes, archive hash, compiler, SDK). It is Drydock's schema 2: the
+instance methods, one per entry as schema 1 had them, under `legacy_providers`, and the class-method groups under
+`providers`. Reading it takes Drydock 0.7.0 or later, which shipyard pins from 1.0.888 (`@v1` has it); an older
+Drydock refuses the file rather than skip it. Drydock credits a group only from a root that registers its
+members and nothing else, every member looked up before any is added, which is why each group has its own root.
 
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
 
@@ -826,7 +849,11 @@ so a Swift compile that uses AppKit selects this one profile. It covers the 33 A
 - `+[NSApplication sharedApplication]` as a class property, so Swift writes `NSApplication.shared`
   (`appkit-application-v2`, which is `appkit-application-v1` plus it and `NSNotificationName`-typed notification names).
   Only that one of NSApplication's later properties: the others would retype getters an `NSApplication` subclass
-  overrides.
+  overrides;
+- the class methods `librecaulk-objc.a`'s groups provide, with no availability: `NSColor`'s `labelColor` and
+  `linkColor` (`appkit-color-v3`, beside `secondaryLabelColor` at 10.10 and `unemphasizedSelectedTextColor` and
+  `separatorColor` at 10.14, which nothing provides), `+[NSGraphicsContext graphicsContextWithCGContext:flipped:]`
+  (`appkit-graphicscontext-v2`) and, in swift-foundation too, `NSTimer`'s block timers (`foundation-timer-v2`).
 
 A property whose name is a C++ keyword (`NSImage`'s `template`) is declared as the 11.3 SDK declares it: Objective-C
 sees the property, Objective-C++ the accessor methods (`appkit-image-v2`), so a `.mm` that imports Cocoa compiles

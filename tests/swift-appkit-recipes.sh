@@ -126,12 +126,22 @@ for h, decl, label in [
         ('NSColor.h', '@property (class, readonly, strong) NSColor *separatorColor' + AV('10.14'), 'gg_rows 7'),
         ('NSControl.h', '- (nonnull instancetype)initWithFrame:(NSRect)frameRect;', 'gg_rows 8'),
         ('NSControl.h', '@property BOOL usesSingleLineMode;', 'gg_rulings'),
-        ('NSColor.h', '@property (class, readonly, strong) NSColor *labelColor' + AV('10.10'), 'gg_rulings'),
+        # spec: README.md "Objective-C methods" -- labelColor and linkColor are librecaulk-objc.a's color group, so
+        #       they carry no availability; the colors nothing provides keep theirs (iterm_class_methods)
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *labelColor;', 'iterm_class_methods'),
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *linkColor;', 'iterm_class_methods'),
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *secondaryLabelColor' + AV('10.10'), 'iterm_class_methods'),
+        ('NSColor.h', '@property (class, readonly, strong) NSColor *unemphasizedSelectedTextColor' + AV('10.14'), 'iterm_class_methods'),
+        ('NSGraphicsContext.h', '+ (NSGraphicsContext *)graphicsContextWithCGContext:(CGContextRef)graphicsPort '
+                                'flipped:(BOOL)initialFlippedState;', 'iterm_class_methods'),
         ('NSImageView.h', '@property (nullable, copy) NSColor *contentTintColor' + AV('10.14'), 'gg_rulings'),
         # spec: README.md "Objective-C methods" -- librecaulk-objc.a back-fills it on 10.9 (iterm_titlebar)
         ('NSWindow.h', '@property BOOL titlebarAppearsTransparent;', 'iterm_titlebar')]:
     assert decl in text.get(h, ''), (label, h, decl)
 assert '+ (nonnull NSBundle *)bundleForClass:(Class)aClass;' in fnd['NSBundle.h'], 'gg_rows 4'
+for decl in ('+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;',
+             '+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block;'):
+    assert decl in fnd['NSTimer.h'], ('iterm_class_methods', decl)
 assert 'designated' not in text['NSWindow.h'].split('initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)')[1].split(';')[0].lower(), \
     'gg_rows 6: nonnull only, as measured'
 for v in ('NSTrackingMouseEnteredAndExited', 'NSTrackingActiveAlways', 'NSTrackingEnabledDuringMouseDrag'):
