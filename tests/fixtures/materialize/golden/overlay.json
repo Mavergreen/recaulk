@@ -1,0 +1,11 @@
+{"version":0,"case-sensitive":"true","roots":[
+{"type":"file","name":"GIVEN/System/Library/Frameworks/Foundation.framework/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"GIVEN/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"GIVEN/usr/include/stdio.h","external-contents":"OUT/headers/usr/include/stdio.h"},
+{"type":"file","name":"OUT/sdk/MacOSX10.9.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"OUT/sdk/MacOSX10.9.sdk/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"OUT/sdk/MacOSX10.9.sdk/usr/include/stdio.h","external-contents":"OUT/headers/usr/include/stdio.h"},
+{"type":"file","name":"SDK/System/Library/Frameworks/Foundation.framework/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"SDK/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h","external-contents":"OUT/headers/System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h"},
+{"type":"file","name":"SDK/usr/include/stdio.h","external-contents":"OUT/headers/usr/include/stdio.h"}
+]}

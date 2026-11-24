@@ -92,7 +92,13 @@ int main(int argc, char **argv) {
     size_t nsel;
     char *ids;
     mz_select(recipes, profiles, &a, &sel, &nsel, &ids);
-    if (a.print_stamp) return 0;
+    char digest[65];
+    mz_recipes_digest(sel, nsel, digest);
+    if (a.print_stamp) {
+        mz_print_identity(stdout, a.profile, ids, digest, NULL, NULL);
+        fputs("}\n", stdout);
+        return fflush(stdout) ? 1 : 0;
+    }
 
     char sdk_real[PATH_MAX];
     if (!realpath(a.sdk, sdk_real)) mz_fail("--sdk '%s' does not exist", a.sdk);
@@ -102,6 +108,7 @@ int main(int argc, char **argv) {
     snprintf(name, sizeof name, "%s.sdk", want->s);
     if (strcmp(basename(base), name)) mz_fail("the recipes are for %s, but --sdk resolves to %s", name, sdk_real);
 
+    if (!a.dry_run) mz_existing_out(&a, ids, digest, sdk_real); /* exits 0 on a matching tree */
     struct mz_header *hs;
     size_t nh;
     mz_apply(sdk_real, sel, nsel, &hs, &nh);
@@ -112,5 +119,6 @@ int main(int argc, char **argv) {
         }
         return 0;
     }
+    mz_publish(&a, sdk_real, hs, nh, ids, digest);
     return 0;
 }

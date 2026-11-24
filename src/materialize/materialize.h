@@ -52,4 +52,12 @@ int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, con
               const struct mz_json ***sel, size_t *nsel, char **ids_sorted_json);
 void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, struct mz_header **out, size_t *nout);
 void mz_recipes_digest(const struct mz_json **sel, size_t nsel, char hex[65]);
+
+/* publish.c */
+int mz_settings_json(const char *sdk_real, char **json);
+void mz_print_identity(FILE *f, const char *profile, const char *ids_json, const char *digest, const char *recaulk,
+                       const char *sdk_real);
+int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *digest, const char *sdk_real);
+void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header *h, size_t nh, const char *ids_json,
+                const char *digest);
 #endif
