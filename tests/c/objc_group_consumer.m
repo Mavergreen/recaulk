@@ -44,10 +44,10 @@ int main(int argc, char **argv) {
 		[NSColor labelColor];
 		[NSColor linkColor];
 		[NSGraphicsContext graphicsContextWithCGContext:NULL flipped:NO];
-		/* receivers from sends whose declared return type names the class: alloc returns id, which leaves
-		   every send after it unresolved */
-		NSView *view = [[[NSApplication sharedApplication] mainWindow] contentView];
-		NSCell *cell = [[NSWindow standardWindowButton:NSWindowCloseButton forStyleMask:NSTitledWindowMask] cell];
+		/* receivers from sends the 10.9 SDK types with the class (Drydock's floor-signatures.tsv): alloc,
+		   -[NSWindow contentView] and -[NSControl cell] return id there, which leaves every send after it unresolved */
+		NSView *view = [[NSMenuItem separatorItem] view];
+		NSCell *cell = [[[NSApplication sharedApplication] mainWindow] defaultButtonCell];
 		[view setAccessibilityLabel:@"x"];
 		(void)[view accessibilityLabel];
 		[view setAccessibilityRole:@"x"];
