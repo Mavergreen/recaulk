@@ -1,22 +1,11 @@
 /* recaulk-materialize's command line. spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md
    "Command line" -- exit 0 complete, 1 refused (one stderr line), 2 usage. */
 #include "materialize.h"
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define USAGE "usage: recaulk-materialize --sdk DIR --out DIR (--profile NAME | --recipe ID...) " \
               "[--recipes FILE] [--profiles FILE] [--verify] | --print-stamp (--profile NAME | --recipe ID...) | --version"
-
-void mz_fail(const char *fmt, ...) {
-    va_list ap;
-    fputs("recaulk-materialize: ", stderr);
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    va_end(ap);
-    fputc('\n', stderr);
-    exit(1);
-}
 
 static int usage(char *err, size_t errlen, const char *why, const char *what) {
     if (why)
