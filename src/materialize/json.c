@@ -132,6 +132,10 @@ static struct mz_json *container(struct p *p, int obj) {
             if (!k) return NULL;
             key = k->s;
             free(k);
+            /* spec: README.md "Materializing an SDK view" -- CMake's reader keeps the last of two equal keys and
+               this one would keep the first, so neither is trusted: a repeated key is refused */
+            for (size_t i = 0; i < j->len; i++)
+                if (!strcmp(j->k[i], key)) { free(key); return bad(p, "a key appears twice in one object"); }
             ws(p);
             if (p->s >= p->end || *p->s != ':') return bad(p, "expected ':'");
             p->s++;

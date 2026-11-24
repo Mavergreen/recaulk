@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     }
 
     printf("== json_refusals\n");
-    const char *badv[] = {"{\"a\":", "{\"a\":1} x", "\"\\u0000\"", "[1,]", "{\"a\" 1}", "\"\\ud83d\"", "\"\x01\""};
+    const char *badv[] = {"{\"a\":", "{\"a\":1} x", "\"\\u0000\"", "[1,]", "{\"a\" 1}", "\"\\ud83d\"", "\"\x01\"", "{\"a\":1,\"a\":2}", "[{\"x\":{\"k\":1,\"k\":1}}]"};
     for (size_t i = 0; i < sizeof badv / sizeof *badv; i++) {
         err[0] = 0;
         CHECK(mz_json_parse(badv[i], strlen(badv[i]), err, sizeof err) == NULL, "accepted bad JSON #%zu", i);

@@ -5,6 +5,7 @@
 #include "materialize.h"
 #include <dirent.h>
 #include <errno.h>
+#include <signal.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,23 @@ static void rm_tree(const char *path) {
 
 static void cleanup(void) {
     if (stage) rm_tree(stage);
+}
+
+/* platform: a signal's default action skips atexit; remove the stage, then die of the same signal */
+static void on_signal(int sig) {
+    cleanup();
+    signal(sig, SIG_DFL);
+    raise(sig);
+}
+
+static void catch_signals(void) {
+    static const int sigs[] = {SIGHUP, SIGINT, SIGTERM};
+    for (size_t i = 0; i < sizeof sigs / sizeof *sigs; i++) {
+        struct sigaction old;
+        /* platform: a signal the parent ignored (a background job's SIGINT) stays ignored */
+        if (!sigaction(sigs[i], NULL, &old) && old.sa_handler == SIG_IGN) continue;
+        signal(sigs[i], on_signal);
+    }
 }
 
 static int cmp_str(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
@@ -115,10 +133,22 @@ int mz_settings_json(const char *sdk_real, char **json) {
         if (plist_string(plist, keys[i], vals[i], sizeof vals[i]))
             mz_fail("%s has no plain string %s, which SDKSettings.json needs", p, keys[i]);
     free(plist);
-    size_t len = 128 + strlen(vals[0]) + strlen(vals[1]) + strlen(vals[2]);
-    *json = mz_xmalloc(len);
-    mz_path(*json, len, "{\"CanonicalName\":\"%s\",\"MaximumDeploymentTarget\":\"%s\",\"Version\":\"%s\"}\n",
-             vals[0], vals[1], vals[2]);
+    /* each value as a JSON string: a plist string may hold " or \ */
+    FILE *f = tmpfile();
+    if (!f) mz_fail("cannot make a temporary file: %s", strerror(errno));
+    for (int i = 0; i < 3; i++) {
+        fputs(i ? ",\"" : "{\"", f);
+        fputs(keys[i], f);
+        fputs("\":", f);
+        mz_json_write_string(f, vals[i], strlen(vals[i]));
+    }
+    fputs("}\n", f);
+    long len = ftell(f);
+    if (len < 0 || fseek(f, 0, SEEK_SET)) mz_fail("cannot read back SDKSettings.json");
+    *json = mz_xmalloc((size_t)len + 1);
+    if (fread(*json, 1, (size_t)len, f) != (size_t)len) mz_fail("cannot read back SDKSettings.json");
+    (*json)[len] = 0;
+    fclose(f);
     return 0;
 }
 
@@ -169,9 +199,44 @@ static const char *identity_differs(const struct mz_json *st, const char *profil
     return NULL;
 }
 
-static void verify_tree(const char *out, const struct mz_json *st) {
+static char **list_dir(const char *dir, size_t *n);
+static void walk_files(const char *base, const char *rel, char ***v, size_t *n, size_t *cap);
+
+static void verify_tree(const char *out, const struct mz_json *st, const char *sdk_real) {
     const struct mz_json *files = mz_json_get(st, "files");
     if (!files || files->t != MZ_OBJ) mz_fail("%s/stamp.json has no files", out);
+    /* every regular file is the stamp or one it hashes */
+    char **found = NULL;
+    size_t nfound = 0, cap = 0;
+    walk_files(out, "", &found, &nfound, &cap);
+    for (size_t i = 0; i < nfound; i++) {
+        if (strcmp(found[i], "stamp.json") && !mz_json_get(files, found[i]))
+            mz_fail("%s/%s is not in its stamp; remove %s to regenerate", out, found[i], out);
+        free(found[i]);
+    }
+    free(found);
+    /* the view holds one link per SDK entry, each to that entry, and SDKSettings.json */
+    char view[PATH_MAX];
+    mz_path(view, sizeof view, "%s/sdk/%s", out, strrchr(sdk_real, '/') + 1);
+    size_t nv, ns;
+    char **ve = list_dir(view, &nv), **se = list_dir(sdk_real, &ns);
+    for (size_t i = 0; i < nv; i++) {
+        char p[PATH_MAX], want[PATH_MAX], got[PATH_MAX];
+        mz_path(p, sizeof p, "%s/%s", view, ve[i]);
+        mz_path(want, sizeof want, "%s/%s", sdk_real, ve[i]);
+        ssize_t gl = readlink(p, got, sizeof got - 1);
+        if (gl >= 0) got[gl] = 0;
+        int in_sdk = 0;
+        for (size_t k = 0; k < ns; k++) in_sdk |= !strcmp(se[k], ve[i]);
+        if (in_sdk ? (gl < 0 || strcmp(got, want)) : strcmp(ve[i], "SDKSettings.json"))
+            mz_fail("%s/sdk/%s/%s is not the link it was made as; remove %s to regenerate", out,
+                    strrchr(sdk_real, '/') + 1, ve[i], out);
+    }
+    if (nv < ns) mz_fail("%s/sdk lacks a link to an SDK entry; remove %s to regenerate", out, out);
+    for (size_t i = 0; i < nv; i++) free(ve[i]);
+    for (size_t i = 0; i < ns; i++) free(se[i]);
+    free(ve);
+    free(se);
     for (size_t i = 0; i < files->len; i++) {
         char p[PATH_MAX], hex[65];
         mz_path(p, sizeof p, "%s/%s", out, files->k[i]);
@@ -210,7 +275,7 @@ int mz_existing_out(const struct mz_args *a, const char *ids_json, const char *d
     struct mz_json *ids = mz_json_parse(ids_json, strlen(ids_json), err, sizeof err);
     const char *k = identity_differs(stj, a->profile, ids, digest, sdk_real, given, out);
     if (k) mz_fail("--out %s holds a tree made for another %s; remove it or use another --out", a->out, k);
-    if (a->verify) verify_tree(a->out, stj);
+    if (a->verify) verify_tree(a->out, stj, sdk_real);
     exit(0);
 }
 
@@ -274,6 +339,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
         mz_fail("--out's parent %s does not exist", *parent ? parent : "/");
 
     mz_path(tmp, sizeof tmp, "%s.tmp.XXXXXX", out);
+    catch_signals();
     if (!mkdtemp(tmp)) mz_fail("cannot make a staging directory beside %s: %s", out, strerror(errno));
     stage = mz_xstrdup(tmp);
     atexit(cleanup);

@@ -139,6 +139,34 @@ mz --sdk "$GIVEN" --out "$O" --profile t
 mz --sdk "$GIVEN" --out "$O" --profile t --verify
 refuse verify usr/include/stdio.h
 
+echo "== verify_sees_extra_files_and_links (review M13)"
+O2="$d/o-verify"
+mz --sdk "$GIVEN" --out "$O2" --profile t
+: > "$O2/headers/usr/include/extra.h"
+mz --sdk "$GIVEN" --out "$O2" --profile t --verify
+refuse verify_extra_file headers/usr/include/extra.h
+rm "$O2/headers/usr/include/extra.h"
+mz --sdk "$GIVEN" --out "$O2" --profile t --verify
+[ "$rc" = 0 ] || bad "--verify refused an untouched tree: $(cat "$d/err")"
+rm "$O2/sdk/MacOSX10.9.sdk/usr"; ln -s /usr "$O2/sdk/MacOSX10.9.sdk/usr"
+mz --sdk "$GIVEN" --out "$O2" --profile t --verify
+refuse verify_link sdk/MacOSX10.9.sdk/usr
+
+echo "== trailing_slash_names_the_link (review M14)"
+ln -s "$O2" "$d/olink"
+mz --sdk "$GIVEN" --out "$d/olink/" --profile t
+refuse trailing_slash 'symbolic link'
+
+echo "== settings_json_escapes (review M10)"
+sh "$F/make-sdk.sh" "$d/s4"
+P4="$d/s4/MacOSX10.9.sdk/SDKSettings.plist"
+sed 's|<string>OS X 10.9</string>|<string>OS X 10.9</string>|; s|^\(	<key>Version</key>\)$|\1|' "$P4" > "$d/p4"
+awk '/<key>Version<\/key>/ { print; getline; print "	<string>10.9 \"b\" \\ 1</string>"; next } { print }' "$d/p4" > "$P4"
+mz --sdk "$d/s4/MacOSX10.9.sdk" --out "$d/o-settings" --profile t
+[ "$rc" = 0 ] || bad "a Version holding a quote and a backslash was refused: $(cat "$d/err")"
+grep -qF '"Version":"10.9 \"b\" \\ 1"' "$d/o-settings/sdk/MacOSX10.9.sdk/SDKSettings.json" \
+  || bad "SDKSettings.json does not escape the Version: $(cat "$d/o-settings/sdk/MacOSX10.9.sdk/SDKSettings.json")"
+
 echo "== out_refusals (RF3)"
 mz --sdk "$GIVEN" --out "$d/nope/out" --profile t
 refuse missing_parent "$d/nope"

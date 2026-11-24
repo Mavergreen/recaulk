@@ -48,6 +48,25 @@ for profile in swift-foundation swift-appkit; do
   cmp -s "$d/module.names" "$d/rm.names" || { bad "$profile: the overlays map different names"; diff "$d/module.names" "$d/rm.names" | head -5; }
 done
 
+echo "== interrupted_leaves_nothing (review M12)"
+# platform: sh starts a background job with SIGINT ignored, so INT cannot reach it here; TERM and HUP take the same path
+for sig in TERM HUP; do
+  "$d/rm" --sdk "$SDK" --out "$d/int-$sig" --profile swift-appkit --recipes "$PWD/sdk-metadata/recipes.json" \
+    --profiles "$PWD/sdk-metadata/profiles.json" 2>"$d/int.err" &
+  pid=$!
+  while [ -z "$(ls -d "$d/int-$sig".tmp.* 2>/dev/null)" ] && kill -0 "$pid" 2>/dev/null; do :; done
+  kill -"$sig" "$pid" 2>/dev/null || true
+  wait "$pid" && rc=0 || rc=$?
+  if [ "$rc" = 0 ]; then
+    echo "   ($sig arrived after it finished; nothing to check)"
+  elif [ -s "$d/int.err" ]; then
+    bad "the SIG$sig run failed on its own: $(cat "$d/int.err")"
+  else
+    [ -z "$(ls -d "$d/int-$sig".tmp.* 2>/dev/null)" ] || bad "SIG$sig left $(ls -d "$d/int-$sig".tmp.*)"
+    [ ! -e "$d/int-$sig" ] || bad "SIG$sig left a published $d/int-$sig"
+  fi
+done
+
 echo "== compiles_through_the_view (RF5)"
 probe=tests/fixtures/sdk-probes-consumer/appkit-subclasses.m
 V="$d/rm-swift-appkit/sdk/MacOSX10.9.sdk"
