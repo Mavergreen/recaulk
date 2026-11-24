@@ -291,7 +291,8 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     }
 
     /* the overlay: every header's names under the view, the SDK as given and its real path */
-    struct names ns = {0};
+    struct names ns;
+    memset(&ns, 0, sizeof ns);
     const char *roots[] = {view_out, given, sdk_real};
     for (size_t i = 0; i < nh; i++) {
         char ext[PATH_MAX];

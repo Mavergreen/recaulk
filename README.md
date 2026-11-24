@@ -859,6 +859,10 @@ recaulk-materialize --sdk /usr/local/mavergreen/sdk109/SDKs/MacOSX10.9.sdk --out
 - `stamp.json`: the profile, the recipe ids, a SHA-256 of the selected recipes, the SDK's real path, the output
   format and every file's SHA-256.
 
+On Linux, unpack the release's `recaulk-<version>-linux-x86_64.tar.gz` (listed in its `SHA256SUMS`) and run
+`opt/mavergreen/recaulk/bin/recaulk-materialize`, a static binary; the tarball also carries the `.pkg`'s `lib/`,
+`include/` and `share/`.
+
 It runs on 10.9.5 without the Command Line Tools, on a modern Mac and on Linux, with nothing else installed, and
 reads `recipes.json` and `profiles.json` from `../share/sdk-metadata/` beside itself (`--recipes`, `--profiles`
 override them). `--recipe ID` (repeatable) selects recipes instead of a profile.
