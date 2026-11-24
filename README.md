@@ -572,7 +572,8 @@ that links `librecaulk.a` can take the members its link pulls in (ld64's `-why_l
 `share/sdk-metadata/recipes.json` is data, not code: recipes that let an Objective-C target built
 against the pinned 10.9 SDK see declarations a later SDK added, without changing the SDK. Recaulk owns
 what each recipe means; shipyard's `MavericksSDKMetadata.cmake` checks a recipe against the SDK's bytes,
-writes the edited headers to a scratch overlay, and opts one target into it. Nothing here is linked.
+writes the edited headers to a scratch overlay, and opts one target into it; `recaulk-materialize` (below) does
+the same without CMake. Nothing here is linked.
 
 The file is one JSON object, schema 1:
 
@@ -836,6 +837,41 @@ run. The hand file's `base_edits` rewrite exact text of a header's existing reci
 type) before the facts are combined. `tests/swift-appkit-facts.sh` checks the facts are current and that every row
 of the table has one; `tests/swift-appkit-recipes.sh` checks the recipes and both profiles are current;
 `tests/swift-appkit-availability.sh` checks `NSWindowStyleMaskFullSizeContentView`'s availability.
+
+### Materializing an SDK view
+
+`bin/recaulk-materialize` applies a profile's recipes to your own copy of the 10.9 SDK. Apple's headers are never
+shipped, so the edited copies are made on your machine, from your SDK, and the SDK itself is never written:
+
+```sh
+recaulk-materialize --sdk /usr/local/mavergreen/sdk109/SDKs/MacOSX10.9.sdk --out ~/Library/Caches/me/view \
+  --profile swift-foundation
+```
+
+`--out` must not exist; its parent must. Into it go:
+
+- `sdk/MacOSX10.9.sdk/`, links to each of the SDK's top-level entries plus an `SDKSettings.json` made from the
+  SDK's own `SDKSettings.plist` (unless the SDK has one). Pass this as `-isysroot` or swift's `-sdk`: swiftc reads
+  the SDK version only from `SDKSettings.json` on disk.
+- `headers/`, each rewritten header, and `overlay.json`, a clang VFS overlay (`-ivfsoverlay`) mapping each header's
+  paths under `sdk/MacOSX10.9.sdk`, under the SDK as you gave it, and under its real path, so it works whichever of
+  the three your sysroot is. It is case-sensitive on every host.
+- `stamp.json`: the profile, the recipe ids, a SHA-256 of the selected recipes, the SDK's real path, the output
+  format and every file's SHA-256.
+
+It runs on 10.9.5 without the Command Line Tools, on a modern Mac and on Linux, with nothing else installed, and
+reads `recipes.json` and `profiles.json` from `../share/sdk-metadata/` beside itself (`--recipes`, `--profiles`
+override them). `--recipe ID` (repeatable) selects recipes instead of a profile.
+
+A second run on a complete `--out` with the same profile, recipes, SDK and format reads only `stamp.json` and exits
+0; `--verify` also re-hashes every file. An `--out` made for anything else is refused, never replaced: remove it,
+or keep one `--out` per cache key. `--print-stamp --profile NAME` prints that key's Recaulk half on one line, without
+the SDK: format, profile, ids and recipes, but not Recaulk's release, so a release that leaves a profile alone keeps
+every cache. The tree is built beside `--out` and renamed into place, so concurrent runs never see half of one.
+
+It exits 0 when `--out` is complete, 1 with one line on stderr naming the header, recipe, path or stamp key at
+fault, and 2 on a usage error. The output for the same inputs and `--out` is byte-identical; a change to any output
+byte bumps the format (`tests/materialize-publish.sh` holds a golden tree).
 
 ## Tests
 

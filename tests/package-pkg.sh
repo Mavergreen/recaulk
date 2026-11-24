@@ -53,6 +53,22 @@ need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/recipes.json'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/profiles.json'
+# spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md "Delivery" -- the materializer beside the recipes it
+#       reads: universal where the compiler can target arm64 (every release build), and it finds ../share/sdk-metadata
+need 'usr/local/mavergreen/recaulk/bin/recaulk-materialize'
+RM="$tmp/files/usr/local/mavergreen/recaulk/bin/recaulk-materialize"
+[ "$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'bin/recaulk-materialize$' | cut -c1-10)" = -rwxr-xr-x ] \
+  || { echo "FAIL: bin/recaulk-materialize is not 0755 in the payload"; exit 1; }
+recaulk_tools
+archs="$("$LIPO" -archs "$RM")"
+case " $archs " in *" x86_64 "*) ;; *) echo "FAIL: recaulk-materialize has no x86_64 slice: $archs"; exit 1 ;; esac
+if "$CL/bin/clang" --print-targets 2>/dev/null | grep -q aarch64; then
+  case " $archs " in *" arm64 "*) ;; *) echo "FAIL: recaulk-materialize has no arm64 slice: $archs"; exit 1 ;; esac
+fi
+if [ "$(uname -s)" = Darwin ]; then
+  "$RM" --print-stamp --profile swift-foundation >/dev/null \
+    || { echo "FAIL: the packaged recaulk-materialize does not find its share/sdk-metadata"; exit 1; }
+fi
 # platform: the pkg installs as root, and mktemp -d makes 0700 directories: 20261107.2 shipped
 #           share/sdk-metadata 0700 root, which no product build could read
 modes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'share/sdk-metadata' | cut -c1-10 | tr '\n' ' ')"

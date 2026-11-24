@@ -40,9 +40,17 @@ case "$mode" in
     . "$SELF/lib.sh"; recaulk_tools
     SDK="${SDK:-$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh")}"
     mac_slice x86_64 10.9 "$SDK" "$out.x86_64"
-    mac_slice arm64 11.0 "$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch arm64)" "$out.arm64"
-    "$LIPO" -create "$out.x86_64" "$out.arm64" -output "$out"
-    rm -f "$out.x86_64" "$out.arm64" ;;
+    # platform: 10.9's native clang22 is built for X86 alone (clang-22's native-bootstrap); the Linux archive the
+    #           release builds with, and clang22-cross, target AArch64 too. A native 10.9 build is a developer's,
+    #           never a release's, so it ships the x86_64 slice and says so.
+    if "$CC" --print-targets 2>/dev/null | grep -q aarch64; then
+      mac_slice arm64 11.0 "$(sh "$SHIPYARD_SCRIPTS/fetch_sdk.sh" --arch arm64)" "$out.arm64"
+      "$LIPO" -create "$out.x86_64" "$out.arm64" -output "$out"
+      rm -f "$out.x86_64" "$out.arm64"
+    else
+      echo "build-materialize: $CC cannot target arm64; $out is x86_64 only" >&2
+      mv "$out.x86_64" "$out"
+    fi ;;
   linux)
     # shellcheck disable=SC2086
     ${HOST_CC:-cc} -static $warn "$ver" $srcs -o "$out" ;;
