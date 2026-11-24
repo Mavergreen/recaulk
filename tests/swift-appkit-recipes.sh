@@ -99,6 +99,11 @@ for h, s in want.items():                                                       
 for h, n in [('NSEvent.h', 'NSEventModifierFlags'), ('NSView.h', 'NSAutoresizingMaskOptions'), ('NSWindow.h', 'NSWindowStyleMask'),
              ('NSText.h', 'NSTextAlignment'), ('NSGraphics.h', 'NSCompositingOperation')]:
     assert 'typedef NSUInteger %s;' % n not in text[h], (h, n)
+# spec: the formal-protocol row: 11.3 hides NSObject's controlTextDidChange: category from Swift 4.2+, so a Swift
+#       NSTextFieldDelegate implements controlTextDidChange(_:) without override (category_hidden_from_swift)
+assert '#if __swift__ < 40200\n@interface NSObject(NSControlSubclassNotifications)' in text['NSControl.h'], 'category_hidden_from_swift'
+# spec: NSUserInterfaceItemIdentifier is a swift_wrapper struct; the table view's lookup takes it (identifier_typed)
+assert '- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner' in text['NSTableView.h'], 'identifier_typed'
 for v in ('NSTrackingMouseEnteredAndExited', 'NSTrackingActiveAlways', 'NSTrackingEnabledDuringMouseDrag'):
     assert text['NSTrackingArea.h'].count(v) == 1, v
 PY

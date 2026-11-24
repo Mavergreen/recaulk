@@ -806,7 +806,9 @@ so a Swift compile that uses AppKit selects this one profile. It covers the 30 A
 - `NSImageName` and `NSNibName` as `NS_SWIFT_BRIDGED_TYPEDEF`, and `NSFontDescriptorAttributeName` and
   `NSUserInterfaceItemIdentifier` as extensible string enums;
 - `NS_DESIGNATED_INITIALIZER` on `NSView`'s and `NSViewController`'s initializers, and `controlTextDidChange:` and
-  its siblings as optional methods of `NSControlTextEditingDelegate`.
+  its siblings as optional methods of `NSControlTextEditingDelegate`, with NSObject's informal category of them
+  hidden from Swift 4.2 and later as 11.3 hides it;
+- `-[NSTableView makeViewWithIdentifier:owner:]` taking `NSUserInterfaceItemIdentifier`.
 
 No recipe carries `NS_SWIFT_NAME`: swift's own AppKit apinotes name things. Its recipes on headers that already had
 recipes contain them, so an Objective-C consumer can switch to them. Two changes reach such a consumer: an override

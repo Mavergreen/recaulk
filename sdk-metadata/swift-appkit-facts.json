@@ -1490,6 +1490,12 @@
    },
    {
     "kind": "replace",
+    "old": "@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n",
+    "offset": 3908,
+    "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#if __swift__ < 40200\n@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n#endif\n"
+   },
+   {
+    "kind": "replace",
     "old": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n",
     "offset": 4136,
     "new": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n"
@@ -5708,6 +5714,11 @@
     "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
    },
    {
+    "kind": "insert",
+    "offset": 7836,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
     "kind": "property",
     "name": "dataSource",
     "class": "NSTableView",
@@ -6192,6 +6203,12 @@
     "old": "- (id)viewAtColumn:(NSInteger)column row:(NSInteger)row makeIfNecessary:(BOOL)makeIfNecessary NS_AVAILABLE_MAC(10_7);",
     "offset": 34833,
     "new": "- (__kindof NSView *)viewAtColumn:(NSInteger)column row:(NSInteger)row makeIfNecessary:(BOOL)makeIfNecessary NS_AVAILABLE_MAC(10_7);"
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)makeViewWithIdentifier:(NSString *)identifier owner:(id)owner NS_AVAILABLE_MAC(10_7);",
+    "offset": 36258,
+    "new": "- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner NS_AVAILABLE_MAC(10_7);"
    },
    {
     "kind": "property",

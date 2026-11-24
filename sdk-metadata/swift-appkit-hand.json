@@ -28,6 +28,11 @@
    "before": "@interface NSNib : NSObject <NSCoding> {"
   },
   {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSTableView.h",
+   "typedef": "NSUserInterfaceItemIdentifier",
+   "before": "@interface NSTableView : NSControl"
+  },
+  {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSFontDescriptor.h",
    "typedef": "NSFontDescriptorAttributeName",
    "before": "@class NSMutableDictionary, NSDictionary, NSArray, NSSet, NSAffineTransform;"
@@ -53,6 +58,10 @@
   {
    "class": "NSMenu",
    "selector": "itemArray"
+  },
+  {
+   "class": "NSTableView",
+   "selector": "makeViewWithIdentifier:owner:"
   },
   {
    "class": "NSTableView",
@@ -135,6 +144,11 @@
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
    "old": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n",
    "new": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n"
+  },
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSControl.h",
+   "old": "@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n",
+   "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#if __swift__ < 40200\n@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n#endif\n"
   },
   {
    "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSUserInterfaceItemIdentification.h",

@@ -9494,6 +9494,10 @@
           "new": "@property BOOL refusesFirstResponder;"
         },
         {
+          "old": "@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n#if __swift__ < 40200\n@interface NSObject(NSControlSubclassNotifications)\n\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n\n@end\n#endif\n"
+        },
+        {
           "old": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n",
           "new": "@protocol NSControlTextEditingDelegate <NSObject>\n@optional\n\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n- (void)controlTextDidBeginEditing:(NSNotification *)obj;\n- (void)controlTextDidEndEditing:(NSNotification *)obj;\n- (void)controlTextDidChange:(NSNotification *)obj;\n"
         },
@@ -11768,6 +11772,10 @@
           "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n\n@class NSTableHeaderView, NSTableColumn, NSMutableArray, NSDictionary, NSIndexSet, NSMutableIndexSet, NSTableRowView, NSNib;\n"
         },
         {
+          "old": "@interface NSTableView : NSControl <NSUserInterfaceValidations, NSTextViewDelegate, NSDraggingSource>\n",
+          "new": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier\n#define __RECAULK_TYPEDEF_NSUserInterfaceItemIdentifier 1\ntypedef NSString *NSUserInterfaceItemIdentifier NS_EXTENSIBLE_STRING_ENUM;\n#endif\n@interface NSTableView : NSControl <NSUserInterfaceValidations, NSTextViewDelegate, NSDraggingSource>\n"
+        },
+        {
           "old": "- (void)setDataSource:(id <NSTableViewDataSource>)aSource;\n",
           "new": "\n"
         },
@@ -12034,6 +12042,10 @@
         {
           "old": "- (id)viewAtColumn:(NSInteger)column row:(NSInteger)row makeIfNecessary:(BOOL)makeIfNecessary NS_AVAILABLE_MAC(10_7);",
           "new": "- (__kindof NSView *)viewAtColumn:(NSInteger)column row:(NSInteger)row makeIfNecessary:(BOOL)makeIfNecessary NS_AVAILABLE_MAC(10_7);"
+        },
+        {
+          "old": "- (id)makeViewWithIdentifier:(NSString *)identifier owner:(id)owner NS_AVAILABLE_MAC(10_7);",
+          "new": "- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner NS_AVAILABLE_MAC(10_7);"
         },
         {
           "old": "- (BOOL)floatsGroupRows NS_AVAILABLE_MAC(10_7);",
