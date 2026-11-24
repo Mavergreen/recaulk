@@ -46,6 +46,12 @@ cp -R "$OUT/kfix/RecaulkKernelFixes.kext" "$STAGE/Library/Extensions/"
 find "$STAGE/Library/Extensions/RecaulkKernelFixes.kext" -type d -exec chmod 755 {} +
 find "$STAGE/Library/Extensions/RecaulkKernelFixes.kext" -type f -exec chmod 644 {} +
 chmod 755 "$STAGE/Library/Extensions/RecaulkKernelFixes.kext/Contents/MacOS/RecaulkKernelFixes"
+# spec: README.md "The kernel-fixes kext" -- the postinstall lists it in OSKextSigExceptionList through this helper, and
+#       shipyard's uninstall runs the pre-uninstall hook, which unlists it
+mkdir -p "$TREE/libexec/recaulk" "$TREE/libexec/mavergreen"
+cp "$MAVERICKS_ROOT/packaging/kext-exception.sh" "$TREE/libexec/recaulk/kext-exception.sh"
+cp "$MAVERICKS_ROOT/packaging/pre-uninstall.sh" "$TREE/libexec/mavergreen/pre-uninstall"
+chmod 755 "$TREE/libexec/recaulk/kext-exception.sh" "$TREE/libexec/mavergreen/pre-uninstall"
 mkdir -p "$STAGE/Library/LaunchDaemons"
 cp "$MAVERICKS_ROOT/packaging/kernelfixes-loader.plist" "$STAGE/Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist"
 chmod 644 "$STAGE/Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist"

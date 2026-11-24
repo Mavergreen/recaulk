@@ -64,9 +64,16 @@ st() { sysctl -n debug.recaulk_kfix.kqueue_scan_restart 2>/dev/null || echo abse
 
 case "${RECAULK_KFIX_ROUND:-fresh}" in
 fresh)
-  # spec: README.md "The kernel-fixes kext" -- the pkg's postinstall loads its LaunchDaemon, which loads the
-  #       installed kext; on a guest whose install did not, this loads it the same way
+  # spec: README.md "The kernel-fixes kext" -- the pkg's postinstall lists the kext in OSKextSigExceptionList at its
+  #       version, restarts kextd and loads its LaunchDaemon, which loads the installed kext: on stock 10.9 (no
+  #       kext-dev-mode) all of that must work for it to be loaded here. If it is not, load it anyway to test the rest.
+  xl=/System/Library/Extensions/AppleKextExcludeList.kext/Contents/Info.plist
+  pv() { awk -v k="<key>$2</key>" 'index($0, k) { getline; gsub(/.*<string>|<\/string>.*/, ""); print; f = 1; exit } END { if (!f) print "absent" }' "$1" 2>/dev/null; }
+  kv="$(pv /Library/Extensions/RecaulkKernelFixes.kext/Contents/Info.plist CFBundleVersion)"
+  xv="$(pv "$xl" "$KB")"
+  [ "$xv" = "$kv" ] || bad "sig_exception: OSKextSigExceptionList lists $KB at $xv, the installed kext is $kv"
   if ! loaded $KB; then
+    bad "loaded_by_install: the pkg's install did not load it: $(grep -i -e kernelfixes -e 'invalid signature' /var/log/system.log | tail -3)"
     sudo -n kextload /Library/Extensions/RecaulkKernelFixes.kext > "$d/load.log" 2>&1 || bad "kextload failed: $(cat "$d/load.log")"
   fi
   [ "$(st)" = 1 ] || bad "applied: debug.recaulk_kfix.kqueue_scan_restart is $(st), want 1"
