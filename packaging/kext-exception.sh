@@ -3,10 +3,10 @@
 # spec: README.md "The kernel-fixes kext" -- 10.9's kextd loads an unsigned kext from /Library/Extensions only if its
 #       bundle id is in OSKextSigExceptionList, in AppleKextExcludeList.kext's Info.plist (Wowfunhappy's mechanism,
 #       gist ee66f57e5e7a04e42a7a5e2b98a10874). Apple ships that file as XML with one <key>/<string> pair per entry.
+#       Every other byte stays; the file is replaced in one rename, mode 644. A plist that is not XML or has no
+#       OSKextSigExceptionList is refused and left alone.
 #   usage: kext-exception.sh add PLIST BUNDLE_ID VERSION   add the entry, or replace its version
 #          kext-exception.sh remove PLIST BUNDLE_ID        remove it; absent is fine
-# Every other byte stays; the file is replaced in one rename, mode 644. A plist that is not XML or has no
-# OSKextSigExceptionList is refused and left alone.
 set -eu
 op="${1:-}"; P="${2:-}"; id="${3:-}"; ver="${4:-}"
 case "$op" in
