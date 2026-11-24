@@ -506,7 +506,24 @@ UUID matches the file's. It writes only over the bytes it expects, with every CP
   (blueboxd/chromium-legacy#44). The fix returns `EBADF` instead, as 10.12 and later do. The program that called
   `kevent` sees `EBADF` and must cope with it: Chromium treats it as fatal, so the helper exits where the kernel
   used to panic (blueboxd/chromium-legacy#97). This fix is ported from Wowfunhappy's KQueueScanContinuePatch,
-  made with krackers and declared CC-0 (gist 8212f5bea4c601ac9a6297789f232321, comment 6488041).
+  made with krackers and declared CC-0 (gist 8212f5bea4c601ac9a6297789f232321, comment 6488041). With
+  `wait_result_prepost` applied it should never fire, so it is a backstop: where the kernel would have panicked it
+  prints the panic's own message, `"kqueue_scan_continue: - invalid wait_result (3)"@...kern_event.c:2167` (with no
+  newline, so the system log joins it to the line after), and returns `EBADF`. His kext's silent replacement counts
+  as this fix already applied.
+- **`wait_result_prepost`**: the cause of that panic. `wait_queue_assert_wait64_locked` returns `THREAD_AWAKENED`
+  for a wait queue set that already has a post, without storing it in the thread's `wait_result`
+  (`osfmk/kern/wait_queue.c`, line 1199). `kqueue_scan` ignores the return and blocks; `thread_block`, finding
+  the thread still runnable, runs `kqueue_scan_continue` with whatever the thread's previous wait left there. A
+  leftover `THREAD_RESTART` (a Mach receive on a port another thread destroyed) is the panic above; a leftover
+  `THREAD_TIMED_OUT` makes a `kevent` with no timeout return 0 events, and `THREAD_INTERRUPTED` makes it fail
+  `EINTR`, with no signal. It takes a kqueue watching a Mach port set (`EVFILT_MACHPORT`) whose message lands
+  while `kevent` is between its scan and its wait. The fix stores `THREAD_AWAKENED` before returning it, as 10.10
+  does (xnu-2782.1.97). The function has no symbol, so the site is `_wait_queue_set_unlink_one+0x13e`; the 43
+  bytes it rewrites test the same bits, in one comparison, to make room for the store. Found by Wowfunhappy and
+  krackers (gist 8212f5bea4c601ac9a6297789f232321, comment 6490893). `tests/kfix-wait-result-kit.sh` builds the
+  kit that proves it on a disposable guest: the bug reproduced without the fix, the panic turned to `EBADF` by
+  the backstop alone, and neither with both.
 - **`signal_target_exit`**: `psignal_internal` picks a thread to signal without a reference, then calls
   `thread_abort_safely` on it (`bsd/kern/kern_sig.c`). If the thread exits and is freed in between, the
   kernel panics `trying to interlock destroyed mutex`. It takes a thread asleep in the kernel, picked for a
@@ -529,8 +546,8 @@ Its log lines begin `RecaulkKernelFixes: `:
 - `no fixes for this kernel (UUID <hex>)`;
 - `not starting: this kernel is Darwin <n> ...`.
 
-`sysctl debug.recaulk_kfix.<fix>` reports each fix: 0 not applied, 1 applied, and 2 applied by another kext
-(`kqueue_scan_restart` only).
+`sysctl debug.recaulk_kfix.<fix>` reports each fix (`kqueue_scan_restart`, `wait_result_prepost`,
+`signal_target_exit`): 0 not applied, 1 applied, and 2 applied by another kext (`kqueue_scan_restart` only).
 
 The boot-arg `recaulk_kfix=0` turns every fix off. `recaulk_kfix=-<fix>[,-<fix>]` turns off the fixes named.
 A Safe Boot (hold Shift) never loads it, and if something loads it anyway it applies nothing.
@@ -557,7 +574,7 @@ entry. This is Wowfunhappy's mechanism (gist ee66f57e5e7a04e42a7a5e2b98a10874).
 `KEXT_SRC=src/kfix KEXT_NAME=RecaulkKernelFixes sh build/build-kext.sh OUT` builds it like RecaulkKPI.
 `tests/kfix-engine-test.sh` checks the engine on synthetic bytes, and on 13F1911 checks the pinned sites in
 `/mach_kernel` by reading the file. `tests/kfix-runtime-test.sh` loads the kext on the disposable 10.9.5 guest
-only. There it checks that both fixes apply, `kevent` still works, and the kext refuses to unload. For
+only. There it checks that all three fixes apply, `kevent` still works, and the kext refuses to unload. For
 `signal_target_exit` it loads a test-only kext, `tests/kext/widen`, that delays the abort 5 ms, then classifies the
 thread it would abort and skips the abort if that thread is already freed; `tests/c/kfix_exit_race.c`, the race's minimal shape, then makes 200 such
 picks. Unfixed, most picked threads are already freed (182 of 200 on 13F1911); fixed, none are. It needs two or more CPUs: on one,

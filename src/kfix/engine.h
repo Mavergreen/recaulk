@@ -9,7 +9,8 @@
 enum kf_state { KF_NOT_APPLIED = 0, KF_APPLIED = 1, KF_FOREIGN = 2 };
 
 /* a byte patch: at anchor+offset (or, while anchor is NULL, at a fixed unslid address the fix knows) the kernel
-   holds expect[0..len); applying writes replace[0..len) */
+   holds expect[0..len); applying writes replace[0..len). foreign, when not NULL, is another kext's replacement
+   for the same site, which also counts as the fix already applied. */
 struct kf_patch {
 	const char *name;
 	uint8_t uuid[16];
@@ -18,9 +19,11 @@ struct kf_patch {
 	const uint8_t *expect;
 	const uint8_t *replace;
 	size_t len;
+	const uint8_t *foreign;
 };
 
-/* 0 with *st KF_NOT_APPLIED (site holds expect) or KF_FOREIGN (site holds replace); otherwise ESRCH and *why */
+/* 0 with *st KF_NOT_APPLIED (site holds expect) or KF_FOREIGN (site holds replace or foreign); otherwise ESRCH and
+   *why */
 int kf_check_patch(const struct kf_patch *p, const uint8_t *site, enum kf_state *st, const char **why);
 /* 1 when the boot command line turns fix `name` off: recaulk_kfix=0, or a recaulk_kfix= list holding -name */
 int kf_bootarg_disabled(const char *cmdline, const char *name);

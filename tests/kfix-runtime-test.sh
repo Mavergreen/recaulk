@@ -78,6 +78,10 @@ fresh)
   fi
   [ "$(st)" = 1 ] || bad "applied: debug.recaulk_kfix.kqueue_scan_restart is $(st), want 1"
   sudo -n dmesg | grep -q 'RecaulkKernelFixes: kqueue_scan_restart: applied' || bad "applied: no 'kqueue_scan_restart: applied' line: $(sudo -n dmesg | grep RecaulkKernelFixes)"
+  # spec: README.md "The kernel-fixes kext" -- wait_result_prepost is applied beside it; tests/kfix-wait-result-kit.sh
+  #       proves what it changes, on a guest it may panic
+  wr="$(sysctl -n debug.recaulk_kfix.wait_result_prepost 2>/dev/null || echo absent)"
+  [ "$wr" = 1 ] || bad "prepost_applied: debug.recaulk_kfix.wait_result_prepost is $wr, want 1: $(sudo -n dmesg | grep 'RecaulkKernelFixes: wait_result_prepost')"
   # platform: 10.9's kextd logs an unsigned /Library/Extensions kext's load as "Invalid signature" and puts up a
   #           dialog naming it (kext_tools 10.9, checkKextSignature); none may name this bundle
   if grep -i 'signature' /var/log/system.log 2>/dev/null | grep -q 'RecaulkKernelFixes'; then

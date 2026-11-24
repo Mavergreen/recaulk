@@ -19,12 +19,14 @@ extern int printf(const char *, ...);
 
 
 int kf_kqueue_scan_restart_state = KF_NOT_APPLIED;
+int kf_wait_result_prepost_state = KF_NOT_APPLIED;
 
 static const struct {
 	const struct kf_patch *patch;
 	int *state;
 } kf_fixes[] = {
 	{ &kf_kqueue_scan_restart, &kf_kqueue_scan_restart_state },
+	{ &kf_wait_result_prepost, &kf_wait_result_prepost_state },
 };
 
 static void
@@ -49,7 +51,13 @@ kf_uuid_hex(char out[33], const uint8_t u[16])
 void
 kf_apply_all(void)
 {
+#ifdef RECAULK_KFIX_TEST_BACKSTOP_ONLY
+	/* the wait_result_prepost proof kit's backstop-only build (tests/kfix-wait-result-kit.sh): as if booted with the
+	   escape hatch, so one boot can test the backstop alone without changing the guest's boot-args */
+	const char *cmdline = "recaulk_kfix=-wait_result_prepost";
+#else
 	const char *cmdline = PE_state.bootArgs ? ((boot_args *)PE_state.bootArgs)->CommandLine : NULL;
+#endif
 	/* the patches' anchors, the hook's symbols, then two whose live addresses fix the slide */
 	struct rk_sym want[KF_NFIX + KF_STE_NSYMS + 2];
 	uint64_t live[KF_NFIX + KF_STE_NSYMS + 2];

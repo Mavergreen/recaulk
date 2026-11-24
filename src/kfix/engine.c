@@ -11,7 +11,7 @@ kf_check_patch(const struct kf_patch *p, const uint8_t *site, enum kf_state *st,
 		*st = KF_NOT_APPLIED;
 		return 0;
 	}
-	if (memcmp(site, p->replace, p->len) == 0) {
+	if (memcmp(site, p->replace, p->len) == 0 || (p->foreign != NULL && memcmp(site, p->foreign, p->len) == 0)) {
 		*st = KF_FOREIGN;
 		return 0;
 	}

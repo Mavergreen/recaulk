@@ -8,7 +8,8 @@ set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
 if compiling; then
-  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror tests/c/kfix_engine.c src/kfix/engine.c src/kext/core.c -o "$(tbin engine)"
+  "$CC" $FLAGS -arch x86_64 -Wall -Wextra -Werror -Isrc/kext tests/c/kfix_engine.c src/kfix/engine.c src/kext/core.c \
+    src/kfix/kqueue_scan_restart.c src/kfix/wait_result_prepost.c -o "$(tbin engine)"
   check_loads "$(tbin engine)"
 fi
 runtime_half

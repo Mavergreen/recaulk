@@ -7,6 +7,8 @@
 #define KF_UUID_13F1911 { 0x89, 0x26, 0xe5, 0x12, 0x67, 0x14, 0x34, 0xfc, 0xb2, 0x7c, 0x6a, 0xe9, 0x0e, 0xb5, 0x1d, 0x5e }
 extern const struct kf_patch kf_kqueue_scan_restart;
 extern int kf_kqueue_scan_restart_state;
+extern const struct kf_patch kf_wait_result_prepost;
+extern int kf_wait_result_prepost_state;
 #include "core.h"
 #define KF_STE_NSYMS 7
 extern const char *const kf_ste_syms[KF_STE_NSYMS];
