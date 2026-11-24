@@ -23,6 +23,9 @@ trap 'rm -rf "$W"' EXIT
 P="$W/root/opt/mavergreen/recaulk"
 mkdir -p "$P/bin"
 cp -R "$T/lib" "$T/include" "$T/share" "$P/"
+# spec: INGREDIENTS.md "Conformance deviations" -- librecaulk-cxxabi-exports.a defines C++ runtime vtables, an
+#       exception shipyard grandfathers in the .pkg alone; the tarball does not spread it
+rm -f "$P/lib/librecaulk-cxxabi-exports.a"
 RECAULK_VERSION="$VERSION" sh "$SELF/build-materialize.sh" linux "$P/bin/recaulk-materialize"
 chmod 755 "$P/bin/recaulk-materialize"
 find "$W/root" -type d -exec chmod 755 {} +

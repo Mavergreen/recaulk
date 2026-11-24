@@ -24,6 +24,7 @@ for f in bin/recaulk-materialize share/sdk-metadata/recipes.json share/sdk-metad
          lib/librecaulk-objc.a include/recaulk/MacportsLegacySupport.h share/recaulk/notices.tsv; do
   grep -q " $P/$f\$" "$d/list" || bad "the tarball lacks $P/$f"
 done
+grep -q " $P/lib/librecaulk-cxxabi-exports.a\$" "$d/list" && bad "the tarball carries librecaulk-cxxabi-exports.a, grandfathered in the .pkg alone"
 awk '{ print $NF }' "$d/list" | grep -v "^$P/" | grep -v '^opt/$\|^opt/mavergreen/$' && bad "the tarball holds something outside $P"
 awk '{ print $2 }' "$d/list" | grep -v '^0/0$' && bad "an entry is not owned by 0/0"
 grep " $P/bin/recaulk-materialize\$" "$d/list" | grep -q '^-rwxr-xr-x' || bad "bin/recaulk-materialize is not 0755"
