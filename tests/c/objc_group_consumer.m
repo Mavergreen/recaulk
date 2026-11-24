@@ -44,8 +44,10 @@ int main(int argc, char **argv) {
 		[NSColor labelColor];
 		[NSColor linkColor];
 		[NSGraphicsContext graphicsContextWithCGContext:NULL flipped:NO];
-		NSView *view = [[NSView alloc] init];
-		NSCell *cell = [[NSCell alloc] init];
+		/* receivers from sends whose declared return type names the class: alloc returns id, which leaves
+		   every send after it unresolved */
+		NSView *view = [[[NSApplication sharedApplication] mainWindow] contentView];
+		NSCell *cell = [[NSWindow standardWindowButton:NSWindowCloseButton forStyleMask:NSTitledWindowMask] cell];
 		[view setAccessibilityLabel:@"x"];
 		(void)[view accessibilityLabel];
 		[view setAccessibilityRole:@"x"];
