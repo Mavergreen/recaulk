@@ -60,7 +60,7 @@ expect no refs/heads/renovate/x workflow_dispatch false
 expect no refs/heads/feature workflow_dispatch true
 ver_publish refs/heads/main push false >/dev/null
 [ "$(sed -n 's/^ver=//p' "$tmp/out")" = 20261005.7 ] || { echo "the ver step must take its version from self-upstream-version.sh"; exit 1; }
-[ "$(grep -c "github.ref == 'refs/heads/main'" "$w")" -eq 2 ] || { echo "scan and publish jobs must each require github.ref == 'refs/heads/main'"; exit 1; }
+[ "$(grep -c "github.ref == 'refs/heads/main'" "$w")" -eq 3 ] || { echo "scan, publish and modern-smoke must each require github.ref == 'refs/heads/main'"; exit 1; }
 if grep -q 'dist/' "$w"; then
   grep -Eq '^dist/' .mavericks-intree || { echo "release.yml writes dist/, so .mavericks-intree must list it"; exit 1; }
 fi
@@ -125,6 +125,10 @@ done
 job modern-smoke | grep -qxF '    needs: [build, on-mavericks]' || { echo "modern-smoke starts after build and on-mavericks"; exit 1; }
 job modern-smoke | grep -q 'installer' && { echo "modern-smoke expands the pkg; it never installs it on macOS 26"; exit 1; }
 job publish | grep -q '^    needs: .*modern-smoke' || { echo "publish needs modern-smoke"; exit 1; }
+# spec: shipyard conventions check 39, "Smoke only in a publishing run" -- modern-smoke runs only when publish will
+#       run: its if: carries every term of publish's, so a push that releases nothing spends no macOS runner
+job modern-smoke | grep -qxF "    if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'" \
+  || { echo "modern-smoke runs only in a publishing run (publish's own if:)"; exit 1; }
 job build | grep -q '^    runs-on: ubuntu-latest$' || { echo "the build job runs on Linux"; exit 1; }
 job build | grep -q 'run-repo-tests.sh" --strict-host$' || { echo "the build job runs every host-agnostic test with --strict-host"; exit 1; }
 req="$(job required | sed -n 's/^    needs: \[\(.*\)\]$/\1/p' | tr -d ' ' | tr ',' '\n' | LC_ALL=C sort)"

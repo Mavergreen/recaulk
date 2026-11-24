@@ -283,7 +283,7 @@ jobs:
   #       macOS runner (shipyard, 2026-11-24).
   modern-smoke:
     needs: [build, on-mavericks]
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 20
     permissions:
