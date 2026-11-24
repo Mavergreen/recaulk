@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "profiles": {
+    "t": {
+      "description": "the materializer's fixture profile",
+      "recipes": [
+        "t-array-v1",
+        "t-stdio-v1"
+      ]
+    }
+  }
+}

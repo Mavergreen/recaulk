@@ -1,6 +1,8 @@
 /* recaulk-materialize's command line. spec: .superpowers/specs/2026-11-24-recaulk-materialize-design.md
    "Command line" -- exit 0 complete, 1 refused (one stderr line), 2 usage. */
 #include "materialize.h"
+#include <libgen.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -53,6 +55,26 @@ int mz_parse_args(int argc, char **argv, struct mz_args *a, char *err, size_t er
     return 0;
 }
 
+static struct mz_json *load(const char *path, const char *what) {
+    char *buf, err[256];
+    size_t n;
+    if (mz_read_file(path, &buf, &n)) mz_fail("cannot read the %s %s", what, path);
+    struct mz_json *j = mz_json_parse(buf, n, err, sizeof err);
+    if (!j) mz_fail("%s: %s", path, err);
+    return j;
+}
+
+/* spec: the design's "Command line" -- the data installed beside the binary, ../share/sdk-metadata/ */
+static const char *beside(const char *argv0, const char *name) {
+    char self[PATH_MAX];
+    if (!realpath(argv0, self)) mz_fail("cannot find this program's own path to look up %s; pass it", name);
+    char *dir = mz_xstrdup(dirname(self));
+    size_t n = strlen(dir) + strlen(name) + 32;
+    char *p = mz_xmalloc(n);
+    snprintf(p, n, "%s/../share/sdk-metadata/%s", dir, name);
+    return p;
+}
+
 int main(int argc, char **argv) {
     struct mz_args a;
     char err[1024];
@@ -62,6 +84,32 @@ int main(int argc, char **argv) {
     }
     if (a.version) {
         printf("recaulk-materialize %s\n", RECAULK_VERSION);
+        return 0;
+    }
+    struct mz_json *recipes = load(a.recipes ? a.recipes : beside(argv[0], "recipes.json"), "recipe file");
+    struct mz_json *profiles = a.profile ? load(a.profiles ? a.profiles : beside(argv[0], "profiles.json"), "profile file") : NULL;
+    const struct mz_json **sel;
+    size_t nsel;
+    char *ids;
+    mz_select(recipes, profiles, &a, &sel, &nsel, &ids);
+    if (a.print_stamp) return 0;
+
+    char sdk_real[PATH_MAX];
+    if (!realpath(a.sdk, sdk_real)) mz_fail("--sdk '%s' does not exist", a.sdk);
+    const struct mz_json *want = mz_json_get(recipes, "sdk");
+    if (!want || want->t != MZ_STR) mz_fail("the recipe file names no sdk");
+    char *base = mz_xstrdup(sdk_real), name[PATH_MAX];
+    snprintf(name, sizeof name, "%s.sdk", want->s);
+    if (strcmp(basename(base), name)) mz_fail("the recipes are for %s, but --sdk resolves to %s", name, sdk_real);
+
+    struct mz_header *hs;
+    size_t nh;
+    mz_apply(sdk_real, sel, nsel, &hs, &nh);
+    if (a.dry_run) {
+        for (size_t i = 0; i < nh; i++) {
+            printf("== %s\n", hs[i].rel);
+            fwrite(hs[i].text, 1, hs[i].len, stdout);
+        }
         return 0;
     }
     return 0;

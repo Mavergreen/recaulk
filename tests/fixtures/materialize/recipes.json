@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sdk": "MacOSX10.9",
+  "sdk_archive_sha256": "fcf88ce8ff0dd3248b97f4eb81c7909f2cc786725de277f4d05a2b935cc49de0",
+  "recipes": [
+    {
+      "id": "t-array-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSArray.h",
+      "sha256": "cd2e848cb9cfcf2a5a35aff94b2daa0e2b74030bbc23b5f8561f12a1a931eb8d",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSArray.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSArray : NSObject",
+          "new": "@interface NSArray<__covariant ObjectType> : NSObject"
+        },
+        {
+          "old": "@interface NSMutableArray : NSArray",
+          "new": "@interface NSMutableArray<ObjectType> : NSArray<ObjectType>"
+        }
+      ]
+    },
+    {
+      "id": "t-stdio-v1",
+      "header": "usr/include/stdio.h",
+      "sha256": "37c271cf546625894e781d47f9185ebc986d57e8c69eee543d3719a8e98ae4f6",
+      "aliases": [],
+      "replacements": [
+        {
+          "old": "int t_stdio_unrewritten;",
+          "new": "int t_stdio_rewritten; /* \"q\" \\\\ */"
+        }
+      ]
+    }
+  ]
+}

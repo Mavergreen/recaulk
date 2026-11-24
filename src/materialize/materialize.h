@@ -45,4 +45,11 @@ void *mz_xmalloc(size_t n);
 char *mz_xstrdup(const char *s);
 int mz_read_file(const char *path, char **buf, size_t *n);
 
+
+/* apply.c */
+struct mz_header { char *rel; const char **aliases; size_t naliases; char *text; size_t len; };
+int mz_select(const struct mz_json *recipes, const struct mz_json *profiles, const struct mz_args *a,
+              const struct mz_json ***sel, size_t *nsel, char **ids_sorted_json);
+void mz_apply(const char *sdk_real, const struct mz_json **sel, size_t nsel, struct mz_header **out, size_t *nout);
+void mz_recipes_digest(const struct mz_json **sel, size_t nsel, char hex[65]);
 #endif
