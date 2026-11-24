@@ -505,7 +505,7 @@ UUID matches the file's. It writes only over the bytes it expects, with every CP
   `THREAD_RESTART` (`bsd/kern/kern_event.c`, line 2167 in 13F1911). Chromium Legacy's helpers hit it
   (blueboxd/chromium-legacy#44). The fix returns `EBADF` instead, as 10.12 and later do. The program that called
   `kevent` sees `EBADF` and must cope with it: Chromium treats it as fatal, so the helper exits where the kernel
-  used to panic (blueboxd/chromium-legacy#97). This fix is ported from Wowfunhappy's KQueueScanContinuePatch,
+  used to panic (blueboxd/chromium-legacy#44, comment 1066959291). This fix is ported from Wowfunhappy's KQueueScanContinuePatch,
   made with krackers and declared CC-0 (gist 8212f5bea4c601ac9a6297789f232321, comment 6488041). With
   `wait_result_prepost` applied it should never fire, so it is a backstop: where the kernel would have panicked it
   prints the panic's own message, `"kqueue_scan_continue: - invalid wait_result (3)"@...kern_event.c:2167` (with no
