@@ -1,0 +1,10 @@
+{
+ "schema": 1,
+ "base_edits": [
+  {
+   "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h",
+   "old": "typedef NSUInteger NSThingMask;\nenum { NSThingMaskA = 1 << 0 };",
+   "new": "typedef NS_OPTIONS(NSUInteger, NSThingMask) { NSThingMaskA = 1 << 0 };"
+  }
+ ]
+}

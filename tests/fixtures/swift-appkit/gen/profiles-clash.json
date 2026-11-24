@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "profiles": {
+    "swift-foundation": {
+      "description": "F",
+      "recipes": [
+        "foundation-other-v1",
+        "appkit-widget-v2"
+      ]
+    }
+  }
+}

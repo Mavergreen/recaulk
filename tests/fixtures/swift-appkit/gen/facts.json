@@ -1,0 +1,19 @@
+{
+ "schema": 1,
+ "headers": {
+  "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h": [
+   {
+    "kind": "property",
+    "class": "NSWidget",
+    "container": "interface",
+    "category": null,
+    "decl": "- (NSString *)title;",
+    "offset": 64,
+    "property": "@property (readonly, copy) NSString *title;",
+    "setter_decl": null,
+    "setter_offset": null,
+    "name": "title"
+   }
+  ]
+ }
+}

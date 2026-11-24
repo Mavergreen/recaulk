@@ -6,13 +6,15 @@
 set -eu
 cd "$(dirname "$0")/.."
 G=tests/fixtures/swift-foundation/gen
+DESC="Foundation as swift-5.4's Foundation overlay needs it on 10.9"
 d="$(mktemp -d "${TMPDIR:-/tmp}/swift-foundation-recipes.XXXXXX")"
 trap 'rm -rf "$d"' EXIT
 gen() {  # gen DIR FACTS RELEASED [RECIPES-SEED]
   [ -f "$1/recipes.json" ] || cp "${4:-$G/recipes.json}" "$1/recipes.json"
   mkdir -p "$1/probes"
   python3 build/gen-swift-foundation-recipes.py --sdk "$G/sdk" --facts "$2" --hand "$G/hand.json" \
-    --recipes "$1/recipes.json" --released "$3" --probes "$1/probes" --profiles "$1/profiles.json" --generated "$1/generated.json"
+    --recipes "$1/recipes.json" --released "$3" --probes "$1/probes" --profiles "$1/profiles.json" --generated "$1/generated.json" \
+    --profile swift-foundation --description "$DESC"
 }
 mkdir -p "$d/a" "$d/b" "$d/c"
 gen "$d/a" "$G/facts.json" "$G/recipes.json"
@@ -96,7 +98,8 @@ cp sdk-metadata/swift-foundation-generated.json "$d/real/generated.json"
 cp tests/fixtures/sdk-probes/*.m "$d/real/probes/"
 python3 build/gen-swift-foundation-recipes.py --sdk "$SDK" --facts sdk-metadata/swift-foundation-facts.json \
   --hand sdk-metadata/swift-foundation-hand.json --recipes "$d/real/recipes.json" --released sdk-metadata/recipes.json \
-  --probes "$d/real/probes" --profiles "$d/real/profiles.json" --generated "$d/real/generated.json"
+  --probes "$d/real/probes" --profiles "$d/real/profiles.json" --generated "$d/real/generated.json" \
+  --profile swift-foundation --description "$DESC"
 cmp -s "$d/real/generated.json" sdk-metadata/swift-foundation-generated.json && cmp -s "$d/real/recipes.json" sdk-metadata/recipes.json && cmp -s "$d/real/profiles.json" sdk-metadata/profiles.json \
   && diff -r "$d/real/probes" tests/fixtures/sdk-probes >/dev/null \
   || { echo "FAIL: the committed recipes are not what build/gen-swift-foundation-recipes.py makes from the facts; regenerate"; exit 1; }

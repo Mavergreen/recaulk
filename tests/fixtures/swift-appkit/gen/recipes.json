@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sdk": "MacOSX10.9",
+  "sdk_archive_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "recipes": [
+    {
+      "id": "foundation-other-v1",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSOther.h",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "aliases": [],
+      "replacements": [
+        {
+          "old": "a",
+          "new": "b"
+        }
+      ]
+    },
+    {
+      "id": "appkit-widget-mask-v1",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h",
+      "sha256": "e9e2fa6fcb1deb45c123d9e24ac2c93e1269b9ae7f50e75a53c97165eb04864b",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWidget.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWidget : NSObject",
+          "new": "typedef NSUInteger NSThingMask;\n@interface NSWidget : NSObject"
+        }
+      ]
+    },
+    {
+      "id": "appkit-widget-v2",
+      "header": "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSWidget.h",
+      "sha256": "e9e2fa6fcb1deb45c123d9e24ac2c93e1269b9ae7f50e75a53c97165eb04864b",
+      "aliases": [
+        "System/Library/Frameworks/AppKit.framework/Headers/NSWidget.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSWidget : NSObject",
+          "new": "typedef NSUInteger NSThingMask;\nenum { NSThingMaskA = 1 << 0 };\n@interface NSWidget : NSObject"
+        }
+      ]
+    }
+  ]
+}
