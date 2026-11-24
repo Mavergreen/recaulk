@@ -6,7 +6,7 @@
      silent:  the leftover is THREAD_TIMED_OUT (a 1 ms kevent on the empty kqueue): kevent returns 0 events,
               which a kevent with no timeout never may;
      restart: the leftover is THREAD_RESTART (a Mach receive on a port the third thread, the destroyer, destroys,
-              MACH_RCV_PORT_DIED): the panic "invalid wait_result (3)", or with kqueue_scan_restart, -1 EBADF.
+              MACH_RCV_PORT_CHANGED, its THREAD_RESTART): the panic "invalid wait_result (3)", or with kqueue_scan_restart, -1 EBADF.
    Fixed, kevent returns the one event every time.
 
    usage: kfix_wait_result silent|restart ITERATIONS DELAY_US SECONDS
@@ -170,7 +170,7 @@ main(int argc, char **argv)
 			kr = mach_msg(&h, MACH_RCV_MSG, 0, sizeof h, doomed, 0, MACH_PORT_NULL);
 			while (!destroyed)
 				;
-			if (kr != MACH_RCV_PORT_DIED) {
+			if (kr != MACH_RCV_PORT_CHANGED) {	/* THREAD_RESTART, as xnu-2422.115.4 ipc_mqueue.c:610-612 reports it */
 				unprimed++;	/* destroyed before it blocked: no THREAD_RESTART left behind */
 				continue;
 			}
