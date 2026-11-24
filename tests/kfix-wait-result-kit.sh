@@ -1,12 +1,26 @@
 #!/bin/sh
 # platform: host-agnostic -- builds, with clang22, the kit that proves wait_result_prepost on a disposable 10.9.5 guest
-# spec: README.md "The kernel-fixes kext" -- usage: sh tests/kfix-wait-result-kit.sh OUT. OUT/kfix-wr holds the
+# spec: README.md "The kernel-fixes kext" -- usage: sh tests/kfix-wait-result-kit.sh [OUT]. OUT/kfix-wr holds the
 #       reproducer (tests/c/kfix_wait_result.c), RecaulkKernelFixes.kext built twice (kext-both: every fix;
 #       kext-backstop: wait_result_prepost off, as the boot-arg would turn it off), run.sh and its README.md. It
-#       loads nothing here; the guest runs it by hand, one boot per configuration, as its README.md says.
+##       loads nothing here; the guest runs it by hand, one boot per configuration, as its README.md says. With no OUT
+#       it is a test: it builds the kit in a scratch directory, checks that it is whole, and removes it.
 set -eu
 cd "$(dirname "$0")/.."
-OUT="${1:?usage: sh tests/kfix-wait-result-kit.sh OUT}"
+if [ $# -eq 0 ]; then
+  SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/kfix-wr-test.XXXXXX")"
+  trap 'rm -rf "$SCRATCH"' EXIT
+  sh "$0" "$SCRATCH" > "$SCRATCH.log" 2>&1 || { sed 's/^/    | /' "$SCRATCH.log"; rm -f "$SCRATCH.log"; echo "FAIL: the kit did not build"; exit 1; }
+  rm -f "$SCRATCH.log"
+  K="$SCRATCH/kfix-wr"
+  for f in kfix_wait_result run.sh README.md COMMIT SHA256SUMS kext-both/RecaulkKernelFixes.kext kext-backstop/RecaulkKernelFixes.kext; do
+    [ -e "$K/$f" ] || { echo "FAIL: the kit lacks $f"; exit 1; }
+  done
+  [ "$(wc -l < "$K/SHA256SUMS")" -ge 5 ] || { echo "FAIL: SHA256SUMS lists too few files"; exit 1; }
+  echo "kfix-wait-result-kit OK"
+  exit 0
+fi
+OUT="$1"
 RECAULK_TEST_PHASE=build
 . tests/helpers/built.sh
 K="$OUT/kfix-wr"
