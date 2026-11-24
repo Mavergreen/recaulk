@@ -8624,6 +8624,118 @@
           "new": "- (id)initWithFileWrapper:(NSFileWrapper *)fileWrapper;\n/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n/* 10.11; 10.9 has no such accessor, so guard each use (@available or respondsToSelector:). */\n@property (strong) NSImage *image __attribute__((availability(macosx,introduced=10.11)));"
         }
       ]
+    },
+    {
+      "id": "foundation-cache-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCache.h",
+      "sha256": "43b0188ea8030bb4bb887a3f06a2b286bdf952bf35cdfce17cb96519301d7355",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSCache.h"
+      ],
+      "replacements": [
+        {
+          "old": "@interface NSCache : NSObject {",
+          "new": "@interface NSCache<KeyType, ObjectType> : NSObject {"
+        },
+        {
+          "old": "- (void)setName:(NSString *)n;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSString *)name;",
+          "new": "@property (copy) NSString *name;"
+        },
+        {
+          "old": "- (void)setDelegate:(id <NSCacheDelegate>)d;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (id <NSCacheDelegate>)delegate;",
+          "new": "@property (assign) id <NSCacheDelegate> delegate;"
+        },
+        {
+          "old": "- (id)objectForKey:(id)key;",
+          "new": "- (ObjectType)objectForKey:(KeyType)key;"
+        },
+        {
+          "old": "- (void)setObject:(id)obj forKey:(id)key;",
+          "new": "- (void)setObject:(ObjectType)obj forKey:(KeyType)key;"
+        },
+        {
+          "old": "- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;",
+          "new": "- (void)setObject:(ObjectType)obj forKey:(KeyType)key cost:(NSUInteger)g;"
+        },
+        {
+          "old": "- (void)removeObjectForKey:(id)key;",
+          "new": "- (void)removeObjectForKey:(KeyType)key;"
+        },
+        {
+          "old": "- (void)setTotalCostLimit:(NSUInteger)lim;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSUInteger)totalCostLimit;",
+          "new": "@property NSUInteger totalCostLimit;"
+        },
+        {
+          "old": "- (void)setCountLimit:(NSUInteger)lim;\n",
+          "new": "\n"
+        },
+        {
+          "old": "- (NSUInteger)countLimit;",
+          "new": "@property NSUInteger countLimit;"
+        },
+        {
+          "old": "- (BOOL)evictsObjectsWithDiscardedContent;",
+          "new": "@property BOOL evictsObjectsWithDiscardedContent;"
+        },
+        {
+          "old": "- (void)setEvictsObjectsWithDiscardedContent:(BOOL)b;\n",
+          "new": "\n"
+        }
+      ]
+    },
+    {
+      "id": "foundation-notification-v2",
+      "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNotification.h",
+      "sha256": "516377173859a3aac57f392eb7c1469cddcfb2125b75bd47fecfbd5f1bd7d6de",
+      "aliases": [
+        "System/Library/Frameworks/Foundation.framework/Headers/NSNotification.h"
+      ],
+      "replacements": [
+        {
+          "old": "- (NSString *)name;",
+          "new": "@property (readonly) NSNotificationName name;"
+        },
+        {
+          "old": "- (id)object;",
+          "new": "@property (readonly, strong) id object;"
+        },
+        {
+          "old": "- (NSDictionary *)userInfo;",
+          "new": "@property (readonly, copy) NSDictionary *userInfo;"
+        },
+        {
+          "old": "- (instancetype)initWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo NS_AVAILABLE(10_6, 4_0);",
+          "new": "- (instancetype)initWithName:(NSNotificationName)name object:(id)object userInfo:(NSDictionary *)userInfo NS_AVAILABLE(10_6, 4_0);"
+        },
+        {
+          "old": "+ (instancetype)defaultCenter;",
+          "new": "@property (class, readonly, strong) NSNotificationCenter *defaultCenter;"
+        },
+        {
+          "old": "- (void)postNotificationName:(NSString *)aName object:(id)anObject;",
+          "new": "- (void)postNotificationName:(NSNotificationName)aName object:(id)anObject;"
+        },
+        {
+          "old": "- (void)postNotificationName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;",
+          "new": "- (void)postNotificationName:(NSNotificationName)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;"
+        },
+        {
+          "old": "- (id)addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block NS_AVAILABLE(10_6, 4_0);",
+          "new": "- (id<NSObject>)addObserverForName:(NSNotificationName)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification * _Nonnull))block NS_AVAILABLE(10_6, 4_0);"
+        }
+      ]
     }
   ]
 }

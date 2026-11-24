@@ -1274,6 +1274,12 @@
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCache.h": [
    {
+    "kind": "replace",
+    "old": "@interface NSCache : NSObject {",
+    "offset": 195,
+    "new": "@interface NSCache<KeyType, ObjectType> : NSObject {"
+   },
+   {
     "kind": "property",
     "name": "name",
     "class": "NSCache",
@@ -1296,6 +1302,30 @@
     "property": "@property (assign) id <NSCacheDelegate> delegate;",
     "setter_decl": "- (void)setDelegate:(id <NSCacheDelegate>)d;",
     "setter_offset": 353
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)objectForKey:(id)key;",
+    "offset": 433,
+    "new": "- (ObjectType)objectForKey:(KeyType)key;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setObject:(id)obj forKey:(id)key;",
+    "offset": 461,
+    "new": "- (void)setObject:(ObjectType)obj forKey:(KeyType)key;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;",
+    "offset": 513,
+    "new": "- (void)setObject:(ObjectType)obj forKey:(KeyType)key cost:(NSUInteger)g;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)removeObjectForKey:(id)key;",
+    "offset": 574,
+    "new": "- (void)removeObjectForKey:(KeyType)key;"
    },
    {
     "kind": "property",
@@ -6128,6 +6158,24 @@
     "property": "@property (class, readonly, strong) NSNotificationCenter *defaultCenter;",
     "setter_decl": null,
     "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)postNotificationName:(NSString *)aName object:(id)anObject;",
+    "offset": 1256,
+    "new": "- (void)postNotificationName:(NSNotificationName)aName object:(id)anObject;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (void)postNotificationName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;",
+    "offset": 1324,
+    "new": "- (void)postNotificationName:(NSNotificationName)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;"
+   },
+   {
+    "kind": "replace",
+    "old": "- (id)addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block NS_AVAILABLE(10_6, 4_0);",
+    "offset": 1570,
+    "new": "- (id<NSObject>)addObserverForName:(NSNotificationName)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification * _Nonnull))block NS_AVAILABLE(10_6, 4_0);"
    }
   ],
   "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSNotificationQueue.h": [

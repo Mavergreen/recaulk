@@ -335,6 +335,34 @@
   {
    "class": "NSURL",
    "selector": "resourceValuesForKeys:fromBookmarkData:"
+  },
+  {
+   "class": "NSCache",
+   "selector": "objectForKey:"
+  },
+  {
+   "class": "NSCache",
+   "selector": "setObject:forKey:"
+  },
+  {
+   "class": "NSCache",
+   "selector": "setObject:forKey:cost:"
+  },
+  {
+   "class": "NSCache",
+   "selector": "removeObjectForKey:"
+  },
+  {
+   "class": "NSNotificationCenter",
+   "selector": "postNotificationName:object:"
+  },
+  {
+   "class": "NSNotificationCenter",
+   "selector": "postNotificationName:object:userInfo:"
+  },
+  {
+   "class": "NSNotificationCenter",
+   "selector": "addObserverForName:object:queue:usingBlock:"
   }
  ],
  "enum_shapes": [
@@ -399,6 +427,11 @@
    "header": "System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/CFLocale.h",
    "old": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFStringRef key, CFStringRef value);",
    "new": "CFStringRef CFLocaleCopyDisplayNameForPropertyValue(CFLocaleRef displayLocale, CFLocaleKey key, CFStringRef value);"
+  },
+  {
+   "header": "System/Library/Frameworks/Foundation.framework/Versions/C/Headers/NSCache.h",
+   "old": "@interface NSCache : NSObject {",
+   "new": "@interface NSCache<KeyType, ObjectType> : NSObject {"
   }
  ],
  "inserts": [
