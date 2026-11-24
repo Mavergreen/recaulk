@@ -1,6 +1,115 @@
 {
  "schema": 1,
  "headers": {
+  "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSApplication.h": [
+   {
+    "kind": "insert",
+    "offset": 261,
+    "text": "/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n@class NSString;\n#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n#define NS_EXTENSIBLE_STRING_ENUM __attribute__((swift_wrapper(struct)))\n#else\n#define NS_EXTENSIBLE_STRING_ENUM\n#endif\n#endif\n#ifndef __RECAULK_TYPEDEF_NSNotificationName\n#define __RECAULK_TYPEDEF_NSNotificationName 1\ntypedef NSString *NSNotificationName NS_EXTENSIBLE_STRING_ENUM;\n#endif\n"
+   },
+   {
+    "kind": "property",
+    "name": "sharedApplication",
+    "class": "NSApplication",
+    "container": "interface",
+    "category": null,
+    "decl": "+ (NSApplication *)sharedApplication;",
+    "offset": 7086,
+    "property": "@property (class, readonly, strong) NSApplication *sharedApplication;",
+    "setter_decl": null,
+    "setter_offset": null
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidBecomeActiveNotification;",
+    "offset": 23723,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidBecomeActiveNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidHideNotification;",
+    "offset": 23789,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidHideNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidFinishLaunchingNotification;",
+    "offset": 23847,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidFinishLaunchingNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidResignActiveNotification;",
+    "offset": 23916,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidResignActiveNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidUnhideNotification;",
+    "offset": 23982,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidUnhideNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidUpdateNotification;",
+    "offset": 24042,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidUpdateNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillBecomeActiveNotification;",
+    "offset": 24102,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillBecomeActiveNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillHideNotification;",
+    "offset": 24169,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillHideNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillFinishLaunchingNotification;",
+    "offset": 24228,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillFinishLaunchingNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillResignActiveNotification;",
+    "offset": 24298,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillResignActiveNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillUnhideNotification;",
+    "offset": 24365,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillUnhideNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillUpdateNotification;",
+    "offset": 24426,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillUpdateNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationWillTerminateNotification;",
+    "offset": 24487,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationWillTerminateNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString *NSApplicationDidChangeScreenParametersNotification;",
+    "offset": 24551,
+    "new": "APPKIT_EXTERN NSNotificationName NSApplicationDidChangeScreenParametersNotification;"
+   },
+   {
+    "kind": "replace",
+    "old": "APPKIT_EXTERN NSString * const NSApplicationDidChangeOcclusionStateNotification NS_AVAILABLE_MAC(10_9);",
+    "offset": 26352,
+    "new": "APPKIT_EXTERN NSNotificationName const NSApplicationDidChangeOcclusionStateNotification NS_AVAILABLE_MAC(10_9);"
+   }
+  ],
   "System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSButton.h": [
    {
     "kind": "property",
@@ -3347,7 +3456,7 @@
     "category": null,
     "decl": "- (BOOL)isTemplate NS_AVAILABLE_MAC(10_5);",
     "offset": 7825,
-    "property": "@property (getter=isTemplate) BOOL template NS_AVAILABLE_MAC(10_5);",
+    "property": "#if defined(__cplusplus)\n- (BOOL)isTemplate NS_AVAILABLE_MAC(10_5);\n- (void)setTemplate:(BOOL)isTemplate NS_AVAILABLE_MAC(10_5);\n#else\n@property (getter=isTemplate) BOOL template NS_AVAILABLE_MAC(10_5);\n#endif",
     "setter_decl": "- (void)setTemplate:(BOOL)isTemplate NS_AVAILABLE_MAC(10_5);",
     "setter_offset": 7868
    },

@@ -10,7 +10,16 @@ import argparse, json, os, re, subprocess, sys, tempfile
 
 # spec: the design limits objc/NSObject.h to these members of the NSObject protocol.
 ALLOW = {'usr/include/objc/NSObject.h': {'description', 'debugDescription', 'hash', 'superclass'},
-         'usr/include/objc/runtime.h': set()}
+         'usr/include/objc/runtime.h': set(),
+         # spec: README.md "Profiles" -- swift-gg's one NSApplication row; its other 11.3 properties would retype
+         #       getters an NSApplication subclass (iTerm2's) overrides
+         'System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSApplication.h': {'sharedApplication'}}
+# spec: README.md "Profiles" -- a property named with a C++ keyword is guarded as the 11.3 SDK guards NSImage's
+#       template: Objective-C++ sees the accessor methods, Objective-C the property
+CXX_KEYWORDS = {'and', 'asm', 'bool', 'catch', 'class', 'const_cast', 'delete', 'dynamic_cast', 'explicit', 'export',
+                'false', 'friend', 'inline', 'mutable', 'namespace', 'new', 'not', 'operator', 'or', 'private',
+                'protected', 'public', 'reinterpret_cast', 'static_cast', 'template', 'this', 'throw', 'true', 'try',
+                'typeid', 'typename', 'using', 'virtual', 'wchar_t', 'xor'}
 HEAD = '/* Recaulk: declared from a later SDK so newer sources compile against 10.9. */\n'
 # spec: R2's typedefs carry their own fallback, so a header's recipe does not depend on objcruntime-macros-v2.
 FALLBACK = ('#ifndef NS_EXTENSIBLE_STRING_ENUM\n#if __has_attribute(swift_wrapper)\n'
@@ -35,6 +44,13 @@ CF_ENUM_FALLBACK = ('#ifndef CF_STRING_ENUM\n#if __has_attribute(swift_wrapper)\
 BRIDGED_FALLBACK = ('#ifndef NS_SWIFT_BRIDGED_TYPEDEF\n#if __has_attribute(swift_bridged_typedef)\n'
                     '#define NS_SWIFT_BRIDGED_TYPEDEF __attribute__((swift_bridged_typedef))\n#else\n'
                     '#define NS_SWIFT_BRIDGED_TYPEDEF\n#endif\n#endif\n')
+
+
+def cxx_guarded(prop, name, decl, setter_decl):
+    """prop, or, when its name is a C++ keyword, prop for Objective-C and the 10.9 accessors for Objective-C++."""
+    if name not in CXX_KEYWORDS:
+        return prop
+    return '#if defined(__cplusplus)\n%s\n%s#else\n%s\n#endif' % (decl, setter_decl + '\n' if setter_decl else '', prop)
 
 
 def typedef_text(name, kind='extensible'):
@@ -332,6 +348,7 @@ def main():
         sep = '' if typ.endswith('*') else ' '
         prop = '@property %s%s%s%s%s;' % ('(%s) ' % ', '.join(a) if a else '', typ, sep, p['name'],
                                           ' ' + trailer if trailer else '')
+        prop = cxx_guarded(prop, p['name'], decl, setter_decl)
         ident = (key, cls, cat, decl)
         if ident in seen:
             continue
@@ -421,6 +438,7 @@ def main():
         sep = '' if typ.endswith('*') else ' '
         prop = '@property %s%s%s%s%s;' % ('(%s) ' % ', '.join(a) if a else '', typ, sep, p['name'],
                                           ' ' + trailer if trailer else '')
+        prop = cxx_guarded(prop, p['name'], decl, None)
         add(key, {'kind': 'replace', 'old': decl, 'offset': b[1], 'new': prop})
 
     # R2: constants 11.3 types as one of the string enums, retyped, with the typedef before the header's first one

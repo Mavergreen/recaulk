@@ -810,7 +810,7 @@ These recipes are generated, not written by hand:
 check that the committed facts, recipes, probes and profile are current.
 
 `swift-appkit` is AppKit as swift-5.4's AppKit overlay needs it on 10.9, and it contains all of `swift-foundation`,
-so a Swift compile that uses AppKit selects this one profile. It covers the 30 AppKit headers of swift-gg's table
+so a Swift compile that uses AppKit selects this one profile. It covers the 33 AppKit headers of swift-gg's table
 (`sdk-metadata/swift-appkit-rows.tsv`), in the same ways as above, plus:
 - `NS_OPTIONS`/`NS_ENUM` types where 10.9 has a plain typedef or none: `NSWindowStyleMask`, `NSEventModifierFlags`,
   `NSAutoresizingMaskOptions`, `NSTrackingAreaOptions` (one type for 10.9's three anonymous enums),
@@ -822,7 +822,15 @@ so a Swift compile that uses AppKit selects this one profile. It covers the 30 A
 - `NS_DESIGNATED_INITIALIZER` on `NSView`'s and `NSViewController`'s initializers, and `controlTextDidChange:` and
   its siblings as optional methods of `NSControlTextEditingDelegate`, with NSObject's informal category of them
   hidden from Swift 4.2 and later as 11.3 hides it;
-- `-[NSTableView makeViewWithIdentifier:owner:]` taking `NSUserInterfaceItemIdentifier`.
+- `-[NSTableView makeViewWithIdentifier:owner:]` taking `NSUserInterfaceItemIdentifier`;
+- `+[NSApplication sharedApplication]` as a class property, so Swift writes `NSApplication.shared`
+  (`appkit-application-v2`, which is `appkit-application-v1` plus it and `NSNotificationName`-typed notification names).
+  Only that one of NSApplication's later properties: the others would retype getters an `NSApplication` subclass
+  overrides.
+
+A property whose name is a C++ keyword (`NSImage`'s `template`) is declared as the 11.3 SDK declares it: Objective-C
+sees the property, Objective-C++ the accessor methods (`appkit-image-v2`), so a `.mm` that imports Cocoa compiles
+through either profile's view.
 
 No recipe carries `NS_SWIFT_NAME`: swift's own AppKit apinotes name things. Its recipes on headers that already had
 recipes contain them, so an Objective-C consumer can switch to them. Two changes reach such a consumer: an override

@@ -4,6 +4,7 @@
     "swift-appkit": {
       "description": "AppKit and Foundation as swift-5.4's AppKit overlay needs them on 10.9",
       "recipes": [
+        "appkit-application-v2",
         "appkit-button-v1",
         "appkit-color-v2",
         "appkit-colorspace-v1",
@@ -15,7 +16,7 @@
         "appkit-fontmanager-v1",
         "appkit-graphics-v2",
         "appkit-graphicscontext-v1",
-        "appkit-image-v1",
+        "appkit-image-v2",
         "appkit-imageview-v1",
         "appkit-layoutconstraint-v1",
         "appkit-menu-v1",

@@ -67,6 +67,16 @@ for sig in TERM HUP; do
   fi
 done
 
+echo "== objective_cxx_through_each_profile"
+# spec: README.md "Profiles" -- a .mm importing Cocoa compiles through every shipped profile's view, as through the
+#       SDK itself: a recipe never declares a C++ keyword (template, class, new...) where C++ can see it
+printf '#import <Cocoa/Cocoa.h>\nint main(void) { return NSApplication.sharedApplication != nil; }\n' > "$d/cocoa.mm"
+for profile in swift-foundation swift-appkit; do
+  "$CC" $TARGET_FLAGS -fsyntax-only -x objective-c++ -fno-objc-arc -fblocks -isysroot "$d/rm-$profile/sdk/MacOSX10.9.sdk" \
+    -ivfsoverlay "$d/rm-$profile/overlay.json" "$d/cocoa.mm" >"$d/cxx.out" 2>&1 \
+    || { bad "a .mm importing Cocoa does not compile through $profile"; grep -m3 error: "$d/cxx.out"; }
+done
+
 echo "== compiles_through_the_view (RF5)"
 probe=tests/fixtures/sdk-probes-consumer/appkit-subclasses.m
 V="$d/rm-swift-appkit/sdk/MacOSX10.9.sdk"
