@@ -117,7 +117,8 @@ recaulk_accessibility_bridge(objc_getClass("PTYTextView"));
 recaulk_accessibility_bridge([PSMTabBarControl class]);
 ```
 
-and link `librecaulk-objc.a` with AppKit (the call pulls the bridge in; there is no root to keep with `-u`). The
+and link `librecaulk-objc.a` with AppKit (the call pulls the bridge in; there is no root to keep with `-u`). Bridge a
+class or a subclass of it, not both: the subclass's old API would reach the bridged superclass's, which Drydock refuses. The
 class then answers each old attribute from the 10.10 getter it implements, boxed as 10.9 boxes it (a range, point,
 size or rectangle as an `NSValue`, a count or flag as an `NSNumber`; `AXDescription` from `accessibilityLabel`,
 `AXPosition` and `AXSize` from `accessibilityFrame`, `AXBoundsForRange` from `accessibilityFrameForRange:`), lists those

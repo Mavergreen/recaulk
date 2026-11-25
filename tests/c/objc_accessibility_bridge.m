@@ -51,6 +51,8 @@
 - (NSString *)accessibilityRole { return NSAccessibilityTabGroupRole; }
 - (NSArray *)accessibilityChildren { return [NSArray arrayWithObject:@"tab"]; }
 - (NSArray *)accessibilityTabs { return [NSArray arrayWithObject:@"tab"]; }
+/* iTerm2 3.2.9's patched tab bar: the selected cell's element, nil on 10.9 until its cells have one */
+- (id)accessibilityValue { return nil; }
 @end
 @interface TabCell : NSActionCell {
 @public
@@ -235,6 +237,14 @@ static void bridged(BOOL setters) {
 	      "the tab bar's children or tabs are wrong: %s, %s", str(value(b, NSAccessibilityChildrenAttribute)),
 	      str(value(b, NSAccessibilityTabsAttribute)));
 	CHECK([[b accessibilityAttributeNames] containsObject:NSAccessibilityTabsAttribute], "the tab bar does not list AXTabs");
+	/* spec: iterm's voiceover-3.0.15.tsv -- an attribute whose getter the app implements is listed whatever the getter
+	   answers now (3.0.15 listed AXValue and AXSelectedText with nothing selected); one it doesn't implement is not */
+	CHECK([[b accessibilityAttributeNames] containsObject:NSAccessibilityValueAttribute],
+	      "the tab bar does not list AXValue, whose getter it implements (answering nil)");
+	CHECK(![[b accessibilityAttributeNames] containsObject:NSAccessibilitySelectedTextAttribute] &&
+	          ![[b accessibilityAttributeNames] containsObject:NSAccessibilityTitleAttribute],
+	      "the tab bar lists AXSelectedText or AXTitle, whose getters it does not implement: %s",
+	      str([b accessibilityAttributeNames]));
 	CHECK(![[b accessibilityActionNames] containsObject:NSAccessibilityPressAction],
 	      "the tab bar lists AXPress, which it does not implement");
 

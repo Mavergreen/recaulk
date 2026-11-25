@@ -93,7 +93,7 @@ void recaulk_accessibility_bridge(Class cls);
 enum { BRIDGED_MAX = 256 };
 Class __recaulk_objc_axb_bridged[BRIDGED_MAX];
 
-static Class floorOf(NSObject *self) {
+static inline __attribute__((always_inline)) Class floorOf(NSObject *self) {
     for (Class c = object_getClass(self); c; c = class_getSuperclass(c))
         for (int i = 0; i < BRIDGED_MAX && __recaulk_objc_axb_bridged[i]; i++)
             if (__recaulk_objc_axb_bridged[i] == c) return class_getSuperclass(c);
@@ -107,10 +107,10 @@ static Class floorOf(NSObject *self) {
    stores to a global. */
 static NSString *const askingKey = @"recaulk.accessibility-bridge.asking";
 
-static NSString *questionOf(NSObject *self, NSString *question) {
+static inline __attribute__((always_inline)) NSString *questionOf(NSObject *self, NSString *question) {
     return [NSString stringWithFormat:@"%p %@", (void *)self, question];
 }
-static BOOL enter(NSObject *self, NSString *question) {
+static inline __attribute__((always_inline)) BOOL enter(NSObject *self, NSString *question) {
     NSMutableDictionary *perThread = [[NSThread currentThread] threadDictionary];
     NSMutableSet *asking = [perThread objectForKey:askingKey];
     if (!asking) {
@@ -122,7 +122,7 @@ static BOOL enter(NSObject *self, NSString *question) {
     [asking addObject:q];
     return YES;
 }
-static void leave(NSObject *self, NSString *question) {
+static inline __attribute__((always_inline)) void leave(NSObject *self, NSString *question) {
     NSMutableDictionary *perThread = [[NSThread currentThread] threadDictionary];
     NSMutableSet *asking = [perThread objectForKey:askingKey];
     [asking removeObject:questionOf(self, question)];
@@ -133,58 +133,66 @@ static NSString *const namesQuestion = @"recaulk:attribute-names", *const parame
 
 #define SUPER(self) struct objc_super up = { (self), floorOf(self) }
 
+/* Each 10.9 attribute the bridge maps, with the 10.10 getter it reads, by how 10.9 boxes the answer. */
+#define MAPPED(OBJECT, FLAG, INTEGER, RANGE) \
+    OBJECT(NSAccessibilityRoleAttribute, accessibilityRole) \
+    OBJECT(NSAccessibilitySubroleAttribute, accessibilitySubrole) \
+    OBJECT(NSAccessibilityRoleDescriptionAttribute, accessibilityRoleDescription) \
+    OBJECT(NSAccessibilityDescriptionAttribute, accessibilityLabel) \
+    OBJECT(NSAccessibilityTitleAttribute, accessibilityTitle) \
+    OBJECT(NSAccessibilityHelpAttribute, accessibilityHelp) \
+    OBJECT(NSAccessibilityValueAttribute, accessibilityValue) \
+    OBJECT(NSAccessibilityValueDescriptionAttribute, accessibilityValueDescription) \
+    OBJECT(NSAccessibilityPlaceholderValueAttribute, accessibilityPlaceholderValue) \
+    OBJECT(NSAccessibilityIdentifierAttribute, accessibilityIdentifier) \
+    OBJECT(NSAccessibilityDocumentAttribute, accessibilityDocument) \
+    OBJECT(NSAccessibilityFilenameAttribute, accessibilityFilename) \
+    OBJECT(NSAccessibilityURLAttribute, accessibilityURL) \
+    OBJECT(NSAccessibilityParentAttribute, accessibilityParent) \
+    OBJECT(NSAccessibilityWindowAttribute, accessibilityWindow) \
+    OBJECT(NSAccessibilityTopLevelUIElementAttribute, accessibilityTopLevelUIElement) \
+    OBJECT(NSAccessibilityChildrenAttribute, accessibilityChildren) \
+    OBJECT(NSAccessibilityVisibleChildrenAttribute, accessibilityVisibleChildren) \
+    OBJECT(NSAccessibilitySelectedChildrenAttribute, accessibilitySelectedChildren) \
+    OBJECT(NSAccessibilityContentsAttribute, accessibilityContents) \
+    OBJECT(NSAccessibilityTabsAttribute, accessibilityTabs) \
+    OBJECT(NSAccessibilityRowsAttribute, accessibilityRows) \
+    OBJECT(NSAccessibilityColumnsAttribute, accessibilityColumns) \
+    OBJECT(NSAccessibilitySelectedTextAttribute, accessibilitySelectedText) \
+    OBJECT(NSAccessibilitySelectedTextRangesAttribute, accessibilitySelectedTextRanges) \
+    FLAG(NSAccessibilityEnabledAttribute, isAccessibilityEnabled) \
+    FLAG(NSAccessibilityFocusedAttribute, isAccessibilityFocused) \
+    FLAG(NSAccessibilitySelectedAttribute, isAccessibilitySelected) \
+    FLAG(NSAccessibilityExpandedAttribute, isAccessibilityExpanded) \
+    FLAG(NSAccessibilityEditedAttribute, isAccessibilityEdited) \
+    INTEGER(NSAccessibilityIndexAttribute, accessibilityIndex) \
+    INTEGER(NSAccessibilityNumberOfCharactersAttribute, accessibilityNumberOfCharacters) \
+    INTEGER(NSAccessibilityInsertionPointLineNumberAttribute, accessibilityInsertionPointLineNumber) \
+    RANGE(NSAccessibilitySelectedTextRangeAttribute, accessibilitySelectedTextRange) \
+    RANGE(NSAccessibilityVisibleCharacterRangeAttribute, accessibilityVisibleCharacterRange)
+
 /* The 10.10 getter's answer to a 10.9 attribute, boxed as 10.9 boxes it; nil where self has no getter for it or the
    getter answers nil (or NSNotFound for a range). */
-static id answer(NSObject *self, NSString *a) {
+static inline __attribute__((always_inline)) id answer(NSObject *self, NSString *a) {
 #define OBJECT(constant, getter) \
-    if ([a isEqualToString:constant]) return [self respondsToSelector:@selector(getter)] ? [self getter] : nil
+    if ([a isEqualToString:constant]) return [self respondsToSelector:@selector(getter)] ? [self getter] : nil;
 #define FLAG(constant, getter) \
     if ([a isEqualToString:constant]) \
-        return [self respondsToSelector:@selector(getter)] ? [NSNumber numberWithBool:[self getter]] : nil
+        return [self respondsToSelector:@selector(getter)] ? [NSNumber numberWithBool:[self getter]] : nil;
 #define INTEGER(constant, getter) \
     if ([a isEqualToString:constant]) \
-        return [self respondsToSelector:@selector(getter)] ? [NSNumber numberWithInteger:[self getter]] : nil
+        return [self respondsToSelector:@selector(getter)] ? [NSNumber numberWithInteger:[self getter]] : nil;
 #define RANGE(constant, getter) \
     if ([a isEqualToString:constant]) { \
         if (![self respondsToSelector:@selector(getter)]) return nil; \
         NSRange r = [self getter]; \
         return r.location == NSNotFound ? nil : [NSValue valueWithRange:r]; \
     }
-    OBJECT(NSAccessibilityRoleAttribute, accessibilityRole);
-    OBJECT(NSAccessibilitySubroleAttribute, accessibilitySubrole);
-    OBJECT(NSAccessibilityRoleDescriptionAttribute, accessibilityRoleDescription);
-    OBJECT(NSAccessibilityDescriptionAttribute, accessibilityLabel);
-    OBJECT(NSAccessibilityTitleAttribute, accessibilityTitle);
-    OBJECT(NSAccessibilityHelpAttribute, accessibilityHelp);
-    OBJECT(NSAccessibilityValueAttribute, accessibilityValue);
-    OBJECT(NSAccessibilityValueDescriptionAttribute, accessibilityValueDescription);
-    OBJECT(NSAccessibilityPlaceholderValueAttribute, accessibilityPlaceholderValue);
-    OBJECT(NSAccessibilityIdentifierAttribute, accessibilityIdentifier);
-    OBJECT(NSAccessibilityDocumentAttribute, accessibilityDocument);
-    OBJECT(NSAccessibilityFilenameAttribute, accessibilityFilename);
-    OBJECT(NSAccessibilityURLAttribute, accessibilityURL);
-    OBJECT(NSAccessibilityParentAttribute, accessibilityParent);
-    OBJECT(NSAccessibilityWindowAttribute, accessibilityWindow);
-    OBJECT(NSAccessibilityTopLevelUIElementAttribute, accessibilityTopLevelUIElement);
-    OBJECT(NSAccessibilityChildrenAttribute, accessibilityChildren);
-    OBJECT(NSAccessibilityVisibleChildrenAttribute, accessibilityVisibleChildren);
-    OBJECT(NSAccessibilitySelectedChildrenAttribute, accessibilitySelectedChildren);
-    OBJECT(NSAccessibilityContentsAttribute, accessibilityContents);
-    OBJECT(NSAccessibilityTabsAttribute, accessibilityTabs);
-    OBJECT(NSAccessibilityRowsAttribute, accessibilityRows);
-    OBJECT(NSAccessibilityColumnsAttribute, accessibilityColumns);
-    OBJECT(NSAccessibilitySelectedTextAttribute, accessibilitySelectedText);
-    OBJECT(NSAccessibilitySelectedTextRangesAttribute, accessibilitySelectedTextRanges);
-    FLAG(NSAccessibilityEnabledAttribute, isAccessibilityEnabled);
-    FLAG(NSAccessibilityFocusedAttribute, isAccessibilityFocused);
-    FLAG(NSAccessibilitySelectedAttribute, isAccessibilitySelected);
-    FLAG(NSAccessibilityExpandedAttribute, isAccessibilityExpanded);
-    FLAG(NSAccessibilityEditedAttribute, isAccessibilityEdited);
-    INTEGER(NSAccessibilityIndexAttribute, accessibilityIndex);
-    INTEGER(NSAccessibilityNumberOfCharactersAttribute, accessibilityNumberOfCharacters);
-    INTEGER(NSAccessibilityInsertionPointLineNumberAttribute, accessibilityInsertionPointLineNumber);
-    RANGE(NSAccessibilitySelectedTextRangeAttribute, accessibilitySelectedTextRange);
-    RANGE(NSAccessibilityVisibleCharacterRangeAttribute, accessibilityVisibleCharacterRange);
+    MAPPED(OBJECT, FLAG, INTEGER, RANGE)
+#undef OBJECT
+#undef FLAG
+#undef INTEGER
+#undef RANGE
     /* platform: 10.9's AXPosition is the element's lower-left corner in screen coordinates, as 10.10's frame origin is */
     if ([a isEqualToString:NSAccessibilityPositionAttribute] || [a isEqualToString:NSAccessibilitySizeAttribute]) {
         if (![self respondsToSelector:@selector(accessibilityFrame)]) return nil;
@@ -192,15 +200,29 @@ static id answer(NSObject *self, NSString *a) {
         if ([a isEqualToString:NSAccessibilityPositionAttribute]) return [NSValue valueWithPoint:frame.origin];
         return [NSValue valueWithSize:frame.size];
     }
-#undef OBJECT
-#undef FLAG
-#undef INTEGER
-#undef RANGE
     return nil;
 }
 
+/* The 10.10 getter answer() reads a 10.9 attribute from, or NULL for one it doesn't map. */
+static inline __attribute__((always_inline)) SEL getterOf(NSString *a) {
+#define GETTER(constant, getter) if ([a isEqualToString:constant]) return @selector(getter);
+    MAPPED(GETTER, GETTER, GETTER, GETTER)
+#undef GETTER
+    if ([a isEqualToString:NSAccessibilityPositionAttribute] || [a isEqualToString:NSAccessibilitySizeAttribute])
+        return @selector(accessibilityFrame);
+    return NULL;
+}
+
+/* spec: iterm's voiceover-3.0.15.tsv -- self's class implements the attribute's getter below the floor (its own, not
+   10.9's or a Recaulk group's on NSView or NSCell), so it lists the attribute whatever the getter answers now */
+static inline __attribute__((always_inline)) BOOL implements(NSObject *self, Class floor, NSString *a) {
+    SEL g = getterOf(a);
+    return g && [self respondsToSelector:g] &&
+           class_getMethodImplementation(object_getClass(self), g) != class_getMethodImplementation(floor, g);
+}
+
 /* Every 10.9 attribute answer() maps, in the order 10.9 lists its own. */
-static NSArray *mappedAttributes(void) {
+static inline __attribute__((always_inline)) NSArray *mappedAttributes(void) {
     return [NSArray arrayWithObjects:NSAccessibilityRoleAttribute, NSAccessibilitySubroleAttribute,
         NSAccessibilityRoleDescriptionAttribute, NSAccessibilityDescriptionAttribute, NSAccessibilityTitleAttribute,
         NSAccessibilityHelpAttribute, NSAccessibilityValueAttribute, NSAccessibilityValueDescriptionAttribute,
@@ -224,7 +246,7 @@ NSArray *__recaulk_objc_axb_attribute_names(NSObject *self, SEL _cmd) {
     if (!enter(self, namesQuestion)) return inherited;
     NSMutableArray *names = [NSMutableArray arrayWithArray:inherited ? inherited : [NSArray array]];
     for (NSString *a in mappedAttributes())
-        if (![names containsObject:a] && answer(self, a)) [names addObject:a];
+        if (![names containsObject:a] && (implements(self, up.super_class, a) || answer(self, a))) [names addObject:a];
     leave(self, namesQuestion);
     (void)_cmd;
     return names;
@@ -246,7 +268,7 @@ id __recaulk_objc_axb_attribute_value(NSObject *self, SEL _cmd, NSString *attrib
 
 /* Settable through a 10.10 setter the class implements. Not the label, role, children or selected-text-range setters:
    Recaulk's setter groups give every view and cell those, so responding to them says nothing about this class. */
-static BOOL settable(NSObject *self, NSString *a) {
+static inline __attribute__((always_inline)) BOOL settable(NSObject *self, NSString *a) {
     if ([a isEqualToString:NSAccessibilityValueAttribute]) return [self respondsToSelector:@selector(setAccessibilityValue:)];
     if ([a isEqualToString:NSAccessibilityFocusedAttribute])
         return [self respondsToSelector:@selector(setAccessibilityFocused:)];
@@ -311,7 +333,7 @@ void __recaulk_objc_axb_set_value(NSObject *self, SEL _cmd, id value, NSString *
 
 /* The 10.10 parameterized getters, each by its 10.9 parameterized attribute: an index or line parameter is an
    NSNumber, a range an NSValue of a range, a position an NSValue of a point. */
-static id parameterized(NSObject *self, NSString *a, id p) {
+static inline __attribute__((always_inline)) id parameterized(NSObject *self, NSString *a, id p) {
     /* spec: tests/objc-source-receipt.sh -- typed views of the parameter, so no send has a receiver of type id */
     NSNumber *index = [p isKindOfClass:[NSNumber class]] ? p : nil;
     NSValue *value = [p isKindOfClass:[NSValue class]] ? p : nil;
@@ -382,7 +404,7 @@ id __recaulk_objc_axb_parameterized_value(NSObject *self, SEL _cmd, NSString *at
 
 /* Each 10.9 action with the 10.10 perform method that does it: the action is offered where self implements the
    method. *known says whether self implements it, and the method is called only when call is YES. */
-static BOOL action(NSObject *self, NSString *a, BOOL call, BOOL *known) {
+static inline __attribute__((always_inline)) BOOL action(NSObject *self, NSString *a, BOOL call, BOOL *known) {
 #define ACTION(constant, method) \
     if ([a isEqualToString:constant]) { \
         *known = [self respondsToSelector:@selector(method)]; \
@@ -466,11 +488,15 @@ BOOL __recaulk_objc_axb_is_ignored(NSObject *self, SEL _cmd) {
     return ((BOOL (*)(struct objc_super *, SEL))objc_msgSendSuper)(&up, @selector(accessibilityIsIgnored));
 }
 
-/* spec: README.md "Objective-C methods", the accessibility bridge -- the root records the class in its one table symbol, then adds each member
+/* spec: Drydock's own-absent bridge (drydock, 2026-11-25) -- every helper an IMP calls is inlined, so its getter and super
+   sends are the IMP's own.
+   spec: README.md "Objective-C methods", the accessibility bridge -- the root records the class in its one table symbol, then adds each member
    with a literal selector, implementation and the floor's 10.9 type, and nothing else: no lookup, no replace. */
 __attribute__((noinline)) void recaulk_accessibility_bridge(Class cls) {
     if (!cls) return;
-    /* The root's one store: the class into the first empty slot, unless it is already there or the table is full. */
+    /* The root's one store: the class into the first empty slot, unless it is already there or the table is full; the
+       members are added on every path, whatever the table holds. Scalar, since drydock's executor has no SSE. */
+#pragma clang loop vectorize(disable) interleave(disable)
     for (int i = 0; i < BRIDGED_MAX; i++) {
         if (__recaulk_objc_axb_bridged[i] == cls) break;
         if (!__recaulk_objc_axb_bridged[i]) {
