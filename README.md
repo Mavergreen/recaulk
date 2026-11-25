@@ -156,6 +156,36 @@ members a newer SDK declares through the protocol the class adopts, takes Drydoc
 others. Drydock credits a group only from a root that registers its
 members and nothing else, every member looked up before any is added, which is why each group has its own root.
 
+#### Stand-in classes
+
+Some 10.10 classes are meant to be subclassed, and a subclass of a class 10.9 lacks never realizes there: its superclass
+is missing. `lib/stand-in/libRecaulkAppKit.dylib` holds a stand-in for each such class `build/standins.txt` lists,
+today `RecaulkAccessibilityElement` for `NSAccessibilityElement`. It keeps 10.10's API (the factory
+`+accessibilityElementWithRole:frame:label:parent:`, `-accessibilityAddChildElement:`, `accessibilityFrameInParentSpace`
+and the protocol properties it stores), and answers 10.9's attribute API from the 10.10 getters, a subclass's overrides
+first, as the accessibility bridge does. The dylib exports its class and metaclass under AppKit's names
+(`_OBJC_CLASS_$_NSAccessibilityElement`); its runtime name stays `RecaulkAccessibilityElement`, so it never collides
+with AppKit's, and `NSClassFromString(@"NSAccessibilityElement")` still returns nil on 10.9.
+
+Link `lib/stub/libRecaulkAppKit.dylib`, never the stand-in itself: the stub has the same install name,
+`@rpath/libRecaulkAppKit.dylib`, and exports no class, so the class stays unbound until launch. Bind the class flat
+and weak, after AppKit, and ship the stand-in in your app's `Contents/Frameworks`:
+
+```sh
+cc myapp.m -framework AppKit \
+   -Wl,-weak_library,/usr/local/mavergreen/recaulk/lib/stub/libRecaulkAppKit.dylib \
+   -Wl,-U,'_OBJC_CLASS_$_NSAccessibilityElement' -Wl,-U,'_OBJC_METACLASS_$_NSAccessibilityElement' \
+   -Wl,-rpath,@executable_path/../Frameworks
+cp /usr/local/mavergreen/recaulk/lib/stand-in/libRecaulkAppKit.dylib MyApp.app/Contents/Frameworks/
+```
+
+(10.9's dyld expands `@executable_path` or `@loader_path` in an rpath only when a slash follows it: write
+`@loader_path/.`, never a bare `@loader_path`.) dyld's flat lookup then takes AppKit's class on 10.10 and later, and
+the stand-in's on 10.9. Declare the class
+`weak_import` in your source (10.9's SDK lacks it): without the stand-in the app still launches, and only the
+subclasses are missing, as before. Never put a stand-in in the executable, where it would win over AppKit's on every
+macOS.
+
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
 
 ```

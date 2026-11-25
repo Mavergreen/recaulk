@@ -173,5 +173,6 @@ sdk_exports "$SDK" > "$W/sdk-exports.txt"
 printf "build-make=%s\n" "$("$MAKE" --version | sed -n 1p)" > "$B/build-tools.txt"
 
 SDK="$SDK" sh "$SELF/build-objc.sh" "$T" "$W/objc-companion" 1>&2
+SDK="$SDK" sh "$SELF/build-standins.sh" "$T" "$W/standins" 1>&2
 
 printf '%s\n' "$B"

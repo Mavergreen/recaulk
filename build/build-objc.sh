@@ -52,7 +52,7 @@ sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else sh
 (cd "$ROOT" && sha256 src/objc/workspace.m src/objc/workspace-events.m src/objc/workspace-recents.m \
   src/objc/voiceover.m src/objc/reduce-motion.m src/objc/control.m src/objc/window.m src/objc/tablecolumn.m src/objc/register.m src/objc/register-common.m src/objc/register-common.h src/objc/locale.m src/objc/string.m \
   src/objc/register-foundation.m src/objc/foundation-private.h src/objc/timer.m src/objc/color.m src/objc/graphics-context.m \
-  src/objc/accessibility-common.m src/objc/accessibility-view.m src/objc/accessibility-cell.m src/objc/accessibility-bridge.m src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
+  src/objc/accessibility-common.m src/objc/accessibility-view.m src/objc/accessibility-cell.m src/objc/accessibility-bridge.m src/objc/accessibility-map.h src/objc/workspace-private.h src/objc/providers.json build/build-objc.sh \
   build/objc-provider-manifest.sh) > "$W/source-inputs.txt"
 (cd "$W" && sha256 generated/providers-generated.h) >> "$W/source-inputs.txt"
 sh "$G" manifest "$D" "$W/librecaulk-objc.a" "$W/objc-providers.json" "$arch" "$role" \

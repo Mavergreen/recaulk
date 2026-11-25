@@ -1,0 +1,5 @@
+# The stand-in classes libRecaulkAppKit.dylib holds (README.md "Stand-in classes"): one per line,
+#   <Recaulk's class> <the AppKit class it stands in for>
+# src/standins/<Recaulk's class>.m defines it; build/build-standins.sh exports its class and metaclass under the
+# AppKit name and keeps its own name private. A further stand-in is a source file and a line here.
+RecaulkAccessibilityElement NSAccessibilityElement

@@ -41,7 +41,7 @@ archive_first="$(ls -d "$tmp"/x/*.pkg | head -1)"
 mkdir "$tmp/files"
 gzip -dc < "$comp/Payload" > "$tmp/payload.cpio" || { echo "FAIL: the payload does not decompress"; exit 1; }
 ( cd "$tmp/files" && cpio -id --quiet < "$tmp/payload.cpio" ) || { echo "FAIL: cpio could not extract the payload"; exit 1; }
-for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib; do
+for f in librecaulk.a librecaulk-cxxabi-exports.a libRecaulkSystem.dylib stand-in/libRecaulkAppKit.dylib stub/libRecaulkAppKit.dylib; do
   cmp -s "$tmp/files/usr/local/mavergreen/recaulk/lib/$f" "$B/stage/usr/local/mavergreen/recaulk/lib/$f" \
     || { echo "FAIL: the packaged $f is not byte-identical to the built and tested one"; exit 1; }
 done
@@ -50,6 +50,9 @@ FILES="$(cd "$tmp/files" && find . -type f | sed 's|^\./||')"
 need() { printf '%s\n' "$FILES" | grep -qx "$1" || { echo "the payload lacks $1"; exit 1; }; }
 need 'usr/local/mavergreen/recaulk/lib/librecaulk.a'
 need 'usr/local/mavergreen/recaulk/lib/libRecaulkSystem.dylib'
+# spec: README.md "Stand-in classes" -- the stand-in an app ships in its Frameworks, and the stub it links
+need 'usr/local/mavergreen/recaulk/lib/stand-in/libRecaulkAppKit.dylib'
+need 'usr/local/mavergreen/recaulk/lib/stub/libRecaulkAppKit.dylib'
 need 'usr/local/mavergreen/recaulk/include/recaulk/MacportsLegacySupport.h'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/recipes.json'
 need 'usr/local/mavergreen/recaulk/share/sdk-metadata/profiles.json'
