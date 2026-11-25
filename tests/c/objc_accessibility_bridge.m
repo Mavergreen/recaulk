@@ -273,6 +273,15 @@ static void bridged(BOOL setters) {
 		CHECK([[v accessibilityAttributeNames] containsObject:NSAccessibilityRoleAttribute],
 		      "a getterless bridged view lost 10.9's attribute names");
 		CHECK([v accessibilityIsIgnored], "a getterless bridged view is no longer ignored, as 10.9 ignores it");
+		/* the group's own getters (label, role, children, selected range, frame) answer on every view: a bridged
+		   view without its own lists AXDescription or AXSelectedTextRange only once they answer */
+		NSView *bare = [[[lone alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)] autorelease];
+		CHECK(![[bare accessibilityAttributeNames] containsObject:NSAccessibilityDescriptionAttribute] &&
+		          ![[bare accessibilityAttributeNames] containsObject:NSAccessibilitySelectedTextRangeAttribute],
+		      "a getterless bridged view lists the setter group's AXDescription or AXSelectedTextRange: %s",
+		      str([bare accessibilityAttributeNames]));
+		CHECK([[v accessibilityAttributeNames] containsObject:NSAccessibilityDescriptionAttribute],
+		      "a bridged view whose label was set does not list AXDescription");
 	}
 }
 

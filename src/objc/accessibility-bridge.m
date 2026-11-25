@@ -203,41 +203,22 @@ static inline __attribute__((always_inline)) id answer(NSObject *self, NSString 
     return nil;
 }
 
-/* The 10.10 getter answer() reads a 10.9 attribute from, or NULL for one it doesn't map. */
-static inline __attribute__((always_inline)) SEL getterOf(NSString *a) {
-#define GETTER(constant, getter) if ([a isEqualToString:constant]) return @selector(getter);
-    MAPPED(GETTER, GETTER, GETTER, GETTER)
-#undef GETTER
-    if ([a isEqualToString:NSAccessibilityPositionAttribute] || [a isEqualToString:NSAccessibilitySizeAttribute])
-        return @selector(accessibilityFrame);
-    return NULL;
-}
-
-/* spec: iterm's voiceover-3.0.15.tsv -- self's class implements the attribute's getter below the floor (its own, not
-   10.9's or a Recaulk group's on NSView or NSCell), so it lists the attribute whatever the getter answers now */
-static inline __attribute__((always_inline)) BOOL implements(NSObject *self, Class floor, NSString *a) {
-    SEL g = getterOf(a);
-    return g && [self respondsToSelector:g] &&
-           class_getMethodImplementation(object_getClass(self), g) != class_getMethodImplementation(floor, g);
-}
-
-/* Every 10.9 attribute answer() maps, in the order 10.9 lists its own. */
-static inline __attribute__((always_inline)) NSArray *mappedAttributes(void) {
-    return [NSArray arrayWithObjects:NSAccessibilityRoleAttribute, NSAccessibilitySubroleAttribute,
-        NSAccessibilityRoleDescriptionAttribute, NSAccessibilityDescriptionAttribute, NSAccessibilityTitleAttribute,
-        NSAccessibilityHelpAttribute, NSAccessibilityValueAttribute, NSAccessibilityValueDescriptionAttribute,
-        NSAccessibilityPlaceholderValueAttribute, NSAccessibilityIdentifierAttribute, NSAccessibilityDocumentAttribute,
-        NSAccessibilityFilenameAttribute, NSAccessibilityURLAttribute, NSAccessibilityParentAttribute,
-        NSAccessibilityWindowAttribute, NSAccessibilityTopLevelUIElementAttribute, NSAccessibilityChildrenAttribute,
-        NSAccessibilityVisibleChildrenAttribute, NSAccessibilitySelectedChildrenAttribute,
-        NSAccessibilityContentsAttribute, NSAccessibilityTabsAttribute, NSAccessibilityRowsAttribute,
-        NSAccessibilityColumnsAttribute, NSAccessibilitySelectedTextAttribute, NSAccessibilitySelectedTextRangesAttribute,
-        NSAccessibilityEnabledAttribute, NSAccessibilityFocusedAttribute, NSAccessibilitySelectedAttribute,
-        NSAccessibilityExpandedAttribute, NSAccessibilityEditedAttribute, NSAccessibilityIndexAttribute,
-        NSAccessibilityNumberOfCharactersAttribute, NSAccessibilityInsertionPointLineNumberAttribute,
-        NSAccessibilitySelectedTextRangeAttribute, NSAccessibilityVisibleCharacterRangeAttribute,
-        NSAccessibilityPositionAttribute, NSAccessibilitySizeAttribute, nil];
-}
+/* spec: iterm's voiceover-3.0.15.tsv -- an attribute is listed when self implements its getter, whatever the getter
+   answers now. platform: 10.9's NSView, NSCell and NSObject have none of these getters, so responding is implementing,
+   except for the five Recaulk's NSView and NSCell groups add to every view and cell (accessibility-view.m,
+   accessibility-cell.m): those list only when they answer.
+   spec: Drydock's own-absent bridge (drydock, 2026-11-25) -- unrolled, each respondsToSelector: naming the literal
+   selector of the send it guards; a selector loaded from a table is computed, and its guard would not count. */
+#define GROUP_GETTER(getter) \
+    (sel_isEqual(@selector(getter), @selector(accessibilityLabel)) || \
+     sel_isEqual(@selector(getter), @selector(accessibilityRole)) || \
+     sel_isEqual(@selector(getter), @selector(accessibilityChildren)) || \
+     sel_isEqual(@selector(getter), @selector(accessibilitySelectedTextRange)) || \
+     sel_isEqual(@selector(getter), @selector(accessibilityFrame)))
+#define LISTED(constant, getter) \
+    if (![names containsObject:constant] && [self respondsToSelector:@selector(getter)] && \
+        (!GROUP_GETTER(getter) || answer(self, constant))) \
+        [names addObject:constant];
 
 NSArray *__recaulk_objc_axb_attribute_names(NSObject *self, SEL _cmd) {
     SUPER(self);
@@ -245,8 +226,9 @@ NSArray *__recaulk_objc_axb_attribute_names(NSObject *self, SEL _cmd) {
     NSArray *inherited = ((NSArray *(*)(struct objc_super *, SEL))objc_msgSendSuper)(&up, @selector(accessibilityAttributeNames));
     if (!enter(self, namesQuestion)) return inherited;
     NSMutableArray *names = [NSMutableArray arrayWithArray:inherited ? inherited : [NSArray array]];
-    for (NSString *a in mappedAttributes())
-        if (![names containsObject:a] && (implements(self, up.super_class, a) || answer(self, a))) [names addObject:a];
+    MAPPED(LISTED, LISTED, LISTED, LISTED)
+    LISTED(NSAccessibilityPositionAttribute, accessibilityFrame)
+    LISTED(NSAccessibilitySizeAttribute, accessibilityFrame)
     leave(self, namesQuestion);
     (void)_cmd;
     return names;
