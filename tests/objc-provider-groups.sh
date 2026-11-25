@@ -1,6 +1,6 @@
 #!/bin/sh
 # platform: macOS-only -- Drydock's strict Objective-C analyzer (drydock-objc analyze) runs on macOS only; elsewhere this skips
-# spec: README.md "Objective-C methods" -- objc-providers.json is schema 2, and the Drydock shipyard pins (0.7.0 or
+# spec: README.md "Objective-C methods" -- objc-providers.json is schema 2, and Recaulk's pinned Drydock (0.7.1 or
 #       later) credits each group (the class methods, and NSView's and NSCell's accessibility) whole: a consumer
 #       linked as `drydock-objc link-args` says, with build evidence, has every member's send provided and every group
 #       active. Nothing built here is executed.
@@ -15,9 +15,13 @@ d="$(mktemp -d "${TMPDIR:-/tmp}/objc-provider-groups.XXXXXX")"
 d="$(cd "$d" && pwd -P)"
 [ -n "${RECAULK_KEEP:-}" ] || trap 'rm -rf "$d"' EXIT
 mkdir "$d/root" "$d/src"
-# spec: README.md "Objective-C methods" -- consumers verify through shipyard's pinned Drydock, so this does too
-DRYDOCK="$(sh "$SHIPYARD_SCRIPTS/fetch_drydock.sh" "$SHIPYARD_SCRIPTS/../components/drydock" | tail -1)"
-REF="$(sh "$SHIPYARD_SCRIPTS/objc-reference-dir.sh")"
+# spec: README.md "Objective-C methods" -- Recaulk's own Drydock pin, fetched as shipyard fetches its pin (as
+#       tests/strict-guard-consumer.sh does), with that Drydock's reference set: a release credits its groups with the
+#       Drydock it adopted; consumers verify with shipyard's pin, which catches up
+mkdir "$d/pin"
+printf 'v%s\n' "$(tr -d ' \t\n' < components/drydock/version)" > "$d/pin/version"
+DRYDOCK="$(sh "$SHIPYARD_SCRIPTS/fetch_drydock.sh" "$d/pin" | tail -1)"
+REF="$DRYDOCK/share/drydock/objc/reference"
 X="$DRYDOCK/bin/drydock-objc"
 GIDS="recaulk.nstimer.block-timers.v1 recaulk.nscolor.label-colors.v1 recaulk.nsgraphicscontext.cgcontext.v1
 recaulk.nsview.accessibility.v1 recaulk.nscell.accessibility.v1"
