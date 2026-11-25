@@ -23,8 +23,8 @@ if compiling; then
   done
   printf '%s\n' "$real" | grep -q 'RecaulkAccessibilityElement' && fail "the stand-in exports its class under its own name too"
   "$NM" -gU "$STUB" | grep -q 'OBJC_CLASS_\$\|OBJC_METACLASS_\$' && fail "the stub exports a class, which an app would bind two-level"
-  # spec: Drydock's provided-class plan -- it names each method by its implementation's local symbol, so the shipped
-  #       stand-in keeps them (no strip -x; tests/package-pkg.sh holds the packaged copy byte-identical to this one)
+  # spec: build/build-standins.sh "Drydock names each method by its local symbol" -- the shipped stand-in keeps them
+  #       (no strip -x; tests/package-pkg.sh holds the packaged copy byte-identical to this one)
   for m in '+[RecaulkAccessibilityElement accessibilityElementWithRole:frame:label:parent:]' \
            '-[RecaulkAccessibilityElement accessibilityRole]' '-[RecaulkAccessibilityElement accessibilityAttributeValue:]'; do
     "$NM" -m "$REAL" | grep -qF "non-external $m" || fail "the stand-in lacks the local symbol $m"

@@ -77,6 +77,6 @@ if [ "$STANDIN_STUB" = yes ]; then
 fi
 sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@"; else shasum -a 256 "$@"; fi; }
 (cd "$ROOT" && sha256 $(cat "$W/source-inputs") src/objc/accessibility-map.h build/standins.txt build/build-standins.sh) \
-  > "$W/source-inputs.txt"
-(cd "$T" && sha256 lib/stand-in/$LIB $([ "$STANDIN_STUB" = yes ] && echo lib/stub/$LIB)) > "$W/products.txt"
+  > "$W/source-inputs.txt" || exit 1
+(cd "$T" && sha256 lib/stand-in/$LIB $([ "$STANDIN_STUB" = yes ] && echo lib/stub/$LIB)) > "$W/products.txt" || exit 1
 printf 'export=%s\nstub=%s\n' "$STANDIN_EXPORT" "$STANDIN_STUB" > "$W/export.txt"
