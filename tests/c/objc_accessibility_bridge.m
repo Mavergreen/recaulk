@@ -72,6 +72,10 @@
 - (void)setAccessibilityLabel:(NSString *)label;
 @end
 
+/* spec: Drydock's own-absent group record, class_table -- the root's one store: its class argument into the first
+   empty slot of this table, which the members read to find their super */
+extern Class __recaulk_objc_axb_bridged[256];
+
 static int failures;
 #define CHECK(cond, ...) do { if (!(cond)) { printf("FAIL: " __VA_ARGS__); printf("\n"); failures++; } } while (0)
 static BOOL same(id a, id b) { return a == b || [a isEqual:b]; }
@@ -204,6 +208,12 @@ static void bridged(BOOL setters) {
 	unsigned after = 0;
 	free(class_copyMethodList([Plain class], &after));
 	CHECK(before == after && own([Plain class]) == 0, "bridging Nil or other classes added to an unbridged class");
+	recaulk_accessibility_bridge(term); /* again: already in the table, so not stored twice */
+	CHECK(__recaulk_objc_axb_bridged[0] == term && __recaulk_objc_axb_bridged[1] == bar &&
+	          __recaulk_objc_axb_bridged[2] == cell && __recaulk_objc_axb_bridged[3] == Nil,
+	      "the class table is %p, %p, %p, %p, not the three bridged classes (%p, %p, %p) then empty",
+	      (void *)__recaulk_objc_axb_bridged[0], (void *)__recaulk_objc_axb_bridged[1], (void *)__recaulk_objc_axb_bridged[2],
+	      (void *)__recaulk_objc_axb_bridged[3], (void *)term, (void *)bar, (void *)cell);
 	CHECK(own(term) == (int)NMEMBERS && own(bar) == (int)NMEMBERS && own(cell) == (int)NMEMBERS,
 	      "a bridged class has %d, %d, %d of %d members", own(term), own(bar), own(cell), (int)NMEMBERS);
 	CHECK(own([SubTermView class]) == 0, "a bridged class's subclass got members of its own");

@@ -86,42 +86,47 @@ void recaulk_accessibility_bridge(Class cls);
 - (BOOL)accessibilityPerformShowMenu;
 @end
 
-/* The classes the app has bridged: one data symbol, which only the root writes (Drydock's group declaration names it).
-   A member's super is the superclass of the first bridged class on self's chain, not of self's class, which for a
-   subclass of a bridged class (or KVO's) would be the bridged class itself, and loop. A reserved slot not yet filled
-   is Nil, which no class matches. */
+/* The classes the app has bridged, in the order bridged, then Nil: one data symbol, Drydock's class_table, which only
+   the root writes and only with its class argument. A member's super is the superclass of the first bridged class on
+   self's chain, not of self's class, which for a subclass of a bridged class (or KVO's) would be the bridged class
+   itself, and loop. */
 enum { BRIDGED_MAX = 256 };
-struct __recaulk_objc_axb_table { volatile int count; Class classes[BRIDGED_MAX]; };
-struct __recaulk_objc_axb_table __recaulk_objc_axb_bridged = { 0, { Nil } };
+Class __recaulk_objc_axb_bridged[BRIDGED_MAX];
 
 static Class floorOf(NSObject *self) {
-    int n = __recaulk_objc_axb_bridged.count;
-    if (n > BRIDGED_MAX) n = BRIDGED_MAX;
     for (Class c = object_getClass(self); c; c = class_getSuperclass(c))
-        for (int i = 0; i < n; i++)
-            if (__recaulk_objc_axb_bridged.classes[i] == c) return class_getSuperclass(c);
+        for (int i = 0; i < BRIDGED_MAX && __recaulk_objc_axb_bridged[i]; i++)
+            if (__recaulk_objc_axb_bridged[i] == c) return class_getSuperclass(c);
     return Nil;
 }
 
 /* Reentry: Recaulk's own NSView and NSCell setter groups (accessibility-common.m) give every view and cell 10.10
    getters that read 10.9's attribute API, so a bridged class without a getter of its own would ask the bridge, which
    asks the getter, which asks the bridge. A member already answering the same question for the same element answers
-   it from 10.9 instead. */
-enum { DEPTH_MAX = 32 };
-struct asking { NSObject *element; NSString *question; };
-static __thread struct asking asked[DEPTH_MAX];
-static __thread int depth;
+   it from 10.9 instead. The questions in progress live in the thread's dictionary, never in this image, so no member
+   stores to a global. */
+static NSString *const askingKey = @"recaulk.accessibility-bridge.asking";
 
+static NSString *questionOf(NSObject *self, NSString *question) {
+    return [NSString stringWithFormat:@"%p %@", (void *)self, question];
+}
 static BOOL enter(NSObject *self, NSString *question) {
-    if (depth >= DEPTH_MAX) return NO;
-    for (int i = 0; i < depth; i++)
-        if (asked[i].element == self && [asked[i].question isEqualToString:question]) return NO;
-    asked[depth].element = self;
-    asked[depth].question = question;
-    depth++;
+    NSMutableDictionary *perThread = [[NSThread currentThread] threadDictionary];
+    NSMutableSet *asking = [perThread objectForKey:askingKey];
+    if (!asking) {
+        asking = [NSMutableSet set];
+        [perThread setObject:asking forKey:askingKey];
+    }
+    NSString *q = questionOf(self, question);
+    if ([asking containsObject:q]) return NO;
+    [asking addObject:q];
     return YES;
 }
-static void leave(void) { depth--; }
+static void leave(NSObject *self, NSString *question) {
+    NSMutableDictionary *perThread = [[NSThread currentThread] threadDictionary];
+    NSMutableSet *asking = [perThread objectForKey:askingKey];
+    [asking removeObject:questionOf(self, question)];
+}
 
 static NSString *const namesQuestion = @"recaulk:attribute-names", *const parameterizedQuestion = @"recaulk:parameterized",
     *const actionsQuestion = @"recaulk:actions", *const ignoredQuestion = @"recaulk:ignored";
@@ -220,7 +225,7 @@ NSArray *__recaulk_objc_axb_attribute_names(NSObject *self, SEL _cmd) {
     NSMutableArray *names = [NSMutableArray arrayWithArray:inherited ? inherited : [NSArray array]];
     for (NSString *a in mappedAttributes())
         if (![names containsObject:a] && answer(self, a)) [names addObject:a];
-    leave();
+    leave(self, namesQuestion);
     (void)_cmd;
     return names;
 }
@@ -231,7 +236,7 @@ id __recaulk_objc_axb_attribute_value(NSObject *self, SEL _cmd, NSString *attrib
     id mine = nil;
     if (enter(self, attribute)) {
         mine = answer(self, attribute);
-        leave();
+        leave(self, attribute);
     }
     (void)_cmd;
     if (mine) return mine;
@@ -267,7 +272,7 @@ BOOL __recaulk_objc_axb_is_attribute_settable(NSObject *self, SEL _cmd, NSString
        answers is read-only here rather than asked of them */
     if (enter(self, attribute)) {
         id mine = answer(self, attribute);
-        leave();
+        leave(self, attribute);
         if (mine) return NO;
     }
     return ((BOOL (*)(struct objc_super *, SEL, NSString *))objc_msgSendSuper)(&up, @selector(accessibilityIsAttributeSettable:),
@@ -361,7 +366,7 @@ NSArray *__recaulk_objc_axb_parameterized_names(NSObject *self, SEL _cmd) {
     NAME(NSAccessibilityStyleRangeForIndexParameterizedAttribute, accessibilityStyleRangeForIndex:);
     NAME(NSAccessibilityAttributedStringForRangeParameterizedAttribute, accessibilityAttributedStringForRange:);
 #undef NAME
-    leave();
+    leave(self, parameterizedQuestion);
     return names;
 }
 
@@ -415,7 +420,7 @@ NSArray *__recaulk_objc_axb_action_names(NSObject *self, SEL _cmd) {
         action(self, a, NO, &known);
         if (known && ![names containsObject:a]) [names addObject:a];
     }
-    leave();
+    leave(self, actionsQuestion);
     return names;
 }
 
@@ -455,7 +460,7 @@ BOOL __recaulk_objc_axb_is_ignored(NSObject *self, SEL _cmd) {
             NSString *role = [self accessibilityRole];
             if (role && ![role isEqualToString:NSAccessibilityUnknownRole]) decided = NO;
         }
-        leave();
+        leave(self, ignoredQuestion);
         if (decided >= 0) return (BOOL)decided;
     }
     return ((BOOL (*)(struct objc_super *, SEL))objc_msgSendSuper)(&up, @selector(accessibilityIsIgnored));
@@ -465,9 +470,14 @@ BOOL __recaulk_objc_axb_is_ignored(NSObject *self, SEL _cmd) {
    with a literal selector, implementation and the floor's 10.9 type, and nothing else: no lookup, no replace. */
 __attribute__((noinline)) void recaulk_accessibility_bridge(Class cls) {
     if (!cls) return;
-    int slot = __sync_fetch_and_add(&__recaulk_objc_axb_bridged.count, 1);
-    if (slot < BRIDGED_MAX) __recaulk_objc_axb_bridged.classes[slot] = cls;
-    __sync_synchronize();
+    /* The root's one store: the class into the first empty slot, unless it is already there or the table is full. */
+    for (int i = 0; i < BRIDGED_MAX; i++) {
+        if (__recaulk_objc_axb_bridged[i] == cls) break;
+        if (!__recaulk_objc_axb_bridged[i]) {
+            __recaulk_objc_axb_bridged[i] = cls;
+            break;
+        }
+    }
     class_addMethod(cls, sel_registerName("accessibilityAttributeNames"), (IMP)__recaulk_objc_axb_attribute_names,
                     "@16@0:8");
     class_addMethod(cls, sel_registerName("accessibilityAttributeValue:"), (IMP)__recaulk_objc_axb_attribute_value,
