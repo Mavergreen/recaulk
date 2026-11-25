@@ -35,7 +35,7 @@ done
 cmp -s sdk-metadata/recipes.json "$T/share/sdk-metadata/recipes.json" || bad "share/sdk-metadata/recipes.json is not the committed sdk-metadata/recipes.json"
 cmp -s sdk-metadata/profiles.json "$T/share/sdk-metadata/profiles.json" || bad "share/sdk-metadata/profiles.json is not the committed sdk-metadata/profiles.json"
 [ "$(ls "$T/share/sdk-metadata" | tr "\n" " ")" = "profiles.json recipes.json " ] || bad "share/sdk-metadata holds: $(ls "$T/share/sdk-metadata" | tr "\n" " ")"
-[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
+[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a stand-in stub " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
 [ -f "$T/share/recaulk/objc-providers.json" ] || bad "separate Objective-C provider metadata missing"
 [ -f "$T/share/recaulk/objc-source.receipt" ] || bad "the Objective-C provider's source receipt is missing"
 stray="$(cd "$B/stage" && find . -mindepth 1 -not -path ./usr -not -path ./usr/local -not -path ./usr/local/mavergreen \
