@@ -86,18 +86,20 @@ void recaulk_accessibility_bridge(Class cls);
 - (BOOL)accessibilityPerformShowMenu;
 @end
 
-/* The classes the app has bridged. A member's super is the superclass of the first bridged class on self's chain, not
-   of self's class, which for a subclass of a bridged class (or KVO's) would be the bridged class itself, and loop. */
+/* The classes the app has bridged: one data symbol, which only the root writes (Drydock's group declaration names it).
+   A member's super is the superclass of the first bridged class on self's chain, not of self's class, which for a
+   subclass of a bridged class (or KVO's) would be the bridged class itself, and loop. A reserved slot not yet filled
+   is Nil, which no class matches. */
 enum { BRIDGED_MAX = 256 };
-static Class bridged[BRIDGED_MAX];
-static volatile int bridgedCount; /* slots reserved; an unfilled one is Nil, which no class matches */
+struct __recaulk_objc_axb_table { volatile int count; Class classes[BRIDGED_MAX]; };
+struct __recaulk_objc_axb_table __recaulk_objc_axb_bridged = { 0, { Nil } };
 
 static Class floorOf(NSObject *self) {
-    int n = bridgedCount;
+    int n = __recaulk_objc_axb_bridged.count;
     if (n > BRIDGED_MAX) n = BRIDGED_MAX;
     for (Class c = object_getClass(self); c; c = class_getSuperclass(c))
         for (int i = 0; i < n; i++)
-            if (bridged[i] == c) return class_getSuperclass(c);
+            if (__recaulk_objc_axb_bridged.classes[i] == c) return class_getSuperclass(c);
     return Nil;
 }
 
@@ -459,12 +461,12 @@ BOOL __recaulk_objc_axb_is_ignored(NSObject *self, SEL _cmd) {
     return ((BOOL (*)(struct objc_super *, SEL))objc_msgSendSuper)(&up, @selector(accessibilityIsIgnored));
 }
 
-/* spec: README.md "Objective-C methods", the accessibility bridge -- the root records the class, then adds each member
+/* spec: README.md "Objective-C methods", the accessibility bridge -- the root records the class in its one table symbol, then adds each member
    with a literal selector, implementation and the floor's 10.9 type, and nothing else: no lookup, no replace. */
 __attribute__((noinline)) void recaulk_accessibility_bridge(Class cls) {
     if (!cls) return;
-    int slot = __sync_fetch_and_add(&bridgedCount, 1);
-    if (slot < BRIDGED_MAX) bridged[slot] = cls;
+    int slot = __sync_fetch_and_add(&__recaulk_objc_axb_bridged.count, 1);
+    if (slot < BRIDGED_MAX) __recaulk_objc_axb_bridged.classes[slot] = cls;
     __sync_synchronize();
     class_addMethod(cls, sel_registerName("accessibilityAttributeNames"), (IMP)__recaulk_objc_axb_attribute_names,
                     "@16@0:8");
