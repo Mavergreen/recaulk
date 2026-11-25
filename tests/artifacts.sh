@@ -11,8 +11,7 @@ dylib="$T/lib/libRecaulkSystem.dylib"
 fail=0
 bad() { echo "FAIL: $*"; fail=1; }
 
-for f in librecaulk.a librecaulk-cxxabi-exports.a librecaulk-objc.a libRecaulkSystem.dylib stand-in/libRecaulkAppKit.dylib \
-    stub/libRecaulkAppKit.dylib; do
+for f in librecaulk.a librecaulk-cxxabi-exports.a librecaulk-objc.a libRecaulkSystem.dylib stand-in/libRecaulkAppKit.dylib; do
   [ "$("$LIPO" -info "$T/lib/$f" | sed -n 's/.*: //p' | xargs)" = x86_64 ] || bad "$f is not x86_64-only"
 done
 "$OTOOL" -l "$dylib" | grep -A2 LC_VERSION_MIN_MACOSX | grep -q 'version 10.9' || bad "dylib min is not 10.9"
@@ -26,8 +25,8 @@ got="$("$OTOOL" -L "$dylib" | sed '1,2d' | sed 's/^[[:space:]]*//; s/ (.*//; s|.
 # spec: src/backfills/cxxabi_*.c -- the libc++abi back-fills call the system's libc++abi.dylib
 want="CoreFoundation CoreGraphics CoreServices CoreVideo Security libSystem.B.dylib libc++abi.dylib libobjc.A.dylib "
 [ "$got" = "$want" ] || bad "linked libraries are '$got', want '$want'"
-# spec: README.md "Stand-in classes" -- both by @rpath, so an app loads the stand-in from its own Frameworks
-for f in stand-in/libRecaulkAppKit.dylib stub/libRecaulkAppKit.dylib; do
+# spec: README.md "Stand-in classes" -- by @rpath, so an app loads the shim from its own Frameworks
+for f in stand-in/libRecaulkAppKit.dylib; do
   [ "$("$OTOOL" -D "$T/lib/$f" | sed -n 2p)" = @rpath/libRecaulkAppKit.dylib ] || bad "$f's install name is not @rpath/libRecaulkAppKit.dylib"
   "$OTOOL" -l "$T/lib/$f" | grep -A2 LC_VERSION_MIN_MACOSX | grep -q 'version 10.9' || bad "$f's min is not 10.9"
 done
@@ -35,7 +34,7 @@ done
 cmp -s sdk-metadata/recipes.json "$T/share/sdk-metadata/recipes.json" || bad "share/sdk-metadata/recipes.json is not the committed sdk-metadata/recipes.json"
 cmp -s sdk-metadata/profiles.json "$T/share/sdk-metadata/profiles.json" || bad "share/sdk-metadata/profiles.json is not the committed sdk-metadata/profiles.json"
 [ "$(ls "$T/share/sdk-metadata" | tr "\n" " ")" = "profiles.json recipes.json " ] || bad "share/sdk-metadata holds: $(ls "$T/share/sdk-metadata" | tr "\n" " ")"
-[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a stand-in stub " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
+[ "$(ls "$T/lib" | tr '\n' ' ')" = "libRecaulkSystem.dylib librecaulk-cxxabi-exports.a librecaulk-objc.a librecaulk.a stand-in " ] || bad "lib holds: $(ls "$T/lib" | tr '\n' ' ')"
 [ -f "$T/share/recaulk/objc-providers.json" ] || bad "separate Objective-C provider metadata missing"
 [ -f "$T/share/recaulk/objc-source.receipt" ] || bad "the Objective-C provider's source receipt is missing"
 stray="$(cd "$B/stage" && find . -mindepth 1 -not -path ./usr -not -path ./usr/local -not -path ./usr/local/mavergreen \

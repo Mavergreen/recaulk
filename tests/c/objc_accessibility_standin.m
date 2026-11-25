@@ -3,17 +3,20 @@
 #include <stdio.h>
 #include <string.h>
 
-/* An app shaped like iTerm2 3.2.9's tab elements (PSMTabAccessibilityElementPrototype): it subclasses 10.10's
-   NSAccessibilityElement in its own code, links Recaulk's stub libRecaulkAppKit.dylib weakly, and binds the class
-   flat and weak, so dyld takes AppKit's class where AppKit has one and Recaulk's stand-in on 10.9.
-     with:    the stand-in is beside the program: the subclass realizes and 10.9's attribute API answers from it.
-     without: no stand-in: the program still loads, and the subclass is missing (the failure mode). */
+/* An app shaped like iTerm2 3.2.9's tab elements (PSMTabAccessibilityElementPrototype) after Drydock retargets them:
+   the subclass's class and metaclass bind Recaulk's shim, RecaulkAccessibilityElement, two-level in
+   libRecaulkAppKit.dylib. Each mode is one branch of the shim's constructor:
+     standin:  no NSAccessibilityElement (10.9): the stand-in's methods serve the subclass;
+     reparent: a fake NSAccessibilityElement loaded first, as 10.10's AppKit would be (its +load realizes the shim, which
+               objc4-551's class_setSuperclass needs): the shim now inherits from it, and Recaulk added nothing;
+     fallback: the fake is there but the re-parent failed (the shell checks the line): the stand-in serves, on NSObject;
+     conflict: a category on the shim already has accessibilityRole, so the stand-in's cannot land (the shell checks
+               the line): the category's answers, and the other members still serve. */
 
-/* spec: MacOSX10.10.sdk and later, NSAccessibilityElement.h -- declared here as a 10.9 program declares it */
-__attribute__((weak_import))
-@interface NSAccessibilityElement : NSObject
+/* spec: MacOSX10.10.sdk and later, NSAccessibilityElement.h -- what an app subclassing it sends, now to the shim */
+@interface RecaulkAccessibilityElement : NSObject
 + (id)accessibilityElementWithRole:(NSString *)role frame:(NSRect)frame label:(NSString *)label parent:(id)parent;
-- (void)accessibilityAddChildElement:(NSAccessibilityElement *)childElement;
+- (void)accessibilityAddChildElement:(RecaulkAccessibilityElement *)childElement;
 @property NSRect accessibilityFrameInParentSpace;
 - (NSString *)accessibilityLabel;
 - (void)setAccessibilityLabel:(NSString *)label;
@@ -25,7 +28,7 @@ __attribute__((weak_import))
 
 static int pressed;
 
-@interface TabElement : NSAccessibilityElement
+@interface TabElement : RecaulkAccessibilityElement
 @end
 @implementation TabElement
 - (NSString *)accessibilityLabel { return @"from the subclass"; }
@@ -36,71 +39,106 @@ static int failures;
 #define CHECK(cond, ...) do { if (!(cond)) { failures++; printf("FAIL: "); printf(__VA_ARGS__); printf("\n"); } } while (0)
 
 static BOOL same(id a, id b) { return a == b || [a isEqual:b]; }
+static const char *str(id o) { return o ? [[o description] UTF8String] : "nil"; }
+static unsigned count(Class c) { unsigned n = 0; free(class_copyMethodList(c, &n)); return n; }
+
+static void standin(Class tab, Class base) {
+    CHECK(class_getSuperclass(base) == [NSObject class], "the shim's superclass is %s, not NSObject",
+          class_getName(class_getSuperclass(base)));
+    /* spec: Drydock's provided-class design, check 4 -- only the declared members, the factory on the metaclass */
+    unsigned n = 0;
+    Method *ms = class_copyMethodList(object_getClass(base), &n);
+    CHECK(n == 1 && ms && sel_isEqual(method_getName(ms[0]), @selector(accessibilityElementWithRole:frame:label:parent:)),
+          "the shim's metaclass has %u methods, not only the factory", n);
+    free(ms);
+
+    NSView *parent = [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 200, 100)] autorelease];
+    TabElement *e = [TabElement accessibilityElementWithRole:NSAccessibilityRadioButtonRole
+                                                       frame:NSMakeRect(10, 20, 30, 40) label:@"from the factory" parent:parent];
+    CHECK([e isKindOfClass:tab], "the factory made a %s, not a TabElement", class_getName([e class]));
+    CHECK(same([e accessibilityAttributeValue:NSAccessibilityRoleAttribute], NSAccessibilityRadioButtonRole),
+          "AXRole is %s", str([e accessibilityAttributeValue:NSAccessibilityRoleAttribute]));
+    CHECK(same([e accessibilityAttributeValue:NSAccessibilityDescriptionAttribute], @"from the subclass"),
+          "AXDescription is %s, not the subclass's label", str([e accessibilityAttributeValue:NSAccessibilityDescriptionAttribute]));
+    CHECK([e accessibilityAttributeValue:NSAccessibilityParentAttribute] == parent, "AXParent is not the parent view");
+    CHECK(NSEqualPoints([[e accessibilityAttributeValue:NSAccessibilityPositionAttribute] pointValue], NSMakePoint(10, 20)),
+          "AXPosition is not the frame's origin");
+    CHECK(NSEqualSizes([[e accessibilityAttributeValue:NSAccessibilitySizeAttribute] sizeValue], NSMakeSize(30, 40)),
+          "AXSize is not the frame's size");
+    NSArray *names = [e accessibilityAttributeNames];
+    for (NSString *a in [NSArray arrayWithObjects:NSAccessibilityRoleAttribute, NSAccessibilityDescriptionAttribute,
+                         NSAccessibilityParentAttribute, NSAccessibilityPositionAttribute, NSAccessibilitySizeAttribute, nil])
+        CHECK([names containsObject:a], "accessibilityAttributeNames lacks %s", [a UTF8String]);
+    CHECK(![e accessibilityIsIgnored], "the element is ignored");
+    CHECK([[e accessibilityActionNames] containsObject:NSAccessibilityPressAction], "AXPress is not offered");
+    [e accessibilityPerformAction:NSAccessibilityPressAction];
+    CHECK(pressed == 1, "AXPress did not reach the subclass's accessibilityPerformPress (%d)", pressed);
+
+    /* the stand-in's own storage, where no subclass overrides */
+    RecaulkAccessibilityElement *plain = [base accessibilityElementWithRole:NSAccessibilityGroupRole
+                                                                     frame:NSMakeRect(100, 100, 50, 50) label:@"plain" parent:parent];
+    CHECK(same([plain accessibilityAttributeValue:NSAccessibilityDescriptionAttribute], @"plain"), "the factory's label is lost");
+    [plain setAccessibilityLabel:@"relabelled"];
+    CHECK(same([plain accessibilityLabel], @"relabelled"), "setAccessibilityLabel: did not store");
+    CHECK(![[plain accessibilityActionNames] containsObject:NSAccessibilityPressAction], "a plain element offers AXPress");
+    RecaulkAccessibilityElement *child = [base accessibilityElementWithRole:NSAccessibilityButtonRole
+                                                                     frame:NSZeroRect label:@"child" parent:nil];
+    [plain accessibilityAddChildElement:child];
+    CHECK([child accessibilityParent] == plain, "accessibilityAddChildElement: did not make it the child's parent");
+    CHECK([[plain accessibilityAttributeValue:NSAccessibilityChildrenAttribute] containsObject:child],
+          "AXChildren lacks the added child");
+    child.accessibilityFrameInParentSpace = NSMakeRect(5, 6, 10, 12);
+    CHECK(NSEqualRects([child accessibilityFrame], NSMakeRect(105, 106, 10, 12)),
+          "a frame in parent space is not offset by the parent's frame");
+}
+
+static void reparent(Class tab, Class base) {
+    Class target = objc_getClass("NSAccessibilityElement");
+    CHECK(target != Nil, "the fake NSAccessibilityElement is not loaded");
+    CHECK(class_getSuperclass(base) == target, "the shim's superclass is %s, not NSAccessibilityElement",
+          class_getName(class_getSuperclass(base)));
+    CHECK(class_getSuperclass(target) == [NSObject class], "the fake is not an NSObject subclass");
+    /* spec: Drydock's provided-class design, check 3 -- the success path adds no method */
+    CHECK(count(base) == 0 && count(object_getClass(base)) == 0, "the shim gained methods (%u, +%u) on the success path",
+          count(base), count(object_getClass(base)));
+    TabElement *e = [[[TabElement alloc] init] autorelease];
+    CHECK([e isKindOfClass:target], "a TabElement is not an NSAccessibilityElement");
+    CHECK(same([e accessibilityRole], @"from the fake"), "accessibilityRole is %s, not the target's", str([e accessibilityRole]));
+    CHECK(same([e accessibilityLabel], @"from the subclass"), "the subclass's override lost to %s", str([e accessibilityLabel]));
+    CHECK(![e respondsToSelector:@selector(accessibilityAttributeNames)], "a Recaulk method serves the re-parented shim");
+    (void)tab;
+}
+
+static void conflict(Class tab, Class base) {
+    (void)tab;
+    RecaulkAccessibilityElement *e = [base accessibilityElementWithRole:NSAccessibilityGroupRole
+                                                                 frame:NSZeroRect label:@"still served" parent:nil];
+    CHECK(same([e accessibilityRole], @"from the category"), "accessibilityRole is %s, not the category's", str([e accessibilityRole]));
+    CHECK(same([e accessibilityLabel], @"still served"), "the members that could land did not (%s)", str([e accessibilityLabel]));
+}
 
 int main(int argc, char **argv) {
     @autoreleasepool {
         if (argc != 2) return 2;
         Class tab = objc_getClass("TabElement");
-        if (strcmp(argv[1], "without") == 0) {
-            CHECK(tab == Nil, "without the stand-in, TabElement should be missing, not %s", tab ? class_getName(tab) : "");
-            CHECK(objc_getClass("RecaulkAccessibilityElement") == Nil, "without the stand-in, its class is present");
-            return failures ? 1 : 0;
-        }
-        if (strcmp(argv[1], "with") != 0) return 2;
-        CHECK(tab != Nil, "with the stand-in, TabElement did not realize");
+        CHECK(tab != Nil, "TabElement did not realize");
         if (!tab) return 1;
         Class base = class_getSuperclass(tab);
         CHECK(base && strcmp(class_getName(base), "RecaulkAccessibilityElement") == 0,
               "TabElement's superclass is %s, not RecaulkAccessibilityElement", base ? class_getName(base) : "nil");
-        CHECK(class_getSuperclass(base) == [NSObject class], "the stand-in is not an NSObject subclass");
-        /* spec: Drydock's provided-class rule -- no +load and no +initialize unless declared: the metaclass holds only
-           the factory */
-        unsigned n = 0;
-        Method *ms = class_copyMethodList(object_getClass(base), &n);
-        CHECK(n == 1 && ms && sel_isEqual(method_getName(ms[0]), @selector(accessibilityElementWithRole:frame:label:parent:)),
-              "the stand-in's metaclass has %u methods, not only the factory", n);
-        free(ms);
-
-        NSView *parent = [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 200, 100)] autorelease];
-        TabElement *e = [TabElement accessibilityElementWithRole:NSAccessibilityRadioButtonRole
-                                                           frame:NSMakeRect(10, 20, 30, 40) label:@"from the factory" parent:parent];
-        CHECK([e isKindOfClass:tab], "the factory made a %s, not a TabElement", class_getName([e class]));
-        CHECK(same([e accessibilityAttributeValue:NSAccessibilityRoleAttribute], NSAccessibilityRadioButtonRole),
-              "AXRole is %s", [[[e accessibilityAttributeValue:NSAccessibilityRoleAttribute] description] UTF8String]);
-        CHECK(same([e accessibilityAttributeValue:NSAccessibilityDescriptionAttribute], @"from the subclass"),
-              "AXDescription is %s, not the subclass's label",
-              [[[e accessibilityAttributeValue:NSAccessibilityDescriptionAttribute] description] UTF8String]);
-        CHECK([e accessibilityAttributeValue:NSAccessibilityParentAttribute] == parent, "AXParent is not the parent view");
-        CHECK(NSEqualPoints([[e accessibilityAttributeValue:NSAccessibilityPositionAttribute] pointValue], NSMakePoint(10, 20)),
-              "AXPosition is not the frame's origin");
-        CHECK(NSEqualSizes([[e accessibilityAttributeValue:NSAccessibilitySizeAttribute] sizeValue], NSMakeSize(30, 40)),
-              "AXSize is not the frame's size");
-        NSArray *names = [e accessibilityAttributeNames];
-        for (NSString *a in [NSArray arrayWithObjects:NSAccessibilityRoleAttribute, NSAccessibilityDescriptionAttribute,
-                             NSAccessibilityParentAttribute, NSAccessibilityPositionAttribute, NSAccessibilitySizeAttribute, nil])
-            CHECK([names containsObject:a], "accessibilityAttributeNames lacks %s", [a UTF8String]);
-        CHECK(![e accessibilityIsIgnored], "the element is ignored");
-        CHECK([[e accessibilityActionNames] containsObject:NSAccessibilityPressAction], "AXPress is not offered");
-        [e accessibilityPerformAction:NSAccessibilityPressAction];
-        CHECK(pressed == 1, "AXPress did not reach the subclass's accessibilityPerformPress (%d)", pressed);
-
-        /* the stand-in's own storage, where no subclass overrides */
-        NSAccessibilityElement *plain = [base accessibilityElementWithRole:NSAccessibilityGroupRole
-                                                                     frame:NSMakeRect(100, 100, 50, 50) label:@"plain" parent:parent];
-        CHECK(same([plain accessibilityAttributeValue:NSAccessibilityDescriptionAttribute], @"plain"), "the factory's label is lost");
-        [plain setAccessibilityLabel:@"relabelled"];
-        CHECK(same([plain accessibilityLabel], @"relabelled"), "setAccessibilityLabel: did not store");
-        CHECK(![[plain accessibilityActionNames] containsObject:NSAccessibilityPressAction], "a plain element offers AXPress");
-        NSAccessibilityElement *child = [base accessibilityElementWithRole:NSAccessibilityButtonRole
-                                                                     frame:NSZeroRect label:@"child" parent:nil];
-        [plain accessibilityAddChildElement:child];
-        CHECK([child accessibilityParent] == plain, "accessibilityAddChildElement: did not make it the child's parent");
-        CHECK([[plain accessibilityAttributeValue:NSAccessibilityChildrenAttribute] containsObject:child],
-              "AXChildren lacks the added child");
-        child.accessibilityFrameInParentSpace = NSMakeRect(5, 6, 10, 12);
-        CHECK(NSEqualRects([child accessibilityFrame], NSMakeRect(105, 106, 10, 12)),
-              "a frame in parent space is not offset by the parent's frame");
+        if (!base) return 1;
+        if (strcmp(argv[1], "standin") == 0 || strcmp(argv[1], "fallback") == 0) {
+            CHECK((objc_getClass("NSAccessibilityElement") != Nil) == (strcmp(argv[1], "fallback") == 0),
+                  "NSAccessibilityElement is %s in %s", objc_getClass("NSAccessibilityElement") ? "present" : "absent", argv[1]);
+            standin(tab, base);
+        } else if (strcmp(argv[1], "reparent") == 0) {
+            reparent(tab, base);
+        } else if (strcmp(argv[1], "conflict") == 0) {
+            conflict(tab, base);
+        } else {
+            return 2;
+        }
     }
-    if (!failures) printf("stand-in: ok\n");
+    if (!failures) printf("%s: ok\n", argv[1]);
     return failures ? 1 : 0;
 }

@@ -159,32 +159,35 @@ members and nothing else, every member looked up before any is added, which is w
 #### Stand-in classes
 
 Some 10.10 classes are meant to be subclassed, and a subclass of a class 10.9 lacks never realizes there: its superclass
-is missing. `lib/stand-in/libRecaulkAppKit.dylib` holds a stand-in for each such class `build/standins.txt` lists,
-today `RecaulkAccessibilityElement` for `NSAccessibilityElement`. It keeps 10.10's API (the factory
-`+accessibilityElementWithRole:frame:label:parent:`, `-accessibilityAddChildElement:`, `accessibilityFrameInParentSpace`
-and the protocol properties it stores), and answers 10.9's attribute API from the 10.10 getters, a subclass's overrides
-first, as the accessibility bridge does. The dylib exports its class and metaclass under AppKit's names
-(`_OBJC_CLASS_$_NSAccessibilityElement`); its runtime name stays `RecaulkAccessibilityElement`, so it never collides
-with AppKit's, and `NSClassFromString(@"NSAccessibilityElement")` still returns nil on 10.9.
+is missing. `lib/stand-in/libRecaulkAppKit.dylib` holds a shim for each such class `build/standins.txt` lists, today
+`RecaulkAccessibilityElement` for `NSAccessibilityElement`. The shim is an `NSObject` subclass with no compiled
+methods and no ivars, exported under its own name. Your subclasses bind it two-level, so their superclass always exists.
 
-Link `lib/stub/libRecaulkAppKit.dylib`, never the stand-in itself: the stub has the same install name,
-`@rpath/libRecaulkAppKit.dylib`, and exports no class, so the class stays unbound until launch. Bind the class flat
-and weak, after AppKit, and ship the stand-in in your app's `Contents/Frameworks`:
+When the dylib loads, its constructor looks for AppKit's class. Where AppKit has it (10.10 and later), the constructor
+re-parents the shim onto it with the deprecated `class_setSuperclass`, checks that the superclass changed, and adds
+nothing: AppKit serves every method, and `isKindOfClass:` holds against AppKit's class. Otherwise it adds the
+stand-in's methods to the shim: 10.10's API (the factory `+accessibilityElementWithRole:frame:label:parent:`,
+`-accessibilityAddChildElement:`, `accessibilityFrameInParentSpace` and the protocol properties, kept in associated
+objects), and 10.9's attribute API answered from the 10.10 getters, a subclass's overrides first, as the accessibility
+bridge does. If the re-parent fails, the constructor logs one line and uses the stand-in:
+
+```
+Recaulk: cannot re-parent RecaulkAccessibilityElement onto NSAccessibilityElement (REASON); falling back to the built-in stand-in.
+```
+
+Setting `RECAULK_DISABLE_REPARENT` forces the stand-in on any macOS. Ship the dylib in your app's
+`Contents/Frameworks`, and link it so your subclasses bind the shim:
 
 ```sh
-cc myapp.m -framework AppKit \
-   -Wl,-weak_library,/usr/local/mavergreen/recaulk/lib/stub/libRecaulkAppKit.dylib \
-   -Wl,-U,'_OBJC_CLASS_$_NSAccessibilityElement' -Wl,-U,'_OBJC_METACLASS_$_NSAccessibilityElement' \
+cc myapp.m -framework AppKit /usr/local/mavergreen/recaulk/lib/stand-in/libRecaulkAppKit.dylib \
    -Wl,-rpath,@executable_path/../Frameworks
 cp /usr/local/mavergreen/recaulk/lib/stand-in/libRecaulkAppKit.dylib MyApp.app/Contents/Frameworks/
 ```
 
-(10.9's dyld expands `@executable_path` or `@loader_path` in an rpath only when a slash follows it: write
-`@loader_path/.`, never a bare `@loader_path`.) dyld's flat lookup then takes AppKit's class on 10.10 and later, and
-the stand-in's on 10.9. Declare the class
-`weak_import` in your source (10.9's SDK lacks it): without the stand-in the app still launches, and only the
-subclasses are missing, as before. Never put a stand-in in the executable, where it would win over AppKit's on every
-macOS.
+Your source declares `@interface RecaulkAccessibilityElement : NSObject`, with the 10.10 methods you send, and
+subclasses it. For a compiled binary, Drydock retargets its `NSAccessibilityElement` binds to the shim. Nothing may
+realize the shim before its constructor runs, so give no subclass a `+load`. (10.9's dyld expands `@executable_path`
+or `@loader_path` in an rpath only when a slash follows it: write `@loader_path/.`, never a bare `@loader_path`.)
 
 Given a binary, relink it with [drydock-macho-rewrite](https://github.com/Mavergreen/drydock):
 

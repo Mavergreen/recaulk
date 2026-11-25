@@ -36,9 +36,8 @@ chmod 755 "$TREE/bin/recaulk-materialize"
 find "$TREE/share" -type d -exec chmod 755 {} +
 find "$TREE/share" -type f -exec chmod 644 {} +
 sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/libRecaulkSystem.dylib" >&2
-# spec: README.md "Stand-in classes" -- the stand-in loads on 10.9 too, and the stub is what apps link
+# spec: README.md "Stand-in classes" -- the shim loads on 10.9 too
 sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/stand-in/libRecaulkAppKit.dylib" >&2
-sh "$SCRIPTS/assert_binary_compatible.sh" "$TREE/lib/stub/libRecaulkAppKit.dylib" >&2
 # spec: INGREDIENTS.md "Conformance deviations", arm64 -- recaulk-materialize is universal wherever the compiler
 #       targets arm64 (tests/package-pkg.sh demands that slice then); the guard checks each slice it carries
 MAVERICKS_ALLOW_ARCHS="$("$LIPO" -archs "$TREE/bin/recaulk-materialize")" \
