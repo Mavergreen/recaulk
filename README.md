@@ -98,10 +98,39 @@ Five groups each have a root of their own, three of class methods and two of ins
   an absent text range is `{NSNotFound, 0}`, and the frame is 10.9's `AXPosition` and `AXSize` in screen coordinates,
   or `NSZeroRect`. A control's (`NSControl`'s) properties are its cell's, the element 10.9 exposes, as 10.10's
   `NSControl` forwards them. A program that subclasses with its own getters (10.10's way of being accessible) is
-  not seen by 10.9's VoiceOver through these: 10.9 asks `accessibilityAttributeValue:`, which nothing here answers
-  from them.
+  not seen by 10.9's VoiceOver through these: 10.9 asks `accessibilityAttributeValue:`, which only the
+  accessibility bridge (below) answers from them.
 
 A group is added whole or not at all: if its class already has any of its methods, none of them is added.
+
+#### The accessibility bridge
+
+10.9's VoiceOver asks an element only through the old attribute API (`accessibilityAttributeNames`,
+`accessibilityAttributeValue:` and their kin). A class written for 10.10 or later may implement only the
+`NSAccessibility` protocol's getters (`accessibilityRole`, `accessibilityLabel`, `accessibilityValue`, the text ranges,
+`accessibilityStringForRange:` and so on), and is then silent on 10.9. Call the bridge once for each such class of
+yours, an `NSView` or `NSCell` subclass, before any of its instances is on screen, with the class named literally:
+
+```objc
+#include <recaulk/accessibility.h>
+recaulk_accessibility_bridge(objc_getClass("PTYTextView"));
+recaulk_accessibility_bridge([PSMTabBarControl class]);
+```
+
+and link `librecaulk-objc.a` with AppKit (the call pulls the bridge in; there is no root to keep with `-u`). The
+class then answers each old attribute from the 10.10 getter it implements, boxed as 10.9 boxes it (a range, point,
+size or rectangle as an `NSValue`, a count or flag as an `NSNumber`; `AXDescription` from `accessibilityLabel`,
+`AXPosition` and `AXSize` from `accessibilityFrame`, `AXBoundsForRange` from `accessibilityFrameForRange:`), lists those
+attributes and the parameterized ones it implements beside 10.9's, sets an attribute through the 10.10 setter it
+implements (`setAccessibilityValue:`, the focus, selection and expansion flags, the selected text and ranges, the
+visible character range), and offers each action whose `accessibilityPerform...` method it implements. What its
+getters don't answer, 10.9 answers, as for any view or cell. A view 10.9 would ignore (any plain `NSView` subclass, and
+a control, whose cell 10.9 exposes instead) is not ignored if it says it is an element (`isAccessibilityElement`) or its
+`accessibilityRole` answers a role.
+
+The bridge adds the old methods to the class you pass and to nothing else. Pass only a class of your own that neither
+implements any of them itself nor inherits one from a class of yours; its subclasses inherit the bridge. Nil does
+nothing. It is not an Objective-C method provider in the declaration (Drydock verifies the call sites from 0.8.0).
 
 ```sh
 cc myprogram.m /usr/local/mavergreen/recaulk/lib/librecaulk-objc.a \
