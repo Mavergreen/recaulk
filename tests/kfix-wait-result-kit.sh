@@ -3,7 +3,7 @@
 # spec: README.md "The kernel-fixes kext" -- usage: sh tests/kfix-wait-result-kit.sh [OUT]. OUT/kfix-wr holds the
 #       reproducer (tests/c/kfix_wait_result.c), RecaulkKernelFixes.kext built twice (kext-both: every fix;
 #       kext-backstop: wait_result_prepost off, as the boot-arg would turn it off), run.sh and its README.md. It
-##       loads nothing here; the guest runs it by hand, one boot per configuration, as its README.md says. With no OUT
+#       loads nothing here; the guest runs it by hand, one boot per configuration, as its README.md says. With no OUT
 #       it is a test: it builds the kit in a scratch directory, checks that it is whole, and removes it.
 set -eu
 cd "$(dirname "$0")/.."
@@ -40,5 +40,5 @@ done
 cp tests/kfix-wait-result/run.sh tests/kfix-wait-result/README.md "$K/"
 git rev-parse HEAD > "$K/COMMIT" 2>/dev/null || echo unknown > "$K/COMMIT"
 sha256() { if command -v sha256sum > /dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi; }
-(cd "$K" && find . -type f ! -name SHA256SUMS | LC_ALL=C sort | while read -r f; do sha256 "$f"; done) > "$K/SHA256SUMS"
+(cd "$K" && find . -type f ! -name SHA256SUMS | LC_ALL=C sort | while read -r f; do sha256 "$f"; done) > "$K/SHA256SUMS" || exit 1
 echo "kfix-wait-result-kit: $K"
