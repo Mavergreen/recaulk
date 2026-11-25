@@ -7,8 +7,8 @@
    the subclass's class and metaclass bind Recaulk's shim, RecaulkAccessibilityElement, two-level in
    libRecaulkAppKit.dylib. Each mode is one branch of the shim's constructor:
      standin:  no NSAccessibilityElement (10.9): the stand-in's methods serve the subclass;
-     reparent: a fake NSAccessibilityElement loaded first, as 10.10's AppKit would be (its +load realizes the shim, which
-               objc4-551's class_setSuperclass needs): the shim now inherits from it, and Recaulk added nothing;
+     reparent: a fake NSAccessibilityElement loaded first, as 10.10's AppKit would be: the shim now inherits from it,
+               and Recaulk added nothing;
      fallback: the fake is there but the re-parent failed (the shell checks the line): the stand-in serves, on NSObject;
      conflict: a category on the shim already has accessibilityRole, so the stand-in's cannot land (the shell checks
                the line): the category's answers, and the other members still serve. */

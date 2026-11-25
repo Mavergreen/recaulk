@@ -8,7 +8,8 @@
  *   - otherwise (10.9), or when the re-parent is unavailable or doesn't verify, it realizes the shim and adds the
  *     stand-in's methods to it, state in associated objects: 10.10's API, and 10.9's attribute API answered from the
  *     10.10 getters (accessibility-map.h, shared with the bridge), a subclass's overrides first.
- * Every failure prints one line through NSLog and falls through to the stand-in. RECAULK_DISABLE_REPARENT in the
+ * The re-parent realizes both classes first and is refused, before it is tried, where AppKit's class is larger than
+ * the shim or has C++ or ARC ivars. Every failure prints one line through NSLog and falls through to the stand-in. RECAULK_DISABLE_REPARENT in the
  * environment forces the stand-in. */
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
@@ -241,7 +242,7 @@ static void install_standin(Class shim) {
               @"will not work on this macOS.");
 }
 
-/* spec: the design's section 1, the constructor's shape -- this image's only initializer */
+/* spec: the design's section 1, the constructor's shape (amended 2026-11-25) -- this image's only initializer */
 __attribute__((constructor)) static void recaulk_accessibility_element_init(void) {
     Class shim = (__bridge Class)(void *)&RecaulkShimClass;
     Class real = objc_getClass("NSAccessibilityElement");
@@ -255,13 +256,24 @@ __attribute__((constructor)) static void recaulk_accessibility_element_init(void
     if (!setsuper) {
         reason = "class_setSuperclass is unavailable";
     } else {
-        Class old = setsuper(shim, real);
-        (void)class_getInstanceMethod(shim, sel_registerName("description"));
-        if (class_getSuperclass(shim) != real)
-            reason = "the superclass did not change";
-        else if (class_getInstanceSize(shim) < class_getInstanceSize(real))
-            reason = "the shim was realized before this constructor, with NSObject's instance layout";
-        if (reason) setsuper(shim, old);
+        /* platform: objc4-551 through 928.3 class_setSuperclass dereferences an unrealized class's rw data;
+           objc_lookUpClass realizes the class it finds (objc-runtime-new.mm look_up_class) */
+        (void)objc_lookUpClass("RecaulkAccessibilityElement");
+        (void)objc_lookUpClass("NSAccessibilityElement");
+        /* spec: the design's section 1, the pre-checks -- the shim's subclasses were laid out on NSObject's size, and
+           a class whose ivars need .cxx_construct/.cxx_destruct would run them over a subclass's own ivars */
+        if (class_getInstanceSize(real) > class_getInstanceSize(shim))
+            reason = "NSAccessibilityElement is larger than the shim";
+        else if (class_getInstanceMethod(real, sel_registerName(".cxx_construct")) ||
+                 class_getInstanceMethod(real, sel_registerName(".cxx_destruct")))
+            reason = "NSAccessibilityElement has C++ or ARC ivars";
+        else {
+            Class old = setsuper(shim, real);
+            if (class_getSuperclass(shim) != real) {
+                reason = "the superclass did not change";
+                setsuper(shim, old);
+            }
+        }
     }
     if (!reason) return;
     NSLog(@"Recaulk: cannot re-parent RecaulkAccessibilityElement onto NSAccessibilityElement (%s); falling back to the "

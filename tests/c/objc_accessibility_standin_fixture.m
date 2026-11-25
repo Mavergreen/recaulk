@@ -2,17 +2,18 @@
 #import <objc/runtime.h>
 
 /* One libFixture.dylib per case of tests/objc-accessibility-standin.sh, loaded by the app beside Recaulk's shim:
-     FAKE:     an NSAccessibilityElement, as 10.10's AppKit has, for the re-parent to find on 10.9, and a +load that
-               realizes the shim before its constructor runs: objc4-551's class_setSuperclass dereferences NULL on an
-               unrealized class, so only a realized shim re-parents on 10.9 (the same NSObject instance size as the
-               fake, so the constructor's checks pass);
-     EARLY:    that fake with an ivar, so the early-realized shim is smaller than its target: the hazard the shim's
-               constructor detects by instance size;
+     FAKE:     an NSAccessibilityElement, as 10.10's AppKit has, for the re-parent to find on 10.9. The shim is still
+               unrealized when its constructor runs, as on 10.10 and later: objc4-551's class_setSuperclass dereferences
+               NULL on an unrealized class, so this case proves the constructor realizes it first;
+     EARLY:    that fake and a +load that realizes the shim before its constructor runs: the re-parent still takes;
+     LARGER:   the fake with an ivar, larger than the shim: the constructor refuses the re-parent before trying it;
+     CXX:      the fake with a .cxx_destruct, as an ARC or C++ ivar gives a class, at the shim's instance size (added at
+               +load, since any ivar that gives one would also make the fake larger): refused too;
      CONFLICT: a category on the shim with its own accessibilityRole, so the stand-in's cannot land. */
 
-#if defined(FAKE) || defined(EARLY)
+#if defined(FAKE) || defined(EARLY) || defined(LARGER) || defined(CXX)
 @interface NSAccessibilityElement : NSObject
-#if defined(EARLY)
+#if defined(LARGER)
 {
     id unused;
 }
@@ -24,7 +25,18 @@
 @end
 #endif
 
-#if defined(FAKE) || defined(EARLY)
+#if defined(CXX)
+static void cxx_destruct(id self, SEL _cmd) { (void)self; (void)_cmd; }
+@interface CxxIvars : NSObject
+@end
+@implementation CxxIvars
++ (void)load {
+    class_addMethod(objc_getClass("NSAccessibilityElement"), sel_registerName(".cxx_destruct"), (IMP)cxx_destruct, "v16@0:8");
+}
+@end
+#endif
+
+#if defined(EARLY)
 @interface EarlyUse : NSObject
 @end
 @implementation EarlyUse

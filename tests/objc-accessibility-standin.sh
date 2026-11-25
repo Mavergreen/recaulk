@@ -4,8 +4,8 @@
 #       with no compiled methods that an app subclasses two-level in place of 10.10's NSAccessibilityElement. Its one
 #       constructor re-parents it onto AppKit's class where there is one, and otherwise (or when that fails, with one
 #       NSLog line) adds the stand-in's methods. 10.9 has no NSAccessibilityElement, so a fixture dylib fakes one to run
-#       the re-parent here, realizing the shim first (tests/c/objc_accessibility_standin_fixture.m says why); the real
-#       re-parent of an unrealized shim, on 10.10 and later, is Drydock's modern gate to run.
+#       the re-parent here (tests/c/objc_accessibility_standin_fixture.m); the real one, on 10.10 and later, is
+#       Drydock's modern gate to run.
 set -eu
 cd "$(dirname "$0")/.."
 . tests/helpers/built.sh
@@ -32,17 +32,17 @@ if compiling; then
     || fail "the shim does not have exactly one initializer"
 
   "$CC" $FLAGS -fno-objc-arc -Wall -Werror -c tests/c/objc_accessibility_standin.m -o "$(tbin standin.o)"
-  for v in standin reparent early conflict missing; do
+  for v in standin reparent early larger cxx conflict missing; do
     rm -rf "$(tbin "$v")"
     mkdir -p "$(tbin "$v")"
   done
-  for f in FAKE:reparent EARLY:early CONFLICT:conflict; do
+  for f in FAKE:reparent EARLY:early LARGER:larger CXX:cxx CONFLICT:conflict; do
     # spec: tests/c/objc_accessibility_standin_fixture.m -- the conflict's category binds the shim, so it links it
     "$CC" -dynamiclib $FLAGS -fno-objc-arc -Wall -Werror -D"${f%%:*}" tests/c/objc_accessibility_standin_fixture.m \
       -framework Foundation $([ "${f%%:*}" = CONFLICT ] && echo "$REAL") \
       -install_name @executable_path/libFixture.dylib -o "$(tbin "${f#*:}")/libFixture.dylib"
   done
-  for v in standin reparent early conflict missing; do
+  for v in standin reparent early larger cxx conflict missing; do
     fixture=
     [ -f "$(tbin "$v")/libFixture.dylib" ] && fixture="-Wl,-needed_library,$(tbin "$v")/libFixture.dylib"
     # spec: README.md "Stand-in classes" -- the subclass binds the shim two-level; the fixture first, so
@@ -79,8 +79,9 @@ run reparent reparent
 export RECAULK_DISABLE_REPARENT=1
 run reparent fallback "$REPARENT (class_setSuperclass is unavailable); falling back to the built-in stand-in."
 unset RECAULK_DISABLE_REPARENT
-run early fallback \
-  "$REPARENT (the shim was realized before this constructor, with NSObject's instance layout); falling back to the built-in stand-in."
+run early reparent
+run larger fallback "$REPARENT (NSAccessibilityElement is larger than the shim); falling back to the built-in stand-in."
+run cxx fallback "$REPARENT (NSAccessibilityElement has C++ or ARC ivars); falling back to the built-in stand-in."
 run conflict conflict 'Recaulk: cannot install the stand-in methods on RecaulkAccessibilityElement; '
 # spec: README.md "Stand-in classes" -- without the shim, dyld refuses the launch
 { "$(tbin missing)/standin" standin 2> "$err"; } 2>/dev/null && fail "the app launched without the shim"

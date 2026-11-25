@@ -164,16 +164,21 @@ is missing. `lib/stand-in/libRecaulkAppKit.dylib` holds a shim for each such cla
 methods and no ivars, exported under its own name. Your subclasses bind it two-level, so their superclass always exists.
 
 When the dylib loads, its constructor looks for AppKit's class. Where AppKit has it (10.10 and later), the constructor
-re-parents the shim onto it with the deprecated `class_setSuperclass`, checks that the superclass changed, and adds
-nothing: AppKit serves every method, and `isKindOfClass:` holds against AppKit's class. Otherwise it adds the
+realizes both classes, then re-parents the shim onto AppKit's with the deprecated `class_setSuperclass`, checks that the
+superclass changed, and adds nothing: AppKit serves every method, and `isKindOfClass:` holds against AppKit's class. Otherwise it adds the
 stand-in's methods to the shim: 10.10's API (the factory `+accessibilityElementWithRole:frame:label:parent:`,
 `-accessibilityAddChildElement:`, `accessibilityFrameInParentSpace` and the protocol properties, kept in associated
 objects), and 10.9's attribute API answered from the 10.10 getters, a subclass's overrides first, as the accessibility
-bridge does. If the re-parent fails, the constructor logs one line and uses the stand-in:
+bridge does. The constructor doesn't try the re-parent where AppKit's class has a larger instance size than the shim,
+or C++ or ARC ivars (a `.cxx_construct` or `.cxx_destruct`): your subclasses were laid out on `NSObject`'s size. If the
+re-parent is refused, unavailable or doesn't take, the constructor logs one line and uses the stand-in:
 
 ```
 Recaulk: cannot re-parent RecaulkAccessibilityElement onto NSAccessibilityElement (REASON); falling back to the built-in stand-in.
 ```
+
+REASON is one of `class_setSuperclass is unavailable`, `NSAccessibilityElement is larger than the shim`,
+`NSAccessibilityElement has C++ or ARC ivars` and `the superclass did not change`.
 
 Setting `RECAULK_DISABLE_REPARENT` forces the stand-in on any macOS. Ship the dylib in your app's
 `Contents/Frameworks`, and link it so your subclasses bind the shim:
