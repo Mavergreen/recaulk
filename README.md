@@ -150,10 +150,9 @@ native or inherited implementation on newer macOS is left alone.
 `share/recaulk/objc-providers.json` lists the methods, their ABI encodings and
 the build that produced the archive (source hashes, archive hash, compiler, SDK). It is Drydock's schema 2: the
 instance methods registered before groups existed, one per entry as schema 1 had them, under `legacy_providers`, and
-the groups under `providers`. Reading it takes Drydock 0.7.0 or later, which shipyard pins from 1.0.888 (`@v1` has
-it); an older Drydock refuses the file rather than skip it. Crediting the NSView and NSCell accessibility groups, whose
-members a newer SDK declares through the protocol the class adopts, takes Drydock 0.7.1; 0.7.0 still credits the
-others. Drydock credits a group only from a root that registers its
+the groups under `providers`. The groups include the accessibility bridge's own-absent group, which only Drydock
+0.8.0 and later reads, so reading the file takes Drydock 0.8.0, which shipyard pins from 1.0.938 (`@v1` has it); an
+older Drydock refuses the whole file rather than skip a group it doesn't know. Drydock credits a group only from a root that registers its
 members and nothing else, every member looked up before any is added, which is why each group has its own root.
 
 #### Stand-in classes

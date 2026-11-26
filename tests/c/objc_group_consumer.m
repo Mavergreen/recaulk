@@ -1,4 +1,5 @@
 #import <AppKit/AppKit.h>
+#import <recaulk/accessibility.h>
 
 /* A consumer of the groups, for tests/objc-provider-groups.sh: one send of each member, which 10.9 lacks,
    so Drydock's strict analyzer calls each one unsupported unless it credits the group that provides it. */
@@ -36,8 +37,18 @@
 - (NSRect)accessibilityFrame;
 @end
 
+/* A class of the consumer's own with only a 10.10 getter, which the accessibility bridge (an own-absent group) is
+   called on with a literal class, so Drydock checks the class and credits the bridge's IMPs. */
+@interface RecaulkGroupBridged : NSView
+- (NSString *)accessibilityRole;
+@end
+@implementation RecaulkGroupBridged
+- (NSString *)accessibilityRole { return NSAccessibilityButtonRole; }
+@end
+
 int main(int argc, char **argv) {
 	(void)argv;
+	recaulk_accessibility_bridge([RecaulkGroupBridged class]);
 	if (argc > 5) {
 		[NSTimer scheduledTimerWithTimeInterval:1 repeats:NO block:^(NSTimer *t) { (void)t; }];
 		[NSTimer timerWithTimeInterval:1 repeats:NO block:^(NSTimer *t) { (void)t; }];

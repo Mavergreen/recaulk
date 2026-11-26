@@ -378,6 +378,120 @@
           "implementation_symbol": "__recaulk_objc_cell_accessibility_frame"
         }
       ]
+    },
+    {
+      "provider_id": "recaulk.accessibility.bridge.v1",
+      "guard": "own-absent",
+      "activation_root": "recaulk_accessibility_bridge",
+      "required_frameworks": [
+        "AppKit"
+      ],
+      "framework_policy": "strong-linked-before-root",
+      "class_table": "__recaulk_objc_axb_bridged",
+      "methods": [
+        {
+          "kind": "-",
+          "selector": "accessibilityAttributeNames",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_axb_attribute_names"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityAttributeValue:",
+          "encoding": "@24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_axb_attribute_value"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityIsAttributeSettable:",
+          "encoding": "c24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_axb_is_attribute_settable"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilitySetValue:forAttribute:",
+          "encoding": "v32@0:8@16@24",
+          "implementation_symbol": "__recaulk_objc_axb_set_value"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityParameterizedAttributeNames",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_axb_parameterized_names"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityAttributeValue:forParameter:",
+          "encoding": "@32@0:8@16@24",
+          "implementation_symbol": "__recaulk_objc_axb_parameterized_value"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityActionNames",
+          "encoding": "@16@0:8",
+          "implementation_symbol": "__recaulk_objc_axb_action_names"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityActionDescription:",
+          "encoding": "@24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_axb_action_description"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityPerformAction:",
+          "encoding": "v24@0:8@16",
+          "implementation_symbol": "__recaulk_objc_axb_perform_action"
+        },
+        {
+          "kind": "-",
+          "selector": "accessibilityIsIgnored",
+          "encoding": "c16@0:8",
+          "implementation_symbol": "__recaulk_objc_axb_is_ignored"
+        }
+      ],
+      "super_fallbacks": [
+        {
+          "implementation_symbol": "__recaulk_objc_axb_attribute_names",
+          "selector": "accessibilityAttributeNames"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_attribute_value",
+          "selector": "accessibilityAttributeValue:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_is_attribute_settable",
+          "selector": "accessibilityIsAttributeSettable:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_set_value",
+          "selector": "accessibilitySetValue:forAttribute:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_parameterized_names",
+          "selector": "accessibilityParameterizedAttributeNames"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_parameterized_value",
+          "selector": "accessibilityAttributeValue:forParameter:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_action_names",
+          "selector": "accessibilityActionNames"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_action_description",
+          "selector": "accessibilityActionDescription:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_perform_action",
+          "selector": "accessibilityPerformAction:"
+        },
+        {
+          "implementation_symbol": "__recaulk_objc_axb_is_ignored",
+          "selector": "accessibilityIsIgnored"
+        }
+      ]
     }
   ]
 }

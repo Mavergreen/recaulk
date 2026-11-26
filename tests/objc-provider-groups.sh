@@ -1,7 +1,8 @@
 #!/bin/sh
 # platform: macOS-only -- Drydock's strict Objective-C analyzer (drydock-objc analyze) runs on macOS only; elsewhere this skips
-# spec: README.md "Objective-C methods" -- objc-providers.json is schema 2, and Recaulk's pinned Drydock (0.7.1 or
-#       later) credits each group (the class methods, and NSView's and NSCell's accessibility) whole: a consumer
+# spec: README.md "Objective-C methods" -- objc-providers.json is schema 2, and Recaulk's pinned Drydock (0.8.0 or
+#       later) credits each group (the class methods, NSView's and NSCell's accessibility, and the accessibility
+#       bridge a consumer calls on its own class) whole: a consumer
 #       linked as `drydock-objc link-args` says, with build evidence, has every member's send provided and every group
 #       active. Nothing built here is executed.
 set -eu
@@ -32,7 +33,7 @@ for g in $GIDS; do set -- "$@" --provider "$g"; done
 set --
 while IFS= read -r l; do set -- "$@" "$l"; done < "$d/args"
 cp tests/c/objc_group_consumer.m "$d/src/"
-"$CC" $FLAGS -fno-objc-arc -fblocks -O1 "$d/src/objc_group_consumer.m" "$@" -o "$d/root/consumer"
+"$CC" $FLAGS -fno-objc-arc -fblocks -O1 -isystem "$T/include/recaulk" "$d/src/objc_group_consumer.m" "$@" -o "$d/root/consumer"
 "$X" evidence --artifact "$d/root/consumer" --prestrip "$d/root/consumer" --source-root "$d/src" \
   --link-map "$d/root/consumer.map" --provider-prefix "$T" --references "$REF" --output "$d/evidence.json" 2> "$d/err" \
   || { echo "FAIL: drydock-objc evidence: $(cat "$d/err")"; exit 1; }
@@ -52,6 +53,20 @@ done
 for g in $GIDS; do
   grep "\"$g\"" "$d/report" | grep -q '"status": "active"' || bad "group $g is not reported active"
 done
+# spec: README.md "Objective-C methods" -- the accessibility bridge is an own-absent group, rooted by the consumer's
+#       own call rather than link-args: active, with each IMP's one super send excused by its own fallback record
+B=recaulk.accessibility.bridge.v1
+grep "\"$B\"" "$d/report" | grep -q '"status": "active"' || bad "group $B is not reported active"
+python3 -I -c 'import json,sys
+r=json.load(open(sys.argv[1]))
+def walk(o):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if k=="unused_super_fallbacks" and v: print(json.dumps(v)); sys.exit(1)
+            walk(v)
+    elif isinstance(o,list):
+        for v in o: walk(v)
+walk(r)' "$d/report" > "$d/unused" || bad "the bridge has unused super_fallbacks records: $(cat "$d/unused")"
 # spec: README.md "Objective-C methods" -- the only open sends left are the providers' own bodies', which strict
 #       never exempts, so strict passes exactly when none is left
 if grep -Eq '"verdict": "(unsupported|unresolved)"' "$d/report"; then [ "$rc" = 1 ] || bad "analyze exit $rc with open sends, not 1"

@@ -117,6 +117,40 @@ groups() {
     '{CGRect={CGPoint=dd}{CGSize=dd}}16@0:8' __recaulk_objc_cell_accessibility_frame \
     __recaulk_objc_activate_cell_accessibility AppKit
 }
+# spec: README.md "Objective-C methods" -- each own-absent group (a bridge an app calls on a class of its own), one
+#       row per member: id root class_table frameworks selector encoding(10.9's) implementation declaration. Every
+#       member super-sends its own selector, so each has a super_fallbacks record. The declaration is what its encoding
+#       probe compiles.
+bridges() {
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityAttributeNames '@16@0:8' __recaulk_objc_axb_attribute_names '- (NSArray *)accessibilityAttributeNames' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityAttributeValue: '@24@0:8@16' __recaulk_objc_axb_attribute_value \
+    '- (id)accessibilityAttributeValue:(NSString *)attribute' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityIsAttributeSettable: 'c24@0:8@16' __recaulk_objc_axb_is_attribute_settable \
+    '- (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilitySetValue:forAttribute: 'v32@0:8@16@24' __recaulk_objc_axb_set_value \
+    '- (void)accessibilitySetValue:(id)value forAttribute:(NSString *)attribute' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityParameterizedAttributeNames '@16@0:8' __recaulk_objc_axb_parameterized_names \
+    '- (NSArray *)accessibilityParameterizedAttributeNames' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityAttributeValue:forParameter: '@32@0:8@16@24' __recaulk_objc_axb_parameterized_value \
+    '- (id)accessibilityAttributeValue:(NSString *)attribute forParameter:(id)parameter' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityActionNames '@16@0:8' __recaulk_objc_axb_action_names '- (NSArray *)accessibilityActionNames' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityActionDescription: '@24@0:8@16' __recaulk_objc_axb_action_description \
+    '- (NSString *)accessibilityActionDescription:(NSString *)action' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityPerformAction: 'v24@0:8@16' __recaulk_objc_axb_perform_action \
+    '- (void)accessibilityPerformAction:(NSString *)action' \
+    recaulk.accessibility.bridge.v1 recaulk_accessibility_bridge __recaulk_objc_axb_bridged AppKit \
+    accessibilityIsIgnored 'c16@0:8' __recaulk_objc_axb_is_ignored '- (BOOL)accessibilityIsIgnored'
+}
 # spec: README.md "Objective-C methods" -- each provider's method declared, compiled to measure clang22's encoding for
 #       it: a legacy provider by its id, a group's member by ID:SELECTOR
 probe_source() {
@@ -502,7 +536,19 @@ grouped=$(groups | awk -F'\t' '
   $3 != cls || $8 != root || $9 != fws { print "group " $2 " mixes classes, roots or frameworks" > "/dev/stderr"; exit 1 }
   { printf "%s{\"kind\":\"%s\",\"selector\":\"%s\",\"encoding\":\"%s\",\"implementation_symbol\":\"%s\"}", (n++ ? "," : ""), $4, $5, $6, $7 }
   END { if (NR) printf "]}" }') || die "InvalidDeclaration: build/objc-provider-manifest.sh's groups are malformed"
-expected="{\"schema\":2,\"legacy_providers\":[$legacy],\"providers\":[$grouped]}"
+# spec: README.md "Objective-C methods" -- a bridge's rows agree on its root, class table and frameworks, and are adjacent
+bridged=$(bridges | awk -F'\t' '
+  function close_group() { printf "],\"super_fallbacks\":[%s]}", fb }
+  $1 != id { if (seen[$1]++) { print "bridge " $1 " is not one run of rows" > "/dev/stderr"; exit 1 }
+             split($4, f, ","); fw = ""; for (i = 1; i in f; i++) fw = fw (i > 1 ? "," : "") "\"" f[i] "\""
+             if (NR > 1) close_group()
+             printf "%s{\"provider_id\":\"%s\",\"guard\":\"own-absent\",\"activation_root\":\"%s\",\"required_frameworks\":[%s],\"framework_policy\":\"strong-linked-before-root\",\"class_table\":\"%s\",\"methods\":[", (NR > 1 ? "," : ""), $1, $2, fw, $3
+             id = $1; root = $2; table = $3; fws = $4; n = 0; fb = "" }
+  $2 != root || $3 != table || $4 != fws { print "bridge " $1 " mixes roots, tables or frameworks" > "/dev/stderr"; exit 1 }
+  { printf "%s{\"kind\":\"-\",\"selector\":\"%s\",\"encoding\":\"%s\",\"implementation_symbol\":\"%s\"}", (n ? "," : ""), $5, $6, $7
+    fb = fb (n++ ? "," : "") "{\"implementation_symbol\":\"" $7 "\",\"selector\":\"" $5 "\"}" }
+  END { if (NR) close_group() }') || die "InvalidDeclaration: build/objc-provider-manifest.sh's bridges are malformed"
+expected="{\"schema\":2,\"legacy_providers\":[$legacy],\"providers\":[$grouped${bridged:+,$bridged}]}"
 [ -f "$decl" ] || die "InvalidDeclaration: $decl is missing"
 [ "$(tr -d ' \t\r\n' < "$decl")" = "$expected" ] \
   || die "InvalidDeclaration: $decl is not the providers Recaulk ships (schema 2; build/objc-provider-manifest.sh lists them, each strong-linked-before-root)"
@@ -530,6 +576,17 @@ while IFS='	' read -r macro id class kind selector encoding impl root frameworks
   [ "$compiled" = "$encoding" ] \
     || die "InvalidDeclaration: $id:$selector's declared encoding $encoding is not the compiled one, '$compiled'"
 done < "$probe/groups.tsv"
+bridges > "$probe/bridges.tsv"
+while IFS='	' read -r id root table frameworks selector encoding impl declaration; do
+  n=$((n + 1))
+  printf '#import <AppKit/AppKit.h>\n@interface RecaulkProviderEncoding : NSObject\n%s;\n@end\n@implementation RecaulkProviderEncoding\n%s { __builtin_trap(); }\n@end\n' \
+    "$declaration" "$declaration" > "$probe/$n.m"
+  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -fblocks -S -o "$probe/$n.s" "$probe/$n.m" \
+    || die "CannotMeasure: clang22 could not compile the encoding probe for $id:$selector"
+  compiled=$(awk '/^[ \t]*\.section[ \t]/ { m = ($0 ~ /__objc_methtype/) } m && /\.asciz/ { sub(/^[^"]*"/, ""); sub(/"[^"]*$/, ""); print }' "$probe/$n.s")
+  [ "$compiled" = "$encoding" ] \
+    || die "InvalidDeclaration: $id:$selector's declared encoding $encoding is not the compiled one, '$compiled'"
+done < "$probe/bridges.tsv"
 
 sha256() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 json_string() {
@@ -537,6 +594,10 @@ json_string() {
        { gsub(/\\/, "\\\\"); gsub(/"/, "\\\""); gsub(/\t/, "\\t"); gsub(/\r/, "\\r")
          if (NR > 1) print "\\n"; print }
        END { if (NR > 0) print "\\n" }' "$1"
+}
+
+bridge_fallbacks() {
+  awk -F'\t' -v id="$1" '$1 == id { printf "%s        {\n          \"implementation_symbol\" : \"%s\",\n          \"selector\" : \"%s\"\n        }", (n++ ? ",\n" : ""), $7, $5 } END { print "" }' "$probe/bridges.tsv"
 }
 
 case "$mode:$#" in
@@ -602,7 +663,29 @@ case "$mode:$#" in
         printf '        {\n          "kind" : "%s",\n          "selector" : "%s",\n' "$kind" "$selector"
         printf '          "encoding" : "%s",\n          "implementation_symbol" : "%s"\n        }' "$encoding" "$impl"
       done < "$probe/groups.tsv"
-      [ -z "$gid" ] || printf '\n      ]\n    }\n'
+      [ -z "$gid" ] || printf '\n      ]\n    }'
+      bid=
+      while IFS='	' read -r id root table frameworks selector encoding impl declaration; do
+        if [ "$id" != "$bid" ]; then
+          [ -z "$bid" ] || { printf '\n      ],\n      "super_fallbacks" : [\n'; bridge_fallbacks "$bid"; printf '      ]\n    }'; }
+          [ -z "$gid$bid" ] || printf ',\n'
+          bid=$id
+          printf '    {\n      "provider_id" : "%s",\n      "guard" : "own-absent",\n' "$id"
+          printf '      "activation_root" : "%s",\n' "$root"
+          printf '      "required_frameworks" : [\n'
+          printf '%s\n' "$frameworks" | tr ',' '\n' | awk '{ printf "%s        \"%s\"", (NR > 1 ? ",\n" : ""), $0 } END { print "" }'
+          printf '      ],\n'
+          printf '      "framework_policy" : "strong-linked-before-root",\n'
+          printf '      "class_table" : "%s",\n' "$table"
+          printf '      "methods" : [\n'
+        else
+          printf ',\n'
+        fi
+        printf '        {\n          "kind" : "-",\n          "selector" : "%s",\n' "$selector"
+        printf '          "encoding" : "%s",\n          "implementation_symbol" : "%s"\n        }' "$encoding" "$impl"
+      done < "$probe/bridges.tsv"
+      [ -z "$bid" ] || { printf '\n      ],\n      "super_fallbacks" : [\n'; bridge_fallbacks "$bid"; printf '      ]\n    }'; }
+      [ -z "$gid$bid" ] || printf '\n'
       printf '  ],\n'
       printf '  "build" : {\n'
       printf '    "archive_path" : "lib/librecaulk-objc.a",\n'

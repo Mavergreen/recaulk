@@ -24,6 +24,26 @@ ___recaulk_objc_axb_set_value _recaulk_accessibility_bridge "
   "$OTOOL" -tV -p _recaulk_accessibility_bridge "$A" 2>/dev/null \
     | awk '/^_recaulk_accessibility_bridge:/ { on = 1; next } on && /^_/ { exit } on' | grep -q '%xmm' \
     && { echo "FAIL: the bridge's root uses SSE, which drydock's executor cannot measure"; exit 1; }
+  # spec: README.md "Objective-C methods" -- the declaration's own-absent group is the bridge build/objc-provider-manifest.sh
+  #       lists, each member with its super_fallbacks record and 10.9's encoding: a record dropped, or an encoding
+  #       clang22 doesn't compile for the member, is refused
+  D="$(dirname "$(tbin x)")"
+  python3 -I - src/objc/providers.json "$D" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+b = [g for g in d["providers"] if g["provider_id"] == "recaulk.accessibility.bridge.v1"][0]
+b["super_fallbacks"].pop()
+json.dump(d, open(sys.argv[2] + "/bridge-no-fallback.json", "w"), indent=2)
+b["super_fallbacks"] = [{"implementation_symbol": m["implementation_symbol"], "selector": m["selector"]} for m in b["methods"]]
+b["methods"][0]["encoding"] = "@24@0:8@16"
+json.dump(d, open(sys.argv[2] + "/bridge-bad-encoding.json", "w"), indent=2)
+PY
+  for m in no-fallback bad-encoding; do
+    if CC="$CC" TARGET_FLAGS="$TARGET_FLAGS" SDK="$SDK" sh build/objc-provider-manifest.sh header "$D/bridge-$m.json" \
+      "$D/bridge-$m.h" > "$D/bridge-$m.log" 2>&1; then
+      echo "FAIL: the manifest generator accepted a bridge declaration with $m"; exit 1
+    fi
+  done
   "$CC" $FLAGS -fno-objc-arc -Wall -Werror -isystem "$T/include/recaulk" -c tests/c/objc_accessibility_bridge.m \
     -o "$(tbin bridge.o)"
   "$CC" $FLAGS "$(tbin bridge.o)" "$A" -framework AppKit -o "$(tbin bridge)"
