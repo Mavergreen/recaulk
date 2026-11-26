@@ -43,11 +43,13 @@ rc=0
 "$X" analyze --artifact "$d/root/consumer" --root "$d/root" --references "$REF" --report "$d/report" --mode strict \
   --build-evidence "$d/evidence.json" --provider-prefix "$T" --source-receipt "$T/share/recaulk/objc-source.receipt" \
   2> "$d/err" || rc=$?
+# spec: README.md "Objective-C methods" -- each group member the consumer's own main sends is provided; the bridge IMPs'
+#       sends of the same selectors take their own verdicts (guarded, floor-supported), which the open-send check covers
 for sel in scheduledTimerWithTimeInterval:repeats:block: timerWithTimeInterval:repeats:block: labelColor linkColor \
   graphicsContextWithCGContext:flipped: setAccessibilityLabel: accessibilityLabel setAccessibilityRole: \
   accessibilityRole setAccessibilityChildren: accessibilityChildren setAccessibilitySelectedTextRange: \
   accessibilitySelectedTextRange accessibilityFrame; do
-  v=$(grep "\"selector\": \"$sel\"" "$d/report" | sed -n 's/.*"verdict": "\([^"]*\)".*/\1/p' | sort -u | tr '\n' ' ')
+  v=$(grep "\"selector\": \"$sel\"" "$d/report" | grep '"function": "_main"' | sed -n 's/.*"verdict": "\([^"]*\)".*/\1/p' | sort -u | tr '\n' ' ')
   [ "$v" = "provided " ] || bad "$sel is '${v:-no finding}', not provided (analyze exit $rc)"
 done
 for g in $GIDS; do

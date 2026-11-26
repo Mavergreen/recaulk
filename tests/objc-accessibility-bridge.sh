@@ -24,6 +24,25 @@ ___recaulk_objc_axb_set_value _recaulk_accessibility_bridge "
   "$OTOOL" -tV -p _recaulk_accessibility_bridge "$A" 2>/dev/null \
     | awk '/^_recaulk_accessibility_bridge:/ { on = 1; next } on && /^_/ { exit } on' | grep -q '%xmm' \
     && { echo "FAIL: the bridge's root uses SSE, which drydock's executor cannot measure"; exit 1; }
+  # spec: Drydock's source map (drydock, 2026-11-26) -- a send the line table puts at no source line is one call site
+  #       shared by several sends (tail merging, sinking), which no receipt send can close, so every objc_msgSend call
+  #       or jump in accessibility-bridge.o has its own source line
+  SYMBOLIZER=$(dirname "$CC")/llvm-symbolizer; OBJDUMP=$(dirname "$CC")/llvm-objdump
+  if [ -x "$SYMBOLIZER" ] && [ -x "$OBJDUMP" ]; then
+    M="$(dirname "$(tbin x)")/bridge-members"; rm -rf "$M"; mkdir -p "$M"
+    (cd "$M" && "$(dirname "$CC")/llvm-ar" x "$A" accessibility-bridge.o) || exit 1
+    "$OBJDUMP" -d -r --no-show-raw-insn "$M/accessibility-bridge.o" | awk '
+      /^ *[0-9a-f]+:/ { a = $1; sub(":", "", a); call = ($0 ~ /(callq|jmpq)[ \t]+\*/) }
+      /^ *[0-9a-f]+:/ && /(callq|jmpq)[ \t]+\*%/ { print "0x" a }
+      /X86_64_RELOC/ && /_objc_msgSend/ && call { print "0x" a }' | sort -u > "$M/sites"
+    [ -s "$M/sites" ] || { echo "FAIL: found no send site in accessibility-bridge.o"; exit 1; }
+    "$SYMBOLIZER" --obj="$M/accessibility-bridge.o" < "$M/sites" | awk 'NR % 3 == 2' > "$M/lines"
+    paste "$M/sites" "$M/lines" | awk '$2 ~ /:0(:|$)/' > "$M/line0"
+    [ ! -s "$M/line0" ] || { echo "FAIL: accessibility-bridge.o has $(wc -l < "$M/line0" | tr -d ' ') send sites at no source line, e.g. $(head -1 "$M/line0")"; exit 1; }
+  else
+    # platform: the Linux clang22 archive may carry no llvm-symbolizer (build/fetch-clang22.sh); the Mac run checks it
+    echo "objc-accessibility-bridge: no llvm-symbolizer beside $CC; the send-line check runs where there is one"
+  fi
   # spec: README.md "Objective-C methods" -- the declaration's own-absent group is the bridge build/objc-provider-manifest.sh
   #       lists, each member with its super_fallbacks record and 10.9's encoding: a record dropped, or an encoding
   #       clang22 doesn't compile for the member, is refused

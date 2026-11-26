@@ -38,7 +38,12 @@ sh "$G" header "$D" "$W/generated/providers-generated.h"
 # spec: tests/objc-source-receipt.sh -- -g keeps each member's line table, which the source receipt maps sends through
 for f in workspace workspace-events workspace-recents voiceover reduce-motion control window tablecolumn register register-common locale string register-foundation timer color graphics-context \
     accessibility-common accessibility-view accessibility-cell accessibility-bridge; do
-  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations \
+  fold=
+  # spec: tests/objc-accessibility-bridge.sh -- Drydock maps each send of a bridge IMP to its receipt send by source
+  #       line, and a call site that tail merging or sinking shares among several sends has none; so the bridge alone
+  #       is built with both off (the maintainer, 2026-11-26), its source unchanged
+  [ "$f" != accessibility-bridge ] || fold='-mllvm -enable-tail-merge=false -mllvm -sink-common-insts=false'
+  "$CC" $TARGET_FLAGS -isysroot "$SDK" -fno-objc-arc -Os -g -fPIC -Wall -Wno-deprecated-declarations $fold \
     -ffile-prefix-map="$ROOT/"= -ffile-prefix-map="$W/"= \
     -ffile-prefix-map="$SDK"="$(basename "$SDK")" -fdebug-compilation-dir=. \
     -I"$W/generated" -c "$ROOT/src/objc/$f.m" -o "$W/objects/$f.o"
