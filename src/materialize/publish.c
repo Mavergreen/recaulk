@@ -40,11 +40,17 @@ static void cleanup(void) {
     if (stage) rm_tree(stage);
 }
 
-/* platform: a signal's default action skips atexit; remove the stage, then die of the same signal */
-static void on_signal(int sig) {
+/* platform: a signal's default action skips atexit, so the stage must be removed before dying of it; but a signal can
+ * land inside malloc (glibc "malloc(): invalid size", main run 45979186745), and removing a tree allocates. So the
+ * handler only records the signal, and checkpoint() -- called between publish steps, never inside an allocation --
+ * removes the stage and dies of it. spec: tests/materialize-signal.sh */
+static volatile sig_atomic_t caught;
+static void on_signal(int sig) { caught = sig; }
+static void checkpoint(void) {
+    if (!caught) return;
     cleanup();
-    signal(sig, SIG_DFL);
-    raise(sig);
+    signal(caught, SIG_DFL);
+    raise(caught);
 }
 
 static void catch_signals(void) {
@@ -82,6 +88,7 @@ static char **list_dir(const char *dir, size_t *n) {
 }
 
 static void mkdirs(const char *path) {
+    checkpoint();
     char p[PATH_MAX];
     mz_path(p, sizeof p, "%s", path);
     for (char *s = p + 1; *s; s++)
@@ -95,6 +102,7 @@ static void mkdirs(const char *path) {
 }
 
 static void write_file(const char *path, const char *buf, size_t n) {
+    checkpoint();
     FILE *f = fopen(path, "wb");
     if (!f || fwrite(buf, 1, n, f) != n || fclose(f)) mz_fail("cannot write %s: %s", path, strerror(errno));
     chmod(path, 0644);
@@ -343,6 +351,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     if (!mkdtemp(tmp)) mz_fail("cannot make a staging directory beside %s: %s", out, strerror(errno));
     stage = mz_xstrdup(tmp);
     atexit(cleanup);
+    checkpoint();
     chmod(stage, 0755);
 
     /* the rewritten headers */
@@ -367,6 +376,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
         char target[PATH_MAX];
         mz_path(target, sizeof target, "%s/%s", sdk_real, es[i]);
         mz_path(p, sizeof p, "%s/%s", view, es[i]);
+        checkpoint();
         if (symlink(target, p)) mz_fail("cannot link %s: %s", p, strerror(errno));
     }
     char *settings;
@@ -396,6 +406,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     if (!f) mz_fail("cannot write %s: %s", p, strerror(errno));
     fputs("{\"version\":0,\"case-sensitive\":\"true\",\"roots\":[", f);
     for (size_t i = 0; i < ns.n; i++) {
+        checkpoint();
         fputs(i ? ",\n{\"type\":\"file\",\"name\":" : "\n{\"type\":\"file\",\"name\":", f);
         put(f, ns.name[order[i]]);
         fputs(",\"external-contents\":", f);
@@ -419,6 +430,7 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     fputs(",\"files\":{", f);
     for (size_t i = 0; i < nf; i++) {
         char full[PATH_MAX], hex[65];
+        checkpoint();
         mz_path(full, sizeof full, "%s/%s", stage, files[i]);
         if (mz_sha256_file(full, hex)) mz_fail("cannot read %s", full);
         if (i) fputc(',', f);
@@ -429,6 +441,8 @@ void mz_publish(const struct mz_args *a, const char *sdk_real, struct mz_header 
     if (fclose(f)) mz_fail("cannot write %s", p);
     chmod(p, 0644);
 
+    /* a signal from here on finds the tree published: the run completes and exits 0 */
+    checkpoint();
     /* platform: renamex_np(RENAME_EXCL) is 10.12's; rename(2) refuses a non-empty target, and --out was absent */
     if (rename(stage, out)) {
         if (errno == EEXIST || errno == ENOTEMPTY || errno == EISDIR) {
