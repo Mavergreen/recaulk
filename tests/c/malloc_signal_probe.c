@@ -13,7 +13,7 @@ static volatile int inside, armed, count, after = -1, sig;
 static void enter(void) {
     if (inside) {
         static const char m[] = "probe: reentrant malloc\n";
-        write(2, m, sizeof m - 1);
+        if (write(2, m, sizeof m - 1) < 0) { /* platform: glibc warn_unused_result; nothing to do if stderr is gone */ }
         _exit(99);
     }
     inside = 1;
