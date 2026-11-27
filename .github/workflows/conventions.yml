@@ -8,4 +8,4 @@ on:
 
 jobs:
   conventions:
-    uses: Mavergreen/shipyard/.github/workflows/family-conventions.yml@v1
+    uses: Mavergreen/shipyard/.github/workflows/family-conventions.yml@unified-toolchains-5

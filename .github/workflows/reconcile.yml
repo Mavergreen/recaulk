@@ -16,6 +16,6 @@ jobs:
     permissions:
       contents: read
       actions: write
-    uses: Mavergreen/shipyard/.github/workflows/reconcile.yml@v1
+    uses: Mavergreen/shipyard/.github/workflows/reconcile.yml@unified-toolchains-5
     with:
       dispatch-field: reconcile=true

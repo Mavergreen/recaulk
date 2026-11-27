@@ -38,7 +38,7 @@ jobs:
           persist-credentials: false
 
       - name: Install mavericks-shipyard
-        uses: Mavergreen/shipyard/.github/actions/install@v1
+        uses: Mavergreen/shipyard/.github/actions/install@unified-toolchains-5
 
       - name: The pkg test reads its payload with cpio
         run: command -v cpio || { sudo apt-get update -qq && sudo apt-get install -y -qq cpio; }
@@ -295,7 +295,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install mavericks-shipyard
-        uses: Mavergreen/shipyard/.github/actions/install@v1
+        uses: Mavergreen/shipyard/.github/actions/install@unified-toolchains-5
       - uses: actions/download-artifact@v8
         with:
           name: recaulk
@@ -327,7 +327,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-    uses: Mavergreen/shipyard/.github/workflows/scan-for-key.yml@v1
+    uses: Mavergreen/shipyard/.github/workflows/scan-for-key.yml@unified-toolchains-5
     with:
       artifact: recaulk
     secrets:
@@ -338,7 +338,7 @@ jobs:
     if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
-    uses: Mavergreen/shipyard/.github/workflows/publish-release.yml@v1
+    uses: Mavergreen/shipyard/.github/workflows/publish-release.yml@unified-toolchains-5
     with:
       version: ${{ needs.build.outputs.ver }}
       artifact: recaulk
@@ -349,7 +349,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    uses: Mavergreen/shipyard/.github/workflows/retry-release.yml@v1
+    uses: Mavergreen/shipyard/.github/workflows/retry-release.yml@unified-toolchains-5
     with:
       version: ${{ needs.build.outputs.ver }}
 
@@ -359,6 +359,6 @@ jobs:
     needs: [build, on-mavericks, modern-smoke, scan, publish, retry]
     runs-on: ubuntu-latest
     steps:
-      - uses: Mavergreen/shipyard/.github/actions/required-gate@v1
+      - uses: Mavergreen/shipyard/.github/actions/required-gate@unified-toolchains-5
         with:
           needs: ${{ toJSON(needs) }}
