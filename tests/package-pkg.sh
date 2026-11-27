@@ -76,6 +76,11 @@ fi
 modes="$(cpio -itv < "$tmp/payload.cpio" 2>/dev/null | grep 'share/sdk-metadata' | cut -c1-10 | tr '\n' ' ')"
 [ "$modes" = "drwxr-xr-x -rw-r--r-- -rw-r--r-- " ] || { echo "FAIL: share/sdk-metadata is not world-readable in the payload: $modes"; exit 1; }
 need 'usr/local/mavergreen/recaulk/mavergreen.plist'
+# spec: shipyard stage_product.sh --slim-host -- the universal materializer is Recaulk's one host program, so it alone
+#       is slimmed on install; the libraries and archives under lib/ are what consumers link against, never slimmed
+slim="$(awk '/<key>slim-host<\/key>/ { on = 1; next } on && /<\/array>/ { exit } on && /<string>/ { gsub(/.*<string>|<\/string>.*/, ""); print }' \
+  "$tmp/files/usr/local/mavergreen/recaulk/mavergreen.plist")"
+[ "$slim" = bin/recaulk-materialize ] || { echo "FAIL: the manifest's slim-host is '$slim', not bin/recaulk-materialize"; exit 1; }
 # spec: README.md "Objective-C methods" -- consumers' strict compat guard reads share/recaulk (the provider
 #       declaration and the source receipt) as themselves, not root: every file there is world-readable
 need 'usr/local/mavergreen/recaulk/share/recaulk/objc-source.receipt'
