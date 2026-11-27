@@ -66,10 +66,11 @@ cp "$MAVERICKS_ROOT/packaging/kernelfixes-loader.plist" "$STAGE/Library/LaunchDa
 chmod 644 "$STAGE/Library/LaunchDaemons/dev.mavergreen.recaulk.kernelfixes.plist"
 
 SCR="$OUT/pkg-scripts"; rm -rf "$SCR"
+# spec: tests/package-pkg.sh -- the universal recaulk-materialize is the one host program slim thins on install
 sh "$SCRIPTS/stage_product.sh" --stage "$STAGE" --product recaulk \
   --name "Recaulk for Mavericks" --version "$VERSION" --updater-app "$UPD_APP" \
   --postinstall-hook "$MAVERICKS_ROOT/packaging/postinstall-hook.sh" --scripts-out "$SCR" \
-  --boot-kext dev.mavergreen.recaulk.kernelfixes >&2
+  --boot-kext dev.mavergreen.recaulk.kernelfixes --slim-host bin/recaulk-materialize >&2
 
 mkdir -p "$OUT/component"
 comp="$OUT/component/recaulk-component.pkg"
