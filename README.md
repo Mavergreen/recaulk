@@ -152,7 +152,10 @@ the build that produced the archive (source hashes, archive hash, compiler, SDK)
 instance methods registered before groups existed, one per entry as schema 1 had them, under `legacy_providers`, and
 the groups under `providers`. The groups include the accessibility bridge's own-absent group, which only Drydock
 0.8.0 and later reads, so reading the file takes Drydock 0.8.0, which shipyard pins from 1.0.938 (`@v1` has it); an
-older Drydock refuses the whole file rather than skip a group it doesn't know. Drydock credits a group only from a root that registers its
+older Drydock refuses the whole file rather than skip a group it doesn't know. The source receipt
+(`share/recaulk/objc-source.receipt`) records the bridge's explicit super sends, which Drydock writes from 0.8.1, and
+a receipt is read only by the Drydock that wrote it, so verifying against this release takes Drydock 0.8.1, which
+shipyard pins from 1.0.941. Drydock credits a group only from a root that registers its
 members and nothing else, every member looked up before any is added, which is why each group has its own root.
 
 #### Stand-in classes
