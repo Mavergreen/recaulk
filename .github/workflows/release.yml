@@ -25,7 +25,57 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # spec: INGREDIENTS.md "Versioning" (self-upstream-date) and the conventions SKILL.md "Versioning" -- the version is
+  #       derived once, here, on Linux; it and the publish decision reach every later job through needs:, and its
+  #       notes are checked before a macOS runner or the publish spends anything
+  version-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      ver: ${{ steps.ver.outputs.ver }}
+      publish: ${{ steps.ver.outputs.publish }}
+      mode: ${{ steps.ver.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install mavericks-shipyard
+        uses: Mavergreen/shipyard/.github/actions/install@v1
+
+      - name: Version (YYYYMMDD.N) + publish decision
+        id: ver
+        env:
+          REPACKAGE: ${{ inputs.repackage }}
+          LOCAL_RELEASE: ${{ inputs.repackage }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          mode="$(sh "$SHIPYARD_SCRIPTS/release-mode.sh")"
+          ver="$(sh "$SHIPYARD_SCRIPTS/release-version.sh" --product recaulk --mode "$mode")"
+          pub=no
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+              if [ "$REPACKAGE" = true ]; then
+                pub=yes
+              else
+                digest="$(sh "$SHIPYARD_SCRIPTS/release-state.sh")"
+                answer="$(sh "$SHIPYARD_SCRIPTS/release-needed.sh" --digest "$digest" --version "$ver")"
+                echo "release-needed: $answer"
+                if [ "$answer" = PUBLISH ]; then pub=yes; fi
+              fi
+            fi
+          fi
+          sh "$SHIPYARD_SCRIPTS/check-release-version.sh" --product recaulk --version "$ver" --sha "$GITHUB_SHA" \
+            --mode "$mode" --publishing "$pub"
+          { echo "ver=$ver"; echo "publish=$pub"; echo "mode=$mode"; } >> "$GITHUB_OUTPUT"
+          echo "version=$ver publish=$pub mode=$mode"
+
   build:
+    needs: [version-check]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -46,30 +96,15 @@ jobs:
       - name: Record the pre-build tree
         run: sh "$SHIPYARD_SCRIPTS/assert-tree-clean.sh" --record
 
-      - name: Version (YYYYMMDD.N) + publish decision
+      - name: The version and publish decision version-check made
         id: ver
         env:
-          REPACKAGE: ${{ inputs.repackage }}
-          GH_TOKEN: ${{ github.token }}
+          VER: ${{ needs.version-check.outputs.ver }}
+          PUB: ${{ needs.version-check.outputs.publish }}
         run: |
           set -eu
-          ver="$(sh "$SHIPYARD_SCRIPTS/self-upstream-version.sh")"
-          pub=no
-          if [ "$GITHUB_REF" = refs/heads/main ]; then
-            if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
-              if [ "$REPACKAGE" = true ]; then
-                pub=yes
-              else
-                digest="$(sh "$SHIPYARD_SCRIPTS/release-state.sh")"
-                answer="$(sh "$SHIPYARD_SCRIPTS/release-needed.sh" --digest "$digest" --version "$ver")"
-                echo "release-needed: $answer"
-                if [ "$answer" = PUBLISH ]; then pub=yes; fi
-              fi
-            fi
-          fi
-          printf '%s\n' "$ver" > VERSION
-          { echo "ver=$ver"; echo "publish=$pub"; } >> "$GITHUB_OUTPUT"
-          echo "version=$ver publish=$pub"
+          printf '%s\n' "$VER" > VERSION
+          { echo "ver=$VER"; echo "publish=$PUB"; } >> "$GITHUB_OUTPUT"
 
       - name: Build out of tree
         run: echo "MAVERICKS_BUILD_ROOT=$RUNNER_TEMP/mm-build" >> "$GITHUB_ENV"
@@ -282,7 +317,7 @@ jobs:
   #       on Apple Silicon before it ships: this run's own pkg, installed. Late, so a red Linux run never takes a
   #       macOS runner (shipyard, 2026-11-24).
   modern-smoke:
-    needs: [build, on-mavericks]
+    needs: [version-check, build, on-mavericks]
     if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 20
@@ -334,7 +369,7 @@ jobs:
       SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
   publish:
-    needs: [build, scan, on-mavericks, modern-smoke]
+    needs: [version-check, build, scan, on-mavericks, modern-smoke]
     if: needs.build.outputs.publish == 'yes' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -342,6 +377,8 @@ jobs:
     with:
       version: ${{ needs.build.outputs.ver }}
       artifact: recaulk
+      product: recaulk
+      release-mode: ${{ needs.version-check.outputs.mode }}
 
   retry:
     needs: [build, publish]
@@ -356,7 +393,7 @@ jobs:
   required:
     name: required (release)
     if: always()
-    needs: [build, on-mavericks, modern-smoke, scan, publish, retry]
+    needs: [version-check, build, on-mavericks, modern-smoke, scan, publish, retry]
     runs-on: ubuntu-latest
     steps:
       - uses: Mavergreen/shipyard/.github/actions/required-gate@v1

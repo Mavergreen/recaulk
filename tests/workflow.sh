@@ -38,14 +38,21 @@ awk '
 mkdir "$tmp/stubs" "$tmp/repo"
 printf '#!/bin/sh\necho stub-digest\n' > "$tmp/stubs/release-state.sh"
 printf '#!/bin/sh\necho PUBLISH\n' > "$tmp/stubs/release-needed.sh"
-printf '#!/bin/sh\necho 20261005.7\n' > "$tmp/stubs/self-upstream-version.sh"
+printf '#!/bin/sh\necho auto\n' > "$tmp/stubs/release-mode.sh"
+# spec: INGREDIENTS.md "Versioning" -- the version comes from release-version.sh for product recaulk, in release-mode.sh's mode
+printf '#!/bin/sh\n[ "$*" = "--product recaulk --mode auto" ] || exit 9\necho 20261005.7\n' > "$tmp/stubs/release-version.sh"
+printf '#!/bin/sh\necho "$*" > "%s/check-args"\n' "$tmp" > "$tmp/stubs/check-release-version.sh"
 printf '20261005\n' > "$tmp/repo/UPSTREAM_VERSION"
 ver_publish() {   # ref event repackage
   rm -f "$tmp/out"
-  ( cd "$tmp/repo" && GITHUB_REF="$1" GITHUB_EVENT_NAME="$2" REPACKAGE="$3" SHIPYARD_SCRIPTS="$tmp/stubs" \
+  ( cd "$tmp/repo" && GITHUB_SHA=0123abc GITHUB_REF="$1" GITHUB_EVENT_NAME="$2" REPACKAGE="$3" SHIPYARD_SCRIPTS="$tmp/stubs" \
       GITHUB_OUTPUT="$tmp/out" sh -c "git init -q . 2>/dev/null; sh \"$tmp/ver.sh\"" >/dev/null ) \
     || { echo "the ver step's script failed for $1 $2"; exit 1; }
-  sed -n 's/^publish=//p' "$tmp/out"
+  # spec: the conventions SKILL.md "Versioning" -- the same step checks the version, publishing exactly when it publishes
+  p="$(sed -n 's/^publish=//p' "$tmp/out")"
+  grep -q -- "--product recaulk --version 20261005.7 .* --mode auto --publishing $p\$" "$tmp/check-args" \
+    || { echo "the ver step must run check-release-version.sh with --publishing $p: $(cat "$tmp/check-args")"; exit 1; }
+  printf '%s\n' "$p"
 }
 expect() {   # want ref event repackage
   got="$(ver_publish "$2" "$3" "$4")"
@@ -59,7 +66,7 @@ expect no refs/heads/renovate/x workflow_dispatch true
 expect no refs/heads/renovate/x workflow_dispatch false
 expect no refs/heads/feature workflow_dispatch true
 ver_publish refs/heads/main push false >/dev/null
-[ "$(sed -n 's/^ver=//p' "$tmp/out")" = 20261005.7 ] || { echo "the ver step must take its version from self-upstream-version.sh"; exit 1; }
+[ "$(sed -n 's/^ver=//p' "$tmp/out")" = 20261005.7 ] || { echo "the ver step must take its version from release-version.sh"; exit 1; }
 [ "$(grep -c "github.ref == 'refs/heads/main'" "$w")" -eq 3 ] || { echo "scan, publish and modern-smoke must each require github.ref == 'refs/heads/main'"; exit 1; }
 if grep -q 'dist/' "$w"; then
   grep -Eq '^dist/' .mavericks-intree || { echo "release.yml writes dist/, so .mavericks-intree must list it"; exit 1; }
@@ -122,7 +129,7 @@ done
 #       waits for it
 [ "$(grep -Ec '^ +runs-on: .*macos' "$w")" -eq 1 ] && job modern-smoke | grep -q '^    runs-on: macos-26$' \
   || { echo "only modern-smoke runs on a macOS runner (macos-26)"; exit 1; }
-job modern-smoke | grep -qxF '    needs: [build, on-mavericks]' || { echo "modern-smoke starts after build and on-mavericks"; exit 1; }
+job modern-smoke | grep -qxF '    needs: [version-check, build, on-mavericks]' || { echo "modern-smoke starts after version-check, build and on-mavericks"; exit 1; }
 job modern-smoke | grep -q 'installer' && { echo "modern-smoke expands the pkg; it never installs it on macOS 26"; exit 1; }
 job publish | grep -q '^    needs: .*modern-smoke' || { echo "publish needs modern-smoke"; exit 1; }
 # spec: shipyard conventions check 39, "Smoke only in a publishing run" -- modern-smoke runs only when publish will

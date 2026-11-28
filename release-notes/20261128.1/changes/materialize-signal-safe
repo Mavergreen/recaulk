@@ -1,0 +1,1 @@
+recaulk-materialize no longer risks corrupting its memory when it is interrupted, and it still removes its unfinished output before it exits.

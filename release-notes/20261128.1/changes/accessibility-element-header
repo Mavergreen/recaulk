@@ -1,0 +1,1 @@
+Recaulk now installs a header declaring RecaulkAccessibilityElement, its stand-in for NSAccessibilityElement, so an app no longer declares that class itself.

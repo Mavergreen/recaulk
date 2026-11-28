@@ -22,6 +22,10 @@ drydock 0.3.0 or later is required: it is the first release with a Linux archive
 
 clang22 builds Recaulk on every host, so the Linux build and a native build on 10.9 compile the same source with the same compiler. Its `llvm-ar --format=darwin` writes the archives: clang22's Linux archive has no `llvm-libtool-darwin`.
 
+## Versioning
+
+- self-upstream-date
+
 ## Declared state
 
 - upstream: UPSTREAM_VERSION
