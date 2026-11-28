@@ -11,7 +11,7 @@ trap 'rm -rf "$d"' EXIT
 inc="$T/include/recaulk"
 layer=_recaulk_macports
 cxx_only=cxxabi.h
-objc_only='AppKit/NSAppearance.h AppKit/NSLayoutConstraint.h AppKit/NSPasteboard.h'
+objc_only='AppKit/NSAppearance.h AppKit/NSLayoutConstraint.h AppKit/NSPasteboard.h recaulk/accessibility-element.h'
 {
   echo '#include <MacportsLegacySupport.h>'
   echo '#include <os/lock.h>'
@@ -38,7 +38,7 @@ done
 # platform: the 10.9 SDK's cxxabi.h, which Recaulk's wraps, is C++ only
 printf '#include <%s>\nint main() { return 0; }\n' $cxx_only > "$d/cxx.cpp"
 "$CXX" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/cxx.cpp" -o "$d/cxx.o" || bad "the C++-only headers ($cxx_only) do not compile"
-# platform: the 10.9 SDK's AppKit headers, which Recaulk's wrap, are Objective-C only
+# platform: the 10.9 SDK's AppKit headers, which Recaulk's wrap, and the stand-in's class declaration are Objective-C only
 { printf '#include <%s>\n' $objc_only; echo 'int main(void) { return 0; }'; } > "$d/objc.m"
 "$CC" $FLAGS -arch x86_64 -Wall -Werror -I"$inc" -c "$d/objc.m" -o "$d/objc.o" || bad "the Objective-C-only headers ($objc_only) do not compile"
 
