@@ -191,8 +191,8 @@ cc myapp.m -framework AppKit /usr/local/mavergreen/recaulk/lib/stand-in/libRecau
 cp /usr/local/mavergreen/recaulk/lib/stand-in/libRecaulkAppKit.dylib MyApp.app/Contents/Frameworks/
 ```
 
-Your source declares `@interface RecaulkAccessibilityElement : NSObject`, with the 10.10 methods you send, and
-subclasses it. For a compiled binary, Drydock retargets its `NSAccessibilityElement` binds to the shim. Nothing may
+Your source imports `<recaulk/accessibility-element.h>` (through `-isystem /usr/local/mavergreen/recaulk/include/recaulk`),
+which declares the shim with every 10.10 method the stand-in adds, and subclasses it. For a compiled binary, Drydock retargets its `NSAccessibilityElement` binds to the shim. Nothing may
 realize the shim before its constructor runs, so give no subclass a `+load`. (10.9's dyld expands `@executable_path`
 or `@loader_path` in an rpath only when a slash follows it: write `@loader_path/.`, never a bare `@loader_path`.)
 

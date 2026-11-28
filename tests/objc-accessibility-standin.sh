@@ -31,7 +31,25 @@ if compiling; then
   [ "$("$OTOOL" -l "$REAL" | grep -A4 'sectname __mod_init_func' | awk '$1 == "size" { print $2 }')" = 0x0000000000000008 ] \
     || fail "the shim does not have exactly one initializer"
 
-  "$CC" $FLAGS -fno-objc-arc -Wall -Werror -c tests/c/objc_accessibility_standin.m -o "$(tbin standin.o)"
+  # spec: README.md "Stand-in classes" -- <recaulk/accessibility-element.h> declares the shim with every method the
+  #       stand-in adds, except 10.9's attribute API, which AppKit's own NSAccessibility already declares on NSObject
+  H="$T/include/recaulk/recaulk/accessibility-element.h"
+  [ -f "$H" ] || fail "the stage has no include/recaulk/recaulk/accessibility-element.h"
+  printf '#import <recaulk/accessibility-element.h>\n' > "$(tbin header.m)"
+  declared="$("$CC" $FLAGS -isystem "$T/include/recaulk" -fsyntax-only -Xclang -ast-dump "$(tbin header.m)" 2>/dev/null \
+    | awk '/^[|`]-/ { on = /-ObjCInterfaceDecl .* RecaulkAccessibilityElement$/; next } on' \
+    | sed -n "s/.*ObjCMethodDecl .* \\([-+]\\) \\([^ ]*\\) '.*/\\1\\2/p" | sort -u)"
+  added="$(sed -nE 's/^ *ADD\((shim|meta), "([^"]*)".*/\1 \2/p' src/standins/RecaulkAccessibilityElement.m \
+    | sed 's/^shim /-/; s/^meta /+/' | grep -vE -- '-accessibility(AttributeNames|AttributeValue:|IsAttributeSettable:|SetValue:forAttribute:|ActionNames|ActionDescription:|PerformAction:|IsIgnored|HitTest:|FocusedUIElement)$' \
+    | sort -u)"
+  [ -n "$declared" ] || fail "the header declares no method on RecaulkAccessibilityElement"
+  [ "$declared" = "$added" ] || fail "the header's methods are not the stand-in's: $(printf '%s\n' "$declared" > "$(tbin d)"; printf '%s\n' "$added" | diff "$(tbin d)" - | grep '^[<>]' | tr '\n' ' ')"
+  # spec: README.md "Stand-in classes" -- an ARC app subclasses the shim through the header as an MRC one does
+  printf '#import <recaulk/accessibility-element.h>\n@interface E : RecaulkAccessibilityElement\n@end\n@implementation E\n- (NSString *)accessibilityLabel { return self.accessibilityTitle; }\n@end\n' > "$(tbin arc.m)"
+  "$CC" $FLAGS -fobjc-arc -isystem "$T/include/recaulk" -Wall -Wextra -Werror -c "$(tbin arc.m)" -o "$(tbin arc.o)" \
+    || fail "an ARC subclass does not compile against the installed header"
+  "$CC" $FLAGS -fno-objc-arc -isystem "$T/include/recaulk" -Wall -Werror -c tests/c/objc_accessibility_standin.m \
+    -o "$(tbin standin.o)" || fail "the consumer does not compile against the installed header"
   for v in standin reparent early larger cxx conflict missing; do
     rm -rf "$(tbin "$v")"
     mkdir -p "$(tbin "$v")"

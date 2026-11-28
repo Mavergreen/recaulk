@@ -13,18 +13,8 @@
      conflict: a category on the shim already has accessibilityRole, so the stand-in's cannot land (the shell checks
                the line): the category's answers, and the other members still serve. */
 
-/* spec: MacOSX10.10.sdk and later, NSAccessibilityElement.h -- what an app subclassing it sends, now to the shim */
-@interface RecaulkAccessibilityElement : NSObject
-+ (id)accessibilityElementWithRole:(NSString *)role frame:(NSRect)frame label:(NSString *)label parent:(id)parent;
-- (void)accessibilityAddChildElement:(RecaulkAccessibilityElement *)childElement;
-@property NSRect accessibilityFrameInParentSpace;
-- (NSString *)accessibilityLabel;
-- (void)setAccessibilityLabel:(NSString *)label;
-- (NSString *)accessibilityRole;
-- (id)accessibilityParent;
-- (NSArray *)accessibilityChildren;
-- (NSRect)accessibilityFrame;
-@end
+/* spec: README.md "Stand-in classes" -- the installed header declares the shim; the app declares nothing itself */
+#import <recaulk/accessibility-element.h>
 
 static int pressed;
 
